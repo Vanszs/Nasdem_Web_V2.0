@@ -5,10 +5,18 @@ import { ArrowRight, Users, Target, Award } from "lucide-react"
 
 export function HeroSection() {
   return (
-    <section id="beranda" className="relative min-h-screen bg-nasdem-blue flex items-center">
+    <section id="beranda" className="relative min-h-screen bg-nasdem-blue flex items-center overflow-hidden">
       {/* Background Pattern */}
       <div className="absolute inset-0 opacity-10">
         <div className="absolute inset-0 bg-gradient-to-br from-nasdem-orange/20 to-transparent"></div>
+      </div>
+
+      <div className="absolute right-0 top-0 bottom-0 w-1/2 lg:w-2/5">
+        <div className="relative h-full">
+          <img src="/placeholder.svg?height=800&width=600" alt="Gedung NasDem" className="w-full h-full object-cover" />
+          {/* Gradient overlay that fades the image into the blue background */}
+          <div className="absolute inset-0 bg-gradient-to-r from-nasdem-blue via-nasdem-blue/70 to-transparent"></div>
+        </div>
       </div>
 
       <div className="container mx-auto px-4 relative z-10">
@@ -31,6 +39,7 @@ export function HeroSection() {
               <Button
                 size="lg"
                 className="bg-nasdem-orange hover:bg-nasdem-orange/90 text-white font-medium group transition-all duration-200"
+                onClick={() => (window.location.href = "/program")}
               >
                 Lihat Program Kami
                 <ArrowRight className="ml-2 h-5 w-5 group-hover:translate-x-1 transition-transform" />
@@ -38,7 +47,7 @@ export function HeroSection() {
               <Button
                 variant="outline"
                 size="lg"
-                className="border-white text-white hover:bg-white hover:text-nasdem-blue bg-transparent font-medium transition-all duration-200"
+                className="hover-fade-up border-white text-white hover:bg-nasdem-blue hover:text-white bg-transparent font-medium transition-all duration-200"
               >
                 Bergabung Sekarang
               </Button>
@@ -70,20 +79,8 @@ export function HeroSection() {
             </div>
           </div>
 
-          {/* Image */}
-          <div className="animate-slide-in-right">
-            <div className="relative">
-              <img
-                src="/placeholder.svg?height=600&width=500"
-                alt="Ketua DPD NasDem Sidoarjo"
-                className="rounded-lg shadow-2xl w-full max-w-md mx-auto"
-              />
-              <div className="absolute -bottom-6 -right-6 bg-nasdem-orange text-white p-4 rounded-lg shadow-lg">
-                <div className="text-sm font-medium">Ketua DPD</div>
-                <div className="text-lg font-bold">Muh. Zakaria Dimas Pratama, S.Kom</div>
-                <div className="text-sm opacity-90">Periode 2024-2029</div>
-              </div>
-            </div>
+          <div className="animate-slide-in-right lg:block hidden">
+            {/* This space is now used by the background building image */}
           </div>
         </div>
       </div>

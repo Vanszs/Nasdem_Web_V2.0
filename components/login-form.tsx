@@ -1,7 +1,6 @@
 "use client"
 
 import type React from "react"
-
 import { useState } from "react"
 import { useRouter } from "next/navigation"
 import { Button } from "@/components/ui/button"
@@ -10,11 +9,10 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/com
 import { Label } from "@/components/ui/label"
 import { Alert, AlertDescription } from "@/components/ui/alert"
 import { Loader2, Eye, EyeOff, User, Lock } from "lucide-react"
-import { supabase } from "@/lib/supabase/client"
 import Image from "next/image"
 
 export default function LoginForm() {
-  const [email, setEmail] = useState("")
+  const [username, setUsername] = useState("")
   const [password, setPassword] = useState("")
   const [showPassword, setShowPassword] = useState(false)
   const [loading, setLoading] = useState(false)
@@ -27,31 +25,29 @@ export default function LoginForm() {
     setError("")
 
     try {
-      const { data, error } = await supabase.auth.signInWithPassword({
-        email,
-        password,
-      })
+      // Check credentials against predefined admin accounts
+      let role = ""
+      let redirectPath = "/"
 
-      if (error) {
-        setError(error.message)
+      if (username === "admin1" && password === "admin1") {
+        role = "super_admin"
+        redirectPath = "/admin/super"
+      } else if (username === "admin2" && password === "admin2") {
+        role = "kecamatan_admin"
+        redirectPath = "/admin/kecamatan"
+      } else if (username === "admin3" && password === "admin3") {
+        role = "admin"
+        redirectPath = "/admin"
+      } else {
+        setError("Username atau password salah")
         return
       }
 
-      if (data.user) {
-        // Get user role from users table
-        const { data: userData } = await supabase.from("users").select("role").eq("id", data.user.id).single()
+      // Store user session in localStorage for demo purposes
+      localStorage.setItem("user", JSON.stringify({ username, role }))
 
-        // Redirect based on role
-        if (userData?.role === "super_admin") {
-          router.push("/admin/super")
-        } else if (userData?.role === "admin") {
-          router.push("/admin")
-        } else if (userData?.role === "kecamatan_admin") {
-          router.push("/admin/kecamatan")
-        } else {
-          router.push("/")
-        }
-      }
+      // Redirect based on role
+      router.push(redirectPath)
     } catch (err) {
       setError("Terjadi kesalahan saat login")
     } finally {
@@ -86,17 +82,17 @@ export default function LoginForm() {
 
         <form onSubmit={handleLogin} className="space-y-4">
           <div className="space-y-2">
-            <Label htmlFor="email" className="text-nasdem-blue font-medium">
-              Email
+            <Label htmlFor="username" className="text-nasdem-blue font-medium">
+              Username
             </Label>
             <div className="relative">
               <User className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400 h-4 w-4" />
               <Input
-                id="email"
-                type="email"
-                value={email}
-                onChange={(e) => setEmail(e.target.value)}
-                placeholder="admin@nasdemsidoarjo.id"
+                id="username"
+                type="text"
+                value={username}
+                onChange={(e) => setUsername(e.target.value)}
+                placeholder="Masukkan username"
                 className="pl-10 h-12 border-gray-300 focus:border-nasdem-orange focus:ring-nasdem-orange"
                 required
               />
@@ -126,6 +122,13 @@ export default function LoginForm() {
                 {showPassword ? <EyeOff className="h-4 w-4" /> : <Eye className="h-4 w-4" />}
               </button>
             </div>
+          </div>
+
+          <div className="text-xs text-gray-500 bg-gray-50 p-3 rounded-lg">
+            <div className="font-medium mb-1">Demo Credentials:</div>
+            <div>Super Admin: admin1 / admin1</div>
+            <div>Kecamatan Admin: admin2 / admin2</div>
+            <div>News Admin: admin3 / admin3</div>
           </div>
 
           <Button

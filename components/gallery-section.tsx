@@ -27,18 +27,26 @@ export function GallerySection() {
         </div>
 
         <div className="flex justify-center mb-8 animate-fade-in-up">
-          <div className="bg-secondary rounded-lg p-1">
+          <div className="bg-white rounded-xl p-2 shadow-lg border">
             <Button
               variant={activeTab === "foto" ? "default" : "ghost"}
               onClick={() => setActiveTab("foto")}
-              className={activeTab === "foto" ? "bg-accent text-white" : ""}
+              className={`px-6 py-2 rounded-lg font-semibold transition-all duration-300 ${
+                activeTab === "foto"
+                  ? "bg-nasdem-orange text-white shadow-md"
+                  : "text-gray-600 hover:bg-nasdem-blue hover:text-white hover-fade-up"
+              }`}
             >
               Foto
             </Button>
             <Button
               variant={activeTab === "video" ? "default" : "ghost"}
               onClick={() => setActiveTab("video")}
-              className={activeTab === "video" ? "bg-accent text-white" : ""}
+              className={`px-6 py-2 rounded-lg font-semibold transition-all duration-300 ${
+                activeTab === "video"
+                  ? "bg-nasdem-orange text-white shadow-md"
+                  : "text-gray-600 hover:bg-nasdem-blue hover:text-white hover-fade-up"
+              }`}
             >
               Video
             </Button>
@@ -103,7 +111,12 @@ export function GallerySection() {
         )}
 
         <div className="text-center animate-fade-in-up">
-          <Button size="lg" className="bg-accent hover:bg-accent/90 text-white">
+          <Button
+            variant="outline"
+            size="lg"
+            className="hover-fade-up font-semibold border-nasdem-blue bg-nasdem-blue/5 text-nasdem-blue hover:bg-nasdem-blue hover:text-white px-8 py-3"
+            onClick={() => (window.location.href = "/galeri")}
+          >
             Lihat Semua {activeTab === "foto" ? "Foto" : "Video"}
           </Button>
         </div>

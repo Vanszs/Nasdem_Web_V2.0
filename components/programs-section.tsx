@@ -1,85 +1,117 @@
 "use client"
 
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
 import { Button } from "@/components/ui/button"
-import { GraduationCap, Users, Briefcase, Heart, Sprout, Shield } from "lucide-react"
+import { GraduationCap, Sprout, Heart, Building, Users, Briefcase } from "lucide-react"
+
+const programs = [
+  {
+    icon: GraduationCap,
+    title: "Pendidikan Inklusif",
+    description: "Fasilitasi beasiswa PIP/KIP dan pelatihan keterampilan untuk generasi muda Sidoarjo.",
+    highlight: "709 ton benih padi disalurkan",
+  },
+  {
+    icon: Sprout,
+    title: "Ekonomi Kerakyatan",
+    description: "Pemberdayaan UMKM, urban farming, dan dukungan kepada 103 kelompok tani.",
+    highlight: "103 kelompok tani dibina",
+  },
+  {
+    icon: Heart,
+    title: "Aksi Sosial Kesehatan",
+    description: "Program fogging pencegahan DBD dan pembagian sembako untuk masyarakat.",
+    highlight: "Fokus kesehatan masyarakat",
+  },
+  {
+    icon: Building,
+    title: "Advokasi Kebijakan",
+    description: "Mengawal RPJMD Sidoarjo 2025-2029 untuk pembangunan yang berkelanjutan.",
+    highlight: "Pengawalan kebijakan daerah",
+  },
+  {
+    icon: Users,
+    title: "NasDem Muda",
+    description: "Platform generasi muda 17-30 tahun untuk edukasi politik dan kepemimpinan.",
+    highlight: "Kaderisasi generasi muda",
+  },
+  {
+    icon: Briefcase,
+    title: "Pelatihan Politik",
+    description: "Laboratorium Gerakan Perubahan (LAGA) dan bimbingan teknis organisasi.",
+    highlight: "Penguatan kapasitas kader",
+  },
+]
 
 export function ProgramsSection() {
-  const programs = [
-    {
-      icon: GraduationCap,
-      title: "Pendidikan Inklusif",
-      description: "Program beasiswa PIP/KIP dan pelatihan keterampilan untuk generasi muda Sidoarjo",
-      color: "bg-blue-500",
-    },
-    {
-      icon: Briefcase,
-      title: "Pemberdayaan UMKM",
-      description: "Fasilitasi modal usaha dan pelatihan bisnis untuk mengembangkan ekonomi kerakyatan",
-      color: "bg-green-500",
-    },
-    {
-      icon: Users,
-      title: "NasDem Muda",
-      description: "Program kaderisasi pemuda 17-30 tahun dengan fokus kepemimpinan dan edukasi politik",
-      color: "bg-purple-500",
-    },
-    {
-      icon: Heart,
-      title: "Aksi Sosial Kesehatan",
-      description: "Fogging anti DBD, pembagian sembako, dan program kesehatan masyarakat",
-      color: "bg-red-500",
-    },
-    {
-      icon: Sprout,
-      title: "Ketahanan Pangan",
-      description: "Distribusi 709 ton benih padi kepada 103 kelompok tani untuk swasembada pangan",
-      color: "bg-yellow-500",
-    },
-    {
-      icon: Shield,
-      title: "Advokasi Kebijakan",
-      description: "Pengawasan dan masukan kritis terhadap RPJMD Sidoarjo 2025-2029",
-      color: "bg-indigo-500",
-    },
-  ]
-
   return (
-    <section id="program" className="py-20 bg-background">
+    <section id="program" className="py-16 md:py-24 bg-nasdem-light-gray">
       <div className="container mx-auto px-4">
-        <div className="text-center mb-16 animate-fade-in-up">
-          <h2 className="text-3xl md:text-4xl font-bold text-primary mb-4">Program & Kegiatan</h2>
-          <p className="text-lg text-muted-foreground max-w-3xl mx-auto">
-            Program kerja prioritas DPD NasDem Sidoarjo untuk mewujudkan kesejahteraan dan kemajuan masyarakat Sidoarjo.
+        {/* Section Header */}
+        <div className="text-center mb-16">
+          <div className="inline-flex items-center gap-2 bg-nasdem-orange/10 rounded-full px-4 py-2 mb-4">
+            <div className="w-2 h-2 bg-nasdem-orange rounded-full"></div>
+            <span className="text-nasdem-blue text-sm font-medium">Program Unggulan</span>
+          </div>
+          <h2 className="text-3xl md:text-5xl font-bold text-nasdem-blue mb-4">
+            Program <span className="text-nasdem-orange">Kerja</span> Kami
+          </h2>
+          <p className="text-gray-600 text-lg max-w-2xl mx-auto">
+            Komitmen nyata untuk memajukan Sidoarjo melalui program-program yang berdampak langsung bagi masyarakat.
           </p>
         </div>
 
-        <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-6 mb-12">
-          {programs.map((program, index) => (
-            <Card
-              key={index}
-              className="group hover:shadow-xl transition-all duration-300 hover:-translate-y-2 animate-fade-in-up"
-              style={{ animationDelay: `${index * 0.1}s` }}
-            >
-              <CardHeader>
-                <div
-                  className={`w-12 h-12 ${program.color} rounded-lg flex items-center justify-center mb-4 group-hover:scale-110 transition-transform`}
-                >
-                  <program.icon className="h-6 w-6 text-white" />
+        {/* Programs Grid */}
+        <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-8 mb-12">
+          {programs.map((program, index) => {
+            const IconComponent = program.icon
+            return (
+              <div
+                key={index}
+                className="bg-white rounded-2xl p-8 border hover:shadow-xl transition-all duration-300 hover:-translate-y-1 group"
+              >
+                <div className="flex items-start gap-4 mb-4">
+                  <div className="flex-shrink-0 w-12 h-12 bg-nasdem-blue/10 rounded-lg flex items-center justify-center group-hover:bg-nasdem-orange/10 transition-colors">
+                    <IconComponent className="text-nasdem-blue group-hover:text-nasdem-orange h-6 w-6 transition-colors" />
+                  </div>
+                  <div className="flex-1">
+                    <h3 className="text-xl font-bold text-nasdem-blue mb-2 group-hover:text-nasdem-blue transition-colors">
+                      {program.title}
+                    </h3>
+                    <div className="inline-block bg-nasdem-orange/10 text-nasdem-orange text-xs font-medium px-2 py-1 rounded-full mb-3">
+                      {program.highlight}
+                    </div>
+                  </div>
                 </div>
-                <CardTitle className="text-primary">{program.title}</CardTitle>
-              </CardHeader>
-              <CardContent>
-                <p className="text-muted-foreground">{program.description}</p>
-              </CardContent>
-            </Card>
-          ))}
+                <p className="text-gray-600 text-sm leading-relaxed mb-4">{program.description}</p>
+                <Button variant="ghost" size="sm" className="text-nasdem-blue hover:text-nasdem-orange p-0 h-auto">
+                  Selengkapnya →
+                </Button>
+              </div>
+            )
+          })}
         </div>
 
-        <div className="text-center animate-fade-in-up">
-          <Button size="lg" className="bg-accent hover:bg-accent/90 text-white">
-            Lihat Semua Program
-          </Button>
+        {/* CTA Section */}
+        <div className="bg-nasdem-blue rounded-2xl p-8 md:p-12 text-center relative overflow-hidden">
+          <div className="absolute inset-0 bg-gradient-to-r from-nasdem-blue via-nasdem-blue to-nasdem-orange/20"></div>
+          <div className="relative z-10">
+            <h3 className="text-2xl md:text-3xl font-bold text-white mb-4">Bergabunglah dalam Gerakan Perubahan</h3>
+            <p className="text-white/90 text-lg mb-6 max-w-2xl mx-auto">
+              Mari bersama-sama membangun Sidoarjo yang lebih maju, adil, dan sejahtera untuk semua.
+            </p>
+            <div className="flex flex-col sm:flex-row gap-4 justify-center">
+              <Button className="bg-nasdem-orange hover:bg-nasdem-orange/90 text-white font-semibold">
+                Daftar NasDem Muda
+              </Button>
+              <Button
+                variant="outline"
+                className="border-white bg-white/10 text-white hover:bg-white hover:text-nasdem-blue font-semibold backdrop-blur-sm"
+                onClick={() => (window.location.href = "/program")}
+              >
+                Lihat Semua Program
+              </Button>
+            </div>
+          </div>
         </div>
       </div>
     </section>

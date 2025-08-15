@@ -61,7 +61,10 @@ export function NewsSection() {
               </CardHeader>
               <CardContent>
                 <p className="text-muted-foreground mb-4">{item.excerpt}</p>
-                <Button variant="ghost" className="p-0 h-auto text-accent hover:text-accent/80 group">
+                <Button
+                  variant="ghost"
+                  className="hover-fade-up p-0 h-auto text-accent hover:text-white hover:bg-nasdem-blue group"
+                >
                   Baca Selengkapnya
                   <ArrowRight className="ml-2 h-4 w-4 group-hover:translate-x-1 transition-transform" />
                 </Button>
@@ -71,7 +74,12 @@ export function NewsSection() {
         </div>
 
         <div className="text-center animate-fade-in-up">
-          <Button size="lg" className="bg-accent hover:bg-accent/90 text-white">
+          <Button
+            variant="outline"
+            size="lg"
+            className="hover-fade-up font-semibold border-nasdem-blue bg-nasdem-blue/5 text-nasdem-blue hover:bg-nasdem-blue hover:text-white px-8 py-3"
+            onClick={() => (window.location.href = "/berita")}
+          >
             Lihat Semua Berita
           </Button>
         </div>

@@ -168,12 +168,102 @@
   border-color: #ff9c04;
 }
 
-/* Added hover utilities for better button visibility */
+/* Added enhanced button hover animations with fade-in from bottom effect */
 .hover-scale {
   transition: transform 0.2s ease-in-out;
 }
 .hover-scale:hover {
   transform: scale(1.05);
+}
+
+/* Added hover-fade-up animation class for consistent button hover effects */
+.hover-fade-up {
+  position: relative;
+  overflow: hidden;
+  transition: all 0.3s ease;
+}
+
+.hover-fade-up::before {
+  content: "";
+  position: absolute;
+  top: 100%;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  background-color: #001b55;
+  transition: top 0.3s ease;
+  z-index: -1;
+}
+
+.hover-fade-up:hover::before {
+  top: 0;
+}
+
+.hover-fade-up:hover {
+  color: white !important;
+  transform: translateY(-2px);
+  box-shadow: 0 4px 12px rgba(0, 27, 85, 0.3);
+}
+
+/* Button hover animation with fade-in from bottom and blue background */
+.btn-hover-blue {
+  position: relative;
+  overflow: hidden;
+  transition: all 0.3s ease;
+}
+
+.btn-hover-blue::before {
+  content: "";
+  position: absolute;
+  top: 100%;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  background-color: #001b55;
+  transition: top 0.3s ease;
+  z-index: -1;
+}
+
+.btn-hover-blue:hover::before {
+  top: 0;
+}
+
+.btn-hover-blue:hover {
+  color: white;
+  transform: translateY(-2px);
+  box-shadow: 0 4px 12px rgba(0, 27, 85, 0.3);
+}
+
+/* "Lihat Semua" button specific styling */
+.lihat-semua-btn {
+  position: relative;
+  overflow: hidden;
+  transition: all 0.3s ease;
+  border: 2px solid #001b55;
+  background: transparent;
+  color: #001b55;
+}
+
+.lihat-semua-btn::before {
+  content: "";
+  position: absolute;
+  top: 100%;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  background-color: #001b55;
+  transition: top 0.3s ease;
+  z-index: -1;
+}
+
+.lihat-semua-btn:hover::before {
+  top: 0;
+}
+
+.lihat-semua-btn:hover {
+  color: white;
+  transform: translateY(-2px);
+  box-shadow: 0 4px 12px rgba(0, 27, 85, 0.3);
 }
 
 /* Animation utilities */

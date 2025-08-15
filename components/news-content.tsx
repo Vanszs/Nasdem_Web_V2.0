@@ -85,7 +85,7 @@ export default function NewsContent({ news, recentNews, currentPage, totalPages,
                       <User size={14} />
                       <span>{featuredNews.author?.full_name || "Admin"}</span>
                     </div>
-                    <Button className="bg-nasdem-orange hover:bg-nasdem-orange/90 group">
+                    <Button className="hover-fade-up bg-nasdem-orange hover:bg-nasdem-blue group">
                       <span>Baca Selengkapnya</span>
                       <ArrowRight className="ml-2 h-4 w-4 group-hover:translate-x-1 transition-transform" />
                     </Button>
@@ -142,7 +142,7 @@ export default function NewsContent({ news, recentNews, currentPage, totalPages,
                       <Button
                         variant="ghost"
                         size="sm"
-                        className="text-nasdem-orange hover:text-nasdem-dark-red p-0 h-auto font-medium"
+                        className="hover-fade-up text-nasdem-orange hover:text-white hover:bg-nasdem-blue p-0 h-auto font-medium"
                       >
                         Baca →
                       </Button>

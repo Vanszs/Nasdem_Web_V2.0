@@ -117,7 +117,7 @@ export default function NewsHomepage() {
                       <User size={14} />
                       <span>{featuredNews.users?.full_name}</span>
                     </div>
-                    <Button className="bg-nasdem-orange hover:bg-nasdem-orange/90 text-white group">
+                    <Button className="hover-fade-up bg-nasdem-orange hover:bg-nasdem-blue text-white group">
                       <span>Baca Selengkapnya</span>
                       <ArrowRight className="ml-2 h-4 w-4 group-hover:translate-x-1 transition-transform" />
                     </Button>
@@ -160,7 +160,7 @@ export default function NewsHomepage() {
                   <Button
                     variant="ghost"
                     size="sm"
-                    className="text-nasdem-blue hover:text-nasdem-orange p-0 h-auto font-medium"
+                    className="hover-fade-up text-nasdem-blue hover:text-white hover:bg-nasdem-blue p-0 h-auto font-medium"
                   >
                     Baca →
                   </Button>
@@ -174,7 +174,7 @@ export default function NewsHomepage() {
         <div className="text-center">
           <Button
             size="lg"
-            className="bg-nasdem-orange hover:bg-nasdem-orange/90 text-white font-semibold px-8 py-3"
+            className="hover-fade-up bg-nasdem-orange hover:bg-nasdem-blue text-white font-semibold px-8 py-3"
             onClick={() => (window.location.href = "/berita")}
           >
             Lihat Semua Berita
