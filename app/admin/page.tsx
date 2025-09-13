@@ -13,6 +13,18 @@ interface User {
 async function getAdminStats() {
   const supabase = createClient()
 
+  // Check if Supabase is configured
+  if (!supabase || typeof supabase.from !== 'function') {
+    console.warn("Supabase is not configured. Using mock data.")
+    // Return mock data when Supabase is not configured
+    return {
+      news: 3,
+      gallery: 2,
+      published: 2,
+      draft: 1,
+    }
+  }
+
   try {
     const [newsCount, galleryCount, publishedNews, draftNews] = await Promise.all([
       supabase.from("news").select("id", { count: "exact" }),

@@ -13,6 +13,18 @@ interface User {
 async function getKecamatanStats() {
   const supabase = createClient()
 
+  // Check if Supabase is configured
+  if (!supabase || typeof supabase.from !== 'function') {
+    console.warn("Supabase is not configured. Using mock data.")
+    // Return mock data when Supabase is not configured
+    return {
+      desa: 1,
+      tps: 1,
+      kader: 2,
+      coordinators: 1,
+    }
+  }
+
   try {
     // Get stats for kecamatan admin
     const [desaCount, tpsCount, kaderCount, coordinatorCount] = await Promise.all([

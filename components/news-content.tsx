@@ -21,12 +21,13 @@ interface NewsItem {
 interface NewsContentProps {
   news: NewsItem[]
   recentNews: NewsItem[]
+  categories: { name: string; value: string }[]
   currentPage: number
   totalPages: number
   totalCount: number
 }
 
-export default function NewsContent({ news, recentNews, currentPage, totalPages, totalCount }: NewsContentProps) {
+export default function NewsContent({ news, recentNews, categories, currentPage, totalPages, totalCount }: NewsContentProps) {
   const router = useRouter()
 
   const formatDate = (dateString: string) => {
@@ -238,22 +239,13 @@ export default function NewsContent({ news, recentNews, currentPage, totalPages,
             <Card className="p-6 border-0 shadow-[0_4px_20px_rgb(0,0,0,0.08)]">
               <h3 className="text-xl font-bold text-nasdem-blue mb-6">Kategori</h3>
               <div className="space-y-2">
-                {[
-                  "Program Kerja",
-                  "Kegiatan Sosial",
-                  "Pendidikan Politik",
-                  "UMKM",
-                  "Kesehatan",
-                  "Lingkungan",
-                  "Kaderisasi",
-                  "Kerja Sama",
-                ].map((category) => (
+                {categories.map((category) => (
                   <Button
-                    key={category}
+                    key={category.value}
                     variant="ghost"
                     className="w-full justify-start text-gray-600 hover:text-nasdem-orange hover:bg-nasdem-orange/5 transition-colors"
                   >
-                    {category}
+                    {category.name}
                   </Button>
                 ))}
               </div>

@@ -26,6 +26,47 @@ export default function NewsHomepage() {
 
   const fetchNews = async () => {
     const supabase = createClient()
+    
+    // Check if Supabase is configured
+    if (!supabase || typeof supabase.from !== 'function') {
+      console.warn("Supabase is not configured. Using mock data.")
+      // Use mock data when Supabase is not configured
+      setNews([
+        {
+          id: "1",
+          title: "Berita Contoh 1",
+          excerpt: "Ini adalah contoh berita yang ditampilkan saat Supabase tidak dikonfigurasi.",
+          image_url: "/placeholder.jpg",
+          created_at: new Date().toISOString(),
+          users: {
+            full_name: "Admin"
+          }
+        },
+        {
+          id: "2",
+          title: "Berita Contoh 2",
+          excerpt: "Ini adalah contoh berita lainnya yang ditampilkan saat Supabase tidak dikonfigurasi.",
+          image_url: "/placeholder.jpg",
+          created_at: new Date().toISOString(),
+          users: {
+            full_name: "Admin"
+          }
+        },
+        {
+          id: "3",
+          title: "Berita Contoh 3",
+          excerpt: "Ini adalah contoh berita ketiga yang ditampilkan saat Supabase tidak dikonfigurasi.",
+          image_url: "/placeholder.jpg",
+          created_at: new Date().toISOString(),
+          users: {
+            full_name: "Admin"
+          }
+        }
+      ])
+      setLoading(false)
+      return
+    }
+    
     const { data, error } = await supabase
       .from("news")
       .select(`

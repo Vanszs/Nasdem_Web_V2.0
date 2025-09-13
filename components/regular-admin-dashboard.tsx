@@ -26,7 +26,12 @@ export default function RegularAdminDashboard({ user, stats }: RegularAdminDashb
   const router = useRouter()
 
   const handleSignOut = async () => {
-    await supabase.auth.signOut()
+    // Check if Supabase is configured
+    if (supabase && supabase.auth && typeof supabase.auth.signOut === 'function') {
+      await supabase.auth.signOut()
+    }
+    // Clear localStorage for demo authentication
+    localStorage.removeItem("user")
     router.push("/login")
   }
 

@@ -9,6 +9,53 @@ import { createClient } from "@/lib/supabase/server"
 async function getOrganizationData() {
   const supabase = createClient()
 
+  // Check if Supabase is configured
+  if (!supabase || typeof supabase.from !== 'function') {
+    console.warn("Supabase is not configured. Using mock data.")
+    // Return mock data when Supabase is not configured
+    return [
+      {
+        id: "1",
+        name: "Sidoarjo",
+        code: "SDO",
+        desa: [
+          {
+            id: "1",
+            name: "Sidokare",
+            code: "SDK",
+            tps: [
+              {
+                id: "1",
+                name: "TPS 001 Sidokare",
+                number: "001",
+                coordinator: {
+                  id: "1",
+                  full_name: "Budi Santoso",
+                  email: "koordinator1@nasdemsidoarjo.id",
+                  phone: "081234567890"
+                },
+                kaders: [
+                  {
+                    id: "1",
+                    full_name: "Agus Setiawan",
+                    phone: "081234567891",
+                    address: "Jl. Merdeka No. 1"
+                  },
+                  {
+                    id: "2",
+                    full_name: "Rina Wati",
+                    phone: "081234567892",
+                    address: "Jl. Merdeka No. 2"
+                  }
+                ]
+              }
+            ]
+          }
+        ]
+      }
+    ]
+  }
+
   // Fetch complete organization structure
   const { data: kecamatanData, error } = await supabase
     .from("kecamatan")
