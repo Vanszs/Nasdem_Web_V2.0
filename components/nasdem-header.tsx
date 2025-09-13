@@ -79,7 +79,7 @@ const NasdemHeader = () => {
               </a>
             </li>
             <li>
-              <a href="#kontak" className="story-link text-primary-foreground hover:text-secondary transition-colors">
+              <a href="/kontak" className="story-link text-primary-foreground hover:text-secondary transition-colors">
                 Kontak
               </a>
             </li>
@@ -169,7 +169,7 @@ const NasdemHeader = () => {
                 </li>
                 <li>
                   <a
-                    href="#kontak"
+                    href="/kontak"
                     className="block text-primary-foreground hover:text-secondary transition-colors py-2"
                   >
                     Kontak

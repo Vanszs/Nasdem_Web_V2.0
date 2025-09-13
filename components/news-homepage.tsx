@@ -142,7 +142,7 @@ export default function NewsHomepage() {
         {/* Featured News */}
         {featuredNews && (
           <div className="mb-16">
-            <div className="bg-card rounded-2xl overflow-hidden border shadow-[0_8px_30px_rgb(0,0,0,0.12)] hover:shadow-[0_16px_40px_rgb(0,0,0,0.16)] transition-shadow">
+            <div className="bg-card rounded-2xl overflow-hidden border-2 border-primary/20 shadow-[0_8px_30px_rgb(0,0,0,0.12)] hover:shadow-[0_16px_40px_rgb(0,0,0,0.16)] hover:border-primary/30 transition-all duration-300">
               <div className="grid lg:grid-cols-2 gap-0">
                 <div className="relative">
                   <img
@@ -152,7 +152,7 @@ export default function NewsHomepage() {
                     loading="lazy"
                   />
                   <div className="absolute top-4 left-4">
-                    <span className="bg-destructive text-destructive-foreground text-xs font-medium px-3 py-1 rounded-full">
+                    <span className="bg-destructive text-destructive-foreground text-xs font-medium px-3 py-1 rounded-full shadow-lg">
                       Featured
                     </span>
                   </div>
@@ -194,7 +194,7 @@ export default function NewsHomepage() {
           {regularNews.slice(0, 3).map((newsItem) => (
             <article 
               key={newsItem.id}
-              className="bg-card rounded-xl border hover:shadow-[0_8px_30px_rgb(0,0,0,0.12)] transition-all duration-300 hover:-translate-y-1 group overflow-hidden"
+              className="bg-card rounded-xl border-2 border-primary/10 hover:border-primary/20 hover:shadow-[0_8px_30px_rgb(0,0,0,0.12)] transition-all duration-300 hover:-translate-y-1 group overflow-hidden"
             >
               <div className="p-6">
                 <div className="flex items-center gap-2 mb-3">
@@ -215,7 +215,7 @@ export default function NewsHomepage() {
                   {newsItem.excerpt}
                 </p>
                 
-                <div className="flex items-center justify-between pt-4 border-t border-border">
+                <div className="flex items-center justify-between pt-4 border-t-2 border-primary/10">
                   <div className="flex items-center gap-2 text-muted-foreground text-xs">
                     <User size={12} />
                     <span>{newsItem.author || newsItem.users?.full_name}</span>
@@ -234,7 +234,7 @@ export default function NewsHomepage() {
           <Button 
             variant="outline" 
             size="lg" 
-            className="hover-scale font-semibold border-primary bg-primary/5 text-primary hover:bg-primary hover:text-primary-foreground" 
+            className="hover-fade-up font-semibold border-nasdem-blue bg-nasdem-blue/5 text-nasdem-blue hover:bg-nasdem-blue hover:text-white px-8 py-3" 
             onClick={() => window.location.href = '/berita'}
           >
             Lihat Semua Berita
