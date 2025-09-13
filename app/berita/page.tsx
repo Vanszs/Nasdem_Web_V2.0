@@ -1,185 +1,106 @@
 import NasdemHeader from "@/components/nasdem-header"
 import NasdemFooter from "@/components/nasdem-footer"
-import { createClient } from "@/lib/supabase/server"
 import NewsContent from "@/components/news-content"
 
-async function getNewsData(page = 1, limit = 6) {
-  const supabase = createClient()
-  
-  // Check if Supabase is configured
-  if (!supabase || typeof supabase.from !== 'function') {
-    console.warn("Supabase is not configured. Using mock data.")
-    // Return mock data when Supabase is not configured
-    const mockNews = [
-      {
-        id: "1",
-        title: "Berita Contoh 1",
-        content: "Ini adalah konten berita contoh yang ditampilkan saat Supabase tidak dikonfigurasi.",
-        excerpt: "Ini adalah contoh berita yang ditampilkan saat Supabase tidak dikonfigurasi.",
-        image_url: "/placeholder.jpg",
-        created_at: new Date().toISOString(),
-        author: {
-          full_name: "Admin"
-        }
-      },
-      {
-        id: "2",
-        title: "Berita Contoh 2",
-        content: "Ini adalah konten berita contoh lainnya yang ditampilkan saat Supabase tidak dikonfigurasi.",
-        excerpt: "Ini adalah contoh berita lainnya yang ditampilkan saat Supabase tidak dikonfigurasi.",
-        image_url: "/placeholder.jpg",
-        created_at: new Date().toISOString(),
-        author: {
-          full_name: "Admin"
-        }
-      },
-      {
-        id: "3",
-        title: "Berita Contoh 3",
-        content: "Ini adalah konten berita contoh ketiga yang ditampilkan saat Supabase tidak dikonfigurasi.",
-        excerpt: "Ini adalah contoh berita ketiga yang ditampilkan saat Supabase tidak dikonfigurasi.",
-        image_url: "/placeholder.jpg",
-        created_at: new Date().toISOString(),
-        author: {
-          full_name: "Admin"
-        }
-      }
-    ]
-    
-    return {
-      news: mockNews,
-      totalCount: mockNews.length,
-      totalPages: Math.ceil(mockNews.length / limit),
+// Static news data - updated to match NewsItem interface
+const newsData = [
+  {
+    id: "1",
+    title: "Silaturahmi & Diskusi dengan PD Muhammadiyah Sidoarjo",
+    content: "DPD NasDem Sidoarjo melakukan silaturahmi dan diskusi dengan PD Muhammadiyah Sidoarjo membahas berbagai isu pendidikan inklusif, ekonomi kerakyatan, dan program pemberdayaan masyarakat. Pertemuan ini diharapkan dapat memperkuat sinergitas antara kedua organisasi dalam membangun Sidoarjo yang lebih baik. Kegiatan ini merupakan bagian dari upaya NasDem untuk membangun komunikasi yang baik dengan berbagai organisasi masyarakat di Sidoarjo.",
+    excerpt: "DPD NasDem Sidoarjo melakukan silaturahmi dan diskusi dengan PD Muhammadiyah Sidoarjo membahas berbagai isu pendidikan inklusif, ekonomi kerakyatan, dan program pemberdayaan masyarakat.",
+    image_url: "/placeholder.jpg",
+    created_at: "2025-07-25",
+    author: {
+      full_name: "Tim Media NasDem"
+    }
+  },
+  {
+    id: "2",
+    title: "Launching Program Ekonomi Kerakyatan NasDem Sidoarjo",
+    content: "Program ekonomi kerakyatan resmi diluncurkan dengan fokus pemberdayaan UMKM lokal, pelatihan kewirausahaan, dan akses permodalan untuk masyarakat Sidoarjo. Program ini merupakan wujud komitmen NasDem dalam meningkatkan kesejahteraan ekonomi rakyat. Berbagai kegiatan telah disiapkan untuk mendukung program ini termasuk workshop, pelatihan, dan pameran produk UMKM.",
+    excerpt: "Program ekonomi kerakyatan resmi diluncurkan dengan fokus pemberdayaan UMKM lokal, pelatihan kewirausahaan, dan akses permodalan untuk masyarakat Sidoarjo.",
+    image_url: "/placeholder.jpg",
+    created_at: "2025-07-20",
+    author: {
+      full_name: "Humas NasDem Sidoarjo"
+    }
+  },
+  {
+    id: "3",
+    title: "Rapat Koordinasi DPC Se-Sidoarjo Bahas Strategi Politik",
+    content: "Rapat koordinasi tingkat DPD dengan seluruh DPC se-Sidoarjo membahas strategi politik dan persiapan program kerja untuk periode mendatang. Agenda utama meliputi konsolidasi organisasi dan penguatan basis massa di tingkat akar rumput. Semua DPC berkomitmen untuk memperkuat koordinasi dan sinergi dalam menjalankan program-program partai.",
+    excerpt: "Rapat koordinasi tingkat DPD dengan seluruh DPC se-Sidoarjo membahas strategi politik dan persiapan program kerja untuk periode mendatang.",
+    image_url: "/placeholder.jpg",
+    created_at: "2025-07-18",
+    author: {
+      full_name: "Sekretariat DPD"
+    }
+  },
+  {
+    id: "4",
+    title: "Bakti Sosial NasDem di Kecamatan Taman",
+    content: "Kegiatan bakti sosial berupa santunan anak yatim dan pembagian sembako untuk masyarakat kurang mampu di Kecamatan Taman. Kegiatan ini sebagai wujud kepedulian NasDem Sidoarjo terhadap masyarakat yang membutuhkan. Lebih dari 200 keluarga mendapat bantuan sembako dan santunan dalam kegiatan ini.",
+    excerpt: "Kegiatan bakti sosial berupa santunan anak yatim dan pembagian sembako untuk masyarakat kurang mampu di Kecamatan Taman.",
+    image_url: "/placeholder.jpg",
+    created_at: "2025-07-15",
+    author: {
+      full_name: "DPC Taman"
+    }
+  },
+  {
+    id: "5",
+    title: "Dialog Publik Pendidikan Gratis untuk Semua",
+    content: "Dialog publik dengan tema 'Pendidikan Gratis untuk Semua' menghadirkan berbagai stakeholder pendidikan di Sidoarjo. Diskusi membahas implementasi pendidikan gratis dan peningkatan kualitas pendidikan di daerah. Hadir dalam acara ini kepala sekolah, guru, dan orang tua siswa dari berbagai daerah di Sidoarjo.",
+    excerpt: "Dialog publik dengan tema 'Pendidikan Gratis untuk Semua' menghadirkan berbagai stakeholder pendidikan di Sidoarjo.",
+    image_url: "/placeholder.jpg",
+    created_at: "2025-07-12",
+    author: {
+      full_name: "Tim Pendidikan"
+    }
+  },
+  {
+    id: "6",
+    title: "Sosialisasi Program Kesehatan Masyarakat",
+    content: "Program sosialisasi kesehatan masyarakat dengan fokus pencegahan penyakit dan pola hidup sehat. Kegiatan ini melibatkan tenaga kesehatan dan kader posyandu di berbagai wilayah Sidoarjo. Materi sosialisasi mencakup pencegahan stunting, imunisasi, dan pola hidup sehat untuk keluarga.",
+    excerpt: "Program sosialisasi kesehatan masyarakat dengan fokus pencegahan penyakit dan pola hidup sehat.",
+    image_url: "/placeholder.jpg", 
+    created_at: "2025-07-10",
+    author: {
+      full_name: "Tim Kesehatan"
     }
   }
-  
-  const offset = (page - 1) * limit
+]
 
-  // Get total count
-  const { count } = await supabase.from("news").select("*", { count: "exact", head: true }).eq("published", true)
-
-  // Get news with pagination
-  const { data: news, error } = await supabase
-    .from("news")
-    .select(`
-      id,
-      title,
-      content,
-      excerpt,
-      image_url,
-      created_at,
-      author:users!author_id (
-        full_name
-      )
-    `)
-    .eq("published", true)
-    .order("created_at", { ascending: false })
-    .range(offset, offset + limit - 1)
-
-  if (error) {
-    console.error("Error fetching news:", error)
-    return { news: [], totalCount: 0, totalPages: 0 }
-  }
-
-  return {
-    news: news || [],
-    totalCount: count || 0,
-    totalPages: Math.ceil((count || 0) / limit),
-  }
-}
-
-async function getRecentNews() {
-  const supabase = createClient()
-  
-  // Check if Supabase is configured
-  if (!supabase || typeof supabase.from !== 'function') {
-    console.warn("Supabase is not configured. Using mock data.")
-    // Return mock data when Supabase is not configured
-    return [
-      {
-        id: "1",
-        title: "Berita Contoh 1",
-        image_url: "/placeholder.jpg",
-        created_at: new Date().toISOString()
-      },
-      {
-        id: "2",
-        title: "Berita Contoh 2",
-        image_url: "/placeholder.jpg",
-        created_at: new Date().toISOString()
-      },
-      {
-        id: "3",
-        title: "Berita Contoh 3",
-        image_url: "/placeholder.jpg",
-        created_at: new Date().toISOString()
-      }
-    ]
-  }
-
-  const { data: recentNews } = await supabase
-    .from("news")
-    .select(`
-      id,
-      title,
-      image_url,
-      created_at
-    `)
-    .eq("published", true)
-    .order("created_at", { ascending: false })
-    .limit(4)
-
-  return recentNews || []
-}
-
-async function getNewsCategories() {
-  return [
+export default function BeritaPage() {
+  // Just pass static data, no need for async function
+  const news = newsData
+  const recentNews = newsData.slice(0, 3) // Use first 3 as recent news
+  const categories = [
     { name: "Semua", value: "all" },
-    { name: "Kerja Sama", value: "kerjasama" },
-    { name: "Kaderisasi", value: "kaderisasi" },
-    { name: "Aksi Sosial", value: "sosial" },
-    { name: "Ekonomi", value: "ekonomi" },
-    { name: "Kebijakan", value: "kebijakan" },
+    { name: "Program", value: "program" },
+    { name: "Sosial", value: "sosial" },
+    { name: "Pendidikan", value: "pendidikan" },
+    { name: "Kesehatan", value: "kesehatan" },
+    { name: "Internal", value: "internal" }
   ]
-}
-
-export default async function BeritaPage({ searchParams }: { searchParams: { page?: string } }) {
-  const currentPage = Number.parseInt(searchParams.page || "1")
-  const { news, totalCount, totalPages } = await getNewsData(currentPage)
-  const recentNews = await getRecentNews()
-  const categories = await getNewsCategories()
+  const currentPage = 1
+  const totalPages = 1
+  const totalCount = news.length
 
   return (
     <div className="min-h-screen bg-background">
       <NasdemHeader />
-
-      {/* Header */}
-      <section className="bg-nasdem-blue text-white py-16">
-        <div className="container mx-auto px-4">
-          <div className="text-center">
-            <div className="inline-flex items-center gap-2 bg-white/10 rounded-full px-4 py-2 mb-4">
-              <div className="w-2 h-2 bg-nasdem-orange rounded-full animate-pulse"></div>
-              <span className="text-white text-sm font-medium">Berita Terkini</span>
-            </div>
-            <h1 className="text-4xl lg:text-5xl font-bold mb-4">
-              Berita & <span className="text-nasdem-orange">Kegiatan</span>
-            </h1>
-            <p className="text-xl text-white/90 max-w-2xl mx-auto">
-              Ikuti perkembangan terbaru kegiatan dan program kerja DPD NasDem Sidoarjo
-            </p>
-          </div>
-        </div>
-      </section>
-
-      <NewsContent
-        news={news}
-        recentNews={recentNews}
-        categories={categories}
-        currentPage={currentPage}
-        totalPages={totalPages}
-        totalCount={totalCount}
-      />
-
+      <main>
+        <NewsContent 
+          news={news} 
+          recentNews={recentNews}
+          categories={categories}
+          currentPage={currentPage} 
+          totalPages={totalPages} 
+          totalCount={totalCount}
+        />
+      </main>
       <NasdemFooter />
     </div>
   )

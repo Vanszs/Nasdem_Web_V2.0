@@ -499,3 +499,5 @@ export function ContactSection() {
     </div>
   )
 }
+
+export default ContactSection
