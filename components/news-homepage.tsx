@@ -16,8 +16,54 @@ interface NewsItem {
   }
 }
 
+// Static news data
+const newsData = [
+  {
+    id: "1",
+    title: "Silaturahmi & Diskusi dengan PD Muhammadiyah Sidoarjo",
+    excerpt: "Membahas pendidikan inklusif, ekonomi kerakyatan, dan program pemberdayaan masyarakat bersama PD Muhammadiyah Sidoarjo.",
+    date: "25 Juli 2025",
+    author: "Tim Media",
+    category: "Kerja Sama",
+    image: "/placeholder.jpg",
+    featured: true
+  },
+  {
+    id: "2",
+    title: "Pembukaan Pendaftaran NasDem Muda 2025",
+    excerpt: "Program kaderisasi untuk pemuda 17-30 tahun dengan fokus edukasi politik dan pelatihan kepemimpinan.",
+    date: "25 Maret 2025",
+    author: "Sekretariat DPD",
+    category: "Kaderisasi"
+  },
+  {
+    id: "3",
+    title: "Aksi Fogging & Bantuan Sembako di Desa Sidorejo",
+    excerpt: "Bersama NasDem Muda melakukan pencegahan DBD dan memberikan bantuan kepada warga Krian.",
+    date: "Juli 2025",
+    author: "NasDem Muda",
+    category: "Aksi Sosial"
+  },
+  {
+    id: "4",
+    title: "Penyaluran 709 Ton Benih Padi ke 103 Kelompok Tani",
+    excerpt: "Dukungan swasembada pangan melalui pemberdayaan kelompok tani di seluruh Sidoarjo.",
+    date: "2025",
+    author: "Bidang Ekonomi",
+    category: "Ekonomi"
+  },
+  {
+    id: "5",
+    title: "Catatan Fraksi NasDem-Demokrat atas RPJMD Sidoarjo 2025-2029",
+    excerpt: "Memberikan masukan konstruktif terkait sinkronisasi program dan penyelarasan antar sektor.",
+    date: "2025",
+    author: "Fraksi DPRD",
+    category: "Kebijakan"
+  }
+]
+
 export default function NewsHomepage() {
-  const [news, setNews] = useState<NewsItem[]>([])
+  const [news, setNews] = useState<any[]>([])
   const [loading, setLoading] = useState(true)
 
   useEffect(() => {
@@ -30,39 +76,8 @@ export default function NewsHomepage() {
     // Check if Supabase is configured
     if (!supabase || typeof supabase.from !== 'function') {
       console.warn("Supabase is not configured. Using mock data.")
-      // Use mock data when Supabase is not configured
-      setNews([
-        {
-          id: "1",
-          title: "Berita Contoh 1",
-          excerpt: "Ini adalah contoh berita yang ditampilkan saat Supabase tidak dikonfigurasi.",
-          image_url: "/placeholder.jpg",
-          created_at: new Date().toISOString(),
-          users: {
-            full_name: "Admin"
-          }
-        },
-        {
-          id: "2",
-          title: "Berita Contoh 2",
-          excerpt: "Ini adalah contoh berita lainnya yang ditampilkan saat Supabase tidak dikonfigurasi.",
-          image_url: "/placeholder.jpg",
-          created_at: new Date().toISOString(),
-          users: {
-            full_name: "Admin"
-          }
-        },
-        {
-          id: "3",
-          title: "Berita Contoh 3",
-          excerpt: "Ini adalah contoh berita ketiga yang ditampilkan saat Supabase tidak dikonfigurasi.",
-          image_url: "/placeholder.jpg",
-          created_at: new Date().toISOString(),
-          users: {
-            full_name: "Admin"
-          }
-        }
-      ])
+      // Use static news data when Supabase is not configured
+      setNews(newsData)
       setLoading(false)
       return
     }
@@ -81,10 +96,13 @@ export default function NewsHomepage() {
       `)
       .eq("published", true)
       .order("created_at", { ascending: false })
-      .limit(4)
+      .limit(5)
 
-    if (data) {
+    if (data && data.length > 0) {
       setNews(data)
+    } else {
+      // Fallback to static data if no data from database
+      setNews(newsData)
     }
     setLoading(false)
   }
@@ -101,22 +119,22 @@ export default function NewsHomepage() {
     )
   }
 
-  const featuredNews = news[0]
-  const regularNews = news.slice(1, 4)
+  const featuredNews = news.find(newsItem => newsItem.featured) || news[0]
+  const regularNews = news.filter(newsItem => !newsItem.featured).slice(0, 3)
 
   return (
     <section id="berita" className="py-16 md:py-24">
       <div className="container mx-auto px-4">
         {/* Section Header */}
         <div className="text-center mb-16">
-          <div className="inline-flex items-center gap-2 bg-nasdem-orange/10 rounded-full px-4 py-2 mb-4">
-            <div className="w-2 h-2 bg-nasdem-orange rounded-full animate-pulse"></div>
-            <span className="text-nasdem-blue text-sm font-medium">Berita Terkini</span>
+          <div className="inline-flex items-center gap-2 bg-secondary/10 rounded-full px-4 py-2 mb-4">
+            <div className="w-2 h-2 bg-secondary rounded-full animate-pulse"></div>
+            <span className="text-primary text-sm font-medium">Berita Terkini</span>
           </div>
-          <h2 className="text-3xl md:text-5xl font-bold text-nasdem-blue mb-4">
-            Berita & <span className="text-nasdem-orange">Kegiatan</span>
+          <h2 className="text-3xl md:text-5xl font-bold text-foreground mb-4">
+            Berita & <span className="text-secondary">Kegiatan</span>
           </h2>
-          <p className="text-gray-600 text-lg max-w-2xl mx-auto">
+          <p className="text-muted-foreground text-lg max-w-2xl mx-auto">
             Ikuti perkembangan terbaru kegiatan dan program kerja DPD NasDem Sidoarjo.
           </p>
         </div>
@@ -124,41 +142,43 @@ export default function NewsHomepage() {
         {/* Featured News */}
         {featuredNews && (
           <div className="mb-16">
-            <div className="bg-white rounded-2xl overflow-hidden border shadow-lg hover:shadow-xl transition-shadow">
+            <div className="bg-card rounded-2xl overflow-hidden border shadow-[0_8px_30px_rgb(0,0,0,0.12)] hover:shadow-[0_16px_40px_rgb(0,0,0,0.16)] transition-shadow">
               <div className="grid lg:grid-cols-2 gap-0">
                 <div className="relative">
                   <img
-                    src={featuredNews.image_url || "/placeholder.svg"}
+                    src={featuredNews.image_url || featuredNews.image || "/placeholder.svg"}
                     alt={featuredNews.title}
                     className="w-full h-64 lg:h-full object-cover"
                     loading="lazy"
                   />
                   <div className="absolute top-4 left-4">
-                    <span className="bg-nasdem-red text-white text-xs font-medium px-3 py-1 rounded-full">
+                    <span className="bg-destructive text-destructive-foreground text-xs font-medium px-3 py-1 rounded-full">
                       Featured
                     </span>
                   </div>
                 </div>
                 <div className="p-8 lg:p-12 flex flex-col justify-center">
                   <div className="flex items-center gap-4 mb-4">
-                    <span className="bg-nasdem-orange/10 text-nasdem-orange text-xs font-medium px-3 py-1 rounded-full">
-                      Berita Utama
+                    <span className="bg-secondary/10 text-secondary text-xs font-medium px-3 py-1 rounded-full">
+                      {featuredNews.category || "Berita Utama"}
                     </span>
-                    <div className="flex items-center gap-2 text-gray-500 text-sm">
+                    <div className="flex items-center gap-2 text-muted-foreground text-sm">
                       <Calendar size={14} />
-                      <span>{new Date(featuredNews.created_at).toLocaleDateString("id-ID")}</span>
+                      <span>{featuredNews.date || new Date(featuredNews.created_at).toLocaleDateString("id-ID")}</span>
                     </div>
                   </div>
-                  <h3 className="text-2xl md:text-3xl font-bold text-nasdem-blue mb-4 leading-tight">
+                  <h3 className="text-2xl md:text-3xl font-bold text-foreground mb-4 leading-tight">
                     {featuredNews.title}
                   </h3>
-                  <p className="text-gray-600 mb-6 leading-relaxed">{featuredNews.excerpt}</p>
+                  <p className="text-muted-foreground mb-6 leading-relaxed">
+                    {featuredNews.excerpt}
+                  </p>
                   <div className="flex items-center justify-between">
-                    <div className="flex items-center gap-2 text-gray-500 text-sm">
+                    <div className="flex items-center gap-2 text-muted-foreground text-sm">
                       <User size={14} />
-                      <span>{featuredNews.users?.full_name}</span>
+                      <span>{featuredNews.author || featuredNews.users?.full_name}</span>
                     </div>
-                    <Button className="hover-fade-up bg-nasdem-orange hover:bg-nasdem-blue text-white group">
+                    <Button variant="secondary" className="hover-scale group">
                       <span>Baca Selengkapnya</span>
                       <ArrowRight className="ml-2 h-4 w-4 group-hover:translate-x-1 transition-transform" />
                     </Button>
@@ -171,38 +191,36 @@ export default function NewsHomepage() {
 
         {/* Regular News Grid */}
         <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-8 mb-12">
-          {regularNews.map((newsItem) => (
-            <article
+          {regularNews.slice(0, 3).map((newsItem) => (
+            <article 
               key={newsItem.id}
-              className="bg-white rounded-xl border hover:shadow-lg transition-all duration-300 hover:-translate-y-1 group overflow-hidden"
+              className="bg-card rounded-xl border hover:shadow-[0_8px_30px_rgb(0,0,0,0.12)] transition-all duration-300 hover:-translate-y-1 group overflow-hidden"
             >
               <div className="p-6">
                 <div className="flex items-center gap-2 mb-3">
-                  <span className="bg-nasdem-blue/10 text-nasdem-blue text-xs font-medium px-2 py-1 rounded-full">
-                    Berita
+                  <span className="bg-primary/10 text-primary text-xs font-medium px-2 py-1 rounded-full">
+                    {newsItem.category || "Berita"}
                   </span>
-                  <div className="flex items-center gap-1 text-gray-500 text-xs">
+                  <div className="flex items-center gap-1 text-muted-foreground text-xs">
                     <Clock size={12} />
-                    <span>{new Date(newsItem.created_at).toLocaleDateString("id-ID")}</span>
+                    <span>{newsItem.date || new Date(newsItem.created_at).toLocaleDateString("id-ID")}</span>
                   </div>
                 </div>
-
-                <h4 className="text-lg font-bold text-nasdem-blue mb-3 line-clamp-2 group-hover:text-nasdem-orange transition-colors">
+                
+                <h4 className="text-lg font-bold text-foreground mb-3 line-clamp-2 group-hover:text-primary transition-colors">
                   {newsItem.title}
                 </h4>
-
-                <p className="text-gray-600 text-sm mb-4 line-clamp-3 leading-relaxed">{newsItem.excerpt}</p>
-
-                <div className="flex items-center justify-between pt-4 border-t border-gray-100">
-                  <div className="flex items-center gap-2 text-gray-500 text-xs">
+                
+                <p className="text-muted-foreground text-sm mb-4 line-clamp-3 leading-relaxed">
+                  {newsItem.excerpt}
+                </p>
+                
+                <div className="flex items-center justify-between pt-4 border-t border-border">
+                  <div className="flex items-center gap-2 text-muted-foreground text-xs">
                     <User size={12} />
-                    <span>{newsItem.users?.full_name}</span>
+                    <span>{newsItem.author || newsItem.users?.full_name}</span>
                   </div>
-                  <Button
-                    variant="ghost"
-                    size="sm"
-                    className="hover-fade-up text-nasdem-blue hover:text-white hover:bg-nasdem-blue p-0 h-auto font-medium"
-                  >
+                  <Button variant="ghost" size="sm" className="text-primary hover:text-secondary p-0 h-auto font-medium">
                     Baca →
                   </Button>
                 </div>
@@ -213,10 +231,11 @@ export default function NewsHomepage() {
 
         {/* View All Button */}
         <div className="text-center">
-          <Button
-            size="lg"
-            className="hover-fade-up bg-nasdem-orange hover:bg-nasdem-blue text-white font-semibold px-8 py-3"
-            onClick={() => (window.location.href = "/berita")}
+          <Button 
+            variant="outline" 
+            size="lg" 
+            className="hover-scale font-semibold border-primary bg-primary/5 text-primary hover:bg-primary hover:text-primary-foreground" 
+            onClick={() => window.location.href = '/berita'}
           >
             Lihat Semua Berita
           </Button>

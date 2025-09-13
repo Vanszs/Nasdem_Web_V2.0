@@ -54,6 +54,11 @@ const NasdemHeader = () => {
               </a>
             </li>
             <li>
+              <a href="/visi-misi" className="story-link text-primary-foreground hover:text-secondary transition-colors">
+                Visi Misi
+              </a>
+            </li>
+            <li>
               <a href="#program" className="story-link text-primary-foreground hover:text-secondary transition-colors">
                 Program
               </a>
@@ -120,6 +125,14 @@ const NasdemHeader = () => {
                     className="block text-primary-foreground hover:text-secondary transition-colors py-2"
                   >
                     Profil
+                  </a>
+                </li>
+                <li>
+                  <a
+                    href="/visi-misi"
+                    className="block text-primary-foreground hover:text-secondary transition-colors py-2"
+                  >
+                    Visi Misi
                   </a>
                 </li>
                 <li>
