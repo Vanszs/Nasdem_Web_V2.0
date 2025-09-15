@@ -138,7 +138,7 @@ export function ModernSidebar({ isCollapsed = false, onToggle }: ModernSidebarPr
       ref={sidebarRef}
       className={`relative h-screen flex flex-col transition-all duration-700 ease-[cubic-bezier(0.16,1,0.3,1)] ${
         isCollapsed ? 'w-20' : 'w-80'
-      } bg-gradient-to-br from-brand-primary via-brand-primary to-brand-primary/95 backdrop-blur-xl border-r-4 border-white/20 hover:border-white/30 transition-border duration-300 overflow-hidden shadow-2xl`}
+      } bg-gradient-to-br from-brand-primary via-brand-primary to-brand-primary/95 backdrop-blur-xl border-r-4 border-white/20 hover:border-white/30 transition-border duration-300 overflow-hidden shadow-2xl pt-16`}
       style={{
         background: `
           radial-gradient(circle at ${mousePos.x}px ${mousePos.y}px, rgba(255,255,255,0.05) 0%, transparent 50%),
