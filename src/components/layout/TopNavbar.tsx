@@ -35,7 +35,7 @@ export function TopNavbar({ breadcrumbs = [], onToggleSidebar }: TopNavbarProps)
   };
 
   return (
-    <header className="sticky top-0 z-50 w-full bg-white/90 backdrop-blur-xl border-b-2 border-gray-200/80 hover:border-gray-300/90 transition-all duration-300 shadow-md hover:shadow-lg">
+    <header className="relative w-full bg-white/95 backdrop-blur-xl border-b-2 border-gray-200/80 hover:border-gray-300/90 transition-all duration-300 shadow-md hover:shadow-lg">
       <div className="flex h-16 items-center justify-between px-6 lg:px-8">
         {/* Left Section - Mobile Menu & Breadcrumbs */}
         <div className="flex items-center gap-4">
