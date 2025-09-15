@@ -16,14 +16,10 @@ export default function AdminLayout({
   children: React.ReactNode
 }) {
   return (
-    <html lang="en" className="h-full">
-      <body className={`${inter.className} h-full bg-white`}>
-        <ThemeProvider attribute="class" defaultTheme="light" disableTransitionOnChange>
-          <div className="min-h-screen bg-background">
-            {children}
-          </div>
-        </ThemeProvider>
-      </body>
-    </html>
+    <ThemeProvider attribute="class" defaultTheme="light" disableTransitionOnChange>
+      <div className="min-h-screen bg-background">
+        {children}
+      </div>
+    </ThemeProvider>
   )
 }

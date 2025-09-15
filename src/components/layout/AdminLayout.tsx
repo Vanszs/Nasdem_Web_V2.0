@@ -33,13 +33,13 @@ export function AdminLayout({ children, breadcrumbs }: AdminLayoutProps) {
       
       {/* Main Content Area - Always account for sidebar on desktop */}
       <div className="min-h-screen flex flex-col lg:ml-80">
-        {/* Top Navigation - Make it not sticky to avoid overlap issues */}
-        <div className="relative z-30">
+        {/* Top Navigation - Sticky di semua ukuran layar */}
+        <div className="relative z-50">
           <TopNavbar breadcrumbs={breadcrumbs} onToggleSidebar={() => setSidebarCollapsed(!sidebarCollapsed)} />
         </div>
         
-        {/* Main Content with Proper Scrolling */}
-        <main className="flex-1 relative">
+        {/* Main Content with Proper Scrolling - Add padding-top untuk sticky navbar */}
+        <main className="flex-1 relative pt-4">
           {/* Background Pattern */}
           <div className="absolute inset-0 opacity-30">
             <div className="absolute inset-0 bg-gradient-to-r from-primary/5 via-transparent to-accent/5" />
@@ -49,7 +49,7 @@ export function AdminLayout({ children, breadcrumbs }: AdminLayoutProps) {
             }} />
           </div>
           
-          <div className="relative p-6 min-h-screen bg-gradient-to-br from-white/80 via-gray-50/30 to-white/60 backdrop-blur-sm border border-gray-200/60 rounded-smooth-xl m-4 shadow-sm">
+          <div className="relative p-4 md:p-6 min-h-screen bg-gradient-to-br from-white/80 via-gray-50/30 to-white/60 backdrop-blur-sm border border-gray-200/60 rounded-smooth-xl m-2 md:m-4 shadow-sm">
             {children}
           </div>
         </main>

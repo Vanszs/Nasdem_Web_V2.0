@@ -29,7 +29,7 @@ import { Button } from "@/src/components/ui/button";
 const menuItems = [
   {
     title: "Dashboard",
-    url: "/",
+    url: "/admin",
     icon: LayoutDashboard,
     badge: "Home",
   },
@@ -39,9 +39,9 @@ const menuItems = [
     isCollapsible: true,
     badge: "Content",
     subItems: [
-      { title: "Berita", url: "/news", icon: FileText, description: "Kelola berita dan artikel" },
-      { title: "Galeri", url: "/gallery", icon: Image, description: "Kelola foto dan media" },
-      { title: "Landing Page", url: "/landing", icon: Globe, description: "Kelola halaman utama" },
+      { title: "Berita", url: "/admin/news", icon: FileText, description: "Kelola berita dan artikel" },
+      { title: "Galeri", url: "/admin/gallery", icon: Image, description: "Kelola foto dan media" },
+      { title: "Landing Page", url: "/admin/landing", icon: Globe, description: "Kelola halaman utama" },
     ],
   },
   {
@@ -50,21 +50,21 @@ const menuItems = [
     isCollapsible: true,
     badge: "Organization",
     subItems: [
-      { title: "DPD", url: "/structure/dpd", icon: Building, description: "Dewan Pimpinan Daerah" },
-      { title: "Sayap", url: "/structure/sayap", icon: Layers, description: "Organisasi Sayap" },
-      { title: "DPC", url: "/structure/dpc", icon: MapPin, description: "Dewan Pimpinan Cabang" },
-      { title: "DPRT", url: "/structure/dprt", icon: TreePine, description: "Dewan Pimpinan Ranting" },
+      { title: "DPD", url: "/admin/structure/dpd", icon: Building, description: "Dewan Pimpinan Daerah" },
+      { title: "Sayap", url: "/admin/structure/sayap", icon: Layers, description: "Organisasi Sayap" },
+      { title: "DPC", url: "/admin/structure/dpc", icon: MapPin, description: "Dewan Pimpinan Cabang" },
+      { title: "DPRT", url: "/admin/structure/dprt", icon: TreePine, description: "Dewan Pimpinan Ranting" },
     ],
   },
   {
     title: "User",
-    url: "/user",
+    url: "/admin/user",
     icon: UserPlus,
     badge: "Management",
   },
   {
     title: "Statistik Pemilu",
-    url: "/statistik-pemilu",
+    url: "/admin/statistik-pemilu",
     icon: BarChart3,
     badge: "Analytics",
   },
@@ -79,6 +79,7 @@ export function ModernSidebar({ isCollapsed = false, onToggle }: ModernSidebarPr
   const [openGroups, setOpenGroups] = useState<string[]>(["Struktur"]);
   const [mousePos, setMousePos] = useState({ x: 0, y: 0 });
   const [hoveredItem, setHoveredItem] = useState<string | null>(null);
+  const [mounted, setMounted] = useState(false);
   const sidebarRef = useRef<HTMLDivElement>(null);
   
   const currentPath = usePathname() || "/";
@@ -95,8 +96,15 @@ export function ModernSidebar({ isCollapsed = false, onToggle }: ModernSidebarPr
     );
   };
 
+  // Prevent hydration mismatch
+  useEffect(() => {
+    setMounted(true);
+  }, []);
+
   // Mouse tracking for interactive effects
   useEffect(() => {
+    if (!mounted) return;
+    
     const handleMouseMove = (e: MouseEvent) => {
       if (sidebarRef.current) {
         const rect = sidebarRef.current.getBoundingClientRect();
@@ -116,7 +124,7 @@ export function ModernSidebar({ isCollapsed = false, onToggle }: ModernSidebarPr
         sidebarRef.current.removeEventListener('mousemove', handleMouseMove);
       }
     };
-  }, []);
+  }, [mounted]);
 
   const getNavClassName = ({ isActive }: { isActive: boolean }) =>
     `group relative flex items-center gap-3 px-4 py-3 mx-3 rounded-smooth font-medium transition-all duration-500 ease-[cubic-bezier(0.16,1,0.3,1)] overflow-hidden ${
@@ -243,7 +251,7 @@ export function ModernSidebar({ isCollapsed = false, onToggle }: ModernSidebarPr
                     </div>
                   )}
                 </div>
-              ) : (
+              ) : item.url ? (
                 <SafeNavLink
                   to={item.url}
                   className={({ isActive }) => getNavClassName({ isActive })}
@@ -263,6 +271,16 @@ export function ModernSidebar({ isCollapsed = false, onToggle }: ModernSidebarPr
                     <div className="absolute left-0 top-1/2 transform -translate-y-1/2 w-1 h-6 bg-white/80 rounded-r-full" />
                   )}
                 </SafeNavLink>
+              ) : (
+                <div className="flex items-center gap-3 px-4 py-3 text-white/80 cursor-not-allowed">
+                  <item.icon className="h-5 w-5 flex-shrink-0" />
+                  {!isCollapsed && (
+                    <div className="flex-1 flex flex-col items-start">
+                      <span className="font-semibold text-sm">{item.title}</span>
+                      <span className="text-xs text-white/70">{item.badge}</span>
+                    </div>
+                  )}
+                </div>
               )}
             </div>
           ))}
