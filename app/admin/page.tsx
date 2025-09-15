@@ -1,5 +1,5 @@
-import Index from '@/src/views/pages/Index';
+import Index from './src/views/pages/Index';
 
-export default function AdminPage() {
+export default function HomePage() {
   return <Index />;
 }

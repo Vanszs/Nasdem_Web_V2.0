@@ -1,22 +1,71 @@
-import type { Metadata } from 'next'
-import { Inter } from 'next/font/google'
-import '@/src/index.css'
+import type { Metadata } from "next";
+import { Inter } from "next/font/google";
+import "./admin-globals.css";
+import { Providers } from "./providers";
 
-const inter = Inter({ subsets: ['latin'] })
+const inter = Inter({ subsets: ["latin"] });
 
 export const metadata: Metadata = {
-  title: 'NasDem Admin Panel',
-  description: 'Admin Panel DPD Partai NasDem Kabupaten Sidoarjo',
-}
+  title: "NasDem Admin Panel - Sidoarjo",
+  description: "Panel administrasi untuk DPD NasDem Sidoarjo - Manajemen konten, berita, galeri, dan informasi organisasi",
+  keywords: [
+    "NasDem",
+    "Sidoarjo",
+    "Admin Panel",
+    "Politik",
+    "Partai",
+    "Indonesia"
+  ],
+  authors: [{ name: "NasDem Sidoarjo" }],
+  creator: "NasDem Sidoarjo",
+  publisher: "NasDem Sidoarjo",
+  formatDetection: {
+    email: false,
+    address: false,
+    telephone: false,
+  },
+  metadataBase: new URL("https://nasdem-sidoarjo.id"),
+  openGraph: {
+    title: "NasDem Admin Panel - Sidoarjo",
+    description: "Panel administrasi untuk DPD NasDem Sidoarjo",
+    url: "https://admin.nasdem-sidoarjo.id",
+    siteName: "NasDem Admin Panel",
+    locale: "id_ID",
+    type: "website",
+  },
+  twitter: {
+    card: "summary_large_image",
+    title: "NasDem Admin Panel - Sidoarjo",
+    description: "Panel administrasi untuk DPD NasDem Sidoarjo",
+    creator: "@nasdemsidoarjo",
+  },
+  robots: {
+    index: false,
+    follow: false,
+    nocache: true,
+    googleBot: {
+      index: false,
+      follow: false,
+      noimageindex: true,
+      "max-video-preview": -1,
+      "max-image-preview": "large",
+      "max-snippet": -1,
+    },
+  },
+};
 
-export default function AdminLayout({
+export default function RootLayout({
   children,
 }: {
-  children: React.ReactNode
+  children: React.ReactNode;
 }) {
   return (
-    <div className="min-h-screen bg-background light">
-      {children}
-    </div>
-  )
+    <html lang="id" suppressHydrationWarning>
+      <body className={inter.className} suppressHydrationWarning>
+        <Providers>
+          {children}
+        </Providers>
+      </body>
+    </html>
+  );
 }

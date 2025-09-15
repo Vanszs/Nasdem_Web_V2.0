@@ -1,5 +1,5 @@
-import { NewsFormPage } from '@/src/views/pages/news/NewsFormPage';
+import { NewsFormPage } from '../../src/views/pages/news/NewsFormPage';
 
-export default function CreateNewsPage() {
+export default function NewsCreate() {
   return <NewsFormPage />;
 }

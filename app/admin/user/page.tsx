@@ -1,5 +1,5 @@
-import { UserPage } from '@/src/views/pages/UserPage';
+import UserPage from '../src/views/pages/UserPage';
 
-export default function Users() {
+export default function User() {
   return <UserPage />;
 }
