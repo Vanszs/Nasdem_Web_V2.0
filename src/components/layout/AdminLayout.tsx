@@ -14,7 +14,7 @@ export function AdminLayout({ children, breadcrumbs }: AdminLayoutProps) {
   return (
     <div className="min-h-screen bg-gradient-to-br from-gray-50 via-white to-gray-100 relative">
       {/* Modern Sidebar - Always visible on desktop, hideable on mobile */}
-      <div className={`fixed top-0 left-0 z-50 h-full transition-transform duration-500 ${
+      <div className={`fixed top-0 left-0 z-40 h-full transition-transform duration-500 ${
         sidebarCollapsed ? '-translate-x-full lg:translate-x-0' : 'translate-x-0'
       }`}>
         <ModernSidebar 
@@ -26,20 +26,18 @@ export function AdminLayout({ children, breadcrumbs }: AdminLayoutProps) {
       {/* Overlay for mobile only */}
       {!sidebarCollapsed && (
         <div 
-          className="fixed inset-0 bg-black/50 backdrop-blur-sm z-40 lg:hidden"
+          className="fixed inset-0 bg-black/50 backdrop-blur-sm z-30 lg:hidden"
           onClick={() => setSidebarCollapsed(true)}
         />
       )}
       
-      {/* Main Content Area - Always account for sidebar on desktop */}
+      {/* Main Content Area - Responsive margin yang lebih sederhana */}
       <div className="min-h-screen flex flex-col lg:ml-80">
-        {/* Top Navigation - Sticky di semua ukuran layar */}
-        <div className="relative z-50">
-          <TopNavbar breadcrumbs={breadcrumbs} onToggleSidebar={() => setSidebarCollapsed(!sidebarCollapsed)} />
-        </div>
+        {/* Top Navigation - Sticky tanpa wrapper */}
+        <TopNavbar breadcrumbs={breadcrumbs} onToggleSidebar={() => setSidebarCollapsed(!sidebarCollapsed)} />
         
-        {/* Main Content with Proper Scrolling - Add padding-top untuk sticky navbar */}
-        <main className="flex-1 relative pt-4">
+        {/* Main Content with Proper Scrolling */}
+        <main className="flex-1 relative">
           {/* Background Pattern */}
           <div className="absolute inset-0 opacity-30">
             <div className="absolute inset-0 bg-gradient-to-r from-primary/5 via-transparent to-accent/5" />
