@@ -2,11 +2,32 @@
 import { useState } from "react";
 import { AdminLayout } from "../../../components/layout/AdminLayout";
 import { Button } from "../../../components/ui/button";
-import { Card, CardContent, CardHeader, CardTitle } from "../../../components/ui/card";
+import {
+  Card,
+  CardContent,
+  CardHeader,
+  CardTitle,
+} from "../../../components/ui/card";
 import { Input } from "../../../components/ui/input";
 import { Badge } from "../../../components/ui/badge";
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "../../../components/ui/select";
-import { Image, Upload, Plus, Search, Calendar, Eye, Camera, ChevronLeft, ChevronRight } from "lucide-react";
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "../../../components/ui/select";
+import {
+  Image,
+  Upload,
+  Plus,
+  Search,
+  Calendar,
+  Eye,
+  Camera,
+  ChevronLeft,
+  ChevronRight,
+} from "lucide-react";
 import { useRouter } from "next/navigation";
 
 interface GalleryItem {
@@ -27,66 +48,74 @@ const mockGalleryItems: GalleryItem[] = [
   {
     id: "1",
     title: "Rapat Koordinasi DPD",
-    description: "Rapat koordinasi pengurus DPD Partai NasDem Sidoarjo membahas program kerja 2024",
+    description:
+      "Rapat koordinasi pengurus DPD Partai NasDem Sidoarjo membahas program kerja 2024",
     category: "kegiatan",
     image: "/api/placeholder/400/300",
     uploadDate: "2024-01-15",
     photographer: "Tim Media NasDem",
     location: "Kantor DPD NasDem Sidoarjo",
     tags: ["rapat", "koordinasi", "dpd", "2024"],
-    views: 1250
+    views: 1250,
   },
   {
     id: "2",
     title: "Blusukan ke Pasar Tradisional",
-    description: "Kegiatan blusukan pengurus ke pasar tradisional untuk mendengarkan aspirasi pedagang",
-    category: "kegiatan", 
+    description:
+      "Kegiatan blusukan pengurus ke pasar tradisional untuk mendengarkan aspirasi pedagang",
+    category: "kegiatan",
     image: "/api/placeholder/400/300",
     uploadDate: "2024-01-10",
     photographer: "Ahmad Fotografer",
     location: "Pasar Sidoarjo",
     tags: ["blusukan", "pasar", "aspirasi", "pedagang"],
-    views: 890
+    views: 890,
   },
   {
     id: "3",
     title: "Bakti Sosial Ramadan",
-    description: "Program bakti sosial membagikan sembako kepada masyarakat kurang mampu",
+    description:
+      "Program bakti sosial membagikan sembako kepada masyarakat kurang mampu",
     category: "event",
     image: "/api/placeholder/400/300",
     uploadDate: "2024-01-05",
     photographer: "Tim Humas",
     location: "Kelurahan Sidoarjo",
     tags: ["baksos", "ramadan", "sembako", "sosial"],
-    views: 1560
+    views: 1560,
   },
   {
     id: "4",
     title: "Dokumentasi Kantor DPD",
     description: "Foto dokumentasi gedung kantor DPD Partai NasDem Sidoarjo",
     category: "dokumentasi",
-    image: "/api/placeholder/400/300", 
+    image: "/api/placeholder/400/300",
     uploadDate: "2024-01-01",
     photographer: "Staff Admin",
     location: "Kantor DPD NasDem",
     tags: ["kantor", "gedung", "dokumentasi"],
-    views: 780
-  }
+    views: 780,
+  },
 ];
 
 export function GalleryPage() {
-  const [galleryItems, setGalleryItems] = useState<GalleryItem[]>(mockGalleryItems);
+  const [galleryItems, setGalleryItems] =
+    useState<GalleryItem[]>(mockGalleryItems);
   const [searchTerm, setSearchTerm] = useState("");
   const [categoryFilter, setCategoryFilter] = useState<string>("all");
   const [currentPage, setCurrentPage] = useState(1);
   const itemsPerPage = 8;
   const router = useRouter();
 
-  const filteredItems = galleryItems.filter(item => {
-    const matchesSearch = item.title.toLowerCase().includes(searchTerm.toLowerCase()) ||
-                         item.description.toLowerCase().includes(searchTerm.toLowerCase()) ||
-                         item.tags.some(tag => tag.toLowerCase().includes(searchTerm.toLowerCase()));
-    const matchesCategory = categoryFilter === "all" || item.category === categoryFilter;
+  const filteredItems = galleryItems.filter((item) => {
+    const matchesSearch =
+      item.title.toLowerCase().includes(searchTerm.toLowerCase()) ||
+      item.description.toLowerCase().includes(searchTerm.toLowerCase()) ||
+      item.tags.some((tag) =>
+        tag.toLowerCase().includes(searchTerm.toLowerCase())
+      );
+    const matchesCategory =
+      categoryFilter === "all" || item.category === categoryFilter;
     return matchesSearch && matchesCategory;
   });
 
@@ -103,28 +132,25 @@ export function GalleryPage() {
   };
 
   const categoryConfig = {
-    kegiatan: { 
-      label: "Kegiatan", 
-      className: "bg-brand-primary text-white border-2 border-brand-primary/20"
+    kegiatan: {
+      label: "Kegiatan",
+      className: "bg-brand-primary text-white border-2 border-brand-primary/20",
     },
-    dokumentasi: { 
-      label: "Dokumentasi", 
-      className: "bg-success text-white border-2 border-success/20"
+    dokumentasi: {
+      label: "Dokumentasi",
+      className: "bg-success text-white border-2 border-success/20",
     },
-    event: { 
-      label: "Event", 
-      className: "bg-info text-white border-2 border-info/20"
+    event: {
+      label: "Event",
+      className: "bg-info text-white border-2 border-info/20",
     },
-    lainnya: { 
-      label: "Lainnya", 
-      className: "bg-muted text-muted-foreground border-2 border-muted/20"
+    lainnya: {
+      label: "Lainnya",
+      className: "bg-muted text-muted-foreground border-2 border-muted/20",
     },
   };
 
-  const breadcrumbs = [
-    { label: "Dashboard", href: "/" },
-    { label: "Galeri" }
-  ];
+  const breadcrumbs = [{ label: "Dashboard", href: "/" }, { label: "Galeri" }];
 
   return (
     <AdminLayout breadcrumbs={breadcrumbs}>
@@ -134,9 +160,11 @@ export function GalleryPage() {
           <div className="flex items-center justify-between">
             <div>
               <h1 className="text-2xl font-bold">Kelola Galeri</h1>
-              <p className="text-muted-foreground">Upload dan organisir foto dan media</p>
+              <p className="text-muted-foreground">
+                Upload dan organisir foto dan media
+              </p>
             </div>
-            <Button 
+            <Button
               className="bg-[#FF9C04] hover:bg-[#001B55] text-white border-2 border-[#FF9C04] hover:border-[#001B55] shadow-lg hover:shadow-xl transition-all duration-300 transform hover:scale-105"
               onClick={() => router.push("/gallery/upload")}
             >
@@ -178,9 +206,12 @@ export function GalleryPage() {
         {/* Gallery Grid */}
         {paginatedItems.length > 0 ? (
           <>
-            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
+            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
               {paginatedItems.map((item) => (
-                <Card key={item.id} className="border-2 border-gray-300/80 shadow-lg hover:shadow-xl transition-all duration-300 overflow-hidden group">
+                <Card
+                  key={item.id}
+                  className="border-2 border-gray-300/80 shadow-lg hover:shadow-xl transition-all duration-300 overflow-hidden group"
+                >
                   <div className="relative aspect-[4/3] bg-gray-100 flex items-center justify-center overflow-hidden">
                     <Camera className="h-12 w-12 text-gray-400" />
                     <div className="absolute inset-0 bg-gradient-to-t from-black/60 via-transparent to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-300" />
@@ -190,9 +221,9 @@ export function GalleryPage() {
                           <Eye className="h-4 w-4" />
                           {item.views}
                         </div>
-                        <Button 
-                          variant="secondary" 
-                          size="sm" 
+                        <Button
+                          variant="secondary"
+                          size="sm"
                           className="h-8 text-xs bg-white/20 hover:bg-white/30 text-white border-white/30"
                           onClick={() => router.push(`/gallery/${item.id}`)}
                         >
@@ -203,30 +234,41 @@ export function GalleryPage() {
                   </div>
                   <CardContent className="p-4">
                     <div className="flex items-center justify-between mb-2">
-                      <Badge 
+                      <Badge
                         className={categoryConfig[item.category].className}
                       >
                         {categoryConfig[item.category].label}
                       </Badge>
                       <div className="text-xs text-muted-foreground flex items-center gap-1">
                         <Calendar className="h-3 w-3" />
-                        {new Date(item.uploadDate).toLocaleDateString('id-ID')}
+                        {new Date(item.uploadDate).toLocaleDateString("id-ID")}
                       </div>
                     </div>
-                    <h3 className="font-semibold text-sm mb-1 line-clamp-1">{item.title}</h3>
-                    <p className="text-xs text-muted-foreground line-clamp-2 mb-2">{item.description}</p>
+                    <h3 className="font-semibold text-sm mb-1 line-clamp-1">
+                      {item.title}
+                    </h3>
+                    <p className="text-xs text-muted-foreground line-clamp-2 mb-2">
+                      {item.description}
+                    </p>
                     {item.photographer && (
-                      <p className="text-xs text-muted-foreground">📸 {item.photographer}</p>
+                      <p className="text-xs text-muted-foreground">
+                        📸 {item.photographer}
+                      </p>
                     )}
                     {item.tags.length > 0 && (
                       <div className="flex flex-wrap gap-1 mt-2">
                         {item.tags.slice(0, 3).map((tag) => (
-                          <span key={tag} className="text-xs bg-gray-100 text-gray-600 px-2 py-1 rounded">
+                          <span
+                            key={tag}
+                            className="text-xs bg-gray-100 text-gray-600 px-2 py-1 rounded"
+                          >
                             {tag}
                           </span>
                         ))}
                         {item.tags.length > 3 && (
-                          <span className="text-xs text-muted-foreground">+{item.tags.length - 3}</span>
+                          <span className="text-xs text-muted-foreground">
+                            +{item.tags.length - 3}
+                          </span>
                         )}
                       </div>
                     )}
@@ -239,9 +281,10 @@ export function GalleryPage() {
             {totalItems > 0 && totalPages > 1 && (
               <div className="flex items-center justify-between pt-6">
                 <div className="text-sm text-muted-foreground">
-                  Halaman {currentPage} dari {totalPages} ({totalItems} total media)
+                  Halaman {currentPage} dari {totalPages} ({totalItems} total
+                  media)
                 </div>
-                
+
                 <div className="flex items-center gap-2">
                   <Button
                     variant="outline"
@@ -253,10 +296,11 @@ export function GalleryPage() {
                     <ChevronLeft className="h-4 w-4" />
                     Sebelumnya
                   </Button>
-                  
+
                   <div className="flex items-center gap-1">
                     {Array.from({ length: Math.min(totalPages, 5) }, (_, i) => {
-                      const page = currentPage <= 3 ? i + 1 : currentPage - 2 + i;
+                      const page =
+                        currentPage <= 3 ? i + 1 : currentPage - 2 + i;
                       return page <= totalPages ? (
                         <Button
                           key={page}
@@ -264,9 +308,9 @@ export function GalleryPage() {
                           size="sm"
                           onClick={() => handlePageChange(page)}
                           className={`min-w-[40px] border-2 ${
-                            page === currentPage 
-                              ? 'bg-brand-primary border-brand-primary text-white' 
-                              : 'border-gray-200 hover:border-gray-300'
+                            page === currentPage
+                              ? "bg-brand-primary border-brand-primary text-white"
+                              : "border-gray-200 hover:border-gray-300"
                           }`}
                         >
                           {page}
@@ -274,7 +318,7 @@ export function GalleryPage() {
                       ) : null;
                     })}
                   </div>
-                  
+
                   <Button
                     variant="outline"
                     size="sm"
@@ -293,8 +337,10 @@ export function GalleryPage() {
           <Card className="bg-white/80 backdrop-blur-sm border-2 border-gray-200/80 hover:border-gray-300/90 shadow-lg hover:shadow-xl transition-all duration-300 p-12 text-center">
             <Image className="mx-auto h-16 w-16 text-muted-foreground/50 mb-4 p-2 border-2 border-dashed border-gray-300/60 rounded-2xl" />
             <h3 className="text-lg font-semibold mb-2">Galeri Media</h3>
-            <p className="text-muted-foreground mb-4">Unggah foto untuk mulai membangun galeri.</p>
-            <Button 
+            <p className="text-muted-foreground mb-4">
+              Unggah foto untuk mulai membangun galeri.
+            </p>
+            <Button
               className="bg-[#FF9C04] hover:bg-[#001B55] text-white border-2 border-[#FF9C04] hover:border-[#001B55] shadow-lg hover:shadow-xl transition-all duration-300 transform hover:scale-105"
               onClick={() => router.push("/gallery/upload")}
             >
