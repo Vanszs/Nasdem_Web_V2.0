@@ -1,5 +1,5 @@
 import { useState } from "react";
-import { Search, Bell, User, LogOut, Settings, ChevronDown, Home, Menu } from "lucide-react";
+import { Search, Bell, User, LogOut, Settings, Menu, Home } from "lucide-react";
 import { Button } from "@/src/components/ui/button";
 import { Input } from "@/src/components/ui/input";
 import {
@@ -35,29 +35,29 @@ export function TopNavbar({ breadcrumbs = [], onToggleSidebar }: TopNavbarProps)
   };
 
   return (
-    <header className="sticky top-0 z-[60] w-full bg-white/95 backdrop-blur-xl border-b-2 border-gray-200/80 hover:border-gray-300/90 transition-all duration-300 shadow-md hover:shadow-lg">
-      <div className="flex h-16 items-center justify-between px-6 lg:px-8">
-        {/* Left Section - Mobile Menu & Breadcrumbs */}
+    <header className="sticky top-0 z-50 bg-white border-b border-gray-200 shadow-sm">
+      <div className="flex h-14 items-center justify-between px-4 lg:px-6">
+        {/* Left Section */}
         <div className="flex items-center gap-4">
-          {/* Mobile Hamburger Menu */}
+          {/* Mobile Menu Button */}
           {onToggleSidebar && (
             <Button
               variant="ghost"
               size="icon"
               onClick={onToggleSidebar}
-              className="lg:hidden h-10 w-10 rounded-xl border-2 border-gray-200/80 hover:border-gray-300/90 bg-white hover:bg-gray-50 transition-all duration-300 shadow-sm hover:shadow-md"
+              className="lg:hidden h-8 w-8"
             >
-              <Menu className="h-5 w-5" />
-              <span className="sr-only">Toggle sidebar</span>
+              <Menu className="h-4 w-4" />
             </Button>
           )}
           
+          {/* Breadcrumbs */}
           {breadcrumbs.length > 0 ? (
             <Breadcrumb className="hidden md:flex">
               <BreadcrumbList>
                 <BreadcrumbItem>
-                  <BreadcrumbLink href="/" className="flex items-center gap-2 text-muted-foreground hover:text-primary transition-colors duration-300">
-                    <Home className="h-4 w-4" />
+                  <BreadcrumbLink href="/admin" className="flex items-center gap-1 text-sm">
+                    <Home className="h-3 w-3" />
                     Dashboard
                   </BreadcrumbLink>
                 </BreadcrumbItem>
@@ -66,11 +66,11 @@ export function TopNavbar({ breadcrumbs = [], onToggleSidebar }: TopNavbarProps)
                     <BreadcrumbSeparator />
                     <BreadcrumbItem>
                       {crumb.href ? (
-                        <BreadcrumbLink href={crumb.href} className="text-muted-foreground hover:text-primary transition-colors duration-300">
+                        <BreadcrumbLink href={crumb.href} className="text-sm">
                           {crumb.label}
                         </BreadcrumbLink>
                       ) : (
-                        <BreadcrumbPage className="text-foreground font-medium">
+                        <BreadcrumbPage className="text-sm font-medium">
                           {crumb.label}
                         </BreadcrumbPage>
                       )}
@@ -81,156 +81,102 @@ export function TopNavbar({ breadcrumbs = [], onToggleSidebar }: TopNavbarProps)
             </Breadcrumb>
           ) : (
             <div>
-              <h1 className="text-2xl font-bold bg-gradient-to-r from-primary via-primary/90 to-accent bg-clip-text text-transparent">
-                Admin Panel
-              </h1>
-              <p className="text-xs text-muted-foreground font-medium">
-                DPD Partai NasDem Kabupaten Sidoarjo
-              </p>
+              <h1 className="text-lg font-semibold text-gray-900">Dashboard</h1>
+              <p className="text-xs text-gray-500">NasDem Sidoarjo</p>
             </div>
           )}
         </div>
 
-        {/* Center Section - Enhanced Global Search */}
-        <div className="hidden lg:flex flex-1 max-w-md mx-8">
-          <form onSubmit={handleSearch} className="w-full relative group">
-            <Search className="absolute left-4 top-1/2 transform -translate-y-1/2 text-muted-foreground/70 group-focus-within:text-primary h-4 w-4 transition-colors duration-300" />
+        {/* Center - Search */}
+        <div className="hidden lg:flex flex-1 max-w-md mx-6">
+          <form onSubmit={handleSearch} className="w-full relative">
+            <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400 h-4 w-4" />
             <Input
               type="search"
-              placeholder="Cari berita, galeri, struktur... (⌘K)"
+              placeholder="Cari..."
               value={searchQuery}
               onChange={(e) => setSearchQuery(e.target.value)}
-              className="pl-11 pr-4 h-11 w-full bg-white border-2 border-gray-200/80 hover:border-gray-300/90 rounded-2xl focus:bg-white focus:border-primary/60 focus:ring-2 focus:ring-primary/20 transition-all duration-300 shadow-sm hover:shadow-md"
+              className="pl-9 h-8 text-sm border-gray-300 focus:border-nasdem-blue"
             />
-            <div className="absolute inset-0 -z-10 bg-gradient-to-r from-primary/5 to-accent/5 rounded-2xl opacity-0 group-focus-within:opacity-100 transition-opacity duration-300" />
           </form>
         </div>
 
-        {/* Right Section - Actions & Profile */}
-        <div className="flex items-center gap-3">
-          {/* Mobile Search Button */}
-          <Button
-            variant="ghost"
-            size="icon"
-            className="lg:hidden h-10 w-10 rounded-xl hover:bg-gray-100 transition-all duration-300"
-          >
-            <Search className="h-5 w-5" />
-            <span className="sr-only">Search</span>
+        {/* Right Section */}
+        <div className="flex items-center gap-2">
+          {/* Search Button (Mobile) */}
+          <Button variant="ghost" size="icon" className="lg:hidden h-8 w-8">
+            <Search className="h-4 w-4" />
           </Button>
 
-          {/* Enhanced Notifications */}
+          {/* Notifications */}
           <DropdownMenu>
             <DropdownMenuTrigger asChild>
-              <Button
-                variant="ghost"
-                size="icon"
-                className="relative h-10 w-10 rounded-xl border-2 border-gray-200/80 hover:border-gray-300/90 bg-white hover:bg-gray-50 transition-all duration-300 group shadow-sm hover:shadow-md"
-              >
-                <Bell className="h-5 w-5 group-hover:scale-110 transition-transform duration-300" />
-                <Badge className="absolute -top-1 -right-1 h-5 w-5 rounded-full bg-accent border-2 border-white text-white text-xs font-bold p-0 flex items-center justify-center animate-pulse shadow-md">
-                  3
+              <Button variant="ghost" size="icon" className="relative h-8 w-8">
+                <Bell className="h-4 w-4" />
+                <Badge className="absolute -top-1 -right-1 h-4 w-4 rounded-full bg-nasdem-orange text-white text-xs p-0 flex items-center justify-center">
+                  2
                 </Badge>
-                <span className="sr-only">Notifications</span>
               </Button>
             </DropdownMenuTrigger>
-            <DropdownMenuContent align="end" className="w-80 p-0 bg-white/95 backdrop-blur-xl border-gray-200/50 shadow-xl rounded-2xl overflow-hidden">
-              <DropdownMenuLabel className="px-4 py-3 border-b border-gray-100 bg-gray-50/50">
-                <div className="flex items-center justify-between">
-                  <span className="font-semibold text-foreground">Notifikasi</span>
-                  <Badge variant="secondary" className="bg-accent/10 text-accent border-accent/20">
-                    3 Baru
-                  </Badge>
+            <DropdownMenuContent align="end" className="w-64">
+              <DropdownMenuLabel>Notifikasi</DropdownMenuLabel>
+              <DropdownMenuItem className="flex items-start gap-2 p-3">
+                <div className="w-2 h-2 bg-nasdem-orange rounded-full mt-1.5"></div>
+                <div className="flex-1">
+                  <p className="text-sm font-medium">Berita baru dipublish</p>
+                  <p className="text-xs text-gray-500">2 menit yang lalu</p>
                 </div>
-              </DropdownMenuLabel>
-              <div className="max-h-80 overflow-y-auto">
-                <DropdownMenuItem className="px-4 py-3 flex items-start gap-3 hover:bg-gray-50/70 cursor-pointer transition-colors duration-200">
-                  <div className="w-2 h-2 bg-accent rounded-full mt-2 flex-shrink-0 animate-pulse"></div>
-                  <div className="flex-1">
-                    <p className="text-sm font-medium text-foreground">Berita baru dipublish</p>
-                    <p className="text-xs text-muted-foreground mt-1">
-                      "Program Infrastruktur Sidoarjo 2024" telah berhasil dipublish dan siap tayang
-                    </p>
-                    <p className="text-xs text-muted-foreground mt-1">2 menit yang lalu</p>
-                  </div>
-                </DropdownMenuItem>
-                <DropdownMenuItem className="px-4 py-3 flex items-start gap-3 hover:bg-gray-50/70 cursor-pointer transition-colors duration-200">
-                  <div className="w-2 h-2 bg-primary rounded-full mt-2 flex-shrink-0"></div>
-                  <div className="flex-1">
-                    <p className="text-sm font-medium text-foreground">Media baru diupload</p>
-                    <p className="text-xs text-muted-foreground mt-1">
-                      5 foto kegiatan DPD telah berhasil ditambahkan ke galeri
-                    </p>
-                    <p className="text-xs text-muted-foreground mt-1">1 jam yang lalu</p>
-                  </div>
-                </DropdownMenuItem>
-                <DropdownMenuItem className="px-4 py-3 flex items-start gap-3 hover:bg-gray-50/70 cursor-pointer transition-colors duration-200">
-                  <div className="w-2 h-2 bg-gray-400 rounded-full mt-2 flex-shrink-0"></div>
-                  <div className="flex-1">
-                    <p className="text-sm font-medium text-foreground">Struktur organisasi diperbarui</p>
-                    <p className="text-xs text-muted-foreground mt-1">
-                      Data pengurus DPC Waru telah diperbarui dengan informasi terbaru
-                    </p>
-                    <p className="text-xs text-muted-foreground mt-1">3 jam yang lalu</p>
-                  </div>
-                </DropdownMenuItem>
-              </div>
-              <div className="px-4 py-3 border-t border-gray-100 bg-gray-50/50">
-                <Button variant="ghost" className="w-full text-primary hover:bg-primary/5 hover:text-primary rounded-xl transition-all duration-300">
-                  Lihat semua notifikasi
-                </Button>
-              </div>
+              </DropdownMenuItem>
+              <DropdownMenuItem className="flex items-start gap-2 p-3">
+                <div className="w-2 h-2 bg-nasdem-blue rounded-full mt-1.5"></div>
+                <div className="flex-1">
+                  <p className="text-sm font-medium">Media baru diupload</p>
+                  <p className="text-xs text-gray-500">1 jam yang lalu</p>
+                </div>
+              </DropdownMenuItem>
             </DropdownMenuContent>
           </DropdownMenu>
 
-          {/* Enhanced Profile Dropdown */}
+          {/* Profile */}
           <DropdownMenu>
             <DropdownMenuTrigger asChild>
-              <Button variant="ghost" className="relative h-12 w-auto px-3 rounded-xl border-2 border-gray-200/80 hover:border-gray-300/90 bg-white hover:bg-gray-50 transition-all duration-300 group shadow-sm hover:shadow-md">
-                <div className="flex items-center gap-3">
-                  <Avatar className="h-8 w-8 ring-2 ring-offset-2 ring-offset-white ring-primary/30 group-hover:ring-primary/50 transition-all duration-300 shadow-sm">
-                    <AvatarImage src="/placeholder-avatar.jpg" alt="Admin" />
-                    <AvatarFallback className="bg-gradient-to-br from-primary to-primary/80 text-white text-sm font-semibold">
-                      AD
-                    </AvatarFallback>
-                  </Avatar>
-                  <div className="hidden md:flex flex-col items-start">
-                    <span className="text-sm font-medium text-foreground">Admin User</span>
-                    <span className="text-xs text-muted-foreground font-medium">Super Admin</span>
-                  </div>
-                  <ChevronDown className="h-4 w-4 text-muted-foreground group-hover:text-foreground transition-all duration-300 group-hover:rotate-180" />
-                </div>
+              <Button variant="ghost" className="flex items-center gap-2 h-8 px-2">
+                <Avatar className="h-6 w-6">
+                  <AvatarImage src="/placeholder-avatar.jpg" alt="Admin" />
+                  <AvatarFallback className="bg-nasdem-blue text-white text-xs">
+                    AD
+                  </AvatarFallback>
+                </Avatar>
+                <span className="hidden md:inline text-sm font-medium">Admin</span>
               </Button>
             </DropdownMenuTrigger>
-            <DropdownMenuContent align="end" className="w-64 bg-white/95 backdrop-blur-xl border-gray-200/50 shadow-xl rounded-2xl overflow-hidden">
-              <DropdownMenuLabel className="px-4 py-3 border-b border-gray-100">
-                <div className="flex items-center gap-3">
-                  <Avatar className="h-10 w-10">
+            <DropdownMenuContent align="end" className="w-48">
+              <DropdownMenuLabel>
+                <div className="flex items-center gap-2">
+                  <Avatar className="h-8 w-8">
                     <AvatarImage src="/placeholder-avatar.jpg" alt="Admin" />
-                    <AvatarFallback className="bg-gradient-to-br from-primary to-primary/80 text-white font-semibold">
-                      AD
-                    </AvatarFallback>
+                    <AvatarFallback className="bg-nasdem-blue text-white">AD</AvatarFallback>
                   </Avatar>
                   <div>
-                    <p className="text-sm font-semibold text-foreground">Admin User</p>
-                    <p className="text-xs text-muted-foreground">admin@nasdem-sidoarjo.id</p>
+                    <p className="text-sm font-medium">Admin User</p>
+                    <p className="text-xs text-gray-500">Super Admin</p>
                   </div>
                 </div>
               </DropdownMenuLabel>
-              <div className="p-2">
-                <DropdownMenuItem className="px-3 py-2 cursor-pointer hover:bg-gray-50 rounded-lg transition-colors duration-200">
-                  <User className="mr-3 h-4 w-4 text-muted-foreground" />
-                  <span>Profil Saya</span>
-                </DropdownMenuItem>
-                <DropdownMenuItem className="px-3 py-2 cursor-pointer hover:bg-gray-50 rounded-lg transition-colors duration-200">
-                  <Settings className="mr-3 h-4 w-4 text-muted-foreground" />
-                  <span>Pengaturan</span>
-                </DropdownMenuItem>
-                <DropdownMenuSeparator className="my-2" />
-                <DropdownMenuItem className="px-3 py-2 cursor-pointer hover:bg-red-50 text-red-600 rounded-lg transition-colors duration-200">
-                  <LogOut className="mr-3 h-4 w-4" />
-                  <span>Keluar</span>
-                </DropdownMenuItem>
-              </div>
+              <DropdownMenuSeparator />
+              <DropdownMenuItem>
+                <User className="mr-2 h-4 w-4" />
+                Profil
+              </DropdownMenuItem>
+              <DropdownMenuItem>
+                <Settings className="mr-2 h-4 w-4" />
+                Pengaturan
+              </DropdownMenuItem>
+              <DropdownMenuSeparator />
+              <DropdownMenuItem className="text-red-600">
+                <LogOut className="mr-2 h-4 w-4" />
+                Keluar
+              </DropdownMenuItem>
             </DropdownMenuContent>
           </DropdownMenu>
         </div>

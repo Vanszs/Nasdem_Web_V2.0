@@ -1,4 +1,40 @@
-/* Design System Utility Classes - NasDem Sidoarjo */
+/* Design System Color Tokens - NasDem Sidoarjo */
+
+:root {
+  /* Primary Color Tokens */
+  --color-primary: 0 27 85; /* #001B55 - Biru Tua */
+  --color-accent: 255 156 4; /* #FF9C04 - Kuning Jingga */
+  --color-bg: 240 240 240; /* #F0F0F0 - Abu Muda */
+  --color-surface: 255 255 255; /* #FFFFFF - Putih */
+  --color-danger: 200 30 30; /* #C81E1E - Merah Tua */
+  
+  /* Semantic Colors */
+  --border: rgba(0, 0, 0, 0.08);
+  --muted: 107 114 128; /* #6B7280 */
+  --success: 22 163 74; /* #16A34A */
+  --warning: 245 158 11; /* #F59E0B */
+  --info: 37 99 235; /* #2563EB */
+  
+  /* Foreground colors for semantic states */
+  --success-foreground: 255 255 255;
+  --warning-foreground: 255 255 255;
+  --info-foreground: 255 255 255;
+  
+  /* Gradient Definitions */
+  --gradient-primary: linear-gradient(135deg, hsl(var(--color-primary)) 0%, hsl(var(--color-primary) / 0.8) 100%);
+  --gradient-accent: linear-gradient(135deg, hsl(var(--color-accent)) 0%, hsl(var(--color-accent) / 0.8) 100%);
+  --gradient-subtle: linear-gradient(135deg, hsl(var(--color-surface)) 0%, hsl(var(--color-bg)) 100%);
+  
+  /* Glass Effect Variables */
+  --glass-bg: rgba(255, 255, 255, 0.1);
+  --glass-border: rgba(255, 255, 255, 0.2);
+  
+  /* Shadow Definitions */
+  --shadow-soft: 0 2px 8px rgba(0, 0, 0, 0.1);
+  --shadow-medium: 0 4px 16px rgba(0, 0, 0, 0.15);
+  --shadow-large: 0 8px 32px rgba(0, 0, 0, 0.2);
+  --shadow-glow: 0 0 20px rgba(0, 27, 85, 0.3);
+}
 
 /* Global Smooth Scrolling */
 * {

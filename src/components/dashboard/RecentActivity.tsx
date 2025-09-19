@@ -1,6 +1,6 @@
 import { formatDistanceToNow } from "date-fns";
 import { id } from "date-fns/locale";
-import { FileText, Image, Users, Pin, Archive, Clock, CheckCircle, AlertCircle } from "lucide-react";
+import { FileText, Image, Users, CheckCircle, Clock, Edit, AlertCircle } from "lucide-react";
 import { Badge } from "@/src/components/ui/badge";
 import { Avatar, AvatarFallback } from "@/src/components/ui/avatar";
 import { cn } from "@/src/lib/utils";
@@ -8,7 +8,7 @@ import { cn } from "@/src/lib/utils";
 interface ActivityItem {
   id: string;
   type: "news" | "gallery" | "structure";
-  action: "created" | "published" | "pinned" | "unpinned" | "archived" | "updated";
+  action: "created" | "published" | "updated";
   title: string;
   user: string;
   timestamp: Date;
@@ -23,102 +23,81 @@ const activities: ActivityItem[] = [
     action: "published",
     title: "Program Pembangunan Infrastruktur Sidoarjo 2024",
     user: "Admin User",
-    timestamp: new Date(Date.now() - 2 * 60 * 60 * 1000), // 2 hours ago
+    timestamp: new Date(Date.now() - 2 * 60 * 60 * 1000),
     priority: "high"
   },
   {
     id: "2", 
     type: "news",
-    action: "pinned",
+    action: "created",
     title: "Rapat Koordinasi DPD Partai NasDem",
     user: "Editor User",
-    timestamp: new Date(Date.now() - 4 * 60 * 60 * 1000), // 4 hours ago
+    timestamp: new Date(Date.now() - 4 * 60 * 60 * 1000),
     priority: "medium"
   },
   {
     id: "3",
     type: "gallery",
     action: "created",
-    title: "Foto Kegiatan Sosialisasi Program Unggulan",
+    title: "Foto Kegiatan Sosialisasi Program",
     user: "Media Officer",
-    timestamp: new Date(Date.now() - 6 * 60 * 60 * 1000), // 6 hours ago
+    timestamp: new Date(Date.now() - 6 * 60 * 60 * 1000),
     priority: "low"
   },
   {
     id: "4",
     type: "structure",
     action: "updated", 
-    title: "Data Pengurus DPD Sidoarjo Terbaru 2024",
+    title: "Data Pengurus DPD Sidoarjo",
     user: "Admin User",
-    timestamp: new Date(Date.now() - 1 * 24 * 60 * 60 * 1000), // 1 day ago
+    timestamp: new Date(Date.now() - 1 * 24 * 60 * 60 * 1000),
     priority: "medium"
-  },
-  {
-    id: "5",
-    type: "news",
-    action: "created",
-    title: "Draft: Evaluasi Program Kerja Semester I",
-    user: "Content Writer",
-    timestamp: new Date(Date.now() - 2 * 24 * 60 * 60 * 1000), // 2 days ago
-    priority: "low"
   },
 ];
 
 const getActivityIcon = (type: ActivityItem["type"], action: ActivityItem["action"]) => {
-  if (action === "pinned") return Pin;
-  if (action === "archived") return Archive;
+  if (action === "published") return CheckCircle;
+  if (action === "updated") return Edit;
   
   switch (type) {
     case "news": return FileText;
     case "gallery": return Image;
     case "structure": return Users;
-    default: return FileText;
+    default: return Clock;
   }
 };
 
-const getActivityConfig = (action: ActivityItem["action"], priority?: string) => {
+const getActivityConfig = (action: ActivityItem["action"]) => {
   const configs = {
     published: { 
-      bg: "from-green-500/10 to-green-500/5", 
-      text: "text-green-700", 
-      icon: CheckCircle,
-      label: "Dipublikasi"
-    },
-    pinned: { 
-      bg: "from-accent/10 to-accent/5", 
-      text: "text-accent", 
-      icon: Pin,
-      label: "Di-pin"
-    },
-    archived: { 
-      bg: "from-yellow-500/10 to-yellow-500/5", 
-      text: "text-yellow-700", 
-      icon: Archive,
-      label: "Diarsip"
+      bgColor: "bg-green-100", 
+      textColor: "text-green-700", 
+      borderColor: "border-green-200",
+      label: "Published"
     },
     created: { 
-      bg: "from-blue-500/10 to-blue-500/5", 
-      text: "text-blue-700", 
-      icon: Clock,
-      label: "Dibuat"
+      bgColor: "bg-blue-100", 
+      textColor: "text-blue-700", 
+      borderColor: "border-blue-200",
+      label: "Created"
     },
     updated: { 
-      bg: "from-primary/10 to-primary/5", 
-      text: "text-primary", 
-      icon: AlertCircle,
-      label: "Diperbarui"
+      bgColor: "bg-orange-100", 
+      textColor: "text-orange-700", 
+      borderColor: "border-orange-200",
+      label: "Updated"
     },
   };
   
   return configs[action] || {
-    bg: "from-gray-500/10 to-gray-500/5", 
-    text: "text-gray-600",
-    icon: Clock,
+    bgColor: "bg-gray-100", 
+    textColor: "text-gray-700",
+    borderColor: "border-gray-200",
     label: action
   };
 };
 
-const getPriorityIndicator = (priority?: string) => {
+const getPriorityDot = (priority?: string) => {
   switch (priority) {
     case "high": return "bg-red-500";
     case "medium": return "bg-yellow-500";
@@ -127,69 +106,71 @@ const getPriorityIndicator = (priority?: string) => {
   }
 };
 
+const getTypeIcon = (type: string) => {
+  switch (type) {
+    case "news": return "bg-blue-100 text-blue-600";
+    case "gallery": return "bg-purple-100 text-purple-600";
+    case "structure": return "bg-green-100 text-green-600";
+    default: return "bg-gray-100 text-gray-600";
+  }
+};
+
 export function RecentActivity() {
   return (
-    <div className="space-y-1">
+    <div className="space-y-3">
       {activities.map((activity, index) => {
         const Icon = getActivityIcon(activity.type, activity.action);
-        const config = getActivityConfig(activity.action, activity.priority);
+        const config = getActivityConfig(activity.action);
         
         return (
-            <div key={activity.id} className={cn(
-              "group/item relative overflow-hidden rounded-2xl p-4 transition-all duration-300 hover:-translate-y-0.5 hover:shadow-md cursor-pointer",
-              "bg-gradient-to-r from-white/70 via-white/50 to-white/70",
-              "border-2 border-gray-200/70 hover:border-primary/40"
-            )}>
-              {/* Enhanced Priority Indicator */}
+          <div key={activity.id} className="group relative p-4 rounded-lg border border-gray-200 hover:border-gray-300 hover:bg-gray-50/50 transition-all duration-200">
+            {/* Priority indicator */}
+            <div className={cn(
+              "absolute left-0 top-4 bottom-4 w-1 rounded-r-full",
+              getPriorityDot(activity.priority)
+            )} />
+            
+            <div className="flex items-start gap-3 ml-2">
+              {/* Type Icon */}
               <div className={cn(
-                "absolute left-0 top-0 bottom-0 w-1.5 rounded-r-full transition-all duration-300",
-                getPriorityIndicator(activity.priority),
-                "group-hover/item:w-2"
-              )} />
+                "flex-shrink-0 p-2 rounded-lg transition-transform duration-200 group-hover:scale-105",
+                getTypeIcon(activity.type)
+              )}>
+                <Icon className="h-4 w-4" />
+              </div>
               
-              {/* Enhanced Hover Effect Background */}
-              <div className="absolute inset-0 bg-gradient-to-r from-primary/8 via-transparent to-accent/8 opacity-0 group-hover/item:opacity-100 transition-opacity duration-300" />
-              
-              <div className="relative flex items-start gap-4">
-                {/* Enhanced Icon with animated background */}
-                <div className={cn(
-                  "flex-shrink-0 p-3 rounded-2xl transition-all duration-300 group-hover/item:scale-110 border border-current/20",
-                  "bg-gradient-to-br", config.bg,
-                  "shadow-sm group-hover/item:shadow-lg"
-                )}>
-                  <Icon className={cn("h-4 w-4 transition-colors duration-300", config.text)} />
+              {/* Content */}
+              <div className="flex-1 min-w-0">
+                {/* Title and Status */}
+                <div className="flex items-start justify-between gap-2 mb-2">
+                  <h4 className="font-medium text-sm text-gray-900 line-clamp-2 group-hover:text-nasdem-blue transition-colors duration-200">
+                    {activity.title}
+                  </h4>
+                  <Badge 
+                    variant="outline" 
+                    className={cn(
+                      "text-xs font-medium px-2 py-1 rounded-full flex-shrink-0",
+                      config.bgColor,
+                      config.textColor,
+                      config.borderColor
+                    )}
+                  >
+                    {config.label}
+                  </Badge>
                 </div>
                 
-                {/* Content */}
-                <div className="flex-1 min-w-0">
-                  {/* Title and Badge */}
-                  <div className="flex items-start justify-between gap-3 mb-2">
-                    <h4 className="font-semibold text-foreground group-hover/item:text-primary transition-colors duration-300 line-clamp-2 leading-5">
-                      {activity.title}
-                    </h4>
-                    <Badge 
-                      variant="secondary" 
-                      className={cn(
-                        "text-xs font-semibold border-0 shadow-sm flex-shrink-0 transition-all duration-300 group-hover/item:scale-105",
-                        config.bg.replace('/10', '/20').replace('/5', '/10'),
-                        config.text
-                      )}
-                    >
-                      {config.label}
-                    </Badge>
-                  </div>
-                  
-                  {/* User and Timestamp */}
-                  <div className="flex items-center gap-2 text-xs text-muted-foreground">
-                    <Avatar className="h-5 w-5 ring-2 ring-white ring-offset-1 ring-offset-gray-100">
-                      <AvatarFallback className="text-[10px] font-semibold bg-gradient-to-br from-primary/20 to-accent/20 text-primary">
-                        {activity.user.split(" ").map(n => n[0]).join("").slice(0, 2)}
-                      </AvatarFallback>
-                    </Avatar>
-                    <span className="font-medium">{activity.user}</span>
-                    <span className="text-gray-400">•</span>
-                    <span className="flex items-center gap-1">
-                      <Clock className="h-3 w-3" />
+                {/* User and Timestamp */}
+                <div className="flex items-center gap-2 text-xs text-gray-500">
+                  <Avatar className="h-5 w-5">
+                    <AvatarFallback className="text-[10px] bg-nasdem-blue text-white font-medium">
+                      {activity.user.split(" ").map(n => n[0]).join("").slice(0, 2)}
+                    </AvatarFallback>
+                  </Avatar>
+                  <span className="font-medium">{activity.user}</span>
+                  <span className="text-gray-300">•</span>
+                  <div className="flex items-center gap-1">
+                    <Clock className="h-3 w-3" />
+                    <span>
                       {formatDistanceToNow(activity.timestamp, { 
                         addSuffix: true, 
                         locale: id 
@@ -198,21 +179,22 @@ export function RecentActivity() {
                   </div>
                 </div>
               </div>
-              
-              {/* Timeline connector */}
-              {index < activities.length - 1 && (
-                <div className="absolute left-7 -bottom-1 w-[2px] h-4 bg-gradient-to-b from-gray-200 to-transparent" />
-              )}
             </div>
-          );
-        })}
-        
-        {/* View All Button */}
-        <div className="pt-4 text-center">
-          <button className="text-sm text-primary hover:text-primary/80 font-medium transition-colors duration-300 hover:underline">
-            Lihat semua aktivitas →
-          </button>
-        </div>
+            
+            {/* Connection line for timeline */}
+            {index < activities.length - 1 && (
+              <div className="absolute left-[18px] -bottom-1.5 w-[2px] h-6 bg-gray-200" />
+            )}
+          </div>
+        );
+      })}
+      
+      {/* View All Button */}
+      <div className="pt-4 text-center border-t border-gray-200">
+        <button className="text-sm text-nasdem-blue hover:text-nasdem-orange font-medium transition-colors duration-200 hover:underline">
+          Lihat semua aktivitas →
+        </button>
       </div>
-    );
-  }
+    </div>
+  );
+}
