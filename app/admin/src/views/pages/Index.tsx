@@ -23,48 +23,48 @@ const Index = () => {
   return (
     <AdminLayout breadcrumbs={breadcrumbs}>
       <div className="min-h-screen bg-[#F0F0F0]">
-        <div className="space-y-8">
+        <div className="space-y-6">
           {/* Modern Hero Section */}
-          <div className="relative overflow-hidden rounded-3xl bg-gradient-to-br from-[#001B55] via-[#001B55]/90 to-[#FF9C04]/20 text-white shadow-xl">
+          <div className="relative overflow-hidden rounded-2xl bg-gradient-to-br from-[#001B55] via-[#001B55]/90 to-[#FF9C04]/20 text-white shadow-lg">
             {/* Clean Background Pattern */}
             <div className="absolute inset-0 bg-[radial-gradient(circle_at_top_right,_transparent_0%,_rgba(255,255,255,0.1)_50%,_transparent_100%)]" />
             
             {/* Subtle Floating Elements */}
-            <div className="absolute top-8 right-8 w-24 h-24 bg-[#FF9C04]/10 rounded-full blur-xl animate-pulse" />
-            <div className="absolute bottom-8 left-8 w-16 h-16 bg-white/10 rounded-full blur-lg animate-pulse delay-1000" />
+            <div className="absolute top-6 right-6 w-20 h-20 bg-[#FF9C04]/10 rounded-full blur-xl animate-pulse" />
+            <div className="absolute bottom-6 left-6 w-14 h-14 bg-white/10 rounded-full blur-lg animate-pulse delay-1000" />
             
-            <div className="relative p-10 lg:p-12">
-              <div className="flex items-center gap-3 mb-4">
-                <div className="p-3 bg-white/10 rounded-2xl">
-                  <Sparkles className="h-6 w-6" />
+            <div className="relative p-6 lg:p-8">
+              <div className="flex items-center gap-3 mb-3">
+                <div className="p-2.5 bg-white/10 rounded-xl">
+                  <Sparkles className="h-5 w-5" />
                 </div>
-                <Badge className="bg-[#FF9C04] text-white border-0">
+                <Badge className="bg-[#FF9C04] text-white border-0 text-sm">
                   v2.0 Modern
                 </Badge>
               </div>
               
-              <h1 className="text-4xl lg:text-5xl font-bold mb-3">
+              <h1 className="text-3xl lg:text-4xl font-bold mb-2">
                 Selamat Datang di Admin Panel
               </h1>
-              <p className="text-white/90 text-xl mb-2 font-medium">
+              <p className="text-white/90 text-lg mb-1 font-medium">
                 DPD Partai NasDem Kabupaten Sidoarjo
               </p>
-              <p className="text-white/70 text-lg max-w-2xl leading-relaxed">
+              <p className="text-white/70 text-base max-w-2xl leading-relaxed">
                 Kelola konten, berita, galeri, dan struktur organisasi dengan antarmuka modern yang intuitive dan powerful.
               </p>
               
               {/* Status Indicators */}
-              <div className="mt-8 flex items-center gap-6 text-sm">
+              <div className="mt-6 flex items-center gap-4 text-sm">
                 <div className="flex items-center gap-2">
-                  <div className="w-2 h-2 bg-[#16A34A] rounded-full animate-pulse" />
+                  <div className="w-1.5 h-1.5 bg-[#16A34A] rounded-full animate-pulse" />
                   <span className="text-white/80">Sistem Online</span>
                 </div>
                 <div className="flex items-center gap-2">
-                  <div className="w-2 h-2 bg-[#2563EB] rounded-full" />
+                  <div className="w-1.5 h-1.5 bg-[#2563EB] rounded-full" />
                   <span className="text-white/80">Database Sync</span>
                 </div>
                 <div className="flex items-center gap-2">
-                  <div className="w-2 h-2 bg-[#F59E0B] rounded-full" />
+                  <div className="w-1.5 h-1.5 bg-[#F59E0B] rounded-full" />
                   <span className="text-white/80">Auto Backup Active</span>
                 </div>
               </div>

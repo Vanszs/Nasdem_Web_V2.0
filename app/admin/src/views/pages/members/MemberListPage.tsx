@@ -48,10 +48,13 @@ import {
   TrendingUp,
   Target,
   Map,
-  Calendar,
+  Check,
   X,
-  Trophy,
   Clock,
+  Calendar,
+  Trophy,
+  Shield,
+  Edit,
 } from "lucide-react";
 import {
   Tabs,
@@ -883,27 +886,41 @@ export function MemberListPage() {
 
   return (
     <AdminLayout breadcrumbs={breadcrumbs}>
-      <div className="space-y-6">
-        {/* Header Section */}
-        <div className="relative overflow-hidden bg-gradient-to-br from-white via-blue-50/30 to-orange-50/30 backdrop-blur-xl border border-white/20 rounded-3xl p-8 shadow-2xl shadow-blue-900/10">
-          <div className="absolute inset-0 bg-gradient-to-br from-[#001B55]/5 via-transparent to-[#FF9C04]/5"></div>
-          <div className="relative flex items-center justify-between">
-            <div className="space-y-2">
-              <h1 className="text-4xl font-bold bg-gradient-to-r from-[#001B55] via-[#003875] to-[#FF9C04] bg-clip-text text-transparent">
-                Struktur Organisasi
-              </h1>
-              <p className="text-slate-600 text-lg font-medium">
-                Kelola data struktur organisasi Partai NasDem Sidoarjo
-              </p>
-            </div>
-            <Dialog open={isAddDialogOpen} onOpenChange={setIsAddDialogOpen}>
-              <DialogTrigger asChild>
-                <Button className="relative overflow-hidden bg-gradient-to-r from-[#FF9C04] via-[#FFB84D] to-[#FF9C04] hover:from-[#001B55] hover:via-[#003875] hover:to-[#001B55] text-white font-semibold px-8 py-3 rounded-2xl shadow-xl shadow-[#FF9C04]/25 hover:shadow-[#001B55]/25 transition-all duration-500 transform hover:scale-105 group">
-                  <div className="absolute inset-0 bg-gradient-to-r from-white/20 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-500"></div>
-                  <Plus className="mr-2 h-5 w-5 relative z-10" />
-                  <span className="relative z-10">Tambah Anggota</span>
-                </Button>
-              </DialogTrigger>
+      <div className="min-h-screen bg-[#F0F0F0] p-6">
+        <div className="max-w-7xl mx-auto space-y-8">
+          {/* Header Section dengan Background Modern */}
+          <div className="relative overflow-hidden bg-gradient-to-br from-white via-white to-[#001B55]/5 backdrop-blur-xl border-2 border-white/60 rounded-3xl p-8 shadow-2xl">
+            <div className="absolute inset-0 bg-gradient-to-br from-[#001B55]/3 via-transparent to-[#FF9C04]/3"></div>
+            <div className="relative flex items-center justify-between">
+              <div className="space-y-3">
+                <div className="flex items-center gap-4">
+                  <div className="w-3 h-12 bg-gradient-to-b from-[#001B55] to-[#FF9C04] rounded-full shadow-lg"></div>
+                  <h1 className="text-4xl font-bold text-[#001B55]">
+                    Struktur Organisasi
+                  </h1>
+                </div>
+                <p className="text-[#6B7280] text-lg font-medium max-w-2xl">
+                  Kelola data lengkap struktur organisasi Partai NasDem Kabupaten Sidoarjo dengan sistem terintegrasi dan modern.
+                </p>
+                <div className="flex items-center gap-6 pt-2">
+                  <div className="flex items-center gap-2 text-sm font-medium">
+                    <div className="w-3 h-3 bg-[#16A34A] rounded-full animate-pulse"></div>
+                    <span className="text-[#6B7280]">Database Terintegrasi</span>
+                  </div>
+                  <div className="flex items-center gap-2 text-sm font-medium">
+                    <div className="w-3 h-3 bg-[#001B55] rounded-full"></div>
+                    <span className="text-[#6B7280]">Real-time Updates</span>
+                  </div>
+                </div>
+              </div>
+              <Dialog open={isAddDialogOpen} onOpenChange={setIsAddDialogOpen}>
+                <DialogTrigger asChild>
+                  <Button className="relative overflow-hidden bg-gradient-to-r from-[#FF9C04] to-[#FF9C04]/90 hover:from-[#001B55] hover:to-[#001B55]/90 text-white font-semibold px-8 py-4 rounded-2xl shadow-xl shadow-[#FF9C04]/25 hover:shadow-[#001B55]/25 transition-all duration-500 transform hover:scale-105 group">
+                    <div className="absolute inset-0 bg-gradient-to-r from-white/10 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-500"></div>
+                    <Plus className="mr-2 h-5 w-5 relative z-10" />
+                    <span className="relative z-10">Tambah Anggota</span>
+                  </Button>
+                </DialogTrigger>
               <DialogContent className="max-w-3xl bg-white/95 backdrop-blur-xl border border-white/20 rounded-3xl shadow-2xl shadow-blue-900/20">
                 <DialogHeader className="pb-6">
                   <DialogTitle className="text-2xl font-bold bg-gradient-to-r from-[#001B55] to-[#FF9C04] bg-clip-text text-transparent">
@@ -1157,9 +1174,9 @@ export function MemberListPage() {
           </div>
         </div>
 
-        {/* Tabs Navigation */}
-        <div className="relative overflow-hidden bg-white/80 backdrop-blur-xl rounded-3xl shadow-2xl shadow-blue-900/10 border border-white/20">
-          <div className="absolute inset-0 bg-gradient-to-r from-blue-50/30 via-transparent to-orange-50/30"></div>
+        {/* Tabs Navigation dengan Design Compact & Rapi */}
+        <div className="relative overflow-hidden bg-white backdrop-blur-xl rounded-2xl shadow-lg border border-white/40">
+          <div className="absolute inset-0 bg-gradient-to-r from-[#001B55]/2 via-transparent to-[#FF9C04]/2"></div>
           <Tabs
             value={activeTab}
             onValueChange={(value) => {
@@ -1167,270 +1184,248 @@ export function MemberListPage() {
               setCurrentPage(1);
             }}
           >
-            <TabsList className="relative grid w-full grid-cols-4 bg-transparent border-0 p-2">
+            <TabsList className="relative grid w-full grid-cols-4 bg-transparent border-0 p-3">
               <TabsTrigger
                 value="dpd"
-                className="relative px-6 py-4 rounded-2xl font-semibold transition-all duration-300 data-[state=active]:bg-gradient-to-r data-[state=active]:from-[#001B55] data-[state=active]:to-[#003875] data-[state=active]:text-white data-[state=active]:shadow-xl data-[state=active]:shadow-[#001B55]/25 text-slate-600 hover:text-slate-800 hover:bg-slate-50/50"
+                className="relative px-4 py-2.5 rounded-xl font-medium text-sm transition-all duration-300 data-[state=active]:bg-gradient-to-r data-[state=active]:from-[#001B55] data-[state=active]:to-[#001B55]/90 data-[state=active]:text-white data-[state=active]:shadow-lg data-[state=active]:shadow-[#001B55]/20 text-[#6B7280] hover:text-[#001B55] hover:bg-[#001B55]/5"
               >
+                <Users className="h-4 w-4 mr-1.5" />
                 DPD
               </TabsTrigger>
               <TabsTrigger
                 value="sayap"
-                className="relative px-6 py-4 rounded-2xl font-semibold transition-all duration-300 data-[state=active]:bg-gradient-to-r data-[state=active]:from-fuchsia-600 data-[state=active]:to-fuchsia-700 data-[state=active]:text-white data-[state=active]:shadow-xl data-[state=active]:shadow-fuchsia-600/25 text-slate-600 hover:text-slate-800 hover:bg-slate-50/50"
+                className="relative px-4 py-2.5 rounded-xl font-medium text-sm transition-all duration-300 data-[state=active]:bg-gradient-to-r data-[state=active]:from-[#FF9C04] data-[state=active]:to-[#FF9C04]/90 data-[state=active]:text-white data-[state=active]:shadow-lg data-[state=active]:shadow-[#FF9C04]/20 text-[#6B7280] hover:text-[#FF9C04] hover:bg-[#FF9C04]/5"
               >
+                <Target className="h-4 w-4 mr-1.5" />
                 Sayap
               </TabsTrigger>
               <TabsTrigger
                 value="dpc"
-                className="relative px-6 py-4 rounded-2xl font-semibold transition-all duration-300 data-[state=active]:bg-gradient-to-r data-[state=active]:from-emerald-600 data-[state=active]:to-emerald-700 data-[state=active]:text-white data-[state=active]:shadow-xl data-[state=active]:shadow-emerald-600/25 text-slate-600 hover:text-slate-800 hover:bg-slate-50/50"
+                className="relative px-4 py-2.5 rounded-xl font-medium text-sm transition-all duration-300 data-[state=active]:bg-gradient-to-r data-[state=active]:from-[#16A34A] data-[state=active]:to-[#16A34A]/90 data-[state=active]:text-white data-[state=active]:shadow-lg data-[state=active]:shadow-[#16A34A]/20 text-[#6B7280] hover:text-[#16A34A] hover:bg-[#16A34A]/5"
               >
+                <Building className="h-4 w-4 mr-1.5" />
                 DPC
               </TabsTrigger>
               <TabsTrigger
                 value="dprt"
-                className="relative px-6 py-4 rounded-2xl font-semibold transition-all duration-300 data-[state=active]:bg-gradient-to-r data-[state=active]:from-amber-700 data-[state=active]:to-amber-800 data-[state=active]:text-white data-[state=active]:shadow-xl data-[state=active]:shadow-amber-700/25 text-slate-600 hover:text-slate-800 hover:bg-slate-50/50"
+                className="relative px-4 py-2.5 rounded-xl font-medium text-sm transition-all duration-300 data-[state=active]:bg-gradient-to-r data-[state=active]:from-[#F59E0B] data-[state=active]:to-[#F59E0B]/90 data-[state=active]:text-white data-[state=active]:shadow-lg data-[state=active]:shadow-[#F59E0B]/20 text-[#6B7280] hover:text-[#F59E0B] hover:bg-[#F59E0B]/5"
               >
+                <Map className="h-4 w-4 mr-1.5" />
                 DPRT
               </TabsTrigger>
             </TabsList>
 
-            {/* Regional Analysis Dashboard */}
-            <div className="grid grid-cols-1 lg:grid-cols-3 gap-6 mb-8 mt-6">
-              <Card className="lg:col-span-2 relative overflow-hidden bg-white/80 backdrop-blur-xl border border-white/20 rounded-3xl shadow-xl">
-                <div className="absolute inset-0 bg-gradient-to-br from-blue-50/30 via-transparent to-orange-50/30"></div>
-                <CardHeader className="relative pb-4">
-                  <CardTitle className="flex items-center gap-3 text-xl font-bold text-slate-800">
-                    <Map className="h-6 w-6 text-[#001B55]" />
-                    Analisis Cakupan Regional
-                  </CardTitle>
-                  <p className="text-slate-600 mt-2">
-                    Status organisasi per wilayah dan identifikasi area kosong
-                  </p>
-                </CardHeader>
-                <CardContent className="relative space-y-6">
-                  <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
-                    <div className="bg-gradient-to-br from-blue-50/50 to-blue-100/50 p-4 rounded-2xl border border-blue-200/30">
-                      <div className="flex items-center gap-3 mb-2">
-                        <div className="w-10 h-10 bg-blue-500 rounded-full flex items-center justify-center">
-                          <UserCheck className="h-5 w-5 text-white" />
-                        </div>
-                        <div>
-                          <p className="text-2xl font-bold text-blue-700">18</p>
-                          <p className="text-sm text-blue-600">Kecamatan</p>
-                        </div>
+            {/* Modern Dashboard Analytics - Redesigned Layout dengan spacing yang tepat */}
+            <div className="mt-6 mb-6 px-1">
+              {/* Top Row - Statistics Cards dengan ukuran tetap dan rapi */}
+              <div className="grid grid-cols-1 lg:grid-cols-6 gap-4 mb-6">
+                {/* Main Statistics - Grid 4 cards dengan ukuran sama dan tidak overflow */}
+                <div className="lg:col-span-4 grid grid-cols-2 md:grid-cols-4 gap-3 w-full">
+                  {/* Card Kecamatan */}
+                  <div className="bg-gradient-to-br from-[#001B55] to-[#001B55]/90 text-white p-3 rounded-xl shadow-lg hover:shadow-xl transition-all duration-300 transform hover:scale-[1.02] min-h-[100px] flex flex-col justify-between w-full max-w-full">
+                    <div className="flex items-center justify-between mb-2">
+                      <div className="bg-white/20 p-1.5 rounded-lg flex-shrink-0">
+                        <Building className="h-4 w-4 text-white" />
                       </div>
-                      <div className="flex items-center gap-2">
-                        <div className="flex-1 bg-blue-200 rounded-full h-2">
-                          <div className="bg-blue-500 h-2 rounded-full w-4/5"></div>
-                        </div>
-                        <span className="text-xs text-blue-600">80% DPC</span>
-                      </div>
+                      <span className="text-xs bg-white/20 px-1.5 py-0.5 rounded-full font-medium flex-shrink-0">80%</span>
                     </div>
-
-                    <div className="bg-gradient-to-br from-green-50/50 to-green-100/50 p-4 rounded-2xl border border-green-200/30">
-                      <div className="flex items-center gap-3 mb-2">
-                        <div className="w-10 h-10 bg-green-500 rounded-full flex items-center justify-center">
-                          <Target className="h-5 w-5 text-white" />
-                        </div>
-                        <div>
-                          <p className="text-2xl font-bold text-green-700">
-                            320
-                          </p>
-                          <p className="text-sm text-green-600">Desa</p>
-                        </div>
-                      </div>
-                      <div className="flex items-center gap-2">
-                        <div className="flex-1 bg-green-200 rounded-full h-2">
-                          <div className="bg-green-500 h-2 rounded-full w-3/5"></div>
-                        </div>
-                        <span className="text-xs text-green-600">60% DPRT</span>
-                      </div>
-                    </div>
-
-                    <div className="bg-gradient-to-br from-purple-50/50 to-purple-100/50 p-4 rounded-2xl border border-purple-200/30">
-                      <div className="flex items-center gap-3 mb-2">
-                        <div className="w-10 h-10 bg-purple-500 rounded-full flex items-center justify-center">
-                          <TrendingUp className="h-5 w-5 text-white" />
-                        </div>
-                        <div>
-                          <p className="text-2xl font-bold text-purple-700">
-                            1,250
-                          </p>
-                          <p className="text-sm text-purple-600">Kader</p>
-                        </div>
-                      </div>
-                      <div className="flex items-center gap-2">
-                        <div className="flex-1 bg-purple-200 rounded-full h-2">
-                          <div className="bg-purple-500 h-2 rounded-full w-2/3"></div>
-                        </div>
-                        <span className="text-xs text-purple-600">
-                          Target 2000
-                        </span>
-                      </div>
-                    </div>
-
-                    <div className="bg-gradient-to-br from-orange-50/50 to-orange-100/50 p-4 rounded-2xl border border-orange-200/30">
-                      <div className="flex items-center gap-3 mb-2">
-                        <div className="w-10 h-10 bg-orange-500 rounded-full flex items-center justify-center">
-                          <AlertTriangle className="h-5 w-5 text-white" />
-                        </div>
-                        <div>
-                          <p className="text-2xl font-bold text-orange-700">
-                            42
-                          </p>
-                          <p className="text-sm text-orange-600">Area Kosong</p>
-                        </div>
-                      </div>
-                      <div className="flex items-center gap-2">
-                        <div className="flex-1 bg-orange-200 rounded-full h-2">
-                          <div className="bg-orange-500 h-2 rounded-full w-1/4"></div>
-                        </div>
-                        <span className="text-xs text-orange-600">
-                          Perlu Penugasan
-                        </span>
-                      </div>
+                    <div className="flex-1 flex flex-col justify-center min-w-0">
+                      <p className="text-xl font-bold mb-0.5 leading-none truncate">18</p>
+                      <p className="text-xs text-white/80 uppercase tracking-wide font-medium truncate">Kecamatan</p>
                     </div>
                   </div>
 
-                  <div className="bg-gradient-to-r from-orange-50/50 to-red-50/50 p-5 rounded-2xl border border-orange-200/30">
-                    <h4 className="font-semibold text-orange-800 mb-3 flex items-center gap-2">
-                      <AlertTriangle className="h-5 w-5" />
-                      Prioritas Penugasan Area Kosong
-                    </h4>
-                    <div className="grid grid-cols-1 md:grid-cols-2 gap-4 text-sm">
-                      <div>
-                        <p className="font-medium text-slate-700 mb-2">
-                          DPC Belum Ada (4 Kecamatan):
-                        </p>
-                        <ul className="space-y-1 text-slate-600">
-                          <li className="flex items-center gap-2">
-                            <div className="w-2 h-2 bg-red-500 rounded-full"></div>
-                            <span>Kec. Jabon - Perlu Ketua & Pengurus</span>
-                          </li>
-                          <li className="flex items-center gap-2">
-                            <div className="w-2 h-2 bg-red-500 rounded-full"></div>
-                            <span>Kec. Krembung - Perlu Ketua & Pengurus</span>
-                          </li>
-                          <li className="flex items-center gap-2">
-                            <div className="w-2 h-2 bg-red-500 rounded-full"></div>
-                            <span>Kec. Porong - Perlu Ketua & Pengurus</span>
-                          </li>
-                          <li className="flex items-center gap-2">
-                            <div className="w-2 h-2 bg-red-500 rounded-full"></div>
-                            <span>
-                              Kec. Tanggulangin - Perlu Ketua & Pengurus
-                            </span>
-                          </li>
-                        </ul>
+                  {/* Card Desa */}
+                  <div className="bg-gradient-to-br from-[#16A34A] to-[#16A34A]/90 text-white p-3 rounded-xl shadow-lg hover:shadow-xl transition-all duration-300 transform hover:scale-[1.02] min-h-[100px] flex flex-col justify-between w-full max-w-full">
+                    <div className="flex items-center justify-between mb-2">
+                      <div className="bg-white/20 p-1.5 rounded-lg flex-shrink-0">
+                        <Map className="h-4 w-4 text-white" />
                       </div>
-                      <div>
-                        <p className="font-medium text-slate-700 mb-2">
-                          DPRT Prioritas (38 Desa):
-                        </p>
-                        <ul className="space-y-1 text-slate-600">
-                          <li className="flex items-center gap-2">
-                            <div className="w-2 h-2 bg-yellow-500 rounded-full"></div>
-                            <span>15 Desa di Kec. Sidoarjo - Perlu DPRT</span>
-                          </li>
-                          <li className="flex items-center gap-2">
-                            <div className="w-2 h-2 bg-yellow-500 rounded-full"></div>
-                            <span>12 Desa di Kec. Gedangan - Perlu DPRT</span>
-                          </li>
-                          <li className="flex items-center gap-2">
-                            <div className="w-2 h-2 bg-yellow-500 rounded-full"></div>
-                            <span>8 Desa di Kec. Taman - Perlu DPRT</span>
-                          </li>
-                          <li className="flex items-center gap-2">
-                            <div className="w-2 h-2 bg-yellow-500 rounded-full"></div>
-                            <span>3 Desa di Kec. Sukodono - Perlu DPRT</span>
-                          </li>
-                        </ul>
-                      </div>
+                      <span className="text-xs bg-white/20 px-1.5 py-0.5 rounded-full font-medium flex-shrink-0">60%</span>
                     </div>
-                    <div className="mt-4 p-3 bg-blue-50 rounded-lg border border-blue-200">
-                      <p className="text-sm text-blue-700">
-                        💡 <strong>Tip:</strong> Gunakan filter kecamatan dan
-                        desa untuk melihat area mana yang sudah memiliki
-                        DPC/DPRT dan mana yang masih kosong.
-                      </p>
+                    <div className="flex-1 flex flex-col justify-center min-w-0">
+                      <p className="text-xl font-bold mb-0.5 leading-none truncate">320</p>
+                      <p className="text-xs text-white/80 uppercase tracking-wide font-medium truncate">Desa</p>
                     </div>
                   </div>
-                </CardContent>
-              </Card>
 
-              <Card className="relative overflow-hidden bg-white/80 backdrop-blur-xl border border-white/20 rounded-3xl shadow-xl">
-                <div className="absolute inset-0 bg-gradient-to-br from-[#001B55]/5 to-[#FF9C04]/5"></div>
-                <CardHeader className="relative">
-                  <CardTitle className="flex items-center gap-3 text-xl font-bold text-slate-800">
-                    <Target className="h-6 w-6 text-[#FF9C04]" />
-                    Aksi Strategis
-                  </CardTitle>
-                </CardHeader>
-                <CardContent className="relative space-y-4">
-                  <Button className="w-full bg-gradient-to-r from-blue-600 to-blue-700 hover:from-blue-700 hover:to-blue-800 text-white py-3 rounded-xl transition-all duration-300">
-                    <Plus className="h-4 w-4 mr-2" />
-                    Rekrut DPC Baru
-                  </Button>
-                  <Button className="w-full bg-gradient-to-r from-green-600 to-green-700 hover:from-green-700 hover:to-green-800 text-white py-3 rounded-xl transition-all duration-300">
-                    <Users className="h-4 w-4 mr-2" />
-                    Bentuk DPRT Desa
-                  </Button>
-                  <Button className="w-full bg-gradient-to-r from-purple-600 to-purple-700 hover:from-purple-700 hover:to-purple-800 text-white py-3 rounded-xl transition-all duration-300">
-                    <UserCheck className="h-4 w-4 mr-2" />
-                    Kaderisasi Massal
-                  </Button>
-                  <Button className="w-full bg-gradient-to-r from-orange-600 to-orange-700 hover:from-orange-700 hover:to-orange-800 text-white py-3 rounded-xl transition-all duration-300">
-                    <Calendar className="h-4 w-4 mr-2" />
-                    Jadwalkan Rapat
-                  </Button>
+                  {/* Card Kader */}
+                  <div className="bg-gradient-to-br from-[#FF9C04] to-[#FF9C04]/90 text-white p-3 rounded-xl shadow-lg hover:shadow-xl transition-all duration-300 transform hover:scale-[1.02] min-h-[100px] flex flex-col justify-between w-full max-w-full">
+                    <div className="flex items-center justify-between mb-2">
+                      <div className="bg-white/20 p-1.5 rounded-lg flex-shrink-0">
+                        <Users className="h-4 w-4 text-white" />
+                      </div>
+                      <span className="text-xs bg-white/20 px-1.5 py-0.5 rounded-full font-medium flex-shrink-0">63%</span>
+                    </div>
+                    <div className="flex-1 flex flex-col justify-center min-w-0">
+                      <p className="text-xl font-bold mb-0.5 leading-none truncate">1,250</p>
+                      <p className="text-xs text-white/80 uppercase tracking-wide font-medium truncate">Kader</p>
+                    </div>
+                  </div>
 
-                  <div className="mt-6 p-4 bg-gradient-to-r from-slate-50/50 to-slate-100/50 rounded-xl border border-slate-200/50">
-                    <h4 className="font-semibold text-slate-700 mb-3 flex items-center gap-2">
-                      <Eye className="h-4 w-4" />
-                      Target Bulanan
-                    </h4>
-                    <div className="space-y-3">
-                      <div className="flex justify-between items-center">
-                        <span className="text-sm text-slate-600">DPC Baru</span>
-                        <div className="flex items-center gap-2">
-                          <div className="w-16 bg-slate-200 rounded-full h-2">
-                            <div className="bg-blue-500 h-2 rounded-full w-1/2"></div>
-                          </div>
-                          <span className="text-xs font-semibold text-blue-600">
-                            2/4
-                          </span>
+                  {/* Card Area Kosong */}
+                  <div className="bg-gradient-to-br from-[#C81E1E] to-[#C81E1E]/90 text-white p-3 rounded-xl shadow-lg hover:shadow-xl transition-all duration-300 transform hover:scale-[1.02] min-h-[100px] flex flex-col justify-between w-full max-w-full">
+                    <div className="flex items-center justify-between mb-2">
+                      <div className="bg-white/20 p-1.5 rounded-lg flex-shrink-0">
+                        <AlertTriangle className="h-4 w-4 text-white" />
+                      </div>
+                      <span className="text-xs bg-white/20 px-1.5 py-0.5 rounded-full font-medium flex-shrink-0">URGENT</span>
+                    </div>
+                    <div className="flex-1 flex flex-col justify-center min-w-0">
+                      <p className="text-xl font-bold mb-0.5 leading-none truncate">42</p>
+                      <p className="text-xs text-white/80 uppercase tracking-wide font-medium truncate">Area Kosong</p>
+                    </div>
+                  </div>
+                </div>
+
+                {/* Quick Actions Panel - Ukuran disesuaikan dengan spacing yang tepat */}
+                <div className="lg:col-span-2 bg-white rounded-xl shadow-lg p-3 min-h-[100px] w-full max-w-full">
+                  <div className="flex items-center gap-2 mb-3">
+                    <div className="w-1.5 h-5 bg-gradient-to-b from-[#001B55] to-[#FF9C04] rounded-full flex-shrink-0"></div>
+                    <h4 className="font-bold text-[#001B55] text-sm truncate">Aksi Cepat</h4>
+                  </div>
+                  <div className="space-y-2">
+                    <button className="w-full flex items-center gap-2.5 p-2.5 bg-gradient-to-r from-[#001B55]/10 to-[#001B55]/5 hover:from-[#001B55]/20 hover:to-[#001B55]/10 rounded-lg border border-[#001B55]/10 hover:border-[#001B55]/20 transition-all duration-300 group">
+                      <div className="w-7 h-7 bg-[#001B55] rounded-lg flex items-center justify-center group-hover:scale-110 transition-transform flex-shrink-0">
+                        <Plus className="h-3.5 w-3.5 text-white" />
+                      </div>
+                      <span className="text-xs font-medium text-[#001B55] truncate">Rekrut DPC</span>
+                    </button>
+                    <button className="w-full flex items-center gap-2.5 p-2.5 bg-gradient-to-r from-[#16A34A]/10 to-[#16A34A]/5 hover:from-[#16A34A]/20 hover:to-[#16A34A]/10 rounded-lg border border-[#16A34A]/10 hover:border-[#16A34A]/20 transition-all duration-300 group">
+                      <div className="w-7 h-7 bg-[#16A34A] rounded-lg flex items-center justify-center group-hover:scale-110 transition-transform flex-shrink-0">
+                        <Users className="h-3.5 w-3.5 text-white" />
+                      </div>
+                      <span className="text-xs font-medium text-[#16A34A] truncate">Bentuk DPRT</span>
+                    </button>
+                    <button className="w-full flex items-center gap-2.5 p-2.5 bg-gradient-to-r from-[#FF9C04]/10 to-[#FF9C04]/5 hover:from-[#FF9C04]/20 hover:to-[#FF9C04]/10 rounded-lg border border-[#FF9C04]/10 hover:border-[#FF9C04]/20 transition-all duration-300 group">
+                      <div className="w-7 h-7 bg-[#FF9C04] rounded-lg flex items-center justify-center group-hover:scale-110 transition-transform flex-shrink-0">
+                        <UserCheck className="h-3.5 w-3.5 text-white" />
+                      </div>
+                      <span className="text-xs font-medium text-[#FF9C04] truncate">Kaderisasi</span>
+                    </button>
+                  </div>
+                </div>
+              </div>
+
+              {/* Bottom Row - Priority & Targets dengan layout konsisten dan spacing yang tepat */}
+              <div className="grid grid-cols-1 lg:grid-cols-3 gap-4">
+                {/* Priority Areas - Layout disesuaikan dengan overflow prevention */}
+                <div className="lg:col-span-2 bg-white rounded-xl shadow-lg p-4 w-full max-w-full">
+                  <div className="flex items-center gap-2 mb-4">
+                    <div className="w-1.5 h-5 bg-gradient-to-b from-[#C81E1E] to-[#F59E0B] rounded-full flex-shrink-0"></div>
+                    <h4 className="font-bold text-[#001B55] text-sm truncate">Area Prioritas</h4>
+                    <span className="ml-auto bg-[#C81E1E]/10 text-[#C81E1E] px-2 py-0.5 rounded-full text-xs font-medium flex-shrink-0">URGENT</span>
+                  </div>
+                  
+                  <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                    {/* DPC Priority Card */}
+                    <div className="relative overflow-hidden bg-gradient-to-br from-[#C81E1E]/5 to-[#C81E1E]/10 border border-[#C81E1E]/20 rounded-lg p-3 w-full max-w-full">
+                      <div className="absolute top-2 right-2">
+                        <span className="bg-[#C81E1E] text-white text-xs px-1.5 py-0.5 rounded-full">4 Area</span>
+                      </div>
+                      <div className="flex items-center gap-2.5 mb-2">
+                        <div className="w-8 h-8 bg-[#C81E1E] rounded-lg flex items-center justify-center flex-shrink-0">
+                          <Building className="h-4 w-4 text-white" />
+                        </div>
+                        <div className="min-w-0 flex-1">
+                          <h5 className="font-bold text-[#C81E1E] text-sm truncate">DPC Kosong</h5>
+                          <p className="text-xs text-[#6B7280] truncate">Perlu Ketua & Pengurus</p>
                         </div>
                       </div>
-                      <div className="flex justify-between items-center">
-                        <span className="text-sm text-slate-600">
-                          DPRT Baru
-                        </span>
-                        <div className="flex items-center gap-2">
-                          <div className="w-16 bg-slate-200 rounded-full h-2">
-                            <div className="bg-green-500 h-2 rounded-full w-3/5"></div>
-                          </div>
-                          <span className="text-xs font-semibold text-green-600">
-                            8/15
-                          </span>
+                      <div className="space-y-1.5">
+                        <div className="flex items-center gap-1.5">
+                          <div className="w-1.5 h-1.5 bg-[#C81E1E] rounded-full animate-pulse flex-shrink-0"></div>
+                          <span className="text-xs text-[#6B7280] truncate">Kec. Jabon</span>
+                        </div>
+                        <div className="flex items-center gap-1.5">
+                          <div className="w-1.5 h-1.5 bg-[#C81E1E] rounded-full animate-pulse flex-shrink-0"></div>
+                          <span className="text-xs text-[#6B7280] truncate">Kec. Krembung</span>
+                        </div>
+                        <div className="text-xs text-[#C81E1E] font-medium">+2 lainnya</div>
+                      </div>
+                    </div>
+
+                    {/* DPRT Priority Card */}
+                    <div className="relative overflow-hidden bg-gradient-to-br from-[#F59E0B]/5 to-[#F59E0B]/10 border border-[#F59E0B]/20 rounded-lg p-3 w-full max-w-full">
+                      <div className="absolute top-2 right-2">
+                        <span className="bg-[#F59E0B] text-white text-xs px-1.5 py-0.5 rounded-full">38 Desa</span>
+                      </div>
+                      <div className="flex items-center gap-2.5 mb-2">
+                        <div className="w-8 h-8 bg-[#F59E0B] rounded-lg flex items-center justify-center flex-shrink-0">
+                          <Map className="h-4 w-4 text-white" />
+                        </div>
+                        <div className="min-w-0 flex-1">
+                          <h5 className="font-bold text-[#F59E0B] text-sm truncate">DPRT Kosong</h5>
+                          <p className="text-xs text-[#6B7280] truncate">Prioritas Pembentukan</p>
                         </div>
                       </div>
-                      <div className="flex justify-between items-center">
-                        <span className="text-sm text-slate-600">
-                          Kader Baru
-                        </span>
-                        <div className="flex items-center gap-2">
-                          <div className="w-16 bg-slate-200 rounded-full h-2">
-                            <div className="bg-purple-500 h-2 rounded-full w-2/5"></div>
-                          </div>
-                          <span className="text-xs font-semibold text-purple-600">
-                            45/100
-                          </span>
+                      <div className="space-y-1.5">
+                        <div className="flex items-center gap-1.5">
+                          <div className="w-1.5 h-1.5 bg-[#F59E0B] rounded-full animate-pulse flex-shrink-0"></div>
+                          <span className="text-xs text-[#6B7280] truncate">15 di Kec. Sidoarjo</span>
+                        </div>
+                        <div className="flex items-center gap-1.5">
+                          <div className="w-1.5 h-1.5 bg-[#F59E0B] rounded-full animate-pulse flex-shrink-0"></div>
+                          <span className="text-xs text-[#6B7280] truncate">12 di Kec. Gedangan</span>
+                        </div>
+                        <div className="text-xs text-[#F59E0B] font-medium">+11 lainnya</div>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+
+                {/* Target Progress - Layout disesuaikan dengan overflow prevention */}
+                <div className="bg-white rounded-xl shadow-lg p-4 w-full max-w-full">
+                  <div className="flex items-center gap-2 mb-4">
+                    <div className="w-1.5 h-5 bg-gradient-to-b from-[#2563EB] to-[#16A34A] rounded-full flex-shrink-0"></div>
+                    <h4 className="font-bold text-[#001B55] text-sm truncate">Target Bulanan</h4>
+                  </div>
+                  
+                  <div className="space-y-3">
+                    {/* DPC Progress */}
+                    <div className="space-y-1.5">
+                      <div className="flex items-center justify-between">
+                        <span className="text-xs font-medium text-[#6B7280]">DPC Baru</span>
+                        <span className="text-sm font-bold text-[#001B55]">2/4</span>
+                      </div>
+                      <div className="relative w-full bg-[#F0F0F0] rounded-full h-1.5">
+                        <div className="absolute top-0 left-0 bg-gradient-to-r from-[#001B55] to-[#001B55]/80 h-1.5 rounded-full transition-all duration-500" style={{width: '50%'}}></div>
+                        <div className="absolute top-0 w-4 h-4 bg-[#001B55] rounded-full -mt-1.25 flex items-center justify-center" style={{left: '50%', transform: 'translateX(-50%)'}}>
+                          <div className="w-1.5 h-1.5 bg-white rounded-full"></div>
+                        </div>
+                      </div>
+                    </div>
+
+                    {/* DPRT Progress */}
+                    <div className="space-y-1.5">
+                      <div className="flex items-center justify-between">
+                        <span className="text-xs font-medium text-[#6B7280]">DPRT Baru</span>
+                        <span className="text-sm font-bold text-[#16A34A]">8/15</span>
+                      </div>
+                      <div className="relative w-full bg-[#F0F0F0] rounded-full h-1.5">
+                        <div className="absolute top-0 left-0 bg-gradient-to-r from-[#16A34A] to-[#16A34A]/80 h-1.5 rounded-full transition-all duration-500" style={{width: '53%'}}></div>
+                        <div className="absolute top-0 w-4 h-4 bg-[#16A34A] rounded-full -mt-1.25 flex items-center justify-center" style={{left: '53%', transform: 'translateX(-50%)'}}>
+                          <div className="w-1.5 h-1.5 bg-white rounded-full"></div>
+                        </div>
+                      </div>
+                    </div>
+
+                    {/* Kader Progress */}
+                    <div className="space-y-1.5">
+                      <div className="flex items-center justify-between">
+                        <span className="text-xs font-medium text-[#6B7280]">Kader Baru</span>
+                        <span className="text-sm font-bold text-[#FF9C04]">45/100</span>
+                      </div>
+                      <div className="relative w-full bg-[#F0F0F0] rounded-full h-1.5">
+                        <div className="absolute top-0 left-0 bg-gradient-to-r from-[#FF9C04] to-[#FF9C04]/80 h-1.5 rounded-full transition-all duration-500" style={{width: '45%'}}></div>
+                        <div className="absolute top-0 w-4 h-4 bg-[#FF9C04] rounded-full -mt-1.25 flex items-center justify-center" style={{left: '45%', transform: 'translateX(-50%)'}}>
+                          <div className="w-1.5 h-1.5 bg-white rounded-full"></div>
                         </div>
                       </div>
                     </div>
                   </div>
-                </CardContent>
-              </Card>
+                </div>
+              </div>
             </div>
 
             <TabsContent value="dpd" className="mt-8">
@@ -1459,13 +1454,13 @@ export function MemberListPage() {
               </Card>
             </TabsContent>
 
-            <TabsContent value="sayap" className="mt-8">
-              <Card className="relative overflow-hidden bg-white/60 backdrop-blur-xl border border-white/20 rounded-2xl shadow-xl shadow-fuchsia-600/10">
-                <div className="absolute inset-0 bg-gradient-to-br from-fuchsia-50/30 to-transparent"></div>
-                <CardContent className="relative p-6">
-                  <div className="flex flex-col md:flex-row gap-4">
+            <TabsContent value="sayap" className="mt-6">
+              <div className="relative overflow-hidden bg-white backdrop-blur-xl border border-white/40 rounded-xl shadow-md">
+                <div className="absolute inset-0 bg-gradient-to-br from-[#FF9C04]/2 to-transparent"></div>
+                <div className="relative p-4">
+                  <div className="flex flex-col md:flex-row gap-3">
                     <div className="relative flex-1">
-                      <Search className="absolute left-4 top-1/2 transform -translate-y-1/2 text-black h-5 w-5" />
+                      <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-[#6B7280] h-4 w-4" />
                       <Input
                         placeholder="Cari nama atau posisi sayap..."
                         value={sayapFilters.searchTerm}
@@ -1475,7 +1470,7 @@ export function MemberListPage() {
                             searchTerm: e.target.value,
                           })
                         }
-                        className="pl-12 pr-4 py-3 bg-white/70 backdrop-blur-sm border-2 border-slate-200/50 hover:border-fuchsia-600/30 focus:border-fuchsia-600 rounded-xl transition-all duration-300"
+                        className="pl-10 pr-4 py-2 bg-white border border-[#F0F0F0] hover:border-[#FF9C04]/30 focus:border-[#FF9C04] rounded-lg transition-all duration-300 text-sm"
                       />
                     </div>
                     <Select
@@ -1487,66 +1482,23 @@ export function MemberListPage() {
                         })
                       }
                     >
-                      <SelectTrigger className="w-full text-black md:w-[240px] bg-white/70 backdrop-blur-sm border-2 border-slate-200/50 hover:border-fuchsia-600/30 focus:border-fuchsia-600 rounded-xl px-4 py-3 transition-all duration-300">
-                        <SelectValue
-                          placeholder="Filter Sayap"
-                          className="text-black"
-                        />
+                      <SelectTrigger className="w-full md:w-[200px] bg-white border border-[#F0F0F0] hover:border-[#FF9C04]/30 focus:border-[#FF9C04] rounded-lg px-3 py-2 transition-all duration-300 text-sm">
+                        <SelectValue placeholder="Filter Sayap" />
                       </SelectTrigger>
-                      <SelectContent className="bg-white/95 backdrop-blur-xl border border-white/20 rounded-xl shadow-2xl text-black">
-                        <SelectItem
-                          value="all"
-                          className="rounded-lg text-black"
-                        >
-                          Semua Sayap
-                        </SelectItem>
-                        <SelectItem
-                          value="Perempuan"
-                          className="rounded-lg text-black"
-                        >
-                          Perempuan NasDem
-                        </SelectItem>
-                        <SelectItem
-                          value="Pemuda"
-                          className="rounded-lg text-black"
-                        >
-                          Pemuda NasDem
-                        </SelectItem>
-                        <SelectItem
-                          value="Ulama"
-                          className="rounded-lg text-black"
-                        >
-                          Ulama NasDem
-                        </SelectItem>
-                        <SelectItem
-                          value="Profesional"
-                          className="rounded-lg text-black"
-                        >
-                          Profesional NasDem
-                        </SelectItem>
-                        <SelectItem
-                          value="Pengusaha"
-                          className="rounded-lg text-black"
-                        >
-                          Pengusaha NasDem
-                        </SelectItem>
-                        <SelectItem
-                          value="Guru"
-                          className="rounded-lg text-black"
-                        >
-                          Guru NasDem
-                        </SelectItem>
-                        <SelectItem
-                          value="Tenaga Kesehatan"
-                          className="rounded-lg text-black"
-                        >
-                          Tenaga Kesehatan NasDem
-                        </SelectItem>
+                      <SelectContent className="bg-white border border-[#F0F0F0] rounded-lg shadow-lg">
+                        <SelectItem value="all" className="rounded-md text-sm">Semua Sayap</SelectItem>
+                        <SelectItem value="Perempuan" className="rounded-md text-sm">Perempuan NasDem</SelectItem>
+                        <SelectItem value="Pemuda" className="rounded-md text-sm">Pemuda NasDem</SelectItem>
+                        <SelectItem value="Ulama" className="rounded-md text-sm">Ulama NasDem</SelectItem>
+                        <SelectItem value="Profesional" className="rounded-md text-sm">Profesional NasDem</SelectItem>
+                        <SelectItem value="Pengusaha" className="rounded-md text-sm">Pengusaha NasDem</SelectItem>
+                        <SelectItem value="Guru" className="rounded-md text-sm">Guru NasDem</SelectItem>
+                        <SelectItem value="Tenaga Kesehatan" className="rounded-md text-sm">Tenaga Kesehatan NasDem</SelectItem>
                       </SelectContent>
                     </Select>
                   </div>
-                </CardContent>
-              </Card>
+                </div>
+              </div>
 
               {(() => {
                 const sayapMembers = filteredMembers.filter(
@@ -1558,53 +1510,53 @@ export function MemberListPage() {
 
                 if (sayapMembers.length === 0) {
                   return (
-                    <Card className="relative overflow-hidden bg-white/60 backdrop-blur-xl border border-white/20 rounded-3xl shadow-2xl shadow-fuchsia-900/10 mt-8">
-                      <div className="absolute inset-0 bg-gradient-to-br from-fuchsia-50/20 via-transparent to-fuchsia-50/20"></div>
-                      <CardContent className="relative p-16 text-center">
-                        <div className="max-w-md mx-auto space-y-6">
+                    <div className="relative overflow-hidden bg-white backdrop-blur-xl border border-white/40 rounded-xl shadow-md mt-6">
+                      <div className="absolute inset-0 bg-gradient-to-br from-[#FF9C04]/2 to-transparent"></div>
+                      <div className="relative p-12 text-center">
+                        <div className="max-w-md mx-auto space-y-4">
                           <div className="relative">
-                            <div className="absolute inset-0 bg-gradient-to-r from-fuchsia-200 to-fuchsia-300 rounded-full blur-2xl opacity-30"></div>
-                            <div className="relative w-24 h-24 mx-auto bg-gradient-to-br from-fuchsia-100 to-fuchsia-200 rounded-full flex items-center justify-center">
-                              <Users className="h-12 w-12 text-fuchsia-400" />
+                            <div className="absolute inset-0 bg-gradient-to-r from-[#F0F0F0] to-[#F0F0F0] rounded-full blur-xl opacity-50"></div>
+                            <div className="relative w-16 h-16 mx-auto bg-gradient-to-br from-[#F0F0F0] to-[#F0F0F0]/80 rounded-full flex items-center justify-center shadow-md">
+                              <Users className="h-8 w-8 text-[#6B7280]" />
                             </div>
                           </div>
 
-                          <div className="space-y-3">
-                            <h3 className="text-2xl font-bold text-slate-800">
+                          <div className="space-y-2">
+                            <h3 className="text-xl font-bold text-[#001B55]">
                               Belum ada anggota sayap
                             </h3>
-                            <p className="text-slate-600 text-lg">
+                            <p className="text-[#6B7280] text-sm">
                               {sayapFilters.departmentFilter !== "all"
                                 ? `Belum ada anggota di sayap ${sayapFilters.departmentFilter}`
                                 : "Tambahkan anggota sayap untuk mengelola struktur organisasi sayap"}
                             </p>
                           </div>
                         </div>
-                      </CardContent>
-                    </Card>
+                      </div>
+                    </div>
                   );
                 }
 
                 return (
-                  <div className="mt-8 grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-8">
+                  <div className="mt-6 grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-5 gap-4">
                     {sayapMembers.map((member) => (
-                      <Card
+                      <div
                         key={member.id}
                         onClick={() => handleMemberClick(member)}
-                        className="group relative overflow-hidden bg-white/80 backdrop-blur-xl border border-white/20 rounded-3xl shadow-xl shadow-blue-900/10 hover:shadow-2xl hover:shadow-blue-900/20 transition-all duration-500 transform hover:scale-105 cursor-pointer"
+                        className="group relative overflow-hidden bg-white backdrop-blur-xl border border-white/40 rounded-xl shadow-md hover:shadow-lg transition-all duration-300 transform hover:scale-105 cursor-pointer"
                       >
-                        <div className="absolute inset-0 bg-gradient-to-br from-fuchsia-50/20 via-transparent to-fuchsia-50/20 opacity-0 group-hover:opacity-100 transition-opacity duration-500"></div>
+                        <div className="absolute inset-0 bg-gradient-to-br from-[#FF9C04]/3 via-transparent to-[#FF9C04]/3 opacity-0 group-hover:opacity-100 transition-opacity duration-300"></div>
 
-                        <CardHeader className="relative p-6 pb-4">
-                          <div className="flex flex-col items-center space-y-4">
+                        <div className="relative p-4">
+                          <div className="flex flex-col items-center space-y-3">
                             <div className="relative">
-                              <div className="absolute -inset-3 bg-gradient-to-r from-fuchsia-600 via-fuchsia-400 to-fuchsia-600 rounded-full blur-lg opacity-20 group-hover:opacity-40 transition-opacity duration-500"></div>
-                              <Avatar className="relative w-24 h-24 border-4 border-white/50 shadow-2xl shadow-fuchsia-900/20">
+                              <div className="absolute -inset-1 bg-gradient-to-r from-[#FF9C04] to-[#FF9C04]/80 rounded-full blur-sm opacity-20 group-hover:opacity-30 transition-opacity duration-300"></div>
+                              <Avatar className="relative w-16 h-16 ring-2 ring-white/60 shadow-md">
                                 <AvatarImage
                                   src={member.photo}
                                   className="object-cover"
                                 />
-                                <AvatarFallback className="bg-gradient-to-br from-slate-100 to-slate-200 text-slate-600 text-lg font-bold">
+                                <AvatarFallback className="bg-gradient-to-br from-[#FF9C04] to-[#FF9C04]/80 text-white text-sm font-bold">
                                   {member.name
                                     .split(" ")
                                     .map((n) => n[0])
@@ -1614,75 +1566,60 @@ export function MemberListPage() {
                               </Avatar>
                             </div>
 
-                            <div className="text-center space-y-2">
-                              <CardTitle className="text-lg font-bold text-slate-800 leading-tight">
+                            <div className="text-center space-y-2 w-full">
+                              <h3 className="text-sm font-bold text-[#001B55] leading-tight">
                                 {member.name}
-                              </CardTitle>
-                              <p className="text-sm font-medium text-slate-600">
+                              </h3>
+                              <p className="text-xs font-medium text-[#6B7280]">
                                 {member.position}
                               </p>
                               {member.subDepartment && (
-                                <div className="space-y-1">
-                                  <p className="text-xs text-fuchsia-800 bg-fuchsia-50 px-3 py-1 rounded-full">
+                                <div className="bg-[#FF9C04]/10 px-2 py-1 rounded-lg">
+                                  <p className="text-xs text-[#FF9C04] font-medium">
                                     {member.subDepartment} NasDem
                                   </p>
                                 </div>
                               )}
                             </div>
                           </div>
-                        </CardHeader>
 
-                        <CardContent className="relative p-6 pt-0 space-y-4">
-                          <div className="space-y-3">
-                            <div className="flex items-center gap-3 text-sm group/item">
-                              <div className="flex-shrink-0 w-8 h-8 bg-slate-100 rounded-full flex items-center justify-center group-hover:item:bg-fuchsia-100 transition-colors duration-300">
-                                <Mail className="h-4 w-4 text-slate-500 group-hover:item:text-fuchsia-600" />
+                          <div className="mt-3 space-y-2">
+                            <div className="flex items-center gap-2 text-xs">
+                              <div className="w-5 h-5 bg-[#001B55]/10 rounded-full flex items-center justify-center">
+                                <Mail className="h-3 w-3 text-[#001B55]" />
                               </div>
-                              <span className="truncate text-slate-700 font-medium">
-                                {member.email}
-                              </span>
+                              <span className="text-[#6B7280] truncate">{member.email}</span>
                             </div>
 
-                            <div className="flex items-center gap-3 text-sm group/item">
-                              <div className="flex-shrink-0 w-8 h-8 bg-slate-100 rounded-full flex items-center justify-center group-hover:item:bg-fuchsia-100 transition-colors duration-300">
-                                <Phone className="h-4 w-4 text-slate-500 group-hover:item:text-fuchsia-600" />
+                            <div className="flex items-center gap-2 text-xs">
+                              <div className="w-5 h-5 bg-[#16A34A]/10 rounded-full flex items-center justify-center">
+                                <Phone className="h-3 w-3 text-[#16A34A]" />
                               </div>
-                              <span className="text-slate-700 font-medium">
-                                {member.phone}
-                              </span>
+                              <span className="text-[#6B7280]">{member.phone}</span>
                             </div>
 
-                            <div className="flex items-start gap-3 text-sm group/item">
-                              <div className="flex-shrink-0 w-8 h-8 bg-slate-100 rounded-full flex items-center justify-center mt-0.5 group-hover:item:bg-fuchsia-100 transition-colors duration-300">
-                                <MapPin className="h-4 w-4 text-slate-500 group-hover:item:text-fuchsia-600" />
+                            <div className="flex items-start gap-2 text-xs">
+                              <div className="w-5 h-5 bg-[#C81E1E]/10 rounded-full flex items-center justify-center mt-0.5">
+                                <MapPin className="h-3 w-3 text-[#C81E1E]" />
                               </div>
-                              <span className="line-clamp-2 text-slate-700 font-medium leading-relaxed">
-                                {member.address}
-                              </span>
+                              <span className="text-[#6B7280] line-clamp-2 leading-relaxed">{member.address}</span>
                             </div>
                           </div>
 
-                          <div className="flex items-center justify-between pt-4 border-t border-slate-200/50">
-                            <Badge
-                              className={`${
-                                statusConfig[member.status].className
-                              } px-3 py-1 rounded-full text-xs font-medium`}
-                            >
+                          <div className="mt-3 pt-2 border-t border-[#F0F0F0] flex items-center justify-between">
+                            <Badge className={`${statusConfig[member.status].className} px-2 py-0.5 rounded-md text-xs font-medium`}>
                               {statusConfig[member.status].label}
                             </Badge>
-                            <span className="text-xs text-slate-500 font-medium">
-                              {new Date(member.joinDate).toLocaleDateString(
-                                "id-ID",
-                                {
-                                  day: "numeric",
-                                  month: "short",
-                                  year: "numeric",
-                                }
-                              )}
+                            <span className="text-xs text-[#6B7280] font-medium">
+                              {new Date(member.joinDate).toLocaleDateString("id-ID", {
+                                day: "numeric",
+                                month: "short",
+                                year: "numeric",
+                              })}
                             </span>
                           </div>
-                        </CardContent>
-                      </Card>
+                        </div>
+                      </div>
                     ))}
                   </div>
                 );
@@ -1846,28 +1783,29 @@ export function MemberListPage() {
           </Tabs>
         </div>
 
-        {/* Members Grid */}
+        {/* Members Grid dengan Design Compact & Rapi */}
         {paginatedMembers.length > 0 && activeTab !== "sayap" ? (
-          <div className="space-y-8">
-            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-8">
+          <div className="space-y-6">
+            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-5 gap-4">
               {paginatedMembers.map((member) => (
-                <Card
+                <div
                   key={member.id}
                   onClick={() => handleMemberClick(member)}
-                  className="group relative overflow-hidden bg-white/80 backdrop-blur-xl border border-white/20 rounded-3xl shadow-xl shadow-blue-900/10 hover:shadow-2xl hover:shadow-blue-900/20 transition-all duration-500 transform hover:scale-105 cursor-pointer"
+                  className="group relative overflow-hidden bg-white backdrop-blur-xl border border-white/40 rounded-xl shadow-md hover:shadow-lg transition-all duration-300 transform hover:scale-105 cursor-pointer"
                 >
-                  <div className="absolute inset-0 bg-gradient-to-br from-blue-50/20 via-transparent to-orange-50/20 opacity-0 group-hover:opacity-100 transition-opacity duration-500"></div>
+                  <div className="absolute inset-0 bg-gradient-to-br from-[#001B55]/2 via-transparent to-[#FF9C04]/2 opacity-0 group-hover:opacity-100 transition-opacity duration-300"></div>
 
-                  <CardHeader className="relative p-6 pb-4">
-                    <div className="flex flex-col items-center space-y-4">
+                  <div className="relative p-4">
+                    <div className="flex flex-col items-center space-y-3">
+                      {/* Avatar dengan Efek Compact */}
                       <div className="relative">
-                        <div className="absolute -inset-3 bg-gradient-to-r from-[#001B55] via-[#FF9C04] to-[#001B55] rounded-full blur-lg opacity-20 group-hover:opacity-40 transition-opacity duration-500"></div>
-                        <Avatar className="relative w-24 h-24 border-4 border-white/50 shadow-2xl shadow-blue-900/20">
+                        <div className="absolute -inset-1 bg-gradient-to-r from-[#001B55] via-[#FF9C04] to-[#001B55] rounded-full blur-sm opacity-20 group-hover:opacity-30 transition-opacity duration-300"></div>
+                        <Avatar className="relative w-16 h-16 ring-2 ring-white/60 shadow-md">
                           <AvatarImage
                             src={member.photo}
                             className="object-cover"
                           />
-                          <AvatarFallback className="bg-gradient-to-br from-slate-100 to-slate-200 text-slate-600 text-lg font-bold">
+                          <AvatarFallback className="bg-gradient-to-br from-[#001B55] to-[#001B55]/80 text-white text-sm font-bold">
                             {member.name
                               .split(" ")
                               .map((n) => n[0])
@@ -1875,32 +1813,51 @@ export function MemberListPage() {
                               .substring(0, 2)}
                           </AvatarFallback>
                         </Avatar>
+                        
+                        {/* Status Indicator Compact */}
+                        <div className="absolute -bottom-1 -right-1">
+                          <div className={`w-5 h-5 rounded-full border-2 border-white shadow-md flex items-center justify-center ${statusConfig[member.status].className.includes('green') ? 'bg-[#16A34A]' : statusConfig[member.status].className.includes('red') ? 'bg-[#C81E1E]' : 'bg-[#F59E0B]'}`}>
+                            {member.status === "active" ? (
+                              <Check className="h-2.5 w-2.5 text-white" />
+                            ) : member.status === "inactive" ? (
+                              <X className="h-2.5 w-2.5 text-white" />
+                            ) : (
+                              <Clock className="h-2.5 w-2.5 text-white" />
+                            )}
+                          </div>
+                        </div>
                       </div>
 
-                      <div className="text-center space-y-2">
-                        <CardTitle className="text-lg font-bold text-slate-800 leading-tight">
+                      {/* Informasi Utama Compact */}
+                      <div className="text-center space-y-2 w-full">
+                        <h3 className="text-sm font-bold text-[#001B55] leading-tight group-hover:text-[#001B55]/80 transition-colors">
                           {member.name}
-                        </CardTitle>
-                        <p className="text-sm font-medium text-slate-600">
+                        </h3>
+                        
+                        {/* Badge Jabatan Compact */}
+                        <Badge className={`${departmentConfig[member.department]?.className} px-2 py-0.5 rounded-lg font-medium text-xs`}>
+                          {departmentConfig[member.department]?.label}
+                        </Badge>
+                        
+                        <p className="text-xs font-medium text-[#6B7280]">
                           {member.position}
                         </p>
+
+                        {/* Lokasi Info Compact */}
                         {member.subDepartment && (
-                          <div className="space-y-1">
-                            <p className="text-xs text-slate-500 bg-slate-100 px-3 py-1 rounded-full">
+                          <div className="bg-[#F0F0F0]/60 p-2 rounded-lg">
+                            <p className="text-xs text-[#6B7280] font-medium">
                               Desa {member.subDepartment}
                             </p>
                             {member.department === "kader" && (
-                              <div className="text-xs text-blue-600 bg-blue-50 px-3 py-1 rounded-full">
+                              <div className="mt-1 text-xs text-[#001B55] font-medium">
                                 {(() => {
                                   const dprtLeader = getDPRTLeader(
                                     member.region || "",
                                     member.subDepartment
                                   );
                                   return dprtLeader
-                                    ? `Bawahan DPRT: ${dprtLeader.name
-                                        .split(" ")
-                                        .slice(0, 2)
-                                        .join(" ")}`
+                                    ? `DPRT: ${dprtLeader.name.split(" ").slice(0, 2).join(" ")}`
                                     : `DPRT: Belum ada ketua`;
                                 })()}
                               </div>
@@ -1909,82 +1866,55 @@ export function MemberListPage() {
                         )}
                       </div>
                     </div>
-                  </CardHeader>
 
-                  <CardContent className="relative p-6 pt-0 space-y-4">
-                    <div className="flex justify-center">
-                      <Badge
-                        className={`${
-                          departmentConfig[member.department]?.className
-                        } px-4 py-2 rounded-full font-medium`}
-                      >
-                        {departmentConfig[member.department]?.label}
-                      </Badge>
-                    </div>
-
-                    {/* Informasi khusus DPRT */}
-                    {member.department === "dprt" &&
-                      member.region &&
-                      member.subDepartment && (
-                        <div className="bg-gradient-to-r from-amber-50 to-orange-50 p-4 rounded-xl border border-amber-200">
-                          <div className="flex items-center gap-2 mb-2">
-                            <Users className="h-4 w-4 text-amber-600" />
-                            <span className="text-sm font-semibold text-amber-800">
-                              Kader Dibawahi
-                            </span>
-                          </div>
-                          <div className="text-xs text-amber-700">
-                            {(() => {
-                              const kaderCount = getKaderCount(
-                                member.region,
-                                member.subDepartment
-                              );
-                              return kaderCount > 0
-                                ? `${kaderCount} kader aktif di Desa ${member.subDepartment}`
-                                : `Belum ada kader di Desa ${member.subDepartment}`;
-                            })()}
-                          </div>
+                    {/* Info DPRT untuk Ketua DPRT Compact */}
+                    {member.department === "dprt" && member.region && member.subDepartment && (
+                      <div className="mt-3 bg-[#FF9C04]/10 p-2 rounded-lg border border-[#FF9C04]/20">
+                        <div className="flex items-center gap-1 mb-1">
+                          <Users className="h-3 w-3 text-[#FF9C04]" />
+                          <span className="text-xs font-semibold text-[#FF9C04]">Kader</span>
                         </div>
-                      )}
-
-                    <div className="space-y-3">
-                      <div className="flex items-center gap-3 text-sm group/item">
-                        <div className="flex-shrink-0 w-8 h-8 bg-slate-100 rounded-full flex items-center justify-center group-hover:item:bg-blue-100 transition-colors duration-300">
-                          <Mail className="h-4 w-4 text-slate-500 group-hover:item:text-blue-600" />
+                        <div className="text-xs text-[#6B7280]">
+                          {(() => {
+                            const kaderCount = getKaderCount(member.region, member.subDepartment);
+                            return kaderCount > 0
+                              ? `${kaderCount} aktif`
+                              : `Belum ada`;
+                          })()}
                         </div>
-                        <span className="truncate text-slate-700 font-medium">
-                          {member.email}
-                        </span>
+                      </div>
+                    )}
+
+                    {/* Kontak Info Compact */}
+                    <div className="mt-3 space-y-2">
+                      <div className="flex items-center gap-2 text-xs">
+                        <div className="w-5 h-5 bg-[#001B55]/10 rounded-full flex items-center justify-center">
+                          <Mail className="h-3 w-3 text-[#001B55]" />
+                        </div>
+                        <span className="text-[#6B7280] truncate">{member.email}</span>
                       </div>
 
-                      <div className="flex items-center gap-3 text-sm group/item">
-                        <div className="flex-shrink-0 w-8 h-8 bg-slate-100 rounded-full flex items-center justify-center group-hover:item:bg-green-100 transition-colors duration-300">
-                          <Phone className="h-4 w-4 text-slate-500 group-hover:item:text-green-600" />
+                      <div className="flex items-center gap-2 text-xs">
+                        <div className="w-5 h-5 bg-[#16A34A]/10 rounded-full flex items-center justify-center">
+                          <Phone className="h-3 w-3 text-[#16A34A]" />
                         </div>
-                        <span className="text-slate-700 font-medium">
-                          {member.phone}
-                        </span>
+                        <span className="text-[#6B7280]">{member.phone}</span>
                       </div>
 
-                      <div className="flex items-start gap-3 text-sm group/item">
-                        <div className="flex-shrink-0 w-8 h-8 bg-slate-100 rounded-full flex items-center justify-center mt-0.5 group-hover:item:bg-red-100 transition-colors duration-300">
-                          <MapPin className="h-4 w-4 text-slate-500 group-hover:item:text-red-600" />
+                      <div className="flex items-start gap-2 text-xs">
+                        <div className="w-5 h-5 bg-[#C81E1E]/10 rounded-full flex items-center justify-center mt-0.5">
+                          <MapPin className="h-3 w-3 text-[#C81E1E]" />
                         </div>
-                        <span className="line-clamp-2 text-slate-700 font-medium leading-relaxed">
-                          {member.address}
-                        </span>
+                        <span className="text-[#6B7280] line-clamp-2 leading-relaxed">{member.address}</span>
                       </div>
                     </div>
 
-                    <div className="flex items-center justify-between pt-4 border-t border-slate-200/50">
-                      <Badge
-                        className={`${
-                          statusConfig[member.status].className
-                        } px-3 py-1 rounded-full text-xs font-medium`}
-                      >
+                    {/* Footer dengan Status dan Tanggal Compact */}
+                    <div className="mt-3 pt-2 border-t border-[#F0F0F0] flex items-center justify-between">
+                      <Badge className={`${statusConfig[member.status].className} px-2 py-0.5 rounded-md text-xs font-medium`}>
                         {statusConfig[member.status].label}
                       </Badge>
-                      <span className="text-xs text-slate-500 font-medium">
+                      <span className="text-xs text-[#6B7280] font-medium">
                         {new Date(member.joinDate).toLocaleDateString("id-ID", {
                           day: "numeric",
                           month: "short",
@@ -1992,44 +1922,43 @@ export function MemberListPage() {
                         })}
                       </span>
                     </div>
-                  </CardContent>
-                </Card>
+                  </div>
+                </div>
               ))}
             </div>
 
-            {/* Modern Pagination */}
+            {/* Modern Pagination dengan Design Rapi */}
             {totalPages > 1 && (
-              <div className="flex items-center justify-between p-6 bg-white/60 backdrop-blur-xl border border-white/20 rounded-2xl shadow-xl">
-                <div className="text-sm font-medium text-slate-600">
+              <div className="flex items-center justify-between p-6 bg-white/95 backdrop-blur-xl border-2 border-white/60 rounded-2xl shadow-lg">
+                <div className="text-sm font-medium text-[#6B7280]">
                   Halaman{" "}
-                  <span className="font-bold text-slate-800">
-                    {currentPage}
-                  </span>{" "}
+                  <span className="font-bold text-[#001B55]">{currentPage}</span>{" "}
                   dari{" "}
-                  <span className="font-bold text-slate-800">{totalPages}</span>
-                  <span className="ml-2 text-slate-500">
+                  <span className="font-bold text-[#001B55]">{totalPages}</span>
+                  <span className="ml-2 text-[#6B7280]/70">
                     ({filteredMembers.length} total anggota)
                   </span>
                 </div>
 
-                <div className="flex items-center gap-2">
+                <div className="flex items-center gap-3">
                   <Button
                     variant="outline"
                     size="sm"
-                    onClick={() =>
-                      setCurrentPage((prev) => Math.max(prev - 1, 1))
-                    }
+                    onClick={() => setCurrentPage((prev) => Math.max(prev - 1, 1))}
                     disabled={currentPage === 1}
-                    className="px-4 py-2 rounded-xl border-2 border-slate-200 hover:border-slate-300 disabled:opacity-50 disabled:cursor-not-allowed text-slate-600 hover:text-slate-800 font-medium transition-all duration-300"
+                    className={`px-4 py-2 rounded-xl border-2 font-medium transition-all duration-300 ${
+                      currentPage === 1
+                        ? "border-[#F0F0F0] text-[#6B7280]/50 cursor-not-allowed"
+                        : "border-[#001B55]/20 text-[#001B55] hover:border-[#001B55] hover:bg-[#001B55] hover:text-white"
+                    }`}
                   >
                     <ChevronLeft className="h-4 w-4 mr-1" />
                     Sebelumnya
                   </Button>
 
-                  <div className="flex items-center gap-1">
+                  <div className="flex items-center gap-2">
                     {Array.from({ length: Math.min(totalPages, 5) }, (_, i) => {
-                      const page =
-                        currentPage <= 3 ? i + 1 : currentPage - 2 + i;
+                      const page = currentPage <= 3 ? i + 1 : currentPage - 2 + i;
                       return page <= totalPages ? (
                         <Button
                           key={page}
@@ -2038,8 +1967,8 @@ export function MemberListPage() {
                           onClick={() => setCurrentPage(page)}
                           className={`min-w-[44px] h-10 rounded-xl font-semibold transition-all duration-300 ${
                             page === currentPage
-                              ? "bg-gradient-to-r from-[#001B55] to-[#003875] text-white shadow-lg shadow-[#001B55]/25 scale-105"
-                              : "border-2 border-slate-200 hover:border-slate-300 text-slate-600 hover:text-slate-800 hover:bg-slate-50"
+                              ? "bg-gradient-to-r from-[#001B55] to-[#001B55]/90 text-white shadow-lg shadow-[#001B55]/25 scale-105"
+                              : "border-2 border-[#F0F0F0] text-[#6B7280] hover:border-[#001B55]/30 hover:text-[#001B55] hover:bg-[#F0F0F0]/50"
                           }`}
                         >
                           {page}
@@ -2051,11 +1980,13 @@ export function MemberListPage() {
                   <Button
                     variant="outline"
                     size="sm"
-                    onClick={() =>
-                      setCurrentPage((prev) => Math.min(prev + 1, totalPages))
-                    }
+                    onClick={() => setCurrentPage((prev) => Math.min(prev + 1, totalPages))}
                     disabled={currentPage === totalPages}
-                    className="px-4 py-2 rounded-xl border-2 border-slate-200 hover:border-slate-300 disabled:opacity-50 disabled:cursor-not-allowed text-slate-600 hover:text-slate-800 font-medium transition-all duration-300"
+                    className={`px-4 py-2 rounded-xl border-2 font-medium transition-all duration-300 ${
+                      currentPage === totalPages
+                        ? "border-[#F0F0F0] text-[#6B7280]/50 cursor-not-allowed"
+                        : "border-[#001B55]/20 text-[#001B55] hover:border-[#001B55] hover:bg-[#001B55] hover:text-white"
+                    }`}
                   >
                     Selanjutnya
                     <ChevronRight className="h-4 w-4 ml-1" />
@@ -2065,37 +1996,36 @@ export function MemberListPage() {
             )}
           </div>
         ) : (
-          <Card className="relative overflow-hidden bg-white/60 backdrop-blur-xl border border-white/20 rounded-3xl shadow-2xl shadow-blue-900/10">
-            <div className="absolute inset-0 bg-gradient-to-br from-blue-50/20 via-transparent to-orange-50/20"></div>
-            <CardContent className="relative p-16 text-center">
+          <div className="relative overflow-hidden bg-white/95 backdrop-blur-xl border-2 border-white/60 rounded-3xl shadow-2xl">
+            <div className="absolute inset-0 bg-gradient-to-br from-[#001B55]/3 via-transparent to-[#FF9C04]/3"></div>
+            <div className="relative p-16 text-center">
               <div className="max-w-md mx-auto space-y-6">
                 <div className="relative">
-                  <div className="absolute inset-0 bg-gradient-to-r from-slate-200 to-slate-300 rounded-full blur-2xl opacity-30"></div>
-                  <div className="relative w-24 h-24 mx-auto bg-gradient-to-br from-slate-100 to-slate-200 rounded-full flex items-center justify-center">
-                    <Users className="h-12 w-12 text-slate-400" />
+                  <div className="absolute inset-0 bg-gradient-to-r from-[#F0F0F0] to-[#F0F0F0] rounded-full blur-2xl opacity-50"></div>
+                  <div className="relative w-24 h-24 mx-auto bg-gradient-to-br from-[#F0F0F0] to-[#F0F0F0]/80 rounded-full flex items-center justify-center shadow-lg">
+                    <Users className="h-12 w-12 text-[#6B7280]" />
                   </div>
                 </div>
 
                 <div className="space-y-3">
-                  <h3 className="text-2xl font-bold text-slate-800">
+                  <h3 className="text-2xl font-bold text-[#001B55]">
                     Belum ada anggota
                   </h3>
-                  <p className="text-slate-600 text-lg">
-                    Tambahkan anggota pertama untuk memulai mengelola struktur
-                    organisasi
+                  <p className="text-[#6B7280] text-lg font-medium">
+                    Tambahkan anggota pertama untuk memulai mengelola struktur organisasi
                   </p>
                 </div>
 
                 <Button
                   onClick={() => setIsAddDialogOpen(true)}
-                  className="bg-gradient-to-r from-[#FF9C04] via-[#FFB84D] to-[#FF9C04] hover:from-[#001B55] hover:via-[#003875] hover:to-[#001B55] text-white font-semibold px-8 py-4 rounded-2xl shadow-xl shadow-[#FF9C04]/25 hover:shadow-[#001B55]/25 transition-all duration-500 transform hover:scale-105"
+                  className="bg-gradient-to-r from-[#FF9C04] to-[#FF9C04]/90 hover:from-[#001B55] hover:to-[#001B55]/90 text-white font-semibold px-8 py-4 rounded-2xl shadow-xl shadow-[#FF9C04]/25 hover:shadow-[#001B55]/25 transition-all duration-500 transform hover:scale-105"
                 >
                   <Plus className="mr-2 h-5 w-5" />
                   Tambah Anggota Pertama
                 </Button>
               </div>
-            </CardContent>
-          </Card>
+            </div>
+          </div>
         )}
 
         {/* Member Detail Modal */}
@@ -2589,6 +2519,7 @@ export function MemberListPage() {
             </DialogContent>
           </Dialog>
         )}
+        </div>
       </div>
     </AdminLayout>
   );

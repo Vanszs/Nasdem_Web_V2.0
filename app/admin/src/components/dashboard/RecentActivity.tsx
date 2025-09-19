@@ -70,52 +70,52 @@ const getActivityIcon = (type: ActivityItem["type"], action: ActivityItem["actio
 const getActivityConfig = (action: ActivityItem["action"]) => {
   const configs = {
     published: { 
-      bgColor: "bg-emerald-50", 
-      textColor: "text-emerald-700", 
-      borderColor: "border-emerald-200",
-      iconBg: "bg-emerald-100",
+      bgColor: "bg-[#16A34A]/10", 
+      textColor: "text-[#16A34A]", 
+      borderColor: "border-[#16A34A]/20",
+      iconBg: "bg-[#16A34A]/10",
       label: "Published"
     },
     created: { 
-      bgColor: "bg-blue-50", 
-      textColor: "text-blue-700", 
-      borderColor: "border-blue-200",
-      iconBg: "bg-blue-100",
+      bgColor: "bg-[#2563EB]/10", 
+      textColor: "text-[#2563EB]", 
+      borderColor: "border-[#2563EB]/20",
+      iconBg: "bg-[#2563EB]/10",
       label: "Created"
     },
     updated: { 
-      bgColor: "bg-amber-50", 
-      textColor: "text-amber-700", 
-      borderColor: "border-amber-200",
-      iconBg: "bg-amber-100",
+      bgColor: "bg-[#F59E0B]/10", 
+      textColor: "text-[#F59E0B]", 
+      borderColor: "border-[#F59E0B]/20",
+      iconBg: "bg-[#F59E0B]/10",
       label: "Updated"
     },
   };
   
   return configs[action] || {
-    bgColor: "bg-gray-50", 
-    textColor: "text-gray-700",
-    borderColor: "border-gray-200",
-    iconBg: "bg-gray-100",
+    bgColor: "bg-[#6B7280]/10", 
+    textColor: "text-[#6B7280]",
+    borderColor: "border-[#6B7280]/20",
+    iconBg: "bg-[#6B7280]/10",
     label: action
   };
 };
 
 const getPriorityDot = (priority?: string) => {
   switch (priority) {
-    case "high": return "bg-red-500";
-    case "medium": return "bg-yellow-500";
-    case "low": return "bg-green-500";
-    default: return "bg-gray-400";
+    case "high": return "bg-[#C81E1E]";
+    case "medium": return "bg-[#F59E0B]";
+    case "low": return "bg-[#16A34A]";
+    default: return "bg-[#6B7280]";
   }
 };
 
 const getTypeIconClass = (type: string) => {
   switch (type) {
-    case "news": return "text-blue-600";
-    case "gallery": return "text-purple-600";
-    case "structure": return "text-green-600";
-    default: return "text-gray-600";
+    case "news": return "text-[#001B55]";
+    case "gallery": return "text-[#FF9C04]";
+    case "structure": return "text-[#16A34A]";
+    default: return "text-[#6B7280]";
   }
 };
 
@@ -129,7 +129,8 @@ export function RecentActivity() {
         return (
           <div 
             key={activity.id} 
-            className="group relative p-4 rounded-xl border border-gray-200 hover:border-gray-300 hover:shadow-sm transition-all duration-200 bg-white"
+            className="group relative p-4 rounded-xl border bg-white hover:border-[#FF9C04]/30 hover:shadow-md transition-all duration-300"
+            style={{ borderColor: 'rgba(0,0,0,0.08)' }}
           >
             {/* Priority indicator */}
             <div className={cn(
@@ -151,7 +152,7 @@ export function RecentActivity() {
               <div className="flex-1 min-w-0">
                 {/* Title and Status */}
                 <div className="flex items-start justify-between gap-3 mb-2">
-                  <h4 className="font-medium text-sm text-gray-900 line-clamp-2 group-hover:text-blue-700 transition-colors duration-200 leading-relaxed">
+                  <h4 className="font-medium text-sm text-[#001B55] line-clamp-2 group-hover:text-[#FF9C04] transition-colors duration-300 leading-relaxed">
                     {activity.title}
                   </h4>
                   <Badge 
@@ -168,14 +169,14 @@ export function RecentActivity() {
                 </div>
                 
                 {/* User and Timestamp */}
-                <div className="flex items-center gap-2 text-xs text-gray-500">
+                <div className="flex items-center gap-2 text-xs text-[#6B7280]">
                   <Avatar className="h-6 w-6 ring-2 ring-white ring-offset-1">
-                    <AvatarFallback className="text-[10px] bg-blue-600 text-white font-medium">
+                    <AvatarFallback className="text-[10px] bg-[#001B55] text-white font-medium">
                       {activity.user.split(" ").map(n => n[0]).join("").slice(0, 2)}
                     </AvatarFallback>
                   </Avatar>
-                  <span className="font-medium text-gray-700">{activity.user}</span>
-                  <span className="text-gray-300">•</span>
+                  <span className="font-medium text-[#001B55]">{activity.user}</span>
+                  <span className="text-[#6B7280]/50">•</span>
                   <div className="flex items-center gap-1">
                     <Clock className="h-3 w-3" />
                     <span>
@@ -191,15 +192,15 @@ export function RecentActivity() {
             
             {/* Timeline connector */}
             {index < activities.length - 1 && (
-              <div className="absolute left-[26px] -bottom-1.5 w-[2px] h-6 bg-gray-200" />
+              <div className="absolute left-[26px] -bottom-1.5 w-[2px] h-6 bg-[#6B7280]/20" />
             )}
           </div>
         );
       })}
       
       {/* View All Button */}
-      <div className="pt-4 text-center border-t border-gray-100">
-        <button className="text-sm text-blue-600 hover:text-blue-800 font-medium transition-colors duration-200 hover:underline px-4 py-2 rounded-lg hover:bg-blue-50">
+      <div className="pt-4 text-center border-t" style={{ borderColor: 'rgba(0,0,0,0.08)' }}>
+        <button className="text-sm text-[#001B55] hover:text-[#FF9C04] font-medium transition-colors duration-300 hover:underline px-4 py-2 rounded-lg hover:bg-[#FF9C04]/10">
           Lihat semua aktivitas →
         </button>
       </div>
