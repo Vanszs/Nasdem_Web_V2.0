@@ -1,6 +1,4 @@
-@import './src/styles/admin-design-tokens.css';
-@tailwind base;
-@tailwind components;
+@import "./src/styles/admin-design-tokens.css";
 @tailwind utilities;
 
 /* Definition of the design system. All colors, gradients, fonts, etc should be defined here. 
@@ -9,26 +7,38 @@ All colors MUST be HSL.
 
 @layer base {
   :root {
-    /* Brand Colors - NasDem Sidoarjo */  
-    --color-primary: 218 100% 17%;        /* #001B55 - Biru Tua */
-    --color-accent: 33 100% 51%;          /* #FF9C04 - Kuning Jingga */
-    --color-bg: 0 0% 94%;                 /* #F0F0F0 - Abu Muda */
-    --color-surface: 0 0% 100%;           /* #FFFFFF - Putih */
-    --color-danger: 0 75% 45%;            /* #C81E1E - Merah Tua */
-    
+    /* Brand Colors - NasDem Sidoarjo */
+    --color-primary: 218 100% 17%; /* #001B55 - Biru Tua */
+    --color-accent: 33 100% 51%; /* #FF9C04 - Kuning Jingga */
+    --color-bg: 0 0% 94%; /* #F0F0F0 - Abu Muda */
+    --color-surface: 0 0% 100%; /* #FFFFFF - Putih */
+    --color-danger: 0 75% 45%; /* #C81E1E - Merah Tua */
+
     /* Modern Gradients & Effects */
-    --gradient-primary: linear-gradient(135deg, hsl(218 100% 17%) 0%, hsl(218 80% 25%) 100%);
-    --gradient-accent: linear-gradient(135deg, hsl(33 100% 51%) 0%, hsl(38 95% 55%) 100%);
-    --gradient-subtle: linear-gradient(180deg, hsl(0 0% 100%) 0%, hsl(220 20% 98%) 100%);
+    --gradient-primary: linear-gradient(
+      135deg,
+      hsl(218 100% 17%) 0%,
+      hsl(218 80% 25%) 100%
+    );
+    --gradient-accent: linear-gradient(
+      135deg,
+      hsl(33 100% 51%) 0%,
+      hsl(38 95% 55%) 100%
+    );
+    --gradient-subtle: linear-gradient(
+      180deg,
+      hsl(0 0% 100%) 0%,
+      hsl(220 20% 98%) 100%
+    );
     --glass-bg: hsla(0 0% 100% / 0.8);
     --glass-border: hsla(220 20% 80% / 0.3);
-    
+
     /* Enhanced Shadows */
     --shadow-soft: 0 2px 8px -2px hsl(220 20% 20% / 0.08);
     --shadow-medium: 0 4px 16px -4px hsl(220 20% 20% / 0.12);
     --shadow-large: 0 8px 32px -8px hsl(220 20% 20% / 0.16);
     --shadow-glow: 0 0 20px hsl(var(--accent) / 0.15);
-    
+
     /* Neutral Colors */
     --gray-50: 220 13% 98%;
     --gray-100: 220 13% 95%;
@@ -40,13 +50,13 @@ All colors MUST be HSL.
     --gray-700: 220 13% 26%;
     --gray-800: 220 13% 15%;
     --gray-900: 220 13% 9%;
-    
+
     /* Status Colors */
     --success: 142 76% 36%;
     --warning: 38 92% 50%;
     --error: 0 84% 60%;
     --info: 199 89% 48%;
-    
+
     /* Shadcn UI Variables */
     --background: 0 0% 100%;
     --foreground: 222.2 84% 4.9%;
@@ -54,20 +64,20 @@ All colors MUST be HSL.
     --card-foreground: 222.2 84% 4.9%;
     --popover: 0 0% 100%;
     --popover-foreground: 222.2 84% 4.9%;
-    --primary: 218 100% 17%;              /* #001B55 */
+    --primary: 218 100% 17%; /* #001B55 */
     --primary-foreground: 210 40% 98%;
     --secondary: 210 40% 96%;
     --secondary-foreground: 222.2 84% 4.9%;
     --muted: 210 40% 96%;
     --muted-foreground: 215.4 16.3% 46.9%;
-    --accent: 33 100% 51%;                /* #FF9C04 */
+    --accent: 33 100% 51%; /* #FF9C04 */
     --accent-foreground: 222.2 84% 4.9%;
     --destructive: 0 84.2% 60.2%;
     --destructive-foreground: 210 40% 98%;
     --border: 214.3 31.8% 91.4%;
     --input: 214.3 31.8% 91.4%;
-    --ring: 218 100% 17%;                 /* #001B55 */
-    --radius: 0.75rem;                    /* More rounded for modern smooth look */
+    --ring: 218 100% 17%; /* #001B55 */
+    --radius: 0.75rem; /* More rounded for modern smooth look */
   }
 
   .dark {
@@ -104,31 +114,31 @@ All colors MUST be HSL.
 
 /* NasDem Custom Utilities */
 .nasdem-gradient {
-  background: linear-gradient(135deg, #001B55 0%, #FF9C04 100%);
+  background: linear-gradient(135deg, #001b55 0%, #ff9c04 100%);
 }
 
 .nasdem-blue {
-  color: #001B55;
+  color: #001b55;
 }
 
 .nasdem-orange {
-  color: #FF9C04;
+  color: #ff9c04;
 }
 
 .bg-nasdem-blue {
-  background-color: #001B55;
+  background-color: #001b55;
 }
 
 .bg-nasdem-orange {
-  background-color: #FF9C04;
+  background-color: #ff9c04;
 }
 
 .border-nasdem-blue {
-  border-color: #001B55;
+  border-color: #001b55;
 }
 
 .border-nasdem-orange {
-  border-color: #FF9C04;
+  border-color: #ff9c04;
 }
 
 /* Enhanced Card Styles */
@@ -137,7 +147,12 @@ All colors MUST be HSL.
 }
 
 .card-header-gradient {
-  background: linear-gradient(to right, rgb(0 27 85 / 0.1), white, rgb(255 156 4 / 0.1));
+  background: linear-gradient(
+    to right,
+    rgb(0 27 85 / 0.1),
+    white,
+    rgb(255 156 4 / 0.1)
+  );
 }
 
 /* Button Enhancements */
@@ -151,16 +166,16 @@ All colors MUST be HSL.
 
 /* Fixed button variants for proper contrast */
 .btn-accent-fixed {
-  background-color: #FF9C04 !important;
+  background-color: #ff9c04 !important;
   color: white !important;
-  border: 2px solid #FF9C04 !important;
+  border: 2px solid #ff9c04 !important;
   font-weight: 600 !important;
   transition: all 0.2s ease !important;
 }
 
 .btn-accent-fixed:hover {
-  background-color: #001B55 !important;
-  border-color: #001B55 !important;
+  background-color: #001b55 !important;
+  border-color: #001b55 !important;
   color: white !important;
   transform: scale(1.02) !important;
 }
@@ -193,12 +208,12 @@ All colors MUST be HSL.
 }
 
 ::-webkit-scrollbar-thumb {
-  background: #FF9C04;
+  background: #ff9c04;
   border-radius: 3px;
 }
 
 ::-webkit-scrollbar-thumb:hover {
-  background: #001B55;
+  background: #001b55;
 }
 
 /* Loading Animations */
@@ -222,19 +237,19 @@ All colors MUST be HSL.
   .rounded-smooth {
     border-radius: 0.875rem; /* 14px - More rounded than default */
   }
-  
+
   .rounded-smooth-lg {
     border-radius: 1.125rem; /* 18px - Large smooth corners */
   }
-  
+
   .rounded-smooth-xl {
     border-radius: 1.375rem; /* 22px - Extra large smooth corners */
   }
-  
+
   .rounded-smooth-2xl {
     border-radius: 1.75rem; /* 28px - Very smooth corners */
   }
-  
+
   .rounded-smooth-3xl {
     border-radius: 2.25rem; /* 36px - Ultra smooth corners */
   }
@@ -243,23 +258,23 @@ All colors MUST be HSL.
   .bg-brand-primary {
     background-color: hsl(var(--color-primary));
   }
-  
+
   .bg-brand-accent {
     background-color: hsl(var(--color-accent));
   }
-  
+
   .text-brand-primary {
     color: hsl(var(--color-primary));
   }
-  
+
   .text-brand-accent {
     color: hsl(var(--color-accent));
   }
-  
+
   .border-brand-primary {
     border-color: hsl(var(--color-primary));
   }
-  
+
   .border-brand-accent {
     border-color: hsl(var(--color-accent));
   }
@@ -269,17 +284,17 @@ All colors MUST be HSL.
     -ms-overflow-style: none !important;
     scrollbar-width: none !important;
   }
-  
+
   .scrollbar-hide::-webkit-scrollbar {
     display: none !important;
     width: 0 !important;
     background: transparent !important;
   }
-  
+
   .scrollbar-hide::-webkit-scrollbar-track {
     background: transparent !important;
   }
-  
+
   .scrollbar-hide::-webkit-scrollbar-thumb {
     background: transparent !important;
   }
