@@ -1,0 +1,301 @@
+@import "./admin-design-tokens.css";
+@tailwind utilities;
+
+/* Definition of the design system. All colors, gradients, fonts, etc should be defined here. 
+All colors MUST be HSL.
+*/
+
+@layer base {
+  :root {
+    /* Brand Colors - NasDem Sidoarjo */
+    --color-primary: 218 100% 17%; /* #001B55 - Biru Tua */
+    --color-accent: 33 100% 51%; /* #FF9C04 - Kuning Jingga */
+    --color-bg: 0 0% 94%; /* #F0F0F0 - Abu Muda */
+    --color-surface: 0 0% 100%; /* #FFFFFF - Putih */
+    --color-danger: 0 75% 45%; /* #C81E1E - Merah Tua */
+
+    /* Modern Gradients & Effects */
+    --gradient-primary: linear-gradient(
+      135deg,
+      hsl(218 100% 17%) 0%,
+      hsl(218 80% 25%) 100%
+    );
+    --gradient-accent: linear-gradient(
+      135deg,
+      hsl(33 100% 51%) 0%,
+      hsl(38 95% 55%) 100%
+    );
+    --gradient-subtle: linear-gradient(
+      180deg,
+      hsl(0 0% 100%) 0%,
+      hsl(220 20% 98%) 100%
+    );
+    --glass-bg: hsla(0 0% 100% / 0.8);
+    --glass-border: hsla(220 20% 80% / 0.3);
+
+    /* Enhanced Shadows */
+    --shadow-soft: 0 2px 8px -2px hsl(220 20% 20% / 0.08);
+    --shadow-medium: 0 4px 16px -4px hsl(220 20% 20% / 0.12);
+    --shadow-large: 0 8px 32px -8px hsl(220 20% 20% / 0.16);
+    --shadow-glow: 0 0 20px hsl(var(--accent) / 0.15);
+
+    /* Neutral Colors */
+    --gray-50: 220 13% 98%;
+    --gray-100: 220 13% 95%;
+    --gray-200: 220 13% 91%;
+    --gray-300: 220 9% 85%;
+    --gray-400: 220 9% 69%;
+    --gray-500: 220 9% 46%;
+    --gray-600: 220 13% 37%;
+    --gray-700: 220 13% 26%;
+    --gray-800: 220 13% 15%;
+    --gray-900: 220 13% 9%;
+
+    /* Status Colors */
+    --success: 142 76% 36%;
+    --warning: 38 92% 50%;
+    --error: 0 84% 60%;
+    --info: 199 89% 48%;
+
+    /* Shadcn UI Variables */
+    --background: 0 0% 100%;
+    --foreground: 222.2 84% 4.9%;
+    --card: 0 0% 100%;
+    --card-foreground: 222.2 84% 4.9%;
+    --popover: 0 0% 100%;
+    --popover-foreground: 222.2 84% 4.9%;
+    --primary: 218 100% 17%; /* #001B55 */
+    --primary-foreground: 210 40% 98%;
+    --secondary: 210 40% 96%;
+    --secondary-foreground: 222.2 84% 4.9%;
+    --muted: 210 40% 96%;
+    --muted-foreground: 215.4 16.3% 46.9%;
+    --accent: 33 100% 51%; /* #FF9C04 */
+    --accent-foreground: 222.2 84% 4.9%;
+    --destructive: 0 84.2% 60.2%;
+    --destructive-foreground: 210 40% 98%;
+    --border: 214.3 31.8% 91.4%;
+    --input: 214.3 31.8% 91.4%;
+    --ring: 218 100% 17%; /* #001B55 */
+    --radius: 0.75rem; /* More rounded for modern smooth look */
+  }
+
+  .dark {
+    --background: 222.2 84% 4.9%;
+    --foreground: 210 40% 98%;
+    --card: 222.2 84% 4.9%;
+    --card-foreground: 210 40% 98%;
+    --popover: 222.2 84% 4.9%;
+    --popover-foreground: 210 40% 98%;
+    --primary: 210 40% 98%;
+    --primary-foreground: 222.2 47.4% 11.2%;
+    --secondary: 217.2 32.6% 17.5%;
+    --secondary-foreground: 210 40% 98%;
+    --muted: 217.2 32.6% 17.5%;
+    --muted-foreground: 215 20.2% 65.1%;
+    --accent: 217.2 32.6% 17.5%;
+    --accent-foreground: 210 40% 98%;
+    --destructive: 0 62.8% 30.6%;
+    --destructive-foreground: 210 40% 98%;
+    --border: 217.2 32.6% 17.5%;
+    --input: 217.2 32.6% 17.5%;
+    --ring: 212.7 26.8% 83.9%;
+  }
+}
+
+@layer base {
+  * {
+    @apply border-border;
+  }
+  body {
+    @apply bg-background text-foreground;
+  }
+}
+
+/* NasDem Custom Utilities */
+.nasdem-gradient {
+  background: linear-gradient(135deg, #001b55 0%, #ff9c04 100%);
+}
+
+.nasdem-blue {
+  color: #001b55;
+}
+
+.nasdem-orange {
+  color: #ff9c04;
+}
+
+.bg-nasdem-blue {
+  background-color: #001b55;
+}
+
+.bg-nasdem-orange {
+  background-color: #ff9c04;
+}
+
+.border-nasdem-blue {
+  border-color: #001b55;
+}
+
+.border-nasdem-orange {
+  border-color: #ff9c04;
+}
+
+/* Enhanced Card Styles */
+.card-enhanced {
+  @apply bg-white border-2 border-gray-200 shadow-lg hover:shadow-xl transition-shadow duration-200;
+}
+
+.card-header-gradient {
+  background: linear-gradient(
+    to right,
+    rgb(0 27 85 / 0.1),
+    white,
+    rgb(255 156 4 / 0.1)
+  );
+}
+
+/* Button Enhancements */
+.btn-nasdem-primary {
+  @apply bg-[#001B55] hover:bg-[#001B55]/90 text-white font-semibold border-2 border-[#001B55] shadow-lg hover:shadow-xl transition-all duration-200;
+}
+
+.btn-nasdem-accent {
+  @apply bg-[#FF9C04] hover:bg-[#001B55] text-white font-semibold border-2 border-[#FF9C04] hover:border-[#001B55] shadow-lg hover:shadow-xl transition-all duration-200 transform hover:scale-105;
+}
+
+/* Fixed button variants for proper contrast */
+.btn-accent-fixed {
+  background-color: #ff9c04 !important;
+  color: white !important;
+  border: 2px solid #ff9c04 !important;
+  font-weight: 600 !important;
+  transition: all 0.2s ease !important;
+}
+
+.btn-accent-fixed:hover {
+  background-color: #001b55 !important;
+  border-color: #001b55 !important;
+  color: white !important;
+  transform: scale(1.02) !important;
+}
+
+/* Status Badges */
+.badge-berlangsung {
+  @apply bg-[#001B55]/10 text-[#001B55] border border-[#001B55]/20 font-semibold;
+}
+
+.badge-selesai {
+  @apply bg-[#FF9C04]/10 text-[#FF9C04] border border-[#FF9C04]/20 font-semibold;
+}
+
+/* Tab Navigation */
+.tab-trigger-enhanced {
+  @apply relative inline-flex items-center justify-center whitespace-nowrap rounded-lg px-6 py-3 text-sm font-semibold transition-all duration-300 ease-in-out focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#001B55] focus-visible:ring-offset-2 disabled:pointer-events-none disabled:opacity-50 text-gray-600 hover:text-[#001B55] hover:bg-white/80;
+}
+
+.tab-trigger-active {
+  @apply bg-gradient-to-r from-[#001B55] to-[#001B55]/90 text-white shadow-lg shadow-[#001B55]/25 border border-[#FF9C04]/30;
+}
+
+/* Custom Scrollbar */
+::-webkit-scrollbar {
+  width: 6px;
+}
+
+::-webkit-scrollbar-track {
+  background: #f1f1f1;
+}
+
+::-webkit-scrollbar-thumb {
+  background: #ff9c04;
+  border-radius: 3px;
+}
+
+::-webkit-scrollbar-thumb:hover {
+  background: #001b55;
+}
+
+/* Loading Animations */
+@keyframes shimmer {
+  0% {
+    background-position: -200px 0;
+  }
+  100% {
+    background-position: calc(200px + 100%) 0;
+  }
+}
+
+.shimmer {
+  animation: shimmer 2s ease-in-out infinite;
+  background: linear-gradient(90deg, #f0f0f0 0px, #e0e0e0 40px, #f0f0f0 80px);
+  background-size: 200px;
+}
+
+/* Modern Smooth Border Radius Utilities */
+@layer utilities {
+  .rounded-smooth {
+    border-radius: 0.875rem; /* 14px - More rounded than default */
+  }
+
+  .rounded-smooth-lg {
+    border-radius: 1.125rem; /* 18px - Large smooth corners */
+  }
+
+  .rounded-smooth-xl {
+    border-radius: 1.375rem; /* 22px - Extra large smooth corners */
+  }
+
+  .rounded-smooth-2xl {
+    border-radius: 1.75rem; /* 28px - Very smooth corners */
+  }
+
+  .rounded-smooth-3xl {
+    border-radius: 2.25rem; /* 36px - Ultra smooth corners */
+  }
+
+  /* Brand Color Utilities */
+  .bg-brand-primary {
+    background-color: hsl(var(--color-primary));
+  }
+
+  .bg-brand-accent {
+    background-color: hsl(var(--color-accent));
+  }
+
+  .text-brand-primary {
+    color: hsl(var(--color-primary));
+  }
+
+  .text-brand-accent {
+    color: hsl(var(--color-accent));
+  }
+
+  .border-brand-primary {
+    border-color: hsl(var(--color-primary));
+  }
+
+  .border-brand-accent {
+    border-color: hsl(var(--color-accent));
+  }
+
+  /* Hide scrollbar */
+  .scrollbar-hide {
+    -ms-overflow-style: none !important;
+    scrollbar-width: none !important;
+  }
+
+  .scrollbar-hide::-webkit-scrollbar {
+    display: none !important;
+    width: 0 !important;
+    background: transparent !important;
+  }
+
+  .scrollbar-hide::-webkit-scrollbar-track {
+    background: transparent !important;
+  }
+
+  .scrollbar-hide::-webkit-scrollbar-thumb {
+    background: transparent !important;
+  }
+}

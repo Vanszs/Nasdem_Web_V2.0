@@ -1,20 +1,21 @@
 import type { Metadata } from "next";
 import { Inter } from "next/font/google";
-import "./admin-globals.css";
 import { Providers } from "./providers";
+import "./styles/admin.css";
 
 const inter = Inter({ subsets: ["latin"] });
 
 export const metadata: Metadata = {
   title: "NasDem Admin Panel - Sidoarjo",
-  description: "Panel administrasi untuk DPD NasDem Sidoarjo - Manajemen konten, berita, galeri, dan informasi organisasi",
+  description:
+    "Panel administrasi untuk DPD NasDem Sidoarjo - Manajemen konten, berita, galeri, dan informasi organisasi",
   keywords: [
     "NasDem",
     "Sidoarjo",
     "Admin Panel",
     "Politik",
     "Partai",
-    "Indonesia"
+    "Indonesia",
   ],
   authors: [{ name: "NasDem Sidoarjo" }],
   creator: "NasDem Sidoarjo",
@@ -62,9 +63,7 @@ export default function RootLayout({
   return (
     <html lang="id" suppressHydrationWarning>
       <body className={inter.className} suppressHydrationWarning>
-        <Providers>
-          {children}
-        </Providers>
+        <Providers>{children}</Providers>
       </body>
     </html>
   );

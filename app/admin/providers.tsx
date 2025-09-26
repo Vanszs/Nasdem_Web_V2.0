@@ -1,10 +1,9 @@
 "use client";
 
+import { Toaster } from "@/components/ui/sonner";
+import { TooltipProvider } from "@/components/ui/tooltip";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { ThemeProvider } from "next-themes";
-import { Toaster } from "./src/components/ui/toaster";
-import { Toaster as Sonner } from "./src/components/ui/sonner";
-import { TooltipProvider } from "./src/components/ui/tooltip";
 import { useState } from "react";
 
 export function Providers({ children }: { children: React.ReactNode }) {
@@ -16,7 +15,6 @@ export function Providers({ children }: { children: React.ReactNode }) {
             staleTime: 60 * 1000,
             refetchOnWindowFocus: false,
             retry: (failureCount, error: any) => {
-              // Don't retry on 4xx errors
               if (error?.status >= 400 && error?.status < 500) {
                 return false;
               }
@@ -37,8 +35,7 @@ export function Providers({ children }: { children: React.ReactNode }) {
       >
         <TooltipProvider>
           {children}
-          <Toaster />
-          <Sonner />
+          <Toaster richColors closeButton />
         </TooltipProvider>
       </ThemeProvider>
     </QueryClientProvider>
