@@ -14,7 +14,7 @@ export default function News() {
         <div className="bg-white/70 backdrop-blur-sm border-2 border-gray-200/80 rounded-2xl p-6 shadow-sm hover:shadow-md transition-all duration-300">
           <div className="flex items-center justify-between">
             <div>
-              <h1 className="text-2xl font-bold">Kelola Berita</h1>
+              <h1 className="text-2xl font-bold text-primary">Kelola Berita</h1>
               <p className="text-muted-foreground">
                 Buat, edit, dan kelola artikel untuk publikasi website.
               </p>

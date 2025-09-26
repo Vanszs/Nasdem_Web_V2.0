@@ -6,14 +6,7 @@ import {
   FileText,
   Image,
   Users,
-  Home,
-  Activity,
-  Settings,
   ChevronDown,
-  Building,
-  Layers,
-  MapPin,
-  TreePine,
   Menu,
   X,
   Sparkles,
@@ -56,38 +49,6 @@ const menuItems = [
         url: "/admin/landing",
         icon: Globe,
         description: "Kelola halaman utama",
-      },
-    ],
-  },
-  {
-    title: "Struktur",
-    icon: Users,
-    isCollapsible: true,
-    badge: "Organization",
-    subItems: [
-      {
-        title: "DPD",
-        url: "/admin/structure/dpd",
-        icon: Building,
-        description: "Dewan Pimpinan Daerah",
-      },
-      {
-        title: "Sayap",
-        url: "/admin/structure/sayap",
-        icon: Layers,
-        description: "Organisasi Sayap",
-      },
-      {
-        title: "DPC",
-        url: "/admin/structure/dpc",
-        icon: MapPin,
-        description: "Dewan Pimpinan Cabang",
-      },
-      {
-        title: "DPRT",
-        url: "/admin/structure/dprt",
-        icon: TreePine,
-        description: "Dewan Pimpinan Ranting",
       },
     ],
   },
@@ -290,7 +251,7 @@ export function ModernSidebar({
                     onMouseLeave={() => setHoveredItem(null)}
                     className={`w-full group relative flex items-center gap-3 px-4 py-3 mx-3 rounded-smooth font-medium transition-all duration-500 ease-[cubic-bezier(0.16,1,0.3,1)] overflow-hidden ${
                       isGroupActive(item.subItems)
-                        ? "text-white/85 bg-white/[0.12] text-white scale-[1.01] shadow-lg shadow-white/10"
+                        ? "bg-white/[0.12] text-white scale-[1.01] shadow-lg shadow-white/10"
                         : "text-white/85 hover:bg-white/[0.12] hover:text-white hover:scale-[1.01]"
                     }`}
                   >
@@ -332,7 +293,7 @@ export function ModernSidebar({
                           className={({ isActive }) =>
                             `group relative flex items-center gap-3 px-6 py-3 mx-2 rounded-smooth transition-all duration-300 ${
                               isActive
-                                ? "text-white/85 bg-white/[0.12] text-white"
+                                ? "bg-white/[0.12] text-white"
                                 : "text-white/80 hover:bg-white/10 hover:text-white"
                             }`
                           }
