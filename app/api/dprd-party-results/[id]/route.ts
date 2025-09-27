@@ -7,19 +7,19 @@ export async function GET(
   { params }: { params: { id: string } }
 ) {
   try {
-    const program = await db.program.findUnique({
+    const result = await db.dprdPartyResult.findUnique({
       where: { id: parseInt(params.id) },
       include: {
-        Category: true,
-        User: { select: { id: true, username: true, email: true } },
+        Party: true,
+        DprdElectionAnalysis: { select: { id: true, year: true } },
       },
     });
-    if (!program)
+    if (!result)
       return NextResponse.json(
-        { success: false, error: "Program not found" },
+        { success: false, error: "Result not found" },
         { status: 404 }
       );
-    return NextResponse.json({ success: true, data: program });
+    return NextResponse.json({ success: true, data: result });
   } catch (err: any) {
     return NextResponse.json(
       { success: false, error: err.message },
@@ -34,22 +34,16 @@ export async function PUT(
 ) {
   const authError = requireAuth(req);
   if (authError) return authError;
-  const roleError = requireRole(req, ["editor", "superadmin"]);
+  const roleError = requireRole(req, ["superadmin", "analyst"]);
   if (roleError) return roleError;
   try {
-    const userId = (req as any).user.userId;
-    const { title, description, startDate, endDate, categoryId, photoUrl } =
-      await req.json();
-    const updated = await db.program.update({
+    const { electionAnalysisId, partyId, votes } = await req.json();
+    const updated = await db.dprdPartyResult.update({
       where: { id: parseInt(params.id) },
-      data: {
-        title,
-        description,
-        startDate: startDate ? new Date(startDate) : undefined,
-        endDate: endDate ? new Date(endDate) : undefined,
-        categoryId,
-        photoUrl,
-        userId,
+      data: { electionAnalysisId, partyId, votes },
+      include: {
+        Party: true,
+        DprdElectionAnalysis: { select: { id: true, year: true } },
       },
     });
     return NextResponse.json({ success: true, data: updated });
@@ -67,11 +61,11 @@ export async function DELETE(
 ) {
   const authError = requireAuth(req);
   if (authError) return authError;
-  const roleError = requireRole(req, ["editor", "superadmin"]);
+  const roleError = requireRole(req, ["superadmin", "analyst"]);
   if (roleError) return roleError;
   try {
-    await db.program.delete({ where: { id: parseInt(params.id) } });
-    return NextResponse.json({ success: true, message: "Program deleted" });
+    await db.dprdPartyResult.delete({ where: { id: parseInt(params.id) } });
+    return NextResponse.json({ success: true, message: "Result deleted" });
   } catch (err: any) {
     return NextResponse.json(
       { success: false, error: err.message },

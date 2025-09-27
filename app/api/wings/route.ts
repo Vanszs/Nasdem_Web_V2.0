@@ -2,17 +2,17 @@ import { NextRequest, NextResponse } from "next/server";
 import { db } from "@/lib/db";
 import { requireAuth, requireRole } from "@/lib/jwt-middleware";
 
-// list semua berita
+// list semua sayap
 export async function GET() {
   try {
-    const newsList = await db.news.findMany({
+    const sayaps = await db.sayapType.findMany({
       include: {
-        User: { select: { id: true, username: true, email: true } },
+        StrukturOrganisasi: true,
       },
-      orderBy: { publishDate: "desc" },
+      orderBy: { name: "asc" },
     });
 
-    return NextResponse.json({ success: true, data: newsList });
+    return NextResponse.json({ success: true, data: sayaps });
   } catch (err: any) {
     return NextResponse.json(
       { success: false, error: err.message },
@@ -21,7 +21,7 @@ export async function GET() {
   }
 }
 
-// create berita baru
+// create sayap baru
 export async function POST(req: NextRequest) {
   const authError = requireAuth(req);
   if (authError) return authError;
@@ -30,22 +30,14 @@ export async function POST(req: NextRequest) {
   if (roleError) return roleError;
 
   try {
-    const { title, content, publishDate, thumbnailUrl } = await req.json();
+    const { name, description } = await req.json();
 
-    const userId = (req as any).user.userId;
-
-    const news = await db.news.create({
-      data: {
-        title,
-        content,
-        publishDate: publishDate ? new Date(publishDate) : undefined,
-        thumbnailUrl,
-        userId,
-      },
-      include: { User: { select: { id: true, username: true, email: true } } },
+    const sayap = await db.sayapType.create({
+      data: { name, description },
+      include: { StrukturOrganisasi: true },
     });
 
-    return NextResponse.json({ success: true, data: news });
+    return NextResponse.json({ success: true, data: sayap });
   } catch (err: any) {
     return NextResponse.json(
       { success: false, error: err.message },

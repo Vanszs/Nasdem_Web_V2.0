@@ -1,9 +1,3 @@
-// This is your Prisma schema file,
-// learn more about it in the docs: https://pris.ly/d/prisma-schema
-
-// Looking for ways to speed up your queries, or scale easily with your serverless or edge functions?
-// Try Prisma Accelerate: https://pris.ly/cli/accelerate-init
-
 generator client {
   provider = "prisma-client-js"
   output   = "../../node_modules/.prisma/client"
@@ -14,7 +8,6 @@ datasource db {
   url      = env("DATABASE_URL")
 }
 
-// ========== ENUM ==========
 enum UserRole {
   superadmin
   editor
@@ -54,41 +47,40 @@ enum GenderEnum {
   female
 }
 
-// ========== TABLES ==========
+enum ElectionType {
+  dprd
+}
+
 model User {
   id        Int       @id @default(autoincrement())
-  username  String    @unique
+  username  String
   email     String    @unique
   password  String
   role      UserRole
   createdAt DateTime  @default(now())
   updatedAt DateTime?
-
-  // RELATIONS
-  news      News[]
-  programs  Program[]
-  galleries Gallery[]
-  members   Member[]
+  News      News[]
+  Program   Program[]
+  Gallery   Gallery[]
+  Member    Member[]
 }
 
 model Party {
-  id           Int     @id @default(autoincrement())
-  name         String  @unique
-  abbreviation String?
-  logoUrl      String?
-
-  calegs      Caleg[]
-  dprdResults DprdPartyResult[]
+  id              Int               @id @default(autoincrement())
+  name            String            @unique
+  abbreviation    String?
+  logoUrl         String?
+  Caleg           Caleg[]
+  DprdPartyResult DprdPartyResult[]
 }
 
 model Category {
-  id          Int     @id @default(autoincrement())
+  id          Int       @id @default(autoincrement())
   name        String
   subtitle    String?
   description String?
   iconUrl     String?
-
-  programs Program[]
+  Program     Program[]
 }
 
 model News {
@@ -98,7 +90,7 @@ model News {
   publishDate  DateTime?
   thumbnailUrl String?
   userId       Int
-  user         User      @relation(fields: [userId], references: [id])
+  User         User      @relation(fields: [userId], references: [id])
 }
 
 model Program {
@@ -108,37 +100,34 @@ model Program {
   startDate   DateTime?
   endDate     DateTime?
   categoryId  Int
-  category    Category  @relation(fields: [categoryId], references: [id])
   photoUrl    String?
   userId      Int
-  user        User      @relation(fields: [userId], references: [id])
+  Category    Category  @relation(fields: [categoryId], references: [id])
+  User        User      @relation(fields: [userId], references: [id])
 }
 
 model Gallery {
   id         Int       @id @default(autoincrement())
-  type       String?
-  url        String?
+  type       String
+  url        String
   caption    String?
   uploadDate DateTime?
   userId     Int
-  user       User      @relation(fields: [userId], references: [id])
+  User       User      @relation(fields: [userId], references: [id])
 }
 
 model SayapType {
-  id          Int     @id @default(autoincrement())
-  name        String
-  description String?
-
-  strukturOrganisasi StrukturOrganisasi[]
+  id                 Int                  @id @default(autoincrement())
+  name               String
+  description        String?
+  StrukturOrganisasi StrukturOrganisasi[]
 }
 
 model Region {
-  id   Int        @id @default(autoincrement())
-  name String
-  type RegionType
-
-  strukturOrganisasi StrukturOrganisasi[]
-  kecamatans         Kecamatan[]
+  id                 Int                  @id @default(autoincrement())
+  name               String
+  type               RegionType
+  StrukturOrganisasi StrukturOrganisasi[]
 }
 
 model StrukturOrganisasi {
@@ -146,91 +135,83 @@ model StrukturOrganisasi {
   level       OrgLevel
   position    PositionEnum
   sayapTypeId Int?
-  sayapType   SayapType?   @relation(fields: [sayapTypeId], references: [id])
   regionId    Int?
-  region      Region?      @relation(fields: [regionId], references: [id])
   photoUrl    String?
   startDate   DateTime?
   endDate     DateTime?
-
-  members Member[]
+  SayapType   SayapType?   @relation(fields: [sayapTypeId], references: [id])
+  Region      Region?      @relation(fields: [regionId], references: [id])
+  Member      Member[]
 }
 
 model Member {
-  id          Int                @id @default(autoincrement())
-  fullName    String
-  email       String?
-  phone       String?
-  dateOfBirth DateTime?
-  address     String?
-  bio         String?
-  gender      GenderEnum?
-  status      MemberStatus?
-  userId      Int?
-  user        User?              @relation(fields: [userId], references: [id])
-  strukturId  Int
-  struktur    StrukturOrganisasi @relation(fields: [strukturId], references: [id])
-  photoUrl    String?
-  joinDate    DateTime?
-  endDate     DateTime?
+  id                 Int                 @id @default(autoincrement())
+  fullName           String
+  email              String?
+  phone              String?
+  dateOfBirth        DateTime?
+  address            String?
+  bio                String?
+  gender             GenderEnum?
+  status             MemberStatus?
+  userId             Int?
+  strukturId         Int?
+  photoUrl           String?
+  joinDate           DateTime?
+  endDate            DateTime?
+  User               User?               @relation(fields: [userId], references: [id])
+  StrukturOrganisasi StrukturOrganisasi? @relation(fields: [strukturId], references: [id])
 }
 
 model Caleg {
-  id       Int     @id @default(autoincrement())
-  fullName String
-  partyId  Int
-  party    Party   @relation(fields: [partyId], references: [id])
-  photoUrl String?
-
-  dprdResults DprdCalegResult[]
+  id              Int               @id @default(autoincrement())
+  fullName        String
+  partyId         Int
+  photoUrl        String?
+  Party           Party             @relation(fields: [partyId], references: [id])
+  DprdCalegResult DprdCalegResult[]
 }
 
 model Dapil {
-  id         Int                    @id @default(autoincrement())
-  name       String
-  kecamatans Kecamatan[]
-  elections  DprdElectionAnalysis[]
+  id                   Int                    @id @default(autoincrement())
+  name                 String
+  Kecamatan            Kecamatan[]
+  DprdElectionAnalysis DprdElectionAnalysis[]
 }
 
 model Kecamatan {
-  id        Int                    @id @default(autoincrement())
-  name      String
-  dapilId   Int
-  dapil     Dapil                  @relation(fields: [dapilId], references: [id])
-  desas     Desa[]
-  elections DprdElectionAnalysis[]
-  Region    Region?                @relation(fields: [regionId], references: [id])
-  regionId  Int?
+  id                   Int                    @id @default(autoincrement())
+  name                 String
+  dapilId              Int
+  Dapil                Dapil                  @relation(fields: [dapilId], references: [id])
+  Desa                 Desa[]
+  DprdElectionAnalysis DprdElectionAnalysis[]
 }
 
 model Desa {
-  id          Int                    @id @default(autoincrement())
-  name        String
-  kecamatanId Int
-  kecamatan   Kecamatan              @relation(fields: [kecamatanId], references: [id])
-  tpses       Tps[]
-  elections   DprdElectionAnalysis[]
+  id                   Int                    @id @default(autoincrement())
+  name                 String
+  kecamatanId          Int
+  Kecamatan            Kecamatan              @relation(fields: [kecamatanId], references: [id])
+  Tps                  Tps[]
+  DprdElectionAnalysis DprdElectionAnalysis[]
 }
 
 model Tps {
-  id        Int                    @id @default(autoincrement())
-  number    String
-  desaId    Int
-  desa      Desa                   @relation(fields: [desaId], references: [id])
-  elections DprdElectionAnalysis[]
+  id                   Int                    @id @default(autoincrement())
+  number               String
+  desaId               Int
+  Desa                 Desa                   @relation(fields: [desaId], references: [id])
+  DprdElectionAnalysis DprdElectionAnalysis[]
 }
 
 model DprdElectionAnalysis {
-  id              Int       @id @default(autoincrement())
+  id              Int               @id @default(autoincrement())
   year            Int
   dapilId         Int
-  dapil           Dapil     @relation(fields: [dapilId], references: [id])
   kecamatanId     Int
-  kecamatan       Kecamatan @relation(fields: [kecamatanId], references: [id])
   desaId          Int
-  desa            Desa      @relation(fields: [desaId], references: [id])
   tpsId           Int
-  tps             Tps       @relation(fields: [tpsId], references: [id])
   totalValidVotes Int?
   invalidVotes    Int?
   dpt             Int?
@@ -239,27 +220,30 @@ model DprdElectionAnalysis {
   totalVotes      Int?
   turnoutPercent  Float?
   notes           String?
-  createdAt       DateTime  @default(now())
+  createdAt       DateTime          @default(now())
   updatedAt       DateTime?
-
-  partyResults DprdPartyResult[]
-  calegResults DprdCalegResult[]
+  Dapil           Dapil             @relation(fields: [dapilId], references: [id])
+  Kecamatan       Kecamatan         @relation(fields: [kecamatanId], references: [id])
+  Desa            Desa              @relation(fields: [desaId], references: [id])
+  Tps             Tps               @relation(fields: [tpsId], references: [id])
+  DprdPartyResult DprdPartyResult[]
+  DprdCalegResult DprdCalegResult[]
 }
 
 model DprdPartyResult {
-  id                 Int                  @id @default(autoincrement())
-  electionAnalysisId Int
-  electionAnalysis   DprdElectionAnalysis @relation(fields: [electionAnalysisId], references: [id])
-  partyId            Int
-  party              Party                @relation(fields: [partyId], references: [id])
-  votes              Int
+  id                   Int                  @id @default(autoincrement())
+  electionAnalysisId   Int
+  partyId              Int
+  votes                Int?
+  DprdElectionAnalysis DprdElectionAnalysis @relation(fields: [electionAnalysisId], references: [id])
+  Party                Party                @relation(fields: [partyId], references: [id])
 }
 
 model DprdCalegResult {
-  id                 Int                  @id @default(autoincrement())
-  electionAnalysisId Int
-  electionAnalysis   DprdElectionAnalysis @relation(fields: [electionAnalysisId], references: [id])
-  calegId            Int
-  caleg              Caleg                @relation(fields: [calegId], references: [id])
-  votes              Int
+  id                   Int                  @id @default(autoincrement())
+  electionAnalysisId   Int
+  calegId              Int
+  votes                Int?
+  DprdElectionAnalysis DprdElectionAnalysis @relation(fields: [electionAnalysisId], references: [id])
+  Caleg                Caleg                @relation(fields: [calegId], references: [id])
 }

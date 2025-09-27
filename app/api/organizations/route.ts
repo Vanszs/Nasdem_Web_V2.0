@@ -2,16 +2,19 @@ import { NextRequest, NextResponse } from "next/server";
 import { db } from "@/lib/db";
 import { requireAuth, requireRole } from "@/lib/jwt-middleware";
 
-// list semua program
+// list semua struktur organisasi
 export async function GET() {
   try {
-    const programs = await db.program.findMany({
+    const strukturList = await db.strukturOrganisasi.findMany({
       include: {
-        Category: true,
-        User: { select: { id: true, username: true, email: true } },
+        SayapType: true,
+        Region: true,
+        Member: true,
       },
+      orderBy: { startDate: "desc" },
     });
-    return NextResponse.json({ success: true, data: programs });
+
+    return NextResponse.json({ success: true, data: strukturList });
   } catch (err: any) {
     return NextResponse.json(
       { success: false, error: err.message },
@@ -20,7 +23,7 @@ export async function GET() {
   }
 }
 
-// create program baru
+// create struktur baru
 export async function POST(req: NextRequest) {
   const authError = requireAuth(req);
   if (authError) return authError;
@@ -29,23 +32,34 @@ export async function POST(req: NextRequest) {
   if (roleError) return roleError;
 
   try {
-    const userId = (req as any).user.userId;
-    const { title, description, startDate, endDate, categoryId, photoUrl } =
-      await req.json();
+    const {
+      level,
+      position,
+      sayapTypeId,
+      regionId,
+      photoUrl,
+      startDate,
+      endDate,
+    } = await req.json();
 
-    const program = await db.program.create({
+    const struktur = await db.strukturOrganisasi.create({
       data: {
-        title,
-        description,
+        level,
+        position,
+        sayapTypeId,
+        regionId,
+        photoUrl,
         startDate: startDate ? new Date(startDate) : undefined,
         endDate: endDate ? new Date(endDate) : undefined,
-        categoryId,
-        photoUrl,
-        userId,
+      },
+      include: {
+        SayapType: true,
+        Region: true,
+        Member: true,
       },
     });
 
-    return NextResponse.json({ success: true, data: program });
+    return NextResponse.json({ success: true, data: struktur });
   } catch (err: any) {
     return NextResponse.json(
       { success: false, error: err.message },

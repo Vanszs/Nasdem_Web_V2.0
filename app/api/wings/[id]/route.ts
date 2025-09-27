@@ -7,19 +7,16 @@ export async function GET(
   { params }: { params: { id: string } }
 ) {
   try {
-    const program = await db.program.findUnique({
+    const sayap = await db.sayapType.findUnique({
       where: { id: parseInt(params.id) },
-      include: {
-        Category: true,
-        User: { select: { id: true, username: true, email: true } },
-      },
+      include: { StrukturOrganisasi: true },
     });
-    if (!program)
+    if (!sayap)
       return NextResponse.json(
-        { success: false, error: "Program not found" },
+        { success: false, error: "Sayap not found" },
         { status: 404 }
       );
-    return NextResponse.json({ success: true, data: program });
+    return NextResponse.json({ success: true, data: sayap });
   } catch (err: any) {
     return NextResponse.json(
       { success: false, error: err.message },
@@ -37,20 +34,11 @@ export async function PUT(
   const roleError = requireRole(req, ["editor", "superadmin"]);
   if (roleError) return roleError;
   try {
-    const userId = (req as any).user.userId;
-    const { title, description, startDate, endDate, categoryId, photoUrl } =
-      await req.json();
-    const updated = await db.program.update({
+    const { name, description } = await req.json();
+    const updated = await db.sayapType.update({
       where: { id: parseInt(params.id) },
-      data: {
-        title,
-        description,
-        startDate: startDate ? new Date(startDate) : undefined,
-        endDate: endDate ? new Date(endDate) : undefined,
-        categoryId,
-        photoUrl,
-        userId,
-      },
+      data: { name, description },
+      include: { StrukturOrganisasi: true },
     });
     return NextResponse.json({ success: true, data: updated });
   } catch (err: any) {
@@ -70,8 +58,8 @@ export async function DELETE(
   const roleError = requireRole(req, ["editor", "superadmin"]);
   if (roleError) return roleError;
   try {
-    await db.program.delete({ where: { id: parseInt(params.id) } });
-    return NextResponse.json({ success: true, message: "Program deleted" });
+    await db.sayapType.delete({ where: { id: parseInt(params.id) } });
+    return NextResponse.json({ success: true, message: "Sayap deleted" });
   } catch (err: any) {
     return NextResponse.json(
       { success: false, error: err.message },

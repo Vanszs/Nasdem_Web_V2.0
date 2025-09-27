@@ -2,7 +2,6 @@ import { NextRequest, NextResponse } from "next/server";
 import { db } from "@/lib/db";
 import { requireAuth, requireRole } from "@/lib/jwt-middleware";
 
-// detail member
 export async function GET(
   req: NextRequest,
   { params }: { params: { id: string } }
@@ -11,17 +10,15 @@ export async function GET(
     const member = await db.member.findUnique({
       where: { id: parseInt(params.id) },
       include: {
-        user: { select: { id: true, username: true, email: true } },
-        struktur: true,
+        User: { select: { id: true, username: true, email: true } },
+        StrukturOrganisasi: true,
       },
     });
-
     if (!member)
       return NextResponse.json(
         { success: false, error: "Member not found" },
         { status: 404 }
       );
-
     return NextResponse.json({ success: true, data: member });
   } catch (err: any) {
     return NextResponse.json(
@@ -31,17 +28,14 @@ export async function GET(
   }
 }
 
-// update member
 export async function PUT(
   req: NextRequest,
   { params }: { params: { id: string } }
 ) {
   const authError = requireAuth(req);
   if (authError) return authError;
-
   const roleError = requireRole(req, ["editor", "superadmin"]);
   if (roleError) return roleError;
-
   try {
     const userId = (req as any).user.userId;
     const {
@@ -58,7 +52,6 @@ export async function PUT(
       joinDate,
       endDate,
     } = await req.json();
-
     const updated = await db.member.update({
       where: { id: parseInt(params.id) },
       data: {
@@ -77,11 +70,10 @@ export async function PUT(
         endDate: endDate ? new Date(endDate) : undefined,
       },
       include: {
-        user: { select: { id: true, username: true, email: true } },
-        struktur: true,
+        User: { select: { id: true, username: true, email: true } },
+        StrukturOrganisasi: true,
       },
     });
-
     return NextResponse.json({ success: true, data: updated });
   } catch (err: any) {
     return NextResponse.json(
@@ -91,17 +83,14 @@ export async function PUT(
   }
 }
 
-// hapus member
 export async function DELETE(
   req: NextRequest,
   { params }: { params: { id: string } }
 ) {
   const authError = requireAuth(req);
   if (authError) return authError;
-
   const roleError = requireRole(req, ["editor", "superadmin"]);
   if (roleError) return roleError;
-
   try {
     await db.member.delete({ where: { id: parseInt(params.id) } });
     return NextResponse.json({ success: true, message: "Member deleted" });

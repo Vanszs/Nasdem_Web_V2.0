@@ -7,19 +7,16 @@ export async function GET(
   { params }: { params: { id: string } }
 ) {
   try {
-    const program = await db.program.findUnique({
+    const struktur = await db.strukturOrganisasi.findUnique({
       where: { id: parseInt(params.id) },
-      include: {
-        Category: true,
-        User: { select: { id: true, username: true, email: true } },
-      },
+      include: { SayapType: true, Region: true, Member: true },
     });
-    if (!program)
+    if (!struktur)
       return NextResponse.json(
-        { success: false, error: "Program not found" },
+        { success: false, error: "Struktur not found" },
         { status: 404 }
       );
-    return NextResponse.json({ success: true, data: program });
+    return NextResponse.json({ success: true, data: struktur });
   } catch (err: any) {
     return NextResponse.json(
       { success: false, error: err.message },
@@ -37,20 +34,27 @@ export async function PUT(
   const roleError = requireRole(req, ["editor", "superadmin"]);
   if (roleError) return roleError;
   try {
-    const userId = (req as any).user.userId;
-    const { title, description, startDate, endDate, categoryId, photoUrl } =
-      await req.json();
-    const updated = await db.program.update({
+    const {
+      level,
+      position,
+      sayapTypeId,
+      regionId,
+      photoUrl,
+      startDate,
+      endDate,
+    } = await req.json();
+    const updated = await db.strukturOrganisasi.update({
       where: { id: parseInt(params.id) },
       data: {
-        title,
-        description,
+        level,
+        position,
+        sayapTypeId,
+        regionId,
+        photoUrl,
         startDate: startDate ? new Date(startDate) : undefined,
         endDate: endDate ? new Date(endDate) : undefined,
-        categoryId,
-        photoUrl,
-        userId,
       },
+      include: { SayapType: true, Region: true, Member: true },
     });
     return NextResponse.json({ success: true, data: updated });
   } catch (err: any) {
@@ -70,8 +74,8 @@ export async function DELETE(
   const roleError = requireRole(req, ["editor", "superadmin"]);
   if (roleError) return roleError;
   try {
-    await db.program.delete({ where: { id: parseInt(params.id) } });
-    return NextResponse.json({ success: true, message: "Program deleted" });
+    await db.strukturOrganisasi.delete({ where: { id: parseInt(params.id) } });
+    return NextResponse.json({ success: true, message: "Struktur deleted" });
   } catch (err: any) {
     return NextResponse.json(
       { success: false, error: err.message },

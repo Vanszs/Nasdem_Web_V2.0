@@ -7,19 +7,23 @@ export async function GET(
   { params }: { params: { id: string } }
 ) {
   try {
-    const program = await db.program.findUnique({
+    const analysis = await db.dprdElectionAnalysis.findUnique({
       where: { id: parseInt(params.id) },
       include: {
-        Category: true,
-        User: { select: { id: true, username: true, email: true } },
+        Dapil: true,
+        Kecamatan: true,
+        Desa: true,
+        Tps: true,
+        DprdPartyResult: { include: { Party: true } },
+        DprdCalegResult: { include: { Caleg: { include: { Party: true } } } },
       },
     });
-    if (!program)
+    if (!analysis)
       return NextResponse.json(
-        { success: false, error: "Program not found" },
+        { success: false, error: "Analysis not found" },
         { status: 404 }
       );
-    return NextResponse.json({ success: true, data: program });
+    return NextResponse.json({ success: true, data: analysis });
   } catch (err: any) {
     return NextResponse.json(
       { success: false, error: err.message },
@@ -34,22 +38,41 @@ export async function PUT(
 ) {
   const authError = requireAuth(req);
   if (authError) return authError;
-  const roleError = requireRole(req, ["editor", "superadmin"]);
+  const roleError = requireRole(req, ["superadmin", "analyst"]);
   if (roleError) return roleError;
   try {
-    const userId = (req as any).user.userId;
-    const { title, description, startDate, endDate, categoryId, photoUrl } =
-      await req.json();
-    const updated = await db.program.update({
+    const {
+      year,
+      dapilId,
+      kecamatanId,
+      desaId,
+      tpsId,
+      totalValidVotes,
+      invalidVotes,
+      dpt,
+      dptb,
+      dpk,
+      totalVotes,
+      turnoutPercent,
+      notes,
+    } = await req.json();
+    const updated = await db.dprdElectionAnalysis.update({
       where: { id: parseInt(params.id) },
       data: {
-        title,
-        description,
-        startDate: startDate ? new Date(startDate) : undefined,
-        endDate: endDate ? new Date(endDate) : undefined,
-        categoryId,
-        photoUrl,
-        userId,
+        year,
+        dapilId,
+        kecamatanId,
+        desaId,
+        tpsId,
+        totalValidVotes,
+        invalidVotes,
+        dpt,
+        dptb,
+        dpk,
+        totalVotes,
+        turnoutPercent,
+        notes,
+        updatedAt: new Date(),
       },
     });
     return NextResponse.json({ success: true, data: updated });
@@ -67,11 +90,13 @@ export async function DELETE(
 ) {
   const authError = requireAuth(req);
   if (authError) return authError;
-  const roleError = requireRole(req, ["editor", "superadmin"]);
+  const roleError = requireRole(req, ["superadmin", "analyst"]);
   if (roleError) return roleError;
   try {
-    await db.program.delete({ where: { id: parseInt(params.id) } });
-    return NextResponse.json({ success: true, message: "Program deleted" });
+    await db.dprdElectionAnalysis.delete({
+      where: { id: parseInt(params.id) },
+    });
+    return NextResponse.json({ success: true, message: "Analysis deleted" });
   } catch (err: any) {
     return NextResponse.json(
       { success: false, error: err.message },

@@ -7,8 +7,8 @@ export async function GET() {
   try {
     const members = await db.member.findMany({
       include: {
-        user: { select: { id: true, username: true, email: true } },
-        struktur: true,
+        User: { select: { id: true, username: true, email: true } },
+        StrukturOrganisasi: true,
       },
       orderBy: { joinDate: "desc" },
     });
@@ -64,8 +64,8 @@ export async function POST(req: NextRequest) {
         endDate: endDate ? new Date(endDate) : undefined,
       },
       include: {
-        user: { select: { id: true, username: true, email: true } },
-        struktur: true,
+        User: { select: { id: true, username: true, email: true } },
+        StrukturOrganisasi: true,
       },
     });
 

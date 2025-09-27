@@ -2,16 +2,14 @@ import { NextRequest, NextResponse } from "next/server";
 import { db } from "@/lib/db";
 import { requireAuth, requireRole } from "@/lib/jwt-middleware";
 
-// list semua gallery
 export async function GET() {
   try {
     const galleries = await db.gallery.findMany({
       include: {
-        user: { select: { id: true, username: true, email: true } },
+        User: { select: { id: true, username: true, email: true } },
       },
       orderBy: { uploadDate: "desc" },
     });
-
     return NextResponse.json({ success: true, data: galleries });
   } catch (err: any) {
     return NextResponse.json(
@@ -21,17 +19,14 @@ export async function GET() {
   }
 }
 
-// create gallery baru
 export async function POST(req: NextRequest) {
   const authError = requireAuth(req);
   if (authError) return authError;
-
   const roleError = requireRole(req, ["editor", "superadmin"]);
   if (roleError) return roleError;
-
   try {
-    const { type, url, caption, uploadDate, userId } = await req.json();
-
+    const userId = (req as any).user.userId;
+    const { type, url, caption, uploadDate } = await req.json();
     const gallery = await db.gallery.create({
       data: {
         type,
@@ -40,9 +35,8 @@ export async function POST(req: NextRequest) {
         uploadDate: uploadDate ? new Date(uploadDate) : undefined,
         userId,
       },
-      include: { user: { select: { id: true, username: true, email: true } } },
+      include: { User: { select: { id: true, username: true, email: true } } },
     });
-
     return NextResponse.json({ success: true, data: gallery });
   } catch (err: any) {
     return NextResponse.json(

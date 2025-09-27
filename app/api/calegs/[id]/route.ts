@@ -7,19 +7,16 @@ export async function GET(
   { params }: { params: { id: string } }
 ) {
   try {
-    const program = await db.program.findUnique({
+    const caleg = await db.caleg.findUnique({
       where: { id: parseInt(params.id) },
-      include: {
-        Category: true,
-        User: { select: { id: true, username: true, email: true } },
-      },
+      include: { Party: true, DprdCalegResult: true },
     });
-    if (!program)
+    if (!caleg)
       return NextResponse.json(
-        { success: false, error: "Program not found" },
+        { success: false, error: "Caleg not found" },
         { status: 404 }
       );
-    return NextResponse.json({ success: true, data: program });
+    return NextResponse.json({ success: true, data: caleg });
   } catch (err: any) {
     return NextResponse.json(
       { success: false, error: err.message },
@@ -34,23 +31,14 @@ export async function PUT(
 ) {
   const authError = requireAuth(req);
   if (authError) return authError;
-  const roleError = requireRole(req, ["editor", "superadmin"]);
+  const roleError = requireRole(req, ["superadmin", "analyst"]);
   if (roleError) return roleError;
   try {
-    const userId = (req as any).user.userId;
-    const { title, description, startDate, endDate, categoryId, photoUrl } =
-      await req.json();
-    const updated = await db.program.update({
+    const { fullName, partyId, photoUrl } = await req.json();
+    const updated = await db.caleg.update({
       where: { id: parseInt(params.id) },
-      data: {
-        title,
-        description,
-        startDate: startDate ? new Date(startDate) : undefined,
-        endDate: endDate ? new Date(endDate) : undefined,
-        categoryId,
-        photoUrl,
-        userId,
-      },
+      data: { fullName, partyId, photoUrl },
+      include: { Party: true, DprdCalegResult: true },
     });
     return NextResponse.json({ success: true, data: updated });
   } catch (err: any) {
@@ -67,11 +55,11 @@ export async function DELETE(
 ) {
   const authError = requireAuth(req);
   if (authError) return authError;
-  const roleError = requireRole(req, ["editor", "superadmin"]);
+  const roleError = requireRole(req, ["superadmin", "analyst"]);
   if (roleError) return roleError;
   try {
-    await db.program.delete({ where: { id: parseInt(params.id) } });
-    return NextResponse.json({ success: true, message: "Program deleted" });
+    await db.caleg.delete({ where: { id: parseInt(params.id) } });
+    return NextResponse.json({ success: true, message: "Caleg deleted" });
   } catch (err: any) {
     return NextResponse.json(
       { success: false, error: err.message },
