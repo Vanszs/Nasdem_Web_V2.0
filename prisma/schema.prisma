@@ -1,0 +1,265 @@
+// This is your Prisma schema file,
+// learn more about it in the docs: https://pris.ly/d/prisma-schema
+
+// Looking for ways to speed up your queries, or scale easily with your serverless or edge functions?
+// Try Prisma Accelerate: https://pris.ly/cli/accelerate-init
+
+generator client {
+  provider = "prisma-client-js"
+  output   = "../../node_modules/.prisma/client"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+// ========== ENUM ==========
+enum UserRole {
+  superadmin
+  editor
+  analyst
+}
+
+enum OrgLevel {
+  dpd
+  sayap
+  dpc
+  dprt
+  kader
+}
+
+enum MemberStatus {
+  active
+  inactive
+  suspended
+}
+
+enum PositionEnum {
+  ketua
+  sekretaris
+  bendahara
+  wakil
+  anggota
+}
+
+enum RegionType {
+  kabupaten
+  kecamatan
+  desa
+}
+
+enum GenderEnum {
+  male
+  female
+}
+
+// ========== TABLES ==========
+model User {
+  id        Int       @id @default(autoincrement())
+  username  String    @unique
+  email     String    @unique
+  password  String
+  role      UserRole
+  createdAt DateTime  @default(now())
+  updatedAt DateTime?
+
+  // RELATIONS
+  news      News[]
+  programs  Program[]
+  galleries Gallery[]
+  members   Member[]
+}
+
+model Party {
+  id           Int     @id @default(autoincrement())
+  name         String  @unique
+  abbreviation String?
+  logoUrl      String?
+
+  calegs      Caleg[]
+  dprdResults DprdPartyResult[]
+}
+
+model Category {
+  id          Int     @id @default(autoincrement())
+  name        String
+  subtitle    String?
+  description String?
+  iconUrl     String?
+
+  programs Program[]
+}
+
+model News {
+  id           Int       @id @default(autoincrement())
+  title        String
+  content      String?
+  publishDate  DateTime?
+  thumbnailUrl String?
+  userId       Int
+  user         User      @relation(fields: [userId], references: [id])
+}
+
+model Program {
+  id          Int       @id @default(autoincrement())
+  title       String
+  description String?
+  startDate   DateTime?
+  endDate     DateTime?
+  categoryId  Int
+  category    Category  @relation(fields: [categoryId], references: [id])
+  photoUrl    String?
+  userId      Int
+  user        User      @relation(fields: [userId], references: [id])
+}
+
+model Gallery {
+  id         Int       @id @default(autoincrement())
+  type       String?
+  url        String?
+  caption    String?
+  uploadDate DateTime?
+  userId     Int
+  user       User      @relation(fields: [userId], references: [id])
+}
+
+model SayapType {
+  id          Int     @id @default(autoincrement())
+  name        String
+  description String?
+
+  strukturOrganisasi StrukturOrganisasi[]
+}
+
+model Region {
+  id   Int        @id @default(autoincrement())
+  name String
+  type RegionType
+
+  strukturOrganisasi StrukturOrganisasi[]
+  kecamatans         Kecamatan[]
+}
+
+model StrukturOrganisasi {
+  id          Int          @id @default(autoincrement())
+  level       OrgLevel
+  position    PositionEnum
+  sayapTypeId Int?
+  sayapType   SayapType?   @relation(fields: [sayapTypeId], references: [id])
+  regionId    Int?
+  region      Region?      @relation(fields: [regionId], references: [id])
+  photoUrl    String?
+  startDate   DateTime?
+  endDate     DateTime?
+
+  members Member[]
+}
+
+model Member {
+  id          Int                @id @default(autoincrement())
+  fullName    String
+  email       String?
+  phone       String?
+  dateOfBirth DateTime?
+  address     String?
+  bio         String?
+  gender      GenderEnum?
+  status      MemberStatus?
+  userId      Int?
+  user        User?              @relation(fields: [userId], references: [id])
+  strukturId  Int
+  struktur    StrukturOrganisasi @relation(fields: [strukturId], references: [id])
+  photoUrl    String?
+  joinDate    DateTime?
+  endDate     DateTime?
+}
+
+model Caleg {
+  id       Int     @id @default(autoincrement())
+  fullName String
+  partyId  Int
+  party    Party   @relation(fields: [partyId], references: [id])
+  photoUrl String?
+
+  dprdResults DprdCalegResult[]
+}
+
+model Dapil {
+  id         Int                    @id @default(autoincrement())
+  name       String
+  kecamatans Kecamatan[]
+  elections  DprdElectionAnalysis[]
+}
+
+model Kecamatan {
+  id        Int                    @id @default(autoincrement())
+  name      String
+  dapilId   Int
+  dapil     Dapil                  @relation(fields: [dapilId], references: [id])
+  desas     Desa[]
+  elections DprdElectionAnalysis[]
+  Region    Region?                @relation(fields: [regionId], references: [id])
+  regionId  Int?
+}
+
+model Desa {
+  id          Int                    @id @default(autoincrement())
+  name        String
+  kecamatanId Int
+  kecamatan   Kecamatan              @relation(fields: [kecamatanId], references: [id])
+  tpses       Tps[]
+  elections   DprdElectionAnalysis[]
+}
+
+model Tps {
+  id        Int                    @id @default(autoincrement())
+  number    String
+  desaId    Int
+  desa      Desa                   @relation(fields: [desaId], references: [id])
+  elections DprdElectionAnalysis[]
+}
+
+model DprdElectionAnalysis {
+  id              Int       @id @default(autoincrement())
+  year            Int
+  dapilId         Int
+  dapil           Dapil     @relation(fields: [dapilId], references: [id])
+  kecamatanId     Int
+  kecamatan       Kecamatan @relation(fields: [kecamatanId], references: [id])
+  desaId          Int
+  desa            Desa      @relation(fields: [desaId], references: [id])
+  tpsId           Int
+  tps             Tps       @relation(fields: [tpsId], references: [id])
+  totalValidVotes Int?
+  invalidVotes    Int?
+  dpt             Int?
+  dptb            Int?
+  dpk             Int?
+  totalVotes      Int?
+  turnoutPercent  Float?
+  notes           String?
+  createdAt       DateTime  @default(now())
+  updatedAt       DateTime?
+
+  partyResults DprdPartyResult[]
+  calegResults DprdCalegResult[]
+}
+
+model DprdPartyResult {
+  id                 Int                  @id @default(autoincrement())
+  electionAnalysisId Int
+  electionAnalysis   DprdElectionAnalysis @relation(fields: [electionAnalysisId], references: [id])
+  partyId            Int
+  party              Party                @relation(fields: [partyId], references: [id])
+  votes              Int
+}
+
+model DprdCalegResult {
+  id                 Int                  @id @default(autoincrement())
+  electionAnalysisId Int
+  electionAnalysis   DprdElectionAnalysis @relation(fields: [electionAnalysisId], references: [id])
+  calegId            Int
+  caleg              Caleg                @relation(fields: [calegId], references: [id])
+  votes              Int
+}
