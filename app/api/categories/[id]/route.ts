@@ -1,5 +1,6 @@
 import { NextRequest, NextResponse } from "next/server";
 import { db } from "@/lib/db";
+import { requireAuth, requireRole } from "@/lib/jwt-middleware";
 
 // detail kategori
 export async function GET(
@@ -31,6 +32,12 @@ export async function PUT(
   req: NextRequest,
   { params }: { params: { id: string } }
 ) {
+  const authError = requireAuth(req);
+  if (authError) return authError;
+
+  const roleError = requireRole(req, ["editor", "superadmin"]);
+  if (roleError) return roleError;
+
   try {
     const { name, subtitle, description, iconUrl } = await req.json();
 
@@ -53,6 +60,12 @@ export async function DELETE(
   req: NextRequest,
   { params }: { params: { id: string } }
 ) {
+  const authError = requireAuth(req);
+  if (authError) return authError;
+
+  const roleError = requireRole(req, ["editor", "superadmin"]);
+  if (roleError) return roleError;
+
   try {
     await db.category.delete({
       where: { id: parseInt(params.id) },

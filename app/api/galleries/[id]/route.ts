@@ -1,5 +1,6 @@
 import { NextRequest, NextResponse } from "next/server";
 import { db } from "@/lib/db";
+import { requireAuth, requireRole } from "@/lib/jwt-middleware";
 
 // detail gallery
 export async function GET(
@@ -32,6 +33,12 @@ export async function PUT(
   req: NextRequest,
   { params }: { params: { id: string } }
 ) {
+  const authError = requireAuth(req);
+  if (authError) return authError;
+
+  const roleError = requireRole(req, ["editor", "superadmin"]);
+  if (roleError) return roleError;
+
   try {
     const { type, url, caption, uploadDate, userId } = await req.json();
 

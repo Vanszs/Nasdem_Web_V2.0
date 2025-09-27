@@ -1,6 +1,6 @@
 import { NextRequest, NextResponse } from "next/server";
 import { db } from "@/lib/db";
-import { requireAuth } from "@/lib/jwt-middleware";
+import { requireAuth, requireRole } from "@/lib/jwt-middleware";
 
 // list semua berita
 export async function GET() {
@@ -23,12 +23,16 @@ export async function GET() {
 
 // create berita baru
 export async function POST(req: NextRequest) {
-  const authError = await requireAuth(["editor", "superadmin"])(req);
+  const authError = requireAuth(req);
   if (authError) return authError;
 
+  const roleError = requireRole(req, ["editor", "superadmin"]);
+  if (roleError) return roleError;
+
   try {
-    const { title, content, publishDate, thumbnailUrl, userId } =
-      await req.json();
+    const { title, content, publishDate, thumbnailUrl } = await req.json();
+
+    const userId = (req as any).user.userId;
 
     const news = await db.news.create({
       data: {

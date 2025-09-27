@@ -1,12 +1,19 @@
 import { NextRequest, NextResponse } from "next/server";
 import { db } from "@/lib/db";
 import bcrypt from "bcrypt";
+import { requireAuth, requireRole } from "@/lib/jwt-middleware";
 
 // detail user
 export async function GET(
   req: NextRequest,
   { params }: { params: { id: string } }
 ) {
+  const authError = requireAuth(req);
+  if (authError) return authError;
+
+  const roleError = requireRole(req, ["admin"]);
+  if (roleError) return roleError;
+
   try {
     const user = await db.user.findUnique({
       where: { id: parseInt(params.id) },
@@ -40,6 +47,12 @@ export async function PUT(
   req: NextRequest,
   { params }: { params: { id: string } }
 ) {
+  const authError = requireAuth(req);
+  if (authError) return authError;
+
+  const roleError = requireRole(req, ["admin"]);
+  if (roleError) return roleError;
+
   try {
     const { username, email, password, role } = await req.json();
 
@@ -73,6 +86,12 @@ export async function DELETE(
   req: NextRequest,
   { params }: { params: { id: string } }
 ) {
+  const authError = requireAuth(req);
+  if (authError) return authError;
+
+  const roleError = requireRole(req, ["admin"]);
+  if (roleError) return roleError;
+
   try {
     await db.user.delete({ where: { id: parseInt(params.id) } });
     return NextResponse.json({ success: true, message: "User deleted" });

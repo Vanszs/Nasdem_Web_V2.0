@@ -27,7 +27,16 @@ export async function POST(req: NextRequest) {
       expiresIn: "24h",
     });
 
-    return NextResponse.json({ success: true, token });
+    const response = NextResponse.json({ success: true });
+    response.cookies.set("token", token, {
+      httpOnly: true,
+      path: "/",
+      maxAge: 24 * 60 * 60,
+      secure: process.env.NODE_ENV === "production",
+      sameSite: "lax",
+    });
+
+    return response;
   } catch (err: any) {
     return NextResponse.json(
       { success: false, error: err.message },

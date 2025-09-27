@@ -1,5 +1,6 @@
 import { NextRequest, NextResponse } from "next/server";
 import { db } from "@/lib/db";
+import { requireAuth, requireRole } from "@/lib/jwt-middleware";
 
 // list semua member
 export async function GET() {
@@ -23,7 +24,14 @@ export async function GET() {
 
 // create member baru
 export async function POST(req: NextRequest) {
+  const authError = requireAuth(req);
+  if (authError) return authError;
+
+  const roleError = requireRole(req, ["editor", "superadmin"]);
+  if (roleError) return roleError;
+
   try {
+    const userId = (req as any).user.userId;
     const {
       fullName,
       email,
@@ -33,7 +41,6 @@ export async function POST(req: NextRequest) {
       bio,
       gender,
       status,
-      userId,
       strukturId,
       photoUrl,
       joinDate,

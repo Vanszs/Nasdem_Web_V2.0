@@ -1,5 +1,6 @@
 import { NextRequest, NextResponse } from "next/server";
 import { db } from "@/lib/db";
+import { requireAuth, requireRole } from "@/lib/jwt-middleware";
 
 // detail member
 export async function GET(
@@ -35,7 +36,14 @@ export async function PUT(
   req: NextRequest,
   { params }: { params: { id: string } }
 ) {
+  const authError = requireAuth(req);
+  if (authError) return authError;
+
+  const roleError = requireRole(req, ["editor", "superadmin"]);
+  if (roleError) return roleError;
+
   try {
+    const userId = (req as any).user.userId;
     const {
       fullName,
       email,
@@ -45,7 +53,6 @@ export async function PUT(
       bio,
       gender,
       status,
-      userId,
       strukturId,
       photoUrl,
       joinDate,
@@ -89,6 +96,12 @@ export async function DELETE(
   req: NextRequest,
   { params }: { params: { id: string } }
 ) {
+  const authError = requireAuth(req);
+  if (authError) return authError;
+
+  const roleError = requireRole(req, ["editor", "superadmin"]);
+  if (roleError) return roleError;
+
   try {
     await db.member.delete({ where: { id: parseInt(params.id) } });
     return NextResponse.json({ success: true, message: "Member deleted" });

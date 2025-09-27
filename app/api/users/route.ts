@@ -1,9 +1,14 @@
 import { NextRequest, NextResponse } from "next/server";
 import { db } from "@/lib/db";
 import bcrypt from "bcrypt";
+import { requireAuth, requireRole } from "@/lib/jwt-middleware";
 
 // list semua user
-export async function GET() {
+export async function GET(req: NextRequest) {
+  const authError = requireAuth(req);
+  if (authError) return authError;
+  const roleError = requireRole(req, ["admin"]);
+  if (roleError) return roleError;
   try {
     const users = await db.user.findMany({
       select: {
@@ -26,6 +31,12 @@ export async function GET() {
 
 // create user baru
 export async function POST(req: NextRequest) {
+  const authError = requireAuth(req);
+  if (authError) return authError;
+
+  const roleError = requireRole(req, ["admin"]);
+  if (roleError) return roleError;
+
   try {
     const { username, email, password, role } = await req.json();
 

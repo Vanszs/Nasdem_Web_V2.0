@@ -1,5 +1,6 @@
 import { NextRequest, NextResponse } from "next/server";
 import { db } from "@/lib/db";
+import { requireAuth, requireRole } from "@/lib/jwt-middleware";
 
 // list semua program
 export async function GET() {
@@ -21,16 +22,16 @@ export async function GET() {
 
 // create program baru
 export async function POST(req: NextRequest) {
+  const authError = requireAuth(req);
+  if (authError) return authError;
+
+  const roleError = requireRole(req, ["editor", "superadmin"]);
+  if (roleError) return roleError;
+
   try {
-    const {
-      title,
-      description,
-      startDate,
-      endDate,
-      categoryId,
-      photoUrl,
-      userId,
-    } = await req.json();
+    const userId = (req as any).user.userId;
+    const { title, description, startDate, endDate, categoryId, photoUrl } =
+      await req.json();
 
     const program = await db.program.create({
       data: {

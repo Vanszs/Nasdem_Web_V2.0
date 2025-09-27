@@ -1,5 +1,6 @@
 import { NextRequest, NextResponse } from "next/server";
 import { db } from "@/lib/db";
+import { requireAuth, requireRole } from "@/lib/jwt-middleware";
 
 // detail program
 export async function GET(
@@ -35,16 +36,16 @@ export async function PUT(
   req: NextRequest,
   { params }: { params: { id: string } }
 ) {
+  const authError = requireAuth(req);
+  if (authError) return authError;
+
+  const roleError = requireRole(req, ["editor", "superadmin"]);
+  if (roleError) return roleError;
+
   try {
-    const {
-      title,
-      description,
-      startDate,
-      endDate,
-      categoryId,
-      photoUrl,
-      userId,
-    } = await req.json();
+    const userId = (req as any).user.userId;
+    const { title, description, startDate, endDate, categoryId, photoUrl } =
+      await req.json();
 
     const updated = await db.program.update({
       where: { id: parseInt(params.id) },
@@ -73,6 +74,12 @@ export async function DELETE(
   req: NextRequest,
   { params }: { params: { id: string } }
 ) {
+  const authError = requireAuth(req);
+  if (authError) return authError;
+
+  const roleError = requireRole(req, ["editor", "superadmin"]);
+  if (roleError) return roleError;
+
   try {
     await db.program.delete({ where: { id: parseInt(params.id) } });
     return NextResponse.json({ success: true, message: "Program deleted" });

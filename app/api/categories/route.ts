@@ -1,5 +1,6 @@
 import { NextRequest, NextResponse } from "next/server";
 import { db } from "@/lib/db";
+import { requireAuth, requireRole } from "@/lib/jwt-middleware";
 
 // list semua kategori
 export async function GET() {
@@ -16,6 +17,11 @@ export async function GET() {
 
 // create kategori baru
 export async function POST(req: NextRequest) {
+  const authError = requireAuth(req);
+  if (authError) return authError;
+
+  const roleError = requireRole(req, ["editor", "superadmin"]);
+  if (roleError) return roleError;
   try {
     const { name, subtitle, description, iconUrl } = await req.json();
 
