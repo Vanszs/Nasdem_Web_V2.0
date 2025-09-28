@@ -262,22 +262,15 @@ export default function Landing() {
   };
 
   const getStatusBadge = (status: Program["status"]) => {
-    const variants = {
-      Berlangsung: "default",
-      Selesai: "outline",
-      Tertunda: "secondary",
-      Perencanaan: "secondary",
-    } as const;
-
     const colors = {
       Berlangsung:
         "bg-[#001B55]/10 text-[#001B55] border border-[#001B55]/20 font-semibold",
       Selesai:
         "bg-[#FF9C04]/10 text-[#FF9C04] border border-[#FF9C04]/20 font-semibold",
       Tertunda:
-        "bg-yellow-100 text-yellow-700 border border-yellow-200 font-semibold",
+        "bg-[#F59E0B]/10 text-[#F59E0B] border border-[#F59E0B]/20 font-semibold",
       Perencanaan:
-        "bg-purple-100 text-purple-700 border border-purple-200 font-semibold",
+        "bg-[#6B7280]/10 text-[#6B7280] border border-[#6B7280]/20 font-semibold",
     };
 
     return <Badge className={colors[status]}>{status}</Badge>;
@@ -454,91 +447,96 @@ export default function Landing() {
   return (
     <AdminLayout breadcrumbs={breadcrumbs}>
       <div className="p-6 space-y-6">
-        <div className="bg-gradient-to-r from-[#001B55]/5 via-white to-[#FF9C04]/5 p-6 rounded-lg border border-gray-200 shadow-sm">
-          <div className="flex items-center gap-3 mb-2">
-            <div className="p-2 bg-[#FF9C04]/10 rounded-lg">
-              <Home className="w-6 h-6 text-[#FF9C04]" />
+        <div className="bg-gradient-to-r from-[#001B55]/10 via-[#F0F0F0]/20 to-[#FF9C04]/10 p-8 rounded-2xl border border-gray-200/40 shadow-sm backdrop-blur-sm">
+          <div className="flex items-center gap-4 mb-3">
+            <div className="p-3 bg-gradient-to-br from-[#FF9C04] to-[#FF9C04]/80 rounded-2xl shadow-lg">
+              <Home className="w-7 h-7 text-white" />
             </div>
-            <h1 className="text-3xl font-bold text-[#001B55]">
-              Manajemen Landing Page
-            </h1>
+            <div>
+              <h1 className="text-3xl font-bold text-[#001B55] leading-tight">
+                Manajemen Landing Page
+              </h1>
+              <p className="text-[#6B7280] mt-1">
+                Kelola konten halaman utama website dengan sistem yang terintegrasi
+              </p>
+            </div>
           </div>
-          <p className="text-muted-foreground ml-11">
-            Kelola konten halaman utama website dengan sistem yang terintegrasi
-          </p>
         </div>
 
         <Tabs defaultValue="hero" className="w-full">
-          {/* Enhanced Navigation Menu */}
-          <div className="flex justify-center mb-8">
-            <div className="bg-white rounded-2xl border-2 border-gray-200 shadow-lg p-2 backdrop-blur-sm">
-              <TabsList className="inline-flex items-center justify-center rounded-xl bg-gradient-to-r from-gray-50 to-gray-100 p-1.5 gap-1 min-w-[800px]">
+          {/* Modern Navigation Menu */}
+          <div className="flex justify-center mb-10">
+            <div className="bg-[#FFFFFF] rounded-3xl border border-gray-100 shadow-sm p-1.5 backdrop-blur-sm">
+              <TabsList className="inline-flex items-center justify-center rounded-3xl bg-gradient-to-r from-[#F0F0F0] to-[#F0F0F0] p-2 gap-2 min-w-[780px] h-16">
                 <TabsTrigger
                   value="hero"
-                  className="relative inline-flex items-center justify-center whitespace-nowrap rounded-lg px-6 py-3 text-sm font-semibold transition-all duration-300 ease-in-out focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#001B55] focus-visible:ring-offset-2 disabled:pointer-events-none disabled:opacity-50 text-gray-600 hover:text-[#001B55] hover:bg-white/80 data-[state=active]:bg-gradient-to-r data-[state=active]:from-[#001B55] data-[state=active]:to-[#001B55]/90 data-[state=active]:text-white data-[state=active]:shadow-lg data-[state=active]:shadow-[#001B55]/25 data-[state=active]:border data-[state=active]:border-[#FF9C04]/30 min-w-[180px] h-12"
+                  className="relative inline-flex items-center justify-center whitespace-nowrap rounded-3xl px-8 py-4 text-sm font-medium transition-all duration-300 ease-out focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#001B55]/20 disabled:pointer-events-none disabled:opacity-50 text-[#6B7280] hover:text-[#001B55] hover:bg-[#FFFFFF] hover:shadow-sm data-[state=active]:bg-gradient-to-br data-[state=active]:from-[#001B55] data-[state=active]:to-[#001B55]/95 data-[state=active]:text-white data-[state=active]:shadow-lg data-[state=active]:shadow-[#001B55]/20 data-[state=active]:z-10 min-w-[180px] h-12 [&[data-state=active]>div>*]:!text-white [&[data-state=active]_*]:!text-white"
                 >
-                  <div className="flex items-center gap-2">
-                    <div className="w-2 h-2 rounded-full bg-[#FF9C04] opacity-0 data-[state=active]:opacity-100 transition-opacity duration-300"></div>
-                    <Image className="w-4 h-4" />
-                    Hero Banner
+                  <div className="flex items-center gap-2.5">
+                    <Image className="w-4 h-4 text-inherit opacity-80" />
+                    <span className="text-inherit font-medium">Hero Banner</span>
                   </div>
+                  <div className="absolute top-1 right-1 w-2 h-2 rounded-full bg-[#FF9C04] opacity-0 data-[state=active]:opacity-100 transition-all duration-300 shadow-sm scale-0 data-[state=active]:scale-100"></div>
                 </TabsTrigger>
                 <TabsTrigger
                   value="about"
-                  className="relative inline-flex items-center justify-center whitespace-nowrap rounded-lg px-6 py-3 text-sm font-semibold transition-all duration-300 ease-in-out focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#001B55] focus-visible:ring-offset-2 disabled:pointer-events-none disabled:opacity-50 text-gray-600 hover:text-[#001B55] hover:bg-white/80 data-[state=active]:bg-gradient-to-r data-[state=active]:from-[#001B55] data-[state=active]:to-[#001B55]/90 data-[state=active]:text-white data-[state=active]:shadow-lg data-[state=active]:shadow-[#001B55]/25 data-[state=active]:border data-[state=active]:border-[#FF9C04]/30 min-w-[180px] h-12"
+                  className="relative inline-flex items-center justify-center whitespace-nowrap rounded-3xl px-8 py-4 text-sm font-medium transition-all duration-300 ease-out focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#001B55]/20 disabled:pointer-events-none disabled:opacity-50 text-[#6B7280] hover:text-[#001B55] hover:bg-[#FFFFFF] hover:shadow-sm data-[state=active]:bg-gradient-to-br data-[state=active]:from-[#001B55] data-[state=active]:to-[#001B55]/95 data-[state=active]:text-white data-[state=active]:shadow-lg data-[state=active]:shadow-[#001B55]/20 data-[state=active]:z-10 min-w-[180px] h-12 [&[data-state=active]>div>*]:!text-white [&[data-state=active]_*]:!text-white"
                 >
-                  <div className="flex items-center gap-2">
-                    <div className="w-2 h-2 rounded-full bg-[#FF9C04] opacity-0 data-[state=active]:opacity-100 transition-opacity duration-300"></div>
-                    <Users className="w-4 h-4" />
-                    Tentang Kami
+                  <div className="flex items-center gap-2.5">
+                    <Users className="w-4 h-4 text-inherit opacity-80" />
+                    <span className="text-inherit font-medium">Tentang Kami</span>
                   </div>
+                  <div className="absolute top-1 right-1 w-2 h-2 rounded-full bg-[#FF9C04] opacity-0 data-[state=active]:opacity-100 transition-all duration-300 shadow-sm scale-0 data-[state=active]:scale-100"></div>
                 </TabsTrigger>
                 <TabsTrigger
                   value="programs"
-                  className="relative inline-flex items-center justify-center whitespace-nowrap rounded-lg px-6 py-3 text-sm font-semibold transition-all duration-300 ease-in-out focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#001B55] focus-visible:ring-offset-2 disabled:pointer-events-none disabled:opacity-50 text-gray-600 hover:text-[#001B55] hover:bg-white/80 data-[state=active]:bg-gradient-to-r data-[state=active]:from-[#001B55] data-[state=active]:to-[#001B55]/90 data-[state=active]:text-white data-[state=active]:shadow-lg data-[state=active]:shadow-[#001B55]/25 data-[state=active]:border data-[state=active]:border-[#FF9C04]/30 min-w-[180px] h-12"
+                  className="relative inline-flex items-center justify-center whitespace-nowrap rounded-3xl px-8 py-4 text-sm font-medium transition-all duration-300 ease-out focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#001B55]/20 disabled:pointer-events-none disabled:opacity-50 text-[#6B7280] hover:text-[#001B55] hover:bg-[#FFFFFF] hover:shadow-sm data-[state=active]:bg-gradient-to-br data-[state=active]:from-[#001B55] data-[state=active]:to-[#001B55]/95 data-[state=active]:text-white data-[state=active]:shadow-lg data-[state=active]:shadow-[#001B55]/20 data-[state=active]:z-10 min-w-[180px] h-12 [&[data-state=active]>div>*]:!text-white [&[data-state=active]_*]:!text-white"
                 >
-                  <div className="flex items-center gap-2">
-                    <div className="w-2 h-2 rounded-full bg-[#FF9C04] opacity-0 data-[state=active]:opacity-100 transition-opacity duration-300"></div>
-                    <TrendingUp className="w-4 h-4" />
-                    Program Kerja
+                  <div className="flex items-center gap-2.5">
+                    <TrendingUp className="w-4 h-4 text-inherit opacity-80" />
+                    <span className="text-inherit font-medium">Program Kerja</span>
                   </div>
+                  <div className="absolute top-1 right-1 w-2 h-2 rounded-full bg-[#FF9C04] opacity-0 data-[state=active]:opacity-100 transition-all duration-300 shadow-sm scale-0 data-[state=active]:scale-100"></div>
                 </TabsTrigger>
                 <TabsTrigger
                   value="contact"
-                  className="relative inline-flex items-center justify-center whitespace-nowrap rounded-lg px-6 py-3 text-sm font-semibold transition-all duration-300 ease-in-out focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#001B55] focus-visible:ring-offset-2 disabled:pointer-events-none disabled:opacity-50 text-gray-600 hover:text-[#001B55] hover:bg-white/80 data-[state=active]:bg-gradient-to-r data-[state=active]:from-[#001B55] data-[state=active]:to-[#001B55]/90 data-[state=active]:text-white data-[state=active]:shadow-lg data-[state=active]:shadow-[#001B55]/25 data-[state=active]:border data-[state=active]:border-[#FF9C04]/30 min-w-[180px] h-12"
+                  className="relative inline-flex items-center justify-center whitespace-nowrap rounded-3xl px-8 py-4 text-sm font-medium transition-all duration-300 ease-out focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#001B55]/20 disabled:pointer-events-none disabled:opacity-50 text-[#6B7280] hover:text-[#001B55] hover:bg-[#FFFFFF] hover:shadow-sm data-[state=active]:bg-gradient-to-br data-[state=active]:from-[#001B55] data-[state=active]:to-[#001B55]/95 data-[state=active]:text-white data-[state=active]:shadow-lg data-[state=active]:shadow-[#001B55]/20 data-[state=active]:z-10 min-w-[180px] h-12 [&[data-state=active]>div>*]:!text-white [&[data-state=active]_*]:!text-white"
                 >
-                  <div className="flex items-center gap-2">
-                    <div className="w-2 h-2 rounded-full bg-[#FF9C04] opacity-0 data-[state=active]:opacity-100 transition-opacity duration-300"></div>
-                    <Phone className="w-4 h-4" />
-                    Kontak
+                  <div className="flex items-center gap-2.5">
+                    <Phone className="w-4 h-4 text-inherit opacity-80" />
+                    <span className="text-inherit font-medium">Kontak</span>
                   </div>
+                  <div className="absolute top-1 right-1 w-2 h-2 rounded-full bg-[#FF9C04] opacity-0 data-[state=active]:opacity-100 transition-all duration-300 shadow-sm scale-0 data-[state=active]:scale-100"></div>
                 </TabsTrigger>
               </TabsList>
             </div>
           </div>
 
-          {/* Navigation Status Indicator */}
-          <div className="flex justify-center mb-6">
-            <div className="flex items-center gap-2 text-sm text-gray-500">
-              <div className="flex items-center gap-1">
-                <div className="w-2 h-2 rounded-full bg-[#FF9C04]"></div>
-                <span>Aktif</span>
+          {/* Status Indicator */}
+          <div className="flex justify-center mb-12">
+            <div className="flex items-center gap-4 text-sm text-[#6B7280] bg-gradient-to-r from-[#FFFFFF] to-[#F0F0F0]/30 px-6 py-3 rounded-full border border-gray-100 shadow-sm backdrop-blur-sm">
+              <div className="flex items-center gap-2.5">
+                <div className="relative">
+                  <div className="w-2.5 h-2.5 rounded-full bg-[#FF9C04] animate-pulse shadow-lg shadow-[#FF9C04]/30"></div>
+                  <div className="absolute inset-0 w-2.5 h-2.5 rounded-full bg-[#FF9C04] animate-ping opacity-20"></div>
+                </div>
+                <span className="font-semibold text-[#001B55]">Live</span>
               </div>
-              <span>•</span>
-              <span>Pilih tab untuk mengelola konten</span>
+              <div className="w-1 h-1 rounded-full bg-gray-300"></div>
+              <span className="font-medium">Pilih tab untuk mengelola konten</span>
             </div>
           </div>
 
           {/* Hero Banner Tab */}
           <TabsContent value="hero" className="space-y-6">
-            <Card className="border-2 border-gray-200 shadow-lg hover:shadow-xl transition-shadow duration-200">
-              <CardHeader className="bg-gradient-to-r from-[#001B55]/10 via-white to-[#FF9C04]/10 border-b border-gray-100">
+            <Card className="border border-gray-200 shadow-lg hover:shadow-xl transition-shadow duration-200 rounded-2xl">
+              <CardHeader className="bg-gradient-to-r from-[#001B55]/5 via-[#FFFFFF] to-[#FF9C04]/5 border-b border-gray-100 rounded-t-2xl">
                 <div className="flex justify-between items-center">
-                  <CardTitle className="flex items-center gap-2 text-[#001B55]">
-                    <div className="p-2 bg-[#FF9C04]/10 rounded-lg">
-                      <Image className="w-5 h-5 text-[#FF9C04]" />
+                  <CardTitle className="flex items-center gap-3 text-[#001B55]">
+                    <div className="p-2 bg-gradient-to-br from-[#FF9C04] to-[#FF9C04]/80 rounded-2xl shadow-md">
+                      <Image className="w-5 h-5 text-white" />
                     </div>
-                    Hero Banners ({heroBanners.length})
+                    <span className="text-xl font-bold">Hero Banners ({heroBanners.length})</span>
                   </CardTitle>
                   <Dialog
                     open={isBannerDialogOpen}
@@ -546,7 +544,7 @@ export default function Landing() {
                   >
                     <DialogTrigger asChild>
                       <Button
-                        className="bg-[#FF9C04] hover:bg-[#001B55] text-white font-semibold border-2 border-[#FF9C04] hover:border-[#001B55] shadow-lg hover:shadow-xl transition-all duration-200 transform hover:scale-105"
+                        className="bg-[#FF9C04] hover:bg-[#001B55] text-white font-semibold shadow-lg hover:shadow-xl transition-all duration-200"
                         size="default"
                       >
                         <Plus className="w-4 h-4 mr-2" />
@@ -723,21 +721,21 @@ export default function Landing() {
 
           {/* About Section Tab */}
           <TabsContent value="about" className="space-y-6">
-            <Card className="border-2 border-gray-200 shadow-lg hover:shadow-xl transition-shadow duration-200">
-              <CardHeader className="bg-gradient-to-r from-[#001B55]/10 via-white to-[#FF9C04]/10 border-b border-gray-100">
+            <Card className="border border-gray-200 shadow-lg hover:shadow-xl transition-shadow duration-200 rounded-2xl">
+              <CardHeader className="bg-gradient-to-r from-[#001B55]/5 via-[#FFFFFF] to-[#FF9C04]/5 border-b border-gray-100 rounded-t-2xl">
                 <div className="flex justify-between items-center">
-                  <CardTitle className="flex items-center gap-2 text-[#001B55]">
-                    <div className="p-2 bg-[#FF9C04]/10 rounded-lg">
-                      <Users className="w-5 h-5 text-[#FF9C04]" />
+                  <CardTitle className="flex items-center gap-3 text-[#001B55]">
+                    <div className="p-2 bg-gradient-to-br from-[#FF9C04] to-[#FF9C04]/80 rounded-2xl shadow-md">
+                      <Users className="w-5 h-5 text-white" />
                     </div>
-                    Tentang Kami
+                    <span className="text-xl font-bold">Tentang Kami</span>
                   </CardTitle>
                   <Dialog
                     open={isAboutDialogOpen}
                     onOpenChange={setIsAboutDialogOpen}
                   >
                     <DialogTrigger asChild>
-                      <Button className="bg-[#FF9C04] hover:bg-[#001B55] text-white font-semibold border-2 border-[#FF9C04] hover:border-[#001B55] shadow-lg hover:shadow-xl transition-all duration-200 transform hover:scale-105">
+                      <Button className="bg-[#FF9C04] hover:bg-[#001B55] text-white font-semibold shadow-lg hover:shadow-xl transition-all duration-200">
                         <Edit className="w-4 h-4 mr-2" />
                         Edit
                       </Button>
@@ -801,7 +799,7 @@ export default function Landing() {
                           Batal
                         </Button>
                         <Button
-                          className="bg-[#FF9C04] hover:bg-[#001B55] text-white"
+                          className="bg-[#FF9C04] hover:bg-[#001B55] text-white transition-all duration-200"
                           onClick={handleSaveAbout}
                         >
                           Simpan
@@ -863,7 +861,7 @@ export default function Landing() {
                 onOpenChange={setIsProgramDialogOpen}
               >
                 <DialogTrigger asChild>
-                  <Button className="bg-[#FF9C04] hover:bg-[#001B55] text-white font-semibold border-2 border-[#FF9C04] hover:border-[#001B55] shadow-lg hover:shadow-xl transition-all duration-200 transform hover:scale-105">
+                  <Button className="bg-[#FF9C04] hover:bg-[#001B55] text-white font-semibold shadow-lg hover:shadow-xl transition-all duration-200">
                     <Plus className="w-4 h-4 mr-2" />
                     Tambah Program
                   </Button>
@@ -1127,17 +1125,17 @@ export default function Landing() {
               {programs.map((program) => (
                 <Card
                   key={program.id}
-                  className="border-2 border-gray-200 shadow-md hover:shadow-lg transition-shadow duration-200"
+                  className="border border-gray-200 shadow-md hover:shadow-lg transition-shadow duration-200 rounded-2xl"
                 >
                   <Collapsible>
                     <CollapsibleTrigger asChild>
-                      <CardHeader className="cursor-pointer hover:bg-gradient-to-r hover:from-[#001B55]/5 hover:to-[#FF9C04]/5 transition-all duration-200 border-b border-gray-100">
+                      <CardHeader className="cursor-pointer hover:bg-gradient-to-r hover:from-[#001B55]/5 hover:to-[#FF9C04]/5 transition-all duration-200 border-b border-gray-100 rounded-t-2xl">
                         <div className="flex justify-between items-start">
                           <div className="flex-1">
-                            <div className="flex items-center justify-between mb-2">
-                              <CardTitle className="text-lg text-[#001B55] flex items-center gap-2">
-                                <div className="w-3 h-3 bg-[#FF9C04] rounded-full"></div>
-                                {program.name}
+                            <div className="flex items-center justify-between mb-3">
+                              <CardTitle className="text-lg text-[#001B55] flex items-center gap-3">
+                                <div className="w-3 h-3 bg-[#FF9C04] rounded-full shadow-sm"></div>
+                                <span className="font-bold">{program.name}</span>
                               </CardTitle>
                               <div className="flex items-center gap-2">
                                 {getStatusBadge(program.status)}
@@ -1259,7 +1257,7 @@ export default function Landing() {
                           </div>
                           <div className="flex justify-end gap-2 pt-4 border-t border-gray-200">
                             <Button
-                              className="bg-[#001B55] hover:bg-[#001B55]/90 text-white font-medium shadow-md hover:shadow-lg transition-all duration-200"
+                              className="bg-[#001B55] hover:bg-[#FF9C04] text-white font-semibold shadow-md hover:shadow-lg transition-all duration-200"
                               size="sm"
                               onClick={() => handleEditProgram(program)}
                             >
@@ -1267,7 +1265,7 @@ export default function Landing() {
                               Edit
                             </Button>
                             <Button
-                              className="bg-red-500 hover:bg-red-600 text-white font-medium shadow-md hover:shadow-lg transition-all duration-200"
+                              className="bg-[#C81E1E] hover:bg-[#C81E1E]/90 text-white font-semibold shadow-md hover:shadow-lg transition-all duration-200"
                               size="sm"
                               onClick={() => handleDeleteProgram(program.id)}
                             >
@@ -1286,21 +1284,21 @@ export default function Landing() {
 
           {/* Contact Tab */}
           <TabsContent value="contact" className="space-y-6">
-            <Card className="border-2 border-gray-200">
-              <CardHeader className="bg-gradient-to-r from-[#001B55]/10 via-white to-[#FF9C04]/10 border-b border-gray-100">
+            <Card className="border border-gray-200 shadow-lg hover:shadow-xl transition-shadow duration-200 rounded-2xl">
+              <CardHeader className="bg-gradient-to-r from-[#001B55]/5 via-[#FFFFFF] to-[#FF9C04]/5 border-b border-gray-100 rounded-t-2xl">
                 <div className="flex justify-between items-center">
-                  <CardTitle className="flex items-center gap-2 text-[#001B55]">
-                    <div className="p-2 bg-[#FF9C04]/10 rounded-lg">
-                      <Phone className="w-5 h-5 text-[#FF9C04]" />
+                  <CardTitle className="flex items-center gap-3 text-[#001B55]">
+                    <div className="p-2 bg-gradient-to-br from-[#FF9C04] to-[#FF9C04]/80 rounded-2xl shadow-md">
+                      <Phone className="w-5 h-5 text-white" />
                     </div>
-                    Informasi Kontak
+                    <span className="text-xl font-bold">Informasi Kontak</span>
                   </CardTitle>
                   <Dialog
                     open={isContactDialogOpen}
                     onOpenChange={setIsContactDialogOpen}
                   >
                     <DialogTrigger asChild>
-                      <Button className="bg-[#FF9C04] hover:bg-[#001B55] text-white font-semibold border-2 border-[#FF9C04] hover:border-[#001B55] shadow-lg hover:shadow-xl transition-all duration-200 transform hover:scale-105">
+                      <Button className="bg-[#FF9C04] hover:bg-[#001B55] text-white font-semibold shadow-lg hover:shadow-xl transition-all duration-200">
                         <Edit className="w-4 h-4 mr-2" />
                         Edit Kontak
                       </Button>
@@ -1505,7 +1503,7 @@ export default function Landing() {
                           Batal
                         </Button>
                         <Button
-                          className="bg-[#FF9C04] hover:bg-[#001B55] text-white"
+                          className="bg-[#FF9C04] hover:bg-[#001B55] text-white transition-all duration-200"
                           onClick={handleSaveContact}
                         >
                           Simpan
