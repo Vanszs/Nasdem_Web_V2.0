@@ -106,20 +106,44 @@ export function VisiMisiSection() {
       <section className="py-20">
         <div className="container mx-auto px-4">
           <Tabs value={activeTab} onValueChange={setActiveTab} className="w-full max-w-6xl mx-auto">
-            <TabsList className="grid w-full grid-cols-2 mb-12 h-14">
-              <TabsTrigger 
-                value="visi" 
-                className="text-lg font-semibold data-[state=active]:bg-primary data-[state=active]:text-primary-foreground"
-              >
-                Visi Partai NasDem
-              </TabsTrigger>
-              <TabsTrigger 
-                value="misi" 
-                className="text-lg font-semibold data-[state=active]:bg-primary data-[state=active]:text-primary-foreground"
-              >
-                Misi Partai NasDem
-              </TabsTrigger>
-            </TabsList>
+            {/* Modern Navigation Menu */}
+            <div className="flex justify-center mb-16">
+              <div className="bg-white rounded-3xl border border-gray-100 shadow-lg p-2 backdrop-blur-sm min-w-[600px]">
+                <TabsList className="grid w-full grid-cols-2 bg-gradient-to-r from-[#F0F0F0] to-[#F0F0F0]/80 rounded-3xl p-2 gap-2 h-16">
+                  <TabsTrigger 
+                    value="visi" 
+                    className="relative inline-flex items-center justify-center whitespace-nowrap rounded-3xl px-8 py-4 text-lg font-semibold transition-all duration-300 ease-out focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#001B55]/20 disabled:pointer-events-none disabled:opacity-50 text-[#6B7280] hover:text-[#001B55] hover:bg-white hover:shadow-sm data-[state=active]:bg-gradient-to-r data-[state=active]:from-[#001B55] data-[state=active]:to-[#001B55]/95 data-[state=active]:text-white data-[state=active]:shadow-lg data-[state=active]:shadow-[#001B55]/20 data-[state=active]:z-10 min-w-[250px] h-12 [&[data-state=active]_span]:!text-white"
+                  >
+                    <span className="text-inherit font-semibold">Visi Partai NasDem</span>
+                    <div className="absolute top-1 right-1 w-2 h-2 rounded-full bg-[#FF9C04] opacity-0 data-[state=active]:opacity-100 transition-all duration-300 shadow-sm scale-0 data-[state=active]:scale-100"></div>
+                  </TabsTrigger>
+                  <TabsTrigger 
+                    value="misi" 
+                    className="relative inline-flex items-center justify-center whitespace-nowrap rounded-3xl px-8 py-4 text-lg font-semibold transition-all duration-300 ease-out focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#001B55]/20 disabled:pointer-events-none disabled:opacity-50 text-[#6B7280] hover:text-[#001B55] hover:bg-white hover:shadow-sm data-[state=active]:bg-gradient-to-r data-[state=active]:from-[#001B55] data-[state=active]:to-[#001B55]/95 data-[state=active]:text-white data-[state=active]:shadow-lg data-[state=active]:shadow-[#001B55]/20 data-[state=active]:z-10 min-w-[250px] h-12 [&[data-state=active]_span]:!text-white"
+                  >
+                    <span className="text-inherit font-semibold">Misi Partai NasDem</span>
+                    <div className="absolute top-1 right-1 w-2 h-2 rounded-full bg-[#FF9C04] opacity-0 data-[state=active]:opacity-100 transition-all duration-300 shadow-sm scale-0 data-[state=active]:scale-100"></div>
+                  </TabsTrigger>
+                </TabsList>
+              </div>
+            </div>
+
+            {/* Status Indicator */}
+            <div className="flex justify-center mb-8">
+              <div className="flex items-center gap-4 text-sm text-[#6B7280] bg-gradient-to-r from-[#FFFFFF] to-[#F0F0F0]/30 px-6 py-3 rounded-full border border-gray-100 shadow-sm backdrop-blur-sm">
+                <div className="flex items-center gap-2.5">
+                  <div className="relative">
+                    <div className="w-2.5 h-2.5 rounded-full bg-[#FF9C04] animate-pulse shadow-lg shadow-[#FF9C04]/30"></div>
+                    <div className="absolute inset-0 w-2.5 h-2.5 rounded-full bg-[#FF9C04] animate-ping opacity-20"></div>
+                  </div>
+                  <span className="font-semibold text-[#001B55]">Aktif</span>
+                </div>
+                <div className="w-1 h-1 rounded-full bg-gray-300"></div>
+                <span className="font-medium">
+                  {activeTab === "visi" ? "Menampilkan Visi Partai NasDem" : "Menampilkan Misi Partai NasDem"}
+                </span>
+              </div>
+            </div>
 
             <TabsContent value="visi" className="mt-0">
               <motion.div
