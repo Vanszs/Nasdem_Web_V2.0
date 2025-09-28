@@ -74,7 +74,7 @@ export default function Create() {
     alert("Berita berhasil disimpan!");
 
     // Navigate back to news list
-    router.push("/news");
+    router.push("/admin/news");
   };
 
   const handlePreview = () => {
@@ -83,8 +83,8 @@ export default function Create() {
   };
 
   const breadcrumbs = [
-    { label: "Dashboard", href: "/" },
-    { label: "Berita", href: "/news" },
+    { label: "Dashboard", href: "/admin" },
+    { label: "Berita", href: "/admin/news" },
     { label: type === "new" ? "Tulis Berita" : "Edit Berita" },
   ];
 
@@ -98,7 +98,7 @@ export default function Create() {
               <Button
                 variant="outline"
                 size="sm"
-                onClick={() => router.push("/news")}
+                onClick={() => router.push("/admin/news")}
                 className="border-2 border-gray-200 hover:border-gray-300"
               >
                 <ArrowLeft className="mr-2 h-4 w-4" />

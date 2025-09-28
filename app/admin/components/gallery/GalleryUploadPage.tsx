@@ -104,9 +104,9 @@ export function GalleryUploadPage() {
   });
 
   const breadcrumbs = [
-    { label: "Dashboard", href: "/" },
-    { label: "Media" },
-    { label: "Galeri" },
+    { label: "Dashboard", href: "/admin" },
+    { label: "Galeri", href: "/admin/gallery" },
+    { label: "Upload Media" },
   ];
 
   const filteredItems = galleryItems.filter(

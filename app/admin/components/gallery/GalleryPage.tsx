@@ -145,7 +145,7 @@ export function GalleryPage() {
     },
   };
 
-  const breadcrumbs = [{ label: "Dashboard", href: "/" }, { label: "Galeri" }];
+  const breadcrumbs = [{ label: "Dashboard", href: "/admin" }, { label: "Galeri" }];
 
   return (
     <AdminLayout breadcrumbs={breadcrumbs}>
@@ -161,7 +161,7 @@ export function GalleryPage() {
             </div>
             <Button
               className="bg-[#FF9C04] hover:bg-[#001B55] text-white border-2 border-[#FF9C04] hover:border-[#001B55] shadow-lg hover:shadow-xl transition-all duration-300 transform hover:scale-105"
-              onClick={() => router.push("/gallery/upload")}
+              onClick={() => router.push("/admin/gallery/upload")}
             >
               <Upload className="mr-2 h-4 w-4" />
               Upload Media
@@ -220,7 +220,7 @@ export function GalleryPage() {
                           variant="secondary"
                           size="sm"
                           className="h-8 text-xs bg-white/20 hover:bg-white/30 text-white border-white/30"
-                          onClick={() => router.push(`/gallery/${item.id}`)}
+                          onClick={() => router.push(`/admin/gallery/${item.id}`)}
                         >
                           Lihat Detail
                         </Button>
@@ -337,7 +337,7 @@ export function GalleryPage() {
             </p>
             <Button
               className="bg-[#FF9C04] hover:bg-[#001B55] text-white border-2 border-[#FF9C04] hover:border-[#001B55] shadow-lg hover:shadow-xl transition-all duration-300 transform hover:scale-105"
-              onClick={() => router.push("/gallery/upload")}
+              onClick={() => router.push("/admin/gallery/upload")}
             >
               <Upload className="mr-2 h-4 w-4" />
               Upload Media

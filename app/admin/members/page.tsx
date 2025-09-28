@@ -846,8 +846,8 @@ export default function Members() {
   };
 
   const breadcrumbs = [
-    { label: "Dashboard", href: "/" },
-    { label: "Struktur", href: "/structure/dpd" },
+    { label: "Dashboard", href: "/admin" },
+    { label: "Struktur", href: "/admin/members" },
     { label: "Daftar Anggota" },
   ];
 

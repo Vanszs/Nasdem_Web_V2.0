@@ -69,7 +69,7 @@ export function TopNavbar({
               <BreadcrumbList>
                 <BreadcrumbItem>
                   <BreadcrumbLink
-                    href="/"
+                    href="/admin"
                     className="flex items-center gap-2 text-muted-foreground hover:text-primary transition-colors duration-300"
                   >
                     <Home className="h-4 w-4" />

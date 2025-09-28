@@ -92,7 +92,7 @@ export function MediaUploadPage() {
     alert("Media berhasil diupload!");
 
     // Navigate back to gallery
-    router.push("/gallery");
+    router.push("/admin/gallery");
   };
 
   const handlePreview = () => {
@@ -101,8 +101,8 @@ export function MediaUploadPage() {
   };
 
   const breadcrumbs = [
-    { label: "Dashboard", href: "/" },
-    { label: "Galeri", href: "/gallery" },
+    { label: "Dashboard", href: "/admin" },
+    { label: "Galeri", href: "/admin/gallery" },
     { label: "Upload Media" },
   ];
 
@@ -116,7 +116,7 @@ export function MediaUploadPage() {
               <Button
                 variant="outline"
                 size="sm"
-                onClick={() => router.push("/gallery")}
+                onClick={() => router.push("/admin/gallery")}
                 className="border-2 border-gray-200 hover:border-gray-300"
               >
                 <ArrowLeft className="mr-2 h-4 w-4" />

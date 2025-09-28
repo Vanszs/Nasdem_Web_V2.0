@@ -14,7 +14,7 @@ const quickActions = [
   {
     title: "Tulis Berita Baru",
     description: "Buat artikel dan publikasi berita terbaru",
-    href: "/news/create",
+    href: "/admin/news/create",
     icon: FileText,
     gradient: "from-[#001B55]/10 via-[#001B55]/5 to-transparent",
     iconBg: "from-[#001B55] to-[#001B55]/80",
@@ -22,7 +22,7 @@ const quickActions = [
   {
     title: "Upload Media",
     description: "Tambah foto, video dan galeri baru",
-    href: "/gallery/upload",
+    href: "/admin/gallery/upload",
     icon: Image,
     gradient: "from-[#FF9C04]/10 via-[#FF9C04]/5 to-transparent",
     iconBg: "from-[#FF9C04] to-[#FF9C04]/80",
@@ -30,7 +30,7 @@ const quickActions = [
   {
     title: "Kelola Struktur",
     description: "Update data pengurus dan organisasi",
-    href: "/structure/dpd",
+    href: "/admin/members",
     icon: Users,
     gradient: "from-[#001B55]/10 via-[#FF9C04]/5 to-transparent",
     iconBg: "from-[#001B55] to-[#FF9C04]",
@@ -38,7 +38,7 @@ const quickActions = [
   {
     title: "Dashboard Analytics",
     description: "Lihat statistik dan performa sistem",
-    href: "/analytics",
+    href: "/admin/statistik-pemilu",
     icon: Sparkles,
     gradient: "from-[#FF9C04]/10 via-[#001B55]/5 to-transparent",
     iconBg: "from-[#FF9C04] to-[#001B55]",

@@ -116,22 +116,22 @@ const statusConfig = {
   DRAFT: {
     label: "Draft",
     className:
-      "bg-gray-100 text-gray-700 border-2 border-gray-300 hover:bg-gray-200 font-medium px-3 py-1.5 min-w-[80px] justify-center",
+      "bg-gray-50 text-gray-700 border border-gray-200 hover:bg-gray-100 font-medium px-5 py-2.5 w-[110px] justify-center rounded-full shadow-sm hover:shadow-md transition-all duration-200 text-sm",
   },
   SCHEDULED: {
     label: "Terjadwal",
     className:
-      "bg-[#FF9C04]/10 text-[#FF9C04] border-2 border-[#FF9C04]/30 hover:bg-[#FF9C04]/20 font-medium px-3 py-1.5 min-w-[80px] justify-center",
+      "bg-[#FF9C04]/10 text-[#FF9C04] border border-[#FF9C04]/20 hover:bg-[#FF9C04]/20 font-medium px-5 py-2.5 w-[110px] justify-center rounded-full shadow-sm hover:shadow-md transition-all duration-200 text-sm",
   },
   PUBLISHED: {
     label: "Published",
     className:
-      "bg-[#001B55]/10 text-[#001B55] border-2 border-[#001B55]/30 hover:bg-[#001B55]/20 font-medium px-3 py-1.5 min-w-[80px] justify-center",
+      "bg-[#001B55]/10 text-[#001B55] border border-[#001B55]/20 hover:bg-[#001B55]/20 font-medium px-5 py-2.5 w-[110px] justify-center rounded-full shadow-sm hover:shadow-md transition-all duration-200 text-sm",
   },
   ARCHIVED: {
     label: "Diarsip",
     className:
-      "bg-orange-100 text-orange-700 border-2 border-orange-300 hover:bg-orange-200 font-medium px-3 py-1.5 min-w-[80px] justify-center",
+      "bg-orange-50 text-orange-700 border border-orange-200 hover:bg-orange-100 font-medium px-5 py-2.5 w-[110px] justify-center rounded-full shadow-sm hover:shadow-md transition-all duration-200 text-sm",
   },
 };
 
@@ -224,36 +224,36 @@ export function NewsTable() {
   };
 
   return (
-    <div className="space-y-6 p-6">
-      {/* Filters Section with Border */}
-      <div className="bg-white/50 border-2 border-gray-200/60 rounded-xl p-4">
-        <div className="flex flex-col sm:flex-row gap-4">
-          <div className="flex-1">
-            <Input
-              placeholder="Cari berita atau penulis..."
-              value={searchTerm}
-              onChange={(e) => setSearchTerm(e.target.value)}
-              className="focus-ring border-2 border-gray-200/60 hover:border-gray-300/80"
-            />
+    <div className="space-y-6">
+      {/* Filters Section */}
+      <div className="flex items-center gap-4">
+        <div className="relative flex-1">
+          <Input
+            placeholder="Cari berita..."
+            value={searchTerm}
+            onChange={(e) => setSearchTerm(e.target.value)}
+            className="pl-10"
+          />
+          <div className="absolute left-3 top-1/2 -translate-y-1/2 text-muted-foreground">
+            <SortAsc className="h-4 w-4" />
           </div>
-          <Select value={statusFilter} onValueChange={setStatusFilter}>
-            <SelectTrigger className="w-full sm:w-[180px] focus-ring border-2 border-gray-200/60 hover:border-gray-300/80">
-              <Filter className="h-4 w-4 mr-2" />
-              <SelectValue placeholder="Filter status" />
-            </SelectTrigger>
-            <SelectContent>
-              <SelectItem value="all">Semua Status</SelectItem>
-              <SelectItem value="DRAFT">Draft</SelectItem>
-              <SelectItem value="SCHEDULED">Terjadwal</SelectItem>
-              <SelectItem value="PUBLISHED">Published</SelectItem>
-              <SelectItem value="ARCHIVED">Diarsip</SelectItem>
-            </SelectContent>
-          </Select>
         </div>
+        <Select value={statusFilter} onValueChange={setStatusFilter}>
+          <SelectTrigger className="w-[180px]">
+            <SelectValue placeholder="Filter status" />
+          </SelectTrigger>
+          <SelectContent>
+            <SelectItem value="all">Semua Status</SelectItem>
+            <SelectItem value="DRAFT">Draft</SelectItem>
+            <SelectItem value="PUBLISHED">Published</SelectItem>
+            <SelectItem value="SCHEDULED">Terjadwal</SelectItem>
+            <SelectItem value="ARCHIVED">Diarsip</SelectItem>
+          </SelectContent>
+        </Select>
       </div>
 
-      {/* Table Section with Border */}
-      <div className="bg-white/80 border-2 border-gray-200/60 rounded-xl overflow-hidden shadow-sm hover:shadow-md transition-all duration-300">
+      {/* Table Section */}
+      <div className="overflow-hidden rounded-lg border shadow-sm">
         <Table>
           <TableHeader>
             <TableRow>
@@ -266,25 +266,17 @@ export function NewsTable() {
                   onCheckedChange={handleSelectAll}
                 />
               </TableHead>
-              <TableHead>
-                <Button
-                  variant="ghost"
-                  size="sm"
-                  className="h-auto p-2 font-medium text-[#001B55] hover:text-[#FF9C04] hover:bg-[#FF9C04]/10 border-2 border-transparent hover:border-[#FF9C04]/20 rounded-lg transition-all duration-300"
-                >
-                  Judul <SortAsc className="ml-1 h-3 w-3" />
-                </Button>
-              </TableHead>
-              <TableHead>Status</TableHead>
-              <TableHead>Penulis</TableHead>
-              <TableHead>Tanggal</TableHead>
-              <TableHead className="w-12">Pin</TableHead>
+              <TableHead>Judul</TableHead>
+              <TableHead className="w-[120px]">Status</TableHead>
+              <TableHead className="w-[200px]">Penulis</TableHead>
+              <TableHead className="w-[180px]">Tanggal</TableHead>
+              <TableHead className="w-12 text-center">Pin</TableHead>
               <TableHead className="w-12"></TableHead>
             </TableRow>
           </TableHeader>
           <TableBody>
             {paginatedNews.map((newsItem) => (
-              <TableRow key={newsItem.id} className="group">
+              <TableRow key={newsItem.id}>
                 <TableCell>
                   <Checkbox
                     checked={selectedNews.includes(newsItem.id)}
@@ -293,41 +285,22 @@ export function NewsTable() {
                     }
                   />
                 </TableCell>
-                <TableCell>
-                  <div className="space-y-1">
-                    <SafeLink
-                      to={`/news/${newsItem.id}`}
-                      className="font-medium hover:text-[#FF9C04] text-[#001B55] transition-colors duration-200"
-                    >
-                      {newsItem.title}
-                    </SafeLink>
-                    {newsItem.summary && (
-                      <p className="text-sm text-muted-foreground line-clamp-2">
-                        {newsItem.summary}
-                      </p>
-                    )}
-                    {newsItem.tags.length > 0 && (
-                      <div className="flex flex-wrap gap-1">
-                        {newsItem.tags.slice(0, 2).map((tag) => (
-                          <Badge
-                            key={tag}
-                            variant="outline"
-                            className="text-xs"
-                          >
-                            {tag}
-                          </Badge>
-                        ))}
-                        {newsItem.tags.length > 2 && (
-                          <Badge variant="outline" className="text-xs">
-                            +{newsItem.tags.length - 2}
-                          </Badge>
-                        )}
-                      </div>
-                    )}
+                <TableCell className="font-medium">
+                  <div className="flex flex-col">
+                    <span className="line-clamp-1">{newsItem.title}</span>
+                    <span className="text-xs text-muted-foreground line-clamp-1">
+                      {newsItem.tags.join(", ")}
+                    </span>
                   </div>
                 </TableCell>
                 <TableCell>
-                  <Badge className={statusConfig[newsItem.status].className}>
+                  <Badge
+                    variant={
+                      newsItem.status === "PUBLISHED"
+                        ? "default"
+                        : "secondary"
+                    }
+                  >
                     {statusConfig[newsItem.status].label}
                   </Badge>
                 </TableCell>
@@ -344,84 +317,37 @@ export function NewsTable() {
                     <span className="text-sm">{newsItem.author}</span>
                   </div>
                 </TableCell>
-                <TableCell>
-                  <div className="text-sm space-y-1">
-                    {newsItem.status === "PUBLISHED" &&
-                      newsItem.publishedAt && (
-                        <div className="flex items-center gap-1">
-                          <Eye className="h-3 w-3 text-muted-foreground" />
-                          {format(
-                            new Date(newsItem.publishedAt),
-                            "dd MMM yyyy",
-                            { locale: id }
-                          )}
-                        </div>
-                      )}
-                    {newsItem.status === "SCHEDULED" &&
-                      newsItem.scheduledAt && (
-                        <div className="flex items-center gap-1">
-                          <Calendar className="h-3 w-3 text-muted-foreground" />
-                          {format(
-                            new Date(newsItem.scheduledAt),
-                            "dd MMM yyyy",
-                            { locale: id }
-                          )}
-                        </div>
-                      )}
-                    <div className="text-muted-foreground">
-                      Dibuat:{" "}
-                      {format(new Date(newsItem.createdAt), "dd MMM yyyy", {
-                        locale: id,
-                      })}
-                    </div>
-                  </div>
+                <TableCell className="text-sm text-muted-foreground">
+                  {format(
+                    new Date(newsItem.updatedAt),
+                    "dd MMM yyyy, HH:mm",
+                    {
+                      locale: id,
+                    }
+                  )}
                 </TableCell>
-                <TableCell>
-                  <Button
-                    variant="ghost"
-                    size="icon"
-                    onClick={() => handlePin(newsItem)}
-                    className={`h-8 w-8 transition-all duration-200 ${
-                      newsItem.pinned
-                        ? "text-[#FF9C04] bg-[#FF9C04]/10 hover:bg-[#FF9C04]/20"
-                        : "text-muted-foreground hover:text-[#FF9C04] hover:bg-[#FF9C04]/10"
-                    } focus-ring`}
-                  >
-                    <Pin
-                      className={`h-4 w-4 ${
-                        newsItem.pinned ? "fill-current" : ""
-                      }`}
-                    />
-                  </Button>
+                <TableCell className="text-center">
+                  {newsItem.pinned && (
+                    <Pin className="h-4 w-4 text-blue-500" />
+                  )}
                 </TableCell>
                 <TableCell>
                   <DropdownMenu>
                     <DropdownMenuTrigger asChild>
-                      <Button
-                        variant="ghost"
-                        size="icon"
-                        className="h-8 w-8 focus-ring"
-                      >
+                      <Button variant="ghost" size="icon" className="h-8 w-8">
                         <MoreHorizontal className="h-4 w-4" />
-                        <span className="sr-only">Menu aksi</span>
                       </Button>
                     </DropdownMenuTrigger>
                     <DropdownMenuContent align="end">
-                      <DropdownMenuLabel>Aksi</DropdownMenuLabel>
-                      <DropdownMenuSeparator />
                       <DropdownMenuItem asChild>
-                        <SafeLink to={`/news/${newsItem.id}/edit`}>
+                        <SafeLink to={`/admin/news/edit/${newsItem.id}`}>
                           <Edit className="mr-2 h-4 w-4" />
                           Edit
                         </SafeLink>
                       </DropdownMenuItem>
-                      <DropdownMenuItem>
-                        <Copy className="mr-2 h-4 w-4" />
-                        Duplikat
-                      </DropdownMenuItem>
-                      <DropdownMenuItem>
-                        <Archive className="mr-2 h-4 w-4" />
-                        Arsip
+                      <DropdownMenuItem onClick={() => handlePin(newsItem)}>
+                        <Pin className="mr-2 h-4 w-4" />
+                        {newsItem.pinned ? "Unpin" : "Pin"}
                       </DropdownMenuItem>
                       <DropdownMenuSeparator />
                       <DropdownMenuItem className="text-destructive">
@@ -435,82 +361,54 @@ export function NewsTable() {
             ))}
           </TableBody>
         </Table>
-
-        {filteredNews.length === 0 && (
-          <div className="text-center py-12">
-            <FileText className="mx-auto h-12 w-12 text-muted-foreground/50" />
-            <h3 className="mt-4 text-lg font-semibold">Belum ada berita</h3>
-            <p className="text-muted-foreground mt-2">
-              {searchTerm || statusFilter !== "all"
-                ? "Tidak ada berita yang cocok dengan filter Anda."
-                : "Mulai publikasi pertama Anda."}
-            </p>
-            {!searchTerm && statusFilter === "all" && (
-              <SafeLink to="/news/create">
-                <Button className="mt-4 bg-[#FF9C04] hover:bg-[#FF9C04]/90 text-white font-semibold shadow-lg hover:shadow-xl transition-all duration-200">
-                  <Plus className="mr-2 h-4 w-4" />
-                  Tulis Berita Pertama
-                </Button>
-              </SafeLink>
-            )}
-          </div>
-        )}
       </div>
 
-      {/* Modern Pagination Controls */}
-      {filteredNews.length > 0 && totalPages > 1 && (
-        <div className="flex items-center justify-between pt-6 border-t border-gray-200/60">
-          <div className="text-sm text-muted-foreground">
-            Menampilkan {startIndex + 1}-
-            {Math.min(endIndex, filteredNews.length)} dari {filteredNews.length}{" "}
-            berita
-          </div>
-
-          <div className="flex items-center gap-2">
-            <Button
-              variant="outline"
-              size="sm"
-              onClick={() => handlePageChange(currentPage - 1)}
-              disabled={currentPage === 1}
-              className="border-2 border-gray-200 hover:border-[#FF9C04] hover:text-[#FF9C04] transition-colors duration-200"
-            >
-              <ChevronLeft className="h-4 w-4" />
-              Sebelumnya
-            </Button>
-
-            <div className="flex items-center gap-1">
-              {Array.from({ length: totalPages }, (_, i) => i + 1).map(
-                (page) => (
-                  <Button
-                    key={page}
-                    variant={page === currentPage ? "default" : "outline"}
-                    size="sm"
-                    onClick={() => handlePageChange(page)}
-                    className={`min-w-[40px] border-2 transition-colors duration-200 ${
-                      page === currentPage
-                        ? "bg-[#001B55] border-[#001B55] text-white hover:bg-[#001B55]/90"
-                        : "border-gray-200 hover:border-[#FF9C04] hover:text-[#FF9C04]"
-                    }`}
-                  >
-                    {page}
-                  </Button>
-                )
-              )}
-            </div>
-
-            <Button
-              variant="outline"
-              size="sm"
-              onClick={() => handlePageChange(currentPage + 1)}
-              disabled={currentPage === totalPages}
-              className="border-2 border-gray-200 hover:border-[#FF9C04] hover:text-[#FF9C04] transition-colors duration-200"
-            >
-              Selanjutnya
-              <ChevronRight className="h-4 w-4" />
-            </Button>
-          </div>
+      {/* Enhanced Pagination */}
+      <div className="flex items-center justify-between pt-6 mt-4 border-t border-gray-200/50 px-2">
+        <div className="bg-white/60 backdrop-blur-sm px-4 py-2.5 rounded-full border border-gray-200/50 shadow-sm">
+          <span className="text-sm font-medium text-[#6B7280]">
+            Menampilkan{" "}
+            <span className="text-[#001B55] font-semibold">
+              {startIndex + 1}-{Math.min(endIndex, filteredNews.length)}
+            </span>
+            {" "}dari{" "}
+            <span className="text-[#001B55] font-semibold">
+              {filteredNews.length}
+            </span>
+            {" "}berita
+          </span>
         </div>
-      )}
+        
+        <div className="flex items-center gap-3">
+          <Button
+            variant="outline"
+            size="sm"
+            onClick={() => handlePageChange(currentPage - 1)}
+            disabled={currentPage === 1}
+            className="border-0 bg-white/80 shadow-sm hover:shadow-md hover:bg-[#FF9C04] hover:text-white transition-all duration-300 rounded-xl disabled:opacity-50 disabled:cursor-not-allowed px-4 py-2"
+          >
+            <ChevronLeft className="h-4 w-4 mr-1" />
+            Sebelumnya
+          </Button>
+          
+          <div className="bg-white/60 backdrop-blur-sm px-4 py-2 rounded-xl border border-gray-200/50 shadow-sm">
+            <span className="text-sm font-medium text-[#001B55]">
+              Halaman {currentPage} dari {totalPages}
+            </span>
+          </div>
+          
+          <Button
+            variant="outline"
+            size="sm"
+            onClick={() => handlePageChange(currentPage + 1)}
+            disabled={currentPage === totalPages}
+            className="border-0 bg-white/80 shadow-sm hover:shadow-md hover:bg-[#FF9C04] hover:text-white transition-all duration-300 rounded-xl disabled:opacity-50 disabled:cursor-not-allowed px-4 py-2"
+          >
+            Selanjutnya
+            <ChevronRight className="h-4 w-4 ml-1" />
+          </Button>
+        </div>
+      </div>
 
       {/* Pin Confirmation Dialog */}
       <PinConfirmDialog

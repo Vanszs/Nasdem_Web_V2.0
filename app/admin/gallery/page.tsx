@@ -223,7 +223,7 @@ export default function Gallery() {
               </Button>
               <Button
                 className="bg-gradient-to-r from-[#FF9C04] to-[#FF9C04]/90 hover:from-[#001B55] hover:to-[#001B55] text-white shadow-lg hover:shadow-xl transition-all duration-300 font-semibold"
-                onClick={() => router.push("/gallery/upload")}
+                onClick={() => router.push("/admin/gallery/upload")}
               >
                 <Upload className="w-4 h-4 mr-2" />
                 Upload Media
@@ -332,7 +332,7 @@ export default function Gallery() {
                   className={`bg-white border border-gray-200/50 shadow-sm hover:shadow-xl hover:border-[#FF9C04]/30 transition-all duration-300 overflow-hidden group cursor-pointer ${
                     viewMode === "list" ? "flex flex-row h-auto min-h-[280px]" : ""
                   } rounded-3xl`}
-                  onClick={() => router.push(`/gallery/${item.id}`)}
+                  onClick={() => router.push(`/admin/gallery/${item.id}`)}
                 >
                   <div
                     className={`relative bg-gradient-to-br from-[#F0F0F0] to-gray-100 flex items-center justify-center overflow-hidden group-hover:bg-gradient-to-br group-hover:from-[#001B55]/20 group-hover:to-[#FF9C04]/20 transition-all duration-300 ${
@@ -429,14 +429,14 @@ export default function Gallery() {
                               <DropdownMenuContent align="end" className="w-48 rounded-2xl shadow-xl border-gray-200/60">
                                 <DropdownMenuItem 
                                   className="flex items-center gap-3 rounded-xl hover:bg-gray-50 cursor-pointer"
-                                  onClick={() => router.push(`/gallery/${item.id}`)}
+                                  onClick={() => router.push(`/admin/gallery/${item.id}`)}
                                 >
                                   <Eye className="h-4 w-4 text-[#001B55]" />
                                   <span>Lihat Detail</span>
                                 </DropdownMenuItem>
                                 <DropdownMenuItem 
                                   className="flex items-center gap-3 rounded-xl hover:bg-gray-50 cursor-pointer"
-                                  onClick={() => router.push(`/gallery/edit/${item.id}`)}
+                                  onClick={() => router.push(`/admin/gallery/edit/${item.id}`)}
                                 >
                                   <Edit className="h-4 w-4 text-[#FF9C04]" />
                                   <span>Edit Media</span>
@@ -530,14 +530,14 @@ export default function Gallery() {
                             <DropdownMenuContent align="end" className="w-48 rounded-2xl shadow-xl border-gray-200/60">
                               <DropdownMenuItem 
                                 className="flex items-center gap-3 rounded-xl hover:bg-gray-50 cursor-pointer"
-                                onClick={() => router.push(`/gallery/${item.id}`)}
+                                onClick={() => router.push(`/admin/gallery/${item.id}`)}
                               >
                                 <Eye className="h-4 w-4 text-[#001B55]" />
                                 <span>Lihat Detail</span>
                               </DropdownMenuItem>
                               <DropdownMenuItem 
                                 className="flex items-center gap-3 rounded-xl hover:bg-gray-50 cursor-pointer"
-                                onClick={() => router.push(`/gallery/edit/${item.id}`)}
+                                onClick={() => router.push(`/admin/gallery/edit/${item.id}`)}
                               >
                                 <Edit className="h-4 w-4 text-[#FF9C04]" />
                                 <span>Edit Media</span>
@@ -694,7 +694,7 @@ export default function Gallery() {
                   <Button
                     size="lg"
                     className="bg-gradient-to-r from-[#FF9C04] to-[#FF9C04]/90 hover:from-[#001B55] hover:to-[#001B55] text-white shadow-lg hover:shadow-xl transition-all duration-300 font-semibold px-8 py-3 rounded-2xl"
-                    onClick={() => router.push("/gallery/upload")}
+                    onClick={() => router.push("/admin/gallery/upload")}
                   >
                     <Upload className="w-5 h-5 mr-3" />
                     Upload Media Pertama

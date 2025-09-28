@@ -27,7 +27,7 @@ import { AdminLayout } from "../components/layout/AdminLayout";
 
 export function UserPage() {
   const breadcrumbs = [
-    { label: "Dashboard", href: "/" },
+    { label: "Dashboard", href: "/admin" },
     { label: "User Management" },
   ];
 
