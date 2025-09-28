@@ -1,11 +1,41 @@
 "use client"
 
 import { useState } from "react"
+import { usePathname } from "next/navigation"
 import { Button } from "@/components/ui/button"
 import { Menu, X, Users, Phone, MapPin } from "lucide-react"
 
 const NasdemHeader = () => {
   const [isMenuOpen, setIsMenuOpen] = useState(false)
+  const pathname = usePathname()
+
+  // Function to check if a link is active
+  const isActiveLink = (href: string) => {
+    if (href === "/") {
+      return pathname === "/"
+    }
+    return pathname === href || pathname.startsWith(href)
+  }
+
+  // Function to get link classes with active state
+  const getLinkClasses = (href: string, baseClasses: string = "") => {
+    const isActive = isActiveLink(href)
+    return `${baseClasses} ${
+      isActive 
+        ? "text-[#FF9C04] font-bold relative" // Active state: kuning/orange dengan bold dan relative positioning
+        : "text-primary-foreground hover:text-[#FF9C04] transition-all duration-300 relative group"
+    }`
+  }
+
+  // Function to render active indicator
+  const ActiveIndicator = ({ isActive }: { isActive: boolean }) => (
+    <>
+      {isActive && (
+        <span className="absolute -bottom-1 left-0 right-0 h-0.5 bg-[#FF9C04] rounded-full animate-pulse"></span>
+      )}
+      <span className="absolute -bottom-1 left-0 right-0 h-0.5 bg-[#FF9C04] rounded-full scale-x-0 group-hover:scale-x-100 transition-transform duration-300 origin-left"></span>
+    </>
+  )
 
   return (
     <header className="sticky top-0 z-50 bg-primary/95 backdrop-blur-md border-b border-primary-foreground/10">
@@ -43,44 +73,52 @@ const NasdemHeader = () => {
 
           {/* Desktop Navigation */}
           <ul className="hidden lg:flex items-center gap-8 text-sm font-medium">
-            <li>
-              <a href="/" className="story-link text-primary-foreground hover:text-secondary transition-colors">
+            <li className="relative">
+              <a href="/" className={getLinkClasses("/", "story-link")}>
                 Beranda
+                <ActiveIndicator isActive={isActiveLink("/")} />
               </a>
             </li>
-            <li>
-              <a href="#profil" className="story-link text-primary-foreground hover:text-secondary transition-colors">
+            <li className="relative">
+              <a href="#profil" className={getLinkClasses("#profil", "story-link")}>
                 Profil
+                <ActiveIndicator isActive={isActiveLink("#profil")} />
               </a>
             </li>
-            <li>
-              <a href="/visi-misi" className="story-link text-primary-foreground hover:text-secondary transition-colors">
+            <li className="relative">
+              <a href="/visi-misi" className={getLinkClasses("/visi-misi", "story-link")}>
                 Visi Misi
+                <ActiveIndicator isActive={isActiveLink("/visi-misi")} />
               </a>
             </li>
-            <li>
-              <a href="#program" className="story-link text-primary-foreground hover:text-secondary transition-colors">
+            <li className="relative">
+              <a href="#program" className={getLinkClasses("#program", "story-link")}>
                 Program
+                <ActiveIndicator isActive={isActiveLink("#program")} />
               </a>
             </li>
-            <li>
-              <a href="/berita" className="story-link text-primary-foreground hover:text-secondary transition-colors">
+            <li className="relative">
+              <a href="/berita" className={getLinkClasses("/berita", "story-link")}>
                 Berita
+                <ActiveIndicator isActive={isActiveLink("/berita")} />
               </a>
             </li>
-            <li>
-              <a href="/galeri" className="story-link text-primary-foreground hover:text-secondary transition-colors">
+            <li className="relative">
+              <a href="/galeri" className={getLinkClasses("/galeri", "story-link")}>
                 Galeri
+                <ActiveIndicator isActive={isActiveLink("/galeri")} />
               </a>
             </li>
-            <li>
-              <a href="/struktur" className="story-link text-primary-foreground hover:text-secondary transition-colors">
+            <li className="relative">
+              <a href="/struktur" className={getLinkClasses("/struktur", "story-link")}>
                 Struktur
+                <ActiveIndicator isActive={isActiveLink("/struktur")} />
               </a>
             </li>
-            <li>
-              <a href="/kontak" className="story-link text-primary-foreground hover:text-secondary transition-colors">
+            <li className="relative">
+              <a href="/kontak" className={getLinkClasses("/kontak", "story-link")}>
                 Kontak
+                <ActiveIndicator isActive={isActiveLink("/kontak")} />
               </a>
             </li>
           </ul>
@@ -114,65 +152,68 @@ const NasdemHeader = () => {
           <div className="lg:hidden absolute top-full left-0 right-0 bg-primary border-t border-primary-foreground/10 animate-fade-in">
             <nav className="container mx-auto px-4 py-6">
               <ul className="space-y-4 text-sm font-medium">
-                <li>
-                  <a href="/" className="block text-primary-foreground hover:text-secondary transition-colors py-2">
+                <li className="relative">
+                  <a href="/" className={getLinkClasses("/", "block py-2")}>
                     Beranda
+                    {isActiveLink("/") && (
+                      <span className="absolute left-0 top-1/2 transform -translate-y-1/2 w-1 h-6 bg-[#FF9C04] rounded-r-full"></span>
+                    )}
                   </a>
                 </li>
-                <li>
-                  <a
-                    href="#profil"
-                    className="block text-primary-foreground hover:text-secondary transition-colors py-2"
-                  >
+                <li className="relative">
+                  <a href="#profil" className={getLinkClasses("#profil", "block py-2 pl-4")}>
                     Profil
+                    {isActiveLink("#profil") && (
+                      <span className="absolute left-0 top-1/2 transform -translate-y-1/2 w-1 h-6 bg-[#FF9C04] rounded-r-full"></span>
+                    )}
                   </a>
                 </li>
-                <li>
-                  <a
-                    href="/visi-misi"
-                    className="block text-primary-foreground hover:text-secondary transition-colors py-2"
-                  >
+                <li className="relative">
+                  <a href="/visi-misi" className={getLinkClasses("/visi-misi", "block py-2 pl-4")}>
                     Visi Misi
+                    {isActiveLink("/visi-misi") && (
+                      <span className="absolute left-0 top-1/2 transform -translate-y-1/2 w-1 h-6 bg-[#FF9C04] rounded-r-full"></span>
+                    )}
                   </a>
                 </li>
-                <li>
-                  <a
-                    href="#program"
-                    className="block text-primary-foreground hover:text-secondary transition-colors py-2"
-                  >
+                <li className="relative">
+                  <a href="#program" className={getLinkClasses("#program", "block py-2 pl-4")}>
                     Program
+                    {isActiveLink("#program") && (
+                      <span className="absolute left-0 top-1/2 transform -translate-y-1/2 w-1 h-6 bg-[#FF9C04] rounded-r-full"></span>
+                    )}
                   </a>
                 </li>
-                <li>
-                  <a
-                    href="/berita"
-                    className="block text-primary-foreground hover:text-secondary transition-colors py-2"
-                  >
+                <li className="relative">
+                  <a href="/berita" className={getLinkClasses("/berita", "block py-2 pl-4")}>
                     Berita
+                    {isActiveLink("/berita") && (
+                      <span className="absolute left-0 top-1/2 transform -translate-y-1/2 w-1 h-6 bg-[#FF9C04] rounded-r-full"></span>
+                    )}
                   </a>
                 </li>
-                <li>
-                  <a
-                    href="/galeri"
-                    className="block text-primary-foreground hover:text-secondary transition-colors py-2"
-                  >
+                <li className="relative">
+                  <a href="/galeri" className={getLinkClasses("/galeri", "block py-2 pl-4")}>
                     Galeri
+                    {isActiveLink("/galeri") && (
+                      <span className="absolute left-0 top-1/2 transform -translate-y-1/2 w-1 h-6 bg-[#FF9C04] rounded-r-full"></span>
+                    )}
                   </a>
                 </li>
-                <li>
-                  <a
-                    href="/struktur"
-                    className="block text-primary-foreground hover:text-secondary transition-colors py-2"
-                  >
+                <li className="relative">
+                  <a href="/struktur" className={getLinkClasses("/struktur", "block py-2 pl-4")}>
                     Struktur
+                    {isActiveLink("/struktur") && (
+                      <span className="absolute left-0 top-1/2 transform -translate-y-1/2 w-1 h-6 bg-[#FF9C04] rounded-r-full"></span>
+                    )}
                   </a>
                 </li>
-                <li>
-                  <a
-                    href="/kontak"
-                    className="block text-primary-foreground hover:text-secondary transition-colors py-2"
-                  >
+                <li className="relative">
+                  <a href="/kontak" className={getLinkClasses("/kontak", "block py-2 pl-4")}>
                     Kontak
+                    {isActiveLink("/kontak") && (
+                      <span className="absolute left-0 top-1/2 transform -translate-y-1/2 w-1 h-6 bg-[#FF9C04] rounded-r-full"></span>
+                    )}
                   </a>
                 </li>
               </ul>
