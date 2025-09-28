@@ -96,11 +96,31 @@ if (roleError) return roleError;
 - Apply CVA (Class Variance Authority) for variants
 - Follow the button.tsx pattern for component structure
 
-### Styling Guidelines  
-- **Primary Colors**: Blue (`#001B55`) and Orange (`#FF9C04`)
+## 🎨 BRAND & THEME
+
+### Palet Warna (Tokens)
+- `--color-primary` = **#001B55** (Biru Tua) → header, sidebar, aksen utama, surface brand
+- `--color-accent` = **#FF9C04** (Kuning Jingga) → tombol utama, icon highlight, badge status
+- `--color-bg` = **#F0F0F0** (Abu Muda) → latar konten/section
+- `--color-surface` = **#FFFFFF** (Putih) → kartu, tabel, form, modal
+- `--color-danger` = **#C81E1E** (Merah Tua, opsional) → destructive action/alert
+
+### Turunan Semantik
+- `--border` rgba(0,0,0,0.08)
+- `--muted` #6B7280
+- `--success` #16A34A, `--warning` #F59E0B, `--info` #2563EB
+
+### Tipografi & Spasi
+- **Font**: Inter / system UI. Heading semibold, body regular
+- **Scale**: h1 30, h2 24, h3 20, body 14–16
+- **Radius**: kartu & tombol `1rem` (rounded-2xl). Shadow lembut
+- **Animasi**: halus (200–250ms) untuk hover/focus/expand
+
+### Design System Guidelines
 - **Responsive Design**: Mobile-first approach
 - **Dark Mode**: Supported via `class` strategy
 - Use `cn()` utility for conditional classes
+- **STICK TO BRAND TOKENS**: Always use the defined color palette above
 
 ### CSS & Styling Rules ⚠️
 - **NEVER modify global CSS files** (`app/globals.css`, `app/admin/styles/admin.css`)
@@ -141,9 +161,11 @@ export async function GET/POST/PUT/DELETE(req: NextRequest) {
 ### Component Development
 - Start with Shadcn/ui base components
 - Add variants using CVA pattern
+- **Follow brand tokens**: Use exact color values from BRAND & THEME section
 - Implement responsive design with Tailwind
 - Use TypeScript interfaces for props
 - **Custom styling**: Apply styles directly to individual components, never modify global CSS
+- **Consistency**: Always reference brand colors, typography scale, and spacing tokens
 
 ## 🚨 Common Gotchas
 
@@ -153,6 +175,7 @@ export async function GET/POST/PUT/DELETE(req: NextRequest) {
 4. **Import Paths**: Use `@/` alias for root imports, relative paths within directories
 5. **Database Relations**: Election data has complex nested relationships - check existing queries before writing new ones
 6. **CSS Modifications**: NEVER edit global CSS files - always apply custom styles at component level
+7. **Brand Consistency**: Always use the exact color tokens and design specifications from BRAND & THEME section
 
 ## 🎯 Project-Specific Patterns
 
