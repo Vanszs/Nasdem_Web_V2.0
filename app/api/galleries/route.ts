@@ -5,9 +5,7 @@ import { requireAuth, requireRole } from "@/lib/jwt-middleware";
 export async function GET() {
   try {
     const galleries = await db.gallery.findMany({
-      include: {
-        User: { select: { id: true, username: true, email: true } },
-      },
+      include: { User: { select: { id: true, username: true, email: true } } },
       orderBy: { uploadDate: "desc" },
     });
     return NextResponse.json({ success: true, data: galleries });

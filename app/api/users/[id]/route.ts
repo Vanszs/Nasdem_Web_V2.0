@@ -11,7 +11,7 @@ export async function GET(
   const authError = requireAuth(req);
   if (authError) return authError;
 
-  const roleError = requireRole(req, ["admin"]);
+  const roleError = requireRole(req, ["superadmin"]);
   if (roleError) return roleError;
 
   try {
@@ -50,7 +50,7 @@ export async function PUT(
   const authError = requireAuth(req);
   if (authError) return authError;
 
-  const roleError = requireRole(req, ["admin"]);
+  const roleError = requireRole(req, ["superadmin"]);
   if (roleError) return roleError;
 
   try {
@@ -89,7 +89,7 @@ export async function DELETE(
   const authError = requireAuth(req);
   if (authError) return authError;
 
-  const roleError = requireRole(req, ["admin"]);
+  const roleError = requireRole(req, ["superadmin"]);
   if (roleError) return roleError;
 
   try {

@@ -7,7 +7,7 @@ import { requireAuth, requireRole } from "@/lib/jwt-middleware";
 export async function GET(req: NextRequest) {
   const authError = requireAuth(req);
   if (authError) return authError;
-  const roleError = requireRole(req, ["admin"]);
+  const roleError = requireRole(req, ["superadmin"]);
   if (roleError) return roleError;
   try {
     const users = await db.user.findMany({
@@ -34,7 +34,7 @@ export async function POST(req: NextRequest) {
   const authError = requireAuth(req);
   if (authError) return authError;
 
-  const roleError = requireRole(req, ["admin"]);
+  const roleError = requireRole(req, ["superadmin"]);
   if (roleError) return roleError;
 
   try {

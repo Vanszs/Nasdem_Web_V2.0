@@ -7,7 +7,7 @@ export async function GET() {
     const results = await db.dprdPartyResult.findMany({
       include: {
         Party: true,
-        DprdElectionAnalysis: { select: { id: true, year: true } },
+        analysis: { select: { id: true, year: true } },
       },
       orderBy: { id: "desc" },
     });
@@ -26,12 +26,13 @@ export async function POST(req: NextRequest) {
   const roleError = requireRole(req, ["superadmin", "analyst"]);
   if (roleError) return roleError;
   try {
-    const { electionAnalysisId, partyId, votes } = await req.json();
+    // POST: rename electionAnalysisId → analysisId
+    const { analysisId, partyId, votes } = await req.json();
     const created = await db.dprdPartyResult.create({
-      data: { electionAnalysisId, partyId, votes },
+      data: { analysisId, partyId, votes },
       include: {
         Party: true,
-        DprdElectionAnalysis: { select: { id: true, year: true } },
+        analysis: { select: { id: true, year: true } },
       },
     });
     return NextResponse.json({ success: true, data: created });

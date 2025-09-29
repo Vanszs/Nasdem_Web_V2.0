@@ -51,6 +51,72 @@ enum ElectionType {
   dprd
 }
 
+enum GalleryType {
+  photo
+  video
+}
+
+// Ganti Gallery agar cocok dengan API (type,url,caption,uploadDate)
+model Gallery {
+  id         Int         @id @default(autoincrement())
+  type       GalleryType
+  url        String
+  caption    String?
+  uploadDate DateTime?
+  userId     Int
+  createdAt  DateTime    @default(now())
+  updatedAt  DateTime?   @updatedAt
+  User       User        @relation(fields: [userId], references: [id])
+
+  @@index([uploadDate])
+}
+
+// Tambahkan relasi hirarki geo sesuai API
+model Dapil {
+  id        Int                    @id @default(autoincrement())
+  name      String
+  Kecamatan Kecamatan[]
+  // tetap hubungan ke analisis kalau dipakai
+  analyses  DprdElectionAnalysis[]
+
+  @@index([name])
+}
+
+model Kecamatan {
+  id       Int                    @id @default(autoincrement())
+  name     String
+  dapilId  Int
+  Dapil    Dapil                  @relation(fields: [dapilId], references: [id])
+  Desa     Desa[]
+  analyses DprdElectionAnalysis[]
+
+  @@index([dapilId])
+  @@index([name])
+}
+
+model Desa {
+  id          Int                    @id @default(autoincrement())
+  name        String
+  kecamatanId Int
+  Kecamatan   Kecamatan              @relation(fields: [kecamatanId], references: [id])
+  Tps         Tps[]
+  analyses    DprdElectionAnalysis[]
+
+  @@index([kecamatanId])
+  @@index([name])
+}
+
+model Tps {
+  id       Int                    @id @default(autoincrement())
+  number   Int
+  desaId   Int
+  Desa     Desa                   @relation(fields: [desaId], references: [id])
+  analyses DprdElectionAnalysis[]
+
+  @@unique([desaId, number])
+  @@index([desaId])
+}
+
 model User {
   id        Int       @id @default(autoincrement())
   username  String
@@ -62,7 +128,6 @@ model User {
   News      News[]
   Program   Program[]
   Gallery   Gallery[]
-  Member    Member[]
 }
 
 model Party {
@@ -90,7 +155,12 @@ model News {
   publishDate  DateTime?
   thumbnailUrl String?
   userId       Int
+  createdAt    DateTime  @default(now())
+  updatedAt    DateTime  @updatedAt
   User         User      @relation(fields: [userId], references: [id])
+
+  @@index([userId])
+  @@index([publishDate])
 }
 
 model Program {
@@ -102,34 +172,18 @@ model Program {
   categoryId  Int
   photoUrl    String?
   userId      Int
+  createdAt   DateTime  @default(now())
+  updatedAt   DateTime  @updatedAt
   Category    Category  @relation(fields: [categoryId], references: [id])
   User        User      @relation(fields: [userId], references: [id])
+
+  @@index([categoryId])
+  @@index([userId])
+  @@index([startDate])
+  @@index([endDate])
 }
 
-model Gallery {
-  id         Int       @id @default(autoincrement())
-  type       String
-  url        String
-  caption    String?
-  uploadDate DateTime?
-  userId     Int
-  User       User      @relation(fields: [userId], references: [id])
-}
-
-model SayapType {
-  id                 Int                  @id @default(autoincrement())
-  name               String
-  description        String?
-  StrukturOrganisasi StrukturOrganisasi[]
-}
-
-model Region {
-  id                 Int                  @id @default(autoincrement())
-  name               String
-  type               RegionType
-  StrukturOrganisasi StrukturOrganisasi[]
-}
-
+// Optimasi struktur organisasi (filter umum: level, position, region, sayap)
 model StrukturOrganisasi {
   id          Int          @id @default(autoincrement())
   level       OrgLevel
@@ -139,72 +193,74 @@ model StrukturOrganisasi {
   photoUrl    String?
   startDate   DateTime?
   endDate     DateTime?
-  SayapType   SayapType?   @relation(fields: [sayapTypeId], references: [id])
-  Region      Region?      @relation(fields: [regionId], references: [id])
+  createdAt   DateTime     @default(now())
+  updatedAt   DateTime     @updatedAt
+  SayapType   SayapType?   @relation(fields: [sayapTypeId], references: [id], onDelete: SetNull)
+  Region      Region?      @relation(fields: [regionId], references: [id], onDelete: SetNull)
   Member      Member[]
+
+  @@index([level, position])
+  @@index([regionId])
+  @@index([sayapTypeId])
+  @@index([level, regionId])
+  @@index([startDate])
 }
 
-model Member {
-  id                 Int                 @id @default(autoincrement())
-  fullName           String
-  email              String?
-  phone              String?
-  dateOfBirth        DateTime?
-  address            String?
-  bio                String?
-  gender             GenderEnum?
-  status             MemberStatus?
-  userId             Int?
-  strukturId         Int?
-  photoUrl           String?
-  joinDate           DateTime?
-  endDate            DateTime?
-  User               User?               @relation(fields: [userId], references: [id])
-  StrukturOrganisasi StrukturOrganisasi? @relation(fields: [strukturId], references: [id])
+model Region {
+  id                 Int                  @id @default(autoincrement())
+  name               String
+  type               RegionType
+  StrukturOrganisasi StrukturOrganisasi[]
+
+  @@unique([name, type])
+  @@index([type])
+}
+
+// SayapType: nama unik
+model SayapType {
+  id                 Int                  @id @default(autoincrement())
+  name               String               @unique
+  description        String?
+  StrukturOrganisasi StrukturOrganisasi[]
 }
 
 model Caleg {
-  id              Int               @id @default(autoincrement())
-  fullName        String
-  partyId         Int
-  photoUrl        String?
-  Party           Party             @relation(fields: [partyId], references: [id])
-  DprdCalegResult DprdCalegResult[]
+  id      Int               @id @default(autoincrement())
+  name    String
+  partyId Int
+  Party   Party             @relation(fields: [partyId], references: [id])
+  results DprdCalegResult[]
+
+  @@index([partyId])
+  @@index([name])
 }
 
-model Dapil {
-  id                   Int                    @id @default(autoincrement())
-  name                 String
-  Kecamatan            Kecamatan[]
-  DprdElectionAnalysis DprdElectionAnalysis[]
+// dprd-party-results & dprd-caleg-results: konsisten pakai analysisId (ubah API)
+model DprdPartyResult {
+  id         Int                  @id @default(autoincrement())
+  analysisId Int
+  partyId    Int
+  votes      Int?
+  analysis   DprdElectionAnalysis @relation(fields: [analysisId], references: [id])
+  Party      Party                @relation(fields: [partyId], references: [id])
+
+  @@index([analysisId])
+  @@index([partyId])
 }
 
-model Kecamatan {
-  id                   Int                    @id @default(autoincrement())
-  name                 String
-  dapilId              Int
-  Dapil                Dapil                  @relation(fields: [dapilId], references: [id])
-  Desa                 Desa[]
-  DprdElectionAnalysis DprdElectionAnalysis[]
+model DprdCalegResult {
+  id         Int                  @id @default(autoincrement())
+  analysisId Int
+  calegId    Int
+  votes      Int?
+  analysis   DprdElectionAnalysis @relation(fields: [analysisId], references: [id])
+  Caleg      Caleg                @relation(fields: [calegId], references: [id])
+
+  @@index([analysisId])
+  @@index([calegId])
 }
 
-model Desa {
-  id                   Int                    @id @default(autoincrement())
-  name                 String
-  kecamatanId          Int
-  Kecamatan            Kecamatan              @relation(fields: [kecamatanId], references: [id])
-  Tps                  Tps[]
-  DprdElectionAnalysis DprdElectionAnalysis[]
-}
-
-model Tps {
-  id                   Int                    @id @default(autoincrement())
-  number               String
-  desaId               Int
-  Desa                 Desa                   @relation(fields: [desaId], references: [id])
-  DprdElectionAnalysis DprdElectionAnalysis[]
-}
-
+// Update relasi pada DprdElectionAnalysis (pastikan nama field sesuai):
 model DprdElectionAnalysis {
   id              Int               @id @default(autoincrement())
   year            Int
@@ -228,22 +284,38 @@ model DprdElectionAnalysis {
   Tps             Tps               @relation(fields: [tpsId], references: [id])
   DprdPartyResult DprdPartyResult[]
   DprdCalegResult DprdCalegResult[]
+
+  @@index([year])
+  @@index([dapilId, year])
+  @@index([kecamatanId, year])
+  @@index([desaId, year])
+  @@index([tpsId, year])
+  @@index([dapilId, kecamatanId, desaId, tpsId, year])
 }
 
-model DprdPartyResult {
-  id                   Int                  @id @default(autoincrement())
-  electionAnalysisId   Int
-  partyId              Int
-  votes                Int?
-  DprdElectionAnalysis DprdElectionAnalysis @relation(fields: [electionAnalysisId], references: [id])
-  Party                Party                @relation(fields: [partyId], references: [id])
-}
+model Member {
+  id                 Int                 @id @default(autoincrement())
+  fullName           String
+  email              String?             @unique
+  phone              String?
+  dateOfBirth        DateTime?
+  address            String?
+  bio                String?
+  gender             GenderEnum?
+  status             MemberStatus        @default(active)
+  userId             Int?
+  strukturId         Int?
+  photoUrl           String?
+  joinDate           DateTime?
+  endDate            DateTime?
+  createdAt          DateTime            @default(now())
+  updatedAt          DateTime            @updatedAt
+  StrukturOrganisasi StrukturOrganisasi? @relation(fields: [strukturId], references: [id], onDelete: SetNull)
 
-model DprdCalegResult {
-  id                   Int                  @id @default(autoincrement())
-  electionAnalysisId   Int
-  calegId              Int
-  votes                Int?
-  DprdElectionAnalysis DprdElectionAnalysis @relation(fields: [electionAnalysisId], references: [id])
-  Caleg                Caleg                @relation(fields: [calegId], references: [id])
+  @@index([status, joinDate])
+  @@index([strukturId])
+  @@index([fullName])
+  @@index([status])
+  @@index([gender])
+  @@index([joinDate])
 }

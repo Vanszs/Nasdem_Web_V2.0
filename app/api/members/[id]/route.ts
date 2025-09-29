@@ -10,7 +10,6 @@ export async function GET(
     const member = await db.member.findUnique({
       where: { id: parseInt(params.id) },
       include: {
-        User: { select: { id: true, username: true, email: true } },
         StrukturOrganisasi: true,
       },
     });
@@ -37,7 +36,6 @@ export async function PUT(
   const roleError = requireRole(req, ["editor", "superadmin"]);
   if (roleError) return roleError;
   try {
-    const userId = (req as any).user.userId;
     const {
       fullName,
       email,
@@ -52,6 +50,15 @@ export async function PUT(
       joinDate,
       endDate,
     } = await req.json();
+    const allowedStatus = ["active", "inactive", "suspended"];
+    const normStatus =
+      status && allowedStatus.includes(status.toLowerCase())
+        ? status.toLowerCase()
+        : undefined;
+    const normGender =
+      gender && ["male", "female"].includes(gender.toLowerCase())
+        ? gender.toLowerCase()
+        : undefined;
     const updated = await db.member.update({
       where: { id: parseInt(params.id) },
       data: {
@@ -61,16 +68,14 @@ export async function PUT(
         dateOfBirth: dateOfBirth ? new Date(dateOfBirth) : undefined,
         address,
         bio,
-        gender,
-        status,
-        userId,
+        status: normStatus,
         strukturId,
         photoUrl,
         joinDate: joinDate ? new Date(joinDate) : undefined,
         endDate: endDate ? new Date(endDate) : undefined,
+        gender: normGender,
       },
       include: {
-        User: { select: { id: true, username: true, email: true } },
         StrukturOrganisasi: true,
       },
     });

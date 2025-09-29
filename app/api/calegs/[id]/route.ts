@@ -9,7 +9,7 @@ export async function GET(
   try {
     const caleg = await db.caleg.findUnique({
       where: { id: parseInt(params.id) },
-      include: { Party: true, DprdCalegResult: true },
+      include: { Party: true, results: true },
     });
     if (!caleg)
       return NextResponse.json(
@@ -34,11 +34,11 @@ export async function PUT(
   const roleError = requireRole(req, ["superadmin", "analyst"]);
   if (roleError) return roleError;
   try {
-    const { fullName, partyId, photoUrl } = await req.json();
+    const { name, partyId } = await req.json();
     const updated = await db.caleg.update({
       where: { id: parseInt(params.id) },
-      data: { fullName, partyId, photoUrl },
-      include: { Party: true, DprdCalegResult: true },
+      data: { name, partyId },
+      include: { Party: true, results: true },
     });
     return NextResponse.json({ success: true, data: updated });
   } catch (err: any) {

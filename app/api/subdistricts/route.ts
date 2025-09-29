@@ -17,6 +17,7 @@ export async function POST(req: NextRequest) {
   const roleError = requireRole(req, ["editor", "superadmin"]);
   if (roleError) return roleError;
 
+  // POST
   const { name, dapilId } = await req.json();
   const kecamatan = await db.kecamatan.create({ data: { name, dapilId } });
   return NextResponse.json({ success: true, data: kecamatan });

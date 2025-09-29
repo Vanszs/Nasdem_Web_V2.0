@@ -11,7 +11,7 @@ export async function GET(
       where: { id: parseInt(params.id) },
       include: {
         Caleg: { include: { Party: true } },
-        DprdElectionAnalysis: { select: { id: true, year: true } },
+        analysis: { select: { id: true, year: true } },
       },
     });
     if (!result)
@@ -37,13 +37,14 @@ export async function PUT(
   const roleError = requireRole(req, ["superadmin", "analyst"]);
   if (roleError) return roleError;
   try {
-    const { electionAnalysisId, calegId, votes } = await req.json();
+    // PUT
+    const { analysisId, calegId, votes } = await req.json();
     const updated = await db.dprdCalegResult.update({
       where: { id: parseInt(params.id) },
-      data: { electionAnalysisId, calegId, votes },
+      data: { analysisId, calegId, votes },
       include: {
         Caleg: { include: { Party: true } },
-        DprdElectionAnalysis: { select: { id: true, year: true } },
+        analysis: { select: { id: true, year: true } },
       },
     });
     return NextResponse.json({ success: true, data: updated });
