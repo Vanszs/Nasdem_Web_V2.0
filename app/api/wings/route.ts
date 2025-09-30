@@ -7,7 +7,7 @@ export async function GET() {
   try {
     const sayaps = await db.sayapType.findMany({
       include: {
-        StrukturOrganisasi: true,
+        strukturOrganisasi: true,
       },
       orderBy: { name: "asc" },
     });
@@ -34,7 +34,7 @@ export async function POST(req: NextRequest) {
 
     const sayap = await db.sayapType.create({
       data: { name, description },
-      include: { StrukturOrganisasi: true },
+      include: { strukturOrganisasi: true },
     });
 
     return NextResponse.json({ success: true, data: sayap });

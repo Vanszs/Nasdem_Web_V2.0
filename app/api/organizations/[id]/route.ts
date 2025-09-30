@@ -27,9 +27,9 @@ export async function GET(
     const struktur = await db.strukturOrganisasi.findUnique({
       where: { id: parseInt(params.id) },
       include: {
-        SayapType: true,
-        Region: true,
-        Member:
+        sayapType: true,
+        region: true,
+        members:
           includeMembers || includeMembersCount
             ? { select: { id: true, fullName: true, status: true } }
             : false,
@@ -47,14 +47,11 @@ export async function GET(
         id: struktur.id,
         level: struktur.level,
         position: struktur.position,
-        region: struktur.Region,
-        sayapType: struktur.SayapType,
-        startDate: struktur.startDate,
-        endDate: struktur.endDate,
-        createdAt: struktur.createdAt,
-        updatedAt: struktur.updatedAt,
-        membersCount: includeMembersCount ? struktur.Member.length : undefined,
-        members: includeMembers ? struktur.Member : undefined,
+        region: struktur.region,
+        sayapType: struktur.sayapType,
+        photoUrl: struktur.photoUrl,
+        membersCount: includeMembersCount ? struktur.members.length : undefined,
+        members: includeMembers ? struktur.members : undefined,
       },
     });
   } catch (err: any) {
@@ -74,15 +71,8 @@ export async function PUT(
   const roleError = requireRole(req, ["editor", "superadmin"]);
   if (roleError) return roleError;
   try {
-    const {
-      level,
-      position,
-      sayapTypeId,
-      regionId,
-      photoUrl,
-      startDate,
-      endDate,
-    } = await req.json();
+    const { level, position, sayapTypeId, regionId, photoUrl } =
+      await req.json();
 
     if (level && !LEVELS.includes(level)) {
       return NextResponse.json(
@@ -102,13 +92,11 @@ export async function PUT(
       data: {
         level: level || undefined,
         position: position || undefined,
-        sayapTypeId: sayapTypeId || null,
-        regionId: regionId || null,
+        sayapTypeId: sayapTypeId !== undefined ? sayapTypeId : undefined,
+        regionId: regionId !== undefined ? regionId : undefined,
         photoUrl: photoUrl || undefined,
-        startDate: startDate ? new Date(startDate) : undefined,
-        endDate: endDate ? new Date(endDate) : undefined,
       },
-      include: { SayapType: true, Region: true },
+      include: { sayapType: true, region: true },
     });
     return NextResponse.json({ success: true, data: updated });
   } catch (err: any) {

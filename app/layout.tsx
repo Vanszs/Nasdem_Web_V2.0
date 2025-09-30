@@ -2,6 +2,7 @@ import type { Metadata } from "next";
 import { GeistSans } from "geist/font/sans";
 import { GeistMono } from "geist/font/mono";
 import "./globals.css";
+import { Providers } from "./admin/providers";
 
 export const metadata: Metadata = {
   title: "Nasdem Website",
@@ -16,7 +17,11 @@ export default function RootLayout({
 }>) {
   return (
     <html lang="en" className={`${GeistSans.variable} ${GeistMono.variable}`}>
-      <body style={{ fontFamily: GeistSans.style.fontFamily }}>{children}</body>
+      <Providers>
+        <body style={{ fontFamily: GeistSans.style.fontFamily }}>
+          {children}
+        </body>
+      </Providers>
     </html>
   );
 }

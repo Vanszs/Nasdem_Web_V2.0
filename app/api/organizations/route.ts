@@ -5,21 +5,6 @@ import { requireAuth, requireRole } from "@/lib/jwt-middleware";
 const LEVELS = ["dpd", "dpc", "dprt", "sayap", "kader"];
 const POSITIONS = ["ketua", "sekretaris", "bendahara", "wakil", "anggota"];
 
-function parseInclude(param: string | null) {
-  const flags = new Set(
-    (param || "")
-      .split(",")
-      .map((s) => s.trim())
-      .filter(Boolean)
-  );
-  return {
-    region: flags.has("region"),
-    sayapType: flags.has("sayapType"),
-    membersCount: flags.has("membersCount"),
-    members: flags.has("members"),
-  };
-}
-
 export async function GET(req: NextRequest) {
   const authError = requireAuth(req);
   if (authError) return authError;
@@ -28,25 +13,27 @@ export async function GET(req: NextRequest) {
 
   try {
     const { searchParams } = req.nextUrl;
-    const includeFlags = parseInclude(searchParams.get("include"));
     const level = searchParams.get("level");
     const position = searchParams.get("position");
+    const regionId = searchParams.get("regionId");
     const search = (searchParams.get("search") || "").trim();
     const skip = Math.max(parseInt(searchParams.get("skip") || "0", 10), 0);
     const take = Math.min(
-      Math.max(parseInt(searchParams.get("take") || "50", 10), 1),
+      Math.max(parseInt(searchParams.get("take") || "10", 10), 1),
       200
     );
 
     const where: any = {};
     if (level && LEVELS.includes(level)) where.level = level;
     if (position && POSITIONS.includes(position)) where.position = position;
+    if (regionId && !isNaN(parseInt(regionId)))
+      where.regionId = parseInt(regionId);
     if (search) {
       where.OR = [
         { position: { contains: search, mode: "insensitive" } },
         { level: { contains: search, mode: "insensitive" } },
-        { Region: { name: { contains: search, mode: "insensitive" } } },
-        { SayapType: { name: { contains: search, mode: "insensitive" } } },
+        { region: { name: { contains: search, mode: "insensitive" } } },
+        { sayapType: { name: { contains: search, mode: "insensitive" } } },
       ];
     }
 
@@ -56,13 +43,11 @@ export async function GET(req: NextRequest) {
         where,
         skip,
         take,
-        orderBy: { startDate: "desc" },
+        orderBy: { id: "desc" },
         include: {
-          Region: includeFlags.region,
-          SayapType: includeFlags.sayapType,
-          ...(includeFlags.members
-            ? { Member: { select: { id: true, fullName: true, status: true } } }
-            : { Member: false }),
+          region: true,
+          sayapType: true,
+          members: { select: { id: true, fullName: true, status: true } },
         },
       }),
     ]);
@@ -71,14 +56,11 @@ export async function GET(req: NextRequest) {
       id: r.id,
       level: r.level,
       position: r.position,
-      region: r.Region || null,
-      sayapType: r.SayapType || null,
-      startDate: r.startDate,
-      endDate: r.endDate,
-      createdAt: r.createdAt,
-      updatedAt: r.updatedAt,
-      membersCount: includeFlags.membersCount ? r.Member.length : undefined,
-      ...(includeFlags.members ? { members: r.Member } : {}),
+      region: r.region || null,
+      sayapType: r.sayapType || null,
+      photoUrl: r.photoUrl,
+      membersCount: r.members.length,
+      members: r.members,
     }));
 
     return NextResponse.json({
@@ -106,15 +88,8 @@ export async function POST(req: NextRequest) {
 
   try {
     const body = await req.json();
-    const {
-      level,
-      position,
-      sayapTypeId,
-      regionId,
-      photoUrl,
-      startDate,
-      endDate,
-    } = body;
+    const { level, position, sayapTypeId, regionId, photoUrl, memberIds } =
+      body;
 
     if (!LEVELS.includes(level)) {
       return NextResponse.json(
@@ -129,6 +104,21 @@ export async function POST(req: NextRequest) {
       );
     }
 
+    // Prepare connect members if provided
+    let membersConnect: { id: number }[] | undefined = undefined;
+    if (Array.isArray(memberIds) && memberIds.length) {
+      const uniqueIds = [
+        ...new Set(memberIds.filter((n: any) => Number.isInteger(n))),
+      ];
+      if (uniqueIds.length) {
+        const valid = await db.member.findMany({
+          where: { id: { in: uniqueIds } },
+          select: { id: true },
+        });
+        membersConnect = valid.map((v) => ({ id: v.id }));
+      }
+    }
+
     const created = await db.strukturOrganisasi.create({
       data: {
         level,
@@ -136,16 +126,19 @@ export async function POST(req: NextRequest) {
         sayapTypeId: sayapTypeId || undefined,
         regionId: regionId || undefined,
         photoUrl: photoUrl || undefined,
-        startDate: startDate ? new Date(startDate) : undefined,
-        endDate: endDate ? new Date(endDate) : undefined,
+        ...(membersConnect ? { members: { connect: membersConnect } } : {}),
       },
       include: {
-        Region: true,
-        SayapType: true,
+        region: true,
+        sayapType: true,
+        members: { select: { id: true, fullName: true, status: true } },
       },
     });
 
-    return NextResponse.json({ success: true, data: created });
+    return NextResponse.json({
+      success: true,
+      data: { ...created, membersCount: created.members.length },
+    });
   } catch (err: any) {
     return NextResponse.json(
       { success: false, error: err.message || "Server error" },

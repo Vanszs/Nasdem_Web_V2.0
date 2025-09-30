@@ -6,12 +6,12 @@ export async function GET() {
   try {
     const analyses = await db.dprdElectionAnalysis.findMany({
       include: {
-        Dapil: true,
-        Kecamatan: true,
-        Desa: true,
-        Tps: true,
-        DprdPartyResult: { include: { Party: true } },
-        DprdCalegResult: { include: { Caleg: { include: { Party: true } } } },
+        dapil: true,
+        kecamatan: true,
+        desa: true,
+        tps: true,
+        partyResults: { include: { party: true } },
+        calegResults: { include: { caleg: { include: { party: true } } } },
       },
       orderBy: { year: "desc" },
     });
@@ -62,12 +62,12 @@ export async function POST(req: NextRequest) {
         notes,
       },
       include: {
-        Dapil: true,
-        Kecamatan: true,
-        Desa: true,
-        Tps: true,
-        DprdPartyResult: true,
-        DprdCalegResult: true,
+        dapil: true,
+        kecamatan: true,
+        desa: true,
+        tps: true,
+        partyResults: true,
+        calegResults: true,
       },
     });
     return NextResponse.json({ success: true, data: created });

@@ -5,7 +5,6 @@ import { toast } from "sonner";
 import { MemberCard } from "./components/MemberCard";
 import { AddMemberDialog } from "./components/AddMemberDialog";
 import { MemberDetailDialog } from "./components/MemberDetailDialog";
-import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { useMembers } from "./hooks/useMembers";
 import { useDebounce } from "../../../hooks/use-debounce";
 import { SimplePagination } from "@/components/ui/pagination";
@@ -21,8 +20,6 @@ import {
   DpcFilters,
   DprtFilters,
 } from "./components/utils/filterMembers";
-
-const queryClient = new QueryClient();
 
 export default function Members() {
   // TAB STATE
@@ -160,7 +157,7 @@ export default function Members() {
   const [selectedMember, setSelectedMember] = useState<any | null>(null);
   const [detailOpen, setDetailOpen] = useState(false);
   const [addOpen, setAddOpen] = useState(false);
-  
+
   // Debug effect to log state changes
   useEffect(() => {
     console.log("Add dialog open state:", addOpen);
@@ -318,133 +315,130 @@ export default function Members() {
   ];
 
   return (
-    <QueryClientProvider client={queryClient}>
-      <AdminLayout breadcrumbs={breadcrumbs}>
-        <div className="space-y-6">
-          {/* HEADER + ADD */}
-          <div className="bg-white/70 backdrop-blur-sm border-2 border-gray-200/80 rounded-2xl p-6">
-            <div className="flex items-center justify-between">
-              <div>
-                <h1 className="text-2xl font-bold text-[#001B55]">
-                  Struktur Organisasi
-                </h1>
-                <p className="text-muted-foreground">
-                  Kelola data anggota & struktur Partai NasDem Kabupaten
-                  Sidoarjo
-                </p>
-              </div>
-              <AddMemberDialog
-                formData={formData}
-                setFormData={(fn) => setFormData((prev) => fn(prev))}
-                onAdd={handleAddMember}
-                open={addOpen}
-                onOpenChange={setAddOpen}
-                submitting={creating}
-                uploading={uploadingImage}
-                photoError={photoError}
-                strukturOptions={strukturOptionsData}
-              />
+    <AdminLayout breadcrumbs={breadcrumbs}>
+      <div className="space-y-6">
+        {/* HEADER + ADD */}
+        <div className="bg-white/70 backdrop-blur-sm border-2 border-gray-200/80 rounded-2xl p-6">
+          <div className="flex items-center justify-between">
+            <div>
+              <h1 className="text-2xl font-bold text-[#001B55]">
+                Struktur Organisasi
+              </h1>
+              <p className="text-muted-foreground">
+                Kelola data anggota & struktur Partai NasDem Kabupaten Sidoarjo
+              </p>
             </div>
+            <AddMemberDialog
+              formData={formData}
+              setFormData={(fn) => setFormData((prev) => fn(prev))}
+              onAdd={handleAddMember}
+              open={addOpen}
+              onOpenChange={setAddOpen}
+              submitting={creating}
+              uploading={uploadingImage}
+              photoError={photoError}
+              strukturOptions={strukturOptionsData}
+            />
           </div>
-
-          {/* TABS FILTERS (style lama) */}
-          <TabsFilters
-            activeTab={activeTab}
-            setActiveTab={(t) => {
-              setActiveTab(t);
-              setPage(1);
-            }}
-            dpdFilters={dpdFilters}
-            sayapFilters={sayapFilters}
-            dpcFilters={dpcFilters}
-            dprtFilters={dprtFilters}
-            setDpdFilters={(v) => setDpdFilters(v)}
-            setSayapFilters={(v) => setSayapFilters(v)}
-            setDpcFilters={(v) => setDpcFilters(v)}
-            setDprtFilters={(v) => setDprtFilters(v)}
-            onTabChange={() => {
-              setPage(1);
-            }}
-            regions={kecamatanOptions}
-            desaByKecamatan={desaByKecamatan}
-          />
-
-          {/* EXTRA FILTER (Status & Gender) */}
-          <div className="flex flex-wrap gap-3 bg-white/70 backdrop-blur-sm border-2 border-gray-200/80 rounded-xl p-4">
-            <select
-              value={statusFilter}
-              onChange={(e) => setStatusFilter(e.target.value)}
-              className="px-3 py-2 rounded-lg border border-[#E5E7EB] text-sm"
-            >
-              <option value="all">Status: Semua</option>
-              <option value="active">Aktif</option>
-              <option value="inactive">Tidak Aktif</option>
-              <option value="suspended">Suspended</option>
-            </select>
-            <select
-              value={genderFilter}
-              onChange={(e) => setGenderFilter(e.target.value)}
-              className="px-3 py-2 rounded-lg border border-[#E5E7EB] text-sm"
-            >
-              <option value="all">Gender: Semua</option>
-              <option value="male">Laki-laki</option>
-              <option value="female">Perempuan</option>
-            </select>
-          </div>
-
-          {/* LIST DATA */}
-          <div className="bg-white rounded-2xl border border-[#E5E7EB] p-4 space-y-4">
-            {isLoading && (
-              <div className="py-10 text-center text-sm text-[#6B7280]">
-                Memuat data...
-              </div>
-            )}
-            {isError && (
-              <div className="py-10 text-center text-sm text-red-600">
-                Gagal memuat: {(error as any)?.message}
-              </div>
-            )}
-            {!isLoading && !isError && members.length === 0 && (
-              <div className="py-10 text-center text-sm text-[#6B7280]">
-                Tidak ada data.
-              </div>
-            )}
-
-            <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 gap-5">
-              {members.map((m: any) => (
-                <MemberCard
-                  key={m.id}
-                  member={m}
-                  onClick={() => openDetail(m)}
-                  statusConfig={statusConfig}
-                  departmentConfig={departmentConfig}
-                  getDPRTLeader={() => undefined}
-                  getKaderCount={() => 0}
-                />
-              ))}
-            </div>
-
-            <div className="mt-8">
-              <SimplePagination
-                page={page}
-                totalPages={data?.meta.totalPages || 1}
-                totalItems={data?.meta.total || 0}
-                onChange={(p) => setPage(p)}
-              />
-            </div>
-          </div>
-
-          <MemberDetailDialog
-            open={detailOpen}
-            onOpenChange={setDetailOpen}
-            member={selectedMember}
-            members={members}
-            departmentConfig={departmentConfig}
-            getDPRTLeader={() => undefined}
-            getKaderCount={() => 0}
-          />
         </div>
-      </AdminLayout>
-    </QueryClientProvider>
+
+        {/* TABS FILTERS (style lama) */}
+        <TabsFilters
+          activeTab={activeTab}
+          setActiveTab={(t) => {
+            setActiveTab(t);
+            setPage(1);
+          }}
+          dpdFilters={dpdFilters}
+          sayapFilters={sayapFilters}
+          dpcFilters={dpcFilters}
+          dprtFilters={dprtFilters}
+          setDpdFilters={(v) => setDpdFilters(v)}
+          setSayapFilters={(v) => setSayapFilters(v)}
+          setDpcFilters={(v) => setDpcFilters(v)}
+          setDprtFilters={(v) => setDprtFilters(v)}
+          onTabChange={() => {
+            setPage(1);
+          }}
+          regions={kecamatanOptions}
+          desaByKecamatan={desaByKecamatan}
+        />
+
+        {/* EXTRA FILTER (Status & Gender) */}
+        <div className="flex flex-wrap gap-3 bg-white/70 backdrop-blur-sm border-2 border-gray-200/80 rounded-xl p-4">
+          <select
+            value={statusFilter}
+            onChange={(e) => setStatusFilter(e.target.value)}
+            className="px-3 py-2 rounded-lg border border-[#E5E7EB] text-sm"
+          >
+            <option value="all">Status: Semua</option>
+            <option value="active">Aktif</option>
+            <option value="inactive">Tidak Aktif</option>
+            <option value="suspended">Suspended</option>
+          </select>
+          <select
+            value={genderFilter}
+            onChange={(e) => setGenderFilter(e.target.value)}
+            className="px-3 py-2 rounded-lg border border-[#E5E7EB] text-sm"
+          >
+            <option value="all">Gender: Semua</option>
+            <option value="male">Laki-laki</option>
+            <option value="female">Perempuan</option>
+          </select>
+        </div>
+
+        {/* LIST DATA */}
+        <div className="bg-white rounded-2xl border border-[#E5E7EB] p-4 space-y-4">
+          {isLoading && (
+            <div className="py-10 text-center text-sm text-[#6B7280]">
+              Memuat data...
+            </div>
+          )}
+          {isError && (
+            <div className="py-10 text-center text-sm text-red-600">
+              Gagal memuat: {(error as any)?.message}
+            </div>
+          )}
+          {!isLoading && !isError && members.length === 0 && (
+            <div className="py-10 text-center text-sm text-[#6B7280]">
+              Tidak ada data.
+            </div>
+          )}
+
+          <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 gap-5">
+            {members.map((m: any) => (
+              <MemberCard
+                key={m.id}
+                member={m}
+                onClick={() => openDetail(m)}
+                statusConfig={statusConfig}
+                departmentConfig={departmentConfig}
+                getDPRTLeader={() => undefined}
+                getKaderCount={() => 0}
+              />
+            ))}
+          </div>
+
+          <div className="mt-8">
+            <SimplePagination
+              page={page}
+              totalPages={data?.meta.totalPages || 1}
+              totalItems={data?.meta.total || 0}
+              onChange={(p) => setPage(p)}
+            />
+          </div>
+        </div>
+
+        <MemberDetailDialog
+          open={detailOpen}
+          onOpenChange={setDetailOpen}
+          member={selectedMember}
+          members={members}
+          departmentConfig={departmentConfig}
+          getDPRTLeader={() => undefined}
+          getKaderCount={() => 0}
+        />
+      </div>
+    </AdminLayout>
   );
 }

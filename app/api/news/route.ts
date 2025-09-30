@@ -7,7 +7,7 @@ export async function GET() {
   try {
     const newsList = await db.news.findMany({
       include: {
-        User: { select: { id: true, username: true, email: true } },
+        user: { select: { id: true, username: true, email: true } },
       },
       orderBy: { publishDate: "desc" },
     });
@@ -42,7 +42,7 @@ export async function POST(req: NextRequest) {
         thumbnailUrl,
         userId,
       },
-      include: { User: { select: { id: true, username: true, email: true } } },
+      include: { user: { select: { id: true, username: true, email: true } } },
     });
 
     return NextResponse.json({ success: true, data: news });

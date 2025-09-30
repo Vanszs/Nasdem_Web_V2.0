@@ -9,7 +9,7 @@ export async function GET(
   try {
     const gallery = await db.gallery.findUnique({
       where: { id: parseInt(params.id) },
-      include: { User: { select: { id: true, username: true, email: true } } },
+      include: { user: { select: { id: true, username: true, email: true } } },
     });
     if (!gallery)
       return NextResponse.json(
@@ -45,7 +45,7 @@ export async function PUT(
         uploadDate: uploadDate ? new Date(uploadDate) : undefined,
         userId,
       },
-      include: { User: { select: { id: true, username: true, email: true } } },
+      include: { user: { select: { id: true, username: true, email: true } } },
     });
     return NextResponse.json({ success: true, data: updated });
   } catch (err: any) {

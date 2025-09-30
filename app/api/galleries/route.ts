@@ -5,7 +5,7 @@ import { requireAuth, requireRole } from "@/lib/jwt-middleware";
 export async function GET() {
   try {
     const galleries = await db.gallery.findMany({
-      include: { User: { select: { id: true, username: true, email: true } } },
+      include: { user: { select: { id: true, username: true, email: true } } },
       orderBy: { uploadDate: "desc" },
     });
     return NextResponse.json({ success: true, data: galleries });
@@ -33,7 +33,7 @@ export async function POST(req: NextRequest) {
         uploadDate: uploadDate ? new Date(uploadDate) : undefined,
         userId,
       },
-      include: { User: { select: { id: true, username: true, email: true } } },
+      include: { user: { select: { id: true, username: true, email: true } } },
     });
     return NextResponse.json({ success: true, data: gallery });
   } catch (err: any) {

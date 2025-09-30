@@ -6,8 +6,8 @@ export async function GET() {
   try {
     const results = await db.dprdCalegResult.findMany({
       include: {
-        Caleg: { include: { Party: true } },
-        analysis: { select: { id: true, year: true } },
+        caleg: { include: { party: true } },
+        electionAnalysis: { select: { id: true, year: true } },
       },
       orderBy: { id: "desc" },
     });
@@ -26,12 +26,12 @@ export async function POST(req: NextRequest) {
   const roleError = requireRole(req, ["superadmin", "analyst"]);
   if (roleError) return roleError;
   try {
-    const { analysisId, calegId, votes } = await req.json();
+    const { electionAnalysisId, calegId, votes } = await req.json();
     const created = await db.dprdCalegResult.create({
-      data: { analysisId, calegId, votes },
+      data: { electionAnalysisId, calegId, votes },
       include: {
-        Caleg: { include: { Party: true } },
-        analysis: { select: { id: true, year: true } },
+        caleg: { include: { party: true } },
+        electionAnalysis: { select: { id: true, year: true } },
       },
     });
     return NextResponse.json({ success: true, data: created });

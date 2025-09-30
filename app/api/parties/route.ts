@@ -6,8 +6,8 @@ export async function GET() {
   try {
     const parties = await db.party.findMany({
       include: {
-        Caleg: true,
-        DprdPartyResult: true,
+        caleg: true,
+        dprdPartyResults: true,
       },
       orderBy: { name: "asc" },
     });
@@ -29,7 +29,7 @@ export async function POST(req: NextRequest) {
     const { name, abbreviation, logoUrl } = await req.json();
     const party = await db.party.create({
       data: { name, abbreviation, logoUrl },
-      include: { Caleg: true, DprdPartyResult: true },
+      include: { caleg: true, dprdPartyResults: true },
     });
     return NextResponse.json({ success: true, data: party });
   } catch (err: any) {

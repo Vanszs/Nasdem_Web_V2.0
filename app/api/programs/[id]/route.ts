@@ -10,8 +10,8 @@ export async function GET(
     const program = await db.program.findUnique({
       where: { id: parseInt(params.id) },
       include: {
-        Category: true,
-        User: { select: { id: true, username: true, email: true } },
+        category: true,
+        user: { select: { id: true, username: true, email: true } },
       },
     });
     if (!program)

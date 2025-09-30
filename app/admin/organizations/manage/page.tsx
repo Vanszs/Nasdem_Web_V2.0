@@ -2,25 +2,32 @@
 
 import * as React from "react";
 import {
-  ColumnDef,
-  flexRender,
-  getCoreRowModel,
-  useReactTable,
-  getSortedRowModel,
-} from "@tanstack/react-table";
-import {
-  ArrowUpDown,
-  Plus,
-  MoreHorizontal,
-  Pencil,
-  Trash2,
   RefreshCw,
+  Plus,
+  Building2,
+  ImageIcon,
+  Users,
+  Upload,
+  Link,
+  X,
 } from "lucide-react";
-import { format } from "date-fns";
-
+import { useDebounce } from "@/hooks/use-debounce";
 import { Button } from "@/components/ui/button";
-import { Input } from "@/components/ui/input";
-import { Badge } from "@/components/ui/badge";
+import { AdminLayout } from "../../components/layout/AdminLayout";
+import {
+  useOrganizations,
+  useOrganizationMutations,
+} from "@/app/admin/organizations/hooks/useOrganizations";
+import {
+  useRegionsLookup,
+  useSayapTypesLookup,
+  useMembersLookup,
+} from "@/app/admin/organizations/hooks/useLookups";
+
+type MemberLookupItem = { id: number; fullName: string; status?: string };
+
+import { OrganizationTable } from "../components/OrganizationTable";
+import { cn } from "@/lib/utils";
 import {
   Dialog,
   DialogContent,
@@ -30,94 +37,88 @@ import {
   DialogFooter,
 } from "@/components/ui/dialog";
 import {
-  DropdownMenu,
-  DropdownMenuTrigger,
-  DropdownMenuContent,
-  DropdownMenuItem,
-  DropdownMenuSeparator,
-} from "@/components/ui/dropdown-menu";
-import { cn } from "@/lib/utils";
-import { AdminLayout } from "../../components/layout/AdminLayout";
-import {
-  useOrganizations,
-  useOrganizationMutations,
-} from "@/app/admin/organizations/hooks/useOrganizations";
-import {
-  useRegionsLookup,
-  useSayapTypesLookup,
-} from "@/app/admin/organizations/hooks/useLookups";
-import { AddOrganizationDialog } from "../components/AddOrganizationDialog";
-import { EditOrganizationDialog } from "../components/EditOrganizationDialog";
-
-type StrukturItem = {
-  id: number;
-  level: string;
-  position: string;
-  region?: { id: number; name: string; type: string } | null;
-  sayapType?: { id: number; name: string } | null;
-  startDate?: string | null;
-  endDate?: string | null;
-  createdAt: string;
-  updatedAt: string;
-  membersCount?: number;
-};
-
-interface SavePayload {
-  id?: number;
-  level: string;
-  position: string;
-  regionId?: number | null;
-  sayapTypeId?: number | null;
-  startDate?: string | null;
-  endDate?: string | null;
-}
-
-const levelColors: Record<string, string> = {
-  dpd: "bg-[#001B55] text-white",
-  dpc: "bg-emerald-600 text-white",
-  dprt: "bg-amber-600 text-white",
-  sayap: "bg-[#FF9C04] text-white",
-  kader: "bg-purple-600 text-white",
-};
-
-const positionColors: Record<string, string> = {
-  ketua: "bg-gradient-to-r from-[#001B55] to-[#0b378d] text-white",
-  sekretaris: "bg-gradient-to-r from-emerald-500 to-emerald-600 text-white",
-  bendahara: "bg-gradient-to-r from-[#FF9C04] to-[#ffb53f] text-[#001B55]",
-  wakil: "bg-gradient-to-r from-sky-500 to-sky-600 text-white",
-  anggota: "bg-gray-200 text-[#001B55]",
-};
+  Select,
+  SelectTrigger,
+  SelectValue,
+  SelectContent,
+  SelectItem,
+} from "@/components/ui/select";
+import { Input } from "@/components/ui/input";
+import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
+import { Label } from "@/components/ui/label";
 
 const breadcrumbs = [
   { label: "Struktur", href: "/admin/organizations" },
   { label: "Kelola Organisasi" },
 ];
 
+interface AddFormState {
+  level: string;
+  position: string;
+  regionId?: number;
+  sayapTypeId?: number;
+  photoUrl?: string;
+  photoFile?: File | null;
+  useFileUpload: boolean;
+  memberIds: number[];
+}
+
+const initialAddForm: AddFormState = {
+  level: "dpd",
+  position: "ketua",
+  regionId: undefined,
+  sayapTypeId: undefined,
+  photoUrl: "",
+  photoFile: null,
+  useFileUpload: false,
+  memberIds: [],
+};
+
 export default function ManageOrganizationPage() {
-  const [filters, setFilters] = React.useState<{
-    search: string;
-    take: number;
-    skip: number;
-  }>({
+  const [filters, setFilters] = React.useState({
     search: "",
-    take: 100,
+    level: "",
+    position: "",
+    regionId: "",
+    take: 10,
     skip: 0,
   });
+  const debouncedSearch = useDebounce(filters.search, 400);
   const [openAdd, setOpenAdd] = React.useState(false);
-  const [openEdit, setOpenEdit] = React.useState(false);
-  const [editing, setEditing] = React.useState<StrukturItem | null>(null);
-  const [confirmDelete, setConfirmDelete] = React.useState<StrukturItem | null>(
-    null
-  );
+  const [addForm, setAddForm] = React.useState<AddFormState>(initialAddForm);
+  const [memberSearch, setMemberSearch] = React.useState("");
+  const [regionSearch, setRegionSearch] = React.useState("");
+  const [showRegionDropdown, setShowRegionDropdown] = React.useState(false);
+  const fileInputRef = React.useRef<HTMLInputElement>(null);
+  const regionInputRef = React.useRef<HTMLInputElement>(null);
 
-  // Debug effects
   React.useEffect(() => {
-    console.log("Add dialog open state:", openAdd);
+    if (!openAdd) {
+      setAddForm(initialAddForm);
+      setMemberSearch("");
+      setRegionSearch("");
+      setShowRegionDropdown(false);
+    }
   }, [openAdd]);
 
+  // Close region dropdown when clicking outside
   React.useEffect(() => {
-    console.log("Edit dialog open state:", openEdit);
-  }, [openEdit]);
+    const handleClickOutside = (event: MouseEvent) => {
+      if (
+        regionInputRef.current &&
+        !regionInputRef.current.contains(event.target as Node)
+      ) {
+        setShowRegionDropdown(false);
+      }
+    };
+
+    if (showRegionDropdown) {
+      document.addEventListener("mousedown", handleClickOutside);
+      return () => {
+        document.removeEventListener("mousedown", handleClickOutside);
+      };
+    }
+  }, [showRegionDropdown]);
 
   const {
     data: orgData,
@@ -126,189 +127,83 @@ export default function ManageOrganizationPage() {
     error,
     refetch,
     isFetching,
-  } = useOrganizations(filters);
-
+  } = useOrganizations({ ...filters, search: debouncedSearch });
   const struktur = orgData?.data || [];
-
   const { data: regions = [] } = useRegionsLookup();
   const { data: sayapTypes = [] } = useSayapTypesLookup();
+  const { data: members = [], isLoading: loadingMembers } = useMembersLookup(
+    memberSearch
+  ) as { data: MemberLookupItem[]; isLoading: boolean } as any;
 
-  const {
-    create: createMut,
-    update: updateMut,
-    remove: deleteMut,
-  } = useOrganizationMutations();
+  const { create: createMut } = useOrganizationMutations();
 
-  const filteredData = React.useMemo(() => {
-    if (!filters.search) return struktur;
-    const g = filters.search.toLowerCase();
-    return struktur.filter(
-      (row: any) =>
-        row.level.toLowerCase().includes(g) ||
-        row.position.toLowerCase().includes(g) ||
-        (row.region?.name?.toLowerCase().includes(g) ?? false) ||
-        (row.sayapType?.name?.toLowerCase().includes(g) ?? false)
+  const showRegion = ["dpd", "dpc", "dprt", "kader"].includes(addForm.level);
+  const showSayap = addForm.level === "sayap";
+
+  // Filter regions based on search
+  const filteredRegions = React.useMemo(() => {
+    if (!regionSearch.trim()) return regions;
+    return regions.filter((r) =>
+      r.name.toLowerCase().includes(regionSearch.toLowerCase())
     );
-  }, [struktur, filters.search]);
+  }, [regions, regionSearch]);
 
-  React.useEffect(() => {
-    setOpenEdit(!!editing);
-  }, [editing]);
+  // Get selected region name
+  const selectedRegion = React.useMemo(() => {
+    return regions.find((r) => r.id === addForm.regionId);
+  }, [regions, addForm.regionId]);
 
-  function handleCreate(payload: any) {
-    createMut.mutate(payload, {
-      onSuccess: () => setOpenAdd(false),
-    });
-  }
+  const handleFileUpload = async (file: File): Promise<string | null> => {
+    try {
+      const formData = new FormData();
+      formData.append("file", file);
 
-  function handleUpdate(id: number, payload: any) {
-    updateMut.mutate(
-      { id, data: payload },
+      const response = await fetch("/api/upload", {
+        method: "POST",
+        body: formData,
+      });
+
+      const result = await response.json();
+      if (result.success) {
+        return result.url;
+      }
+      throw new Error(result.error || "Upload failed");
+    } catch (error) {
+      console.error("Upload error:", error);
+      return null;
+    }
+  };
+
+  async function handleSubmitAdd(e: React.FormEvent) {
+    e.preventDefault();
+
+    let finalPhotoUrl = addForm.photoUrl;
+
+    // Handle file upload if selected
+    if (addForm.useFileUpload && addForm.photoFile) {
+      const uploadedUrl = await handleFileUpload(addForm.photoFile);
+      if (uploadedUrl) {
+        finalPhotoUrl = uploadedUrl;
+      } else {
+        // Handle upload error - could show toast here
+        return;
+      }
+    }
+
+    createMut.mutate(
       {
-        onSuccess: () => {
-          setEditing(null);
-          setOpenEdit(false);
-        },
+        level: addForm.level,
+        position: addForm.position,
+        regionId: addForm.regionId,
+        sayapTypeId: addForm.sayapTypeId,
+        photoUrl: finalPhotoUrl || undefined,
+        memberIds: addForm.memberIds,
+      },
+      {
+        onSuccess: () => setOpenAdd(false),
       }
     );
   }
-
-  const columns = React.useMemo<ColumnDef<StrukturItem>[]>(
-    () => [
-      {
-        accessorKey: "level",
-        header: ({ column }) => (
-          <Button
-            variant="ghost"
-            size="sm"
-            className="px-2"
-            onClick={() => column.toggleSorting(column.getIsSorted() === "asc")}
-          >
-            Level
-            <ArrowUpDown className="ml-1 h-3.5 w-3.5" />
-          </Button>
-        ),
-        cell: ({ row }) => {
-          const val = row.original.level;
-          return (
-            <Badge
-              className={cn(
-                "font-medium rounded-md px-2 py-1 text-xs",
-                levelColors[val] || "bg-gray-200 text-[#001B55]"
-              )}
-            >
-              {val.toUpperCase()}
-            </Badge>
-          );
-        },
-      },
-      {
-        accessorKey: "position",
-        header: ({ column }) => (
-          <Button
-            variant="ghost"
-            size="sm"
-            className="px-2"
-            onClick={() => column.toggleSorting(column.getIsSorted() === "asc")}
-          >
-            Posisi
-            <ArrowUpDown className="ml-1 h-3.5 w-3.5" />
-          </Button>
-        ),
-        cell: ({ row }) => {
-          const val = row.original.position;
-          return (
-            <Badge
-              className={cn(
-                "font-medium rounded-md px-2 py-1 text-[11px]",
-                positionColors[val] || "bg-gray-100 text-[#001B55]"
-              )}
-            >
-              {val}
-            </Badge>
-          );
-        },
-      },
-      {
-        accessorKey: "region.name",
-        header: "Region",
-        cell: ({ row }) => row.original.region?.name || "-",
-      },
-      {
-        accessorKey: "sayapType.name",
-        header: "Sayap",
-        cell: ({ row }) => row.original.sayapType?.name || "-",
-      },
-      {
-        accessorKey: "startDate",
-        header: "Mulai",
-        cell: ({ row }) =>
-          row.original.startDate
-            ? format(new Date(row.original.startDate), "dd MMM yyyy")
-            : "-",
-      },
-      {
-        accessorKey: "endDate",
-        header: "Akhir",
-        cell: ({ row }) =>
-          row.original.endDate
-            ? format(new Date(row.original.endDate), "dd MMM yyyy")
-            : "-",
-      },
-      {
-        accessorKey: "membersCount",
-        header: "Members",
-        cell: ({ row }) => row.original.membersCount ?? 0,
-      },
-      {
-        id: "actions",
-        header: "",
-        cell: ({ row }) => {
-          const item = row.original;
-          return (
-            <DropdownMenu>
-              <DropdownMenuTrigger asChild>
-                <Button
-                  variant="ghost"
-                  size="icon"
-                  className="h-8 w-8 text-[#001B55]"
-                >
-                  <MoreHorizontal className="h-4 w-4" />
-                </Button>
-              </DropdownMenuTrigger>
-              <DropdownMenuContent align="end" className="w-40">
-                <DropdownMenuItem
-                  onClick={() => {
-                    setEditing(item);
-                  }}
-                  className="gap-2"
-                >
-                  <Pencil className="h-4 w-4" />
-                  Edit
-                </DropdownMenuItem>
-                <DropdownMenuSeparator />
-                <DropdownMenuItem
-                  onClick={() => setConfirmDelete(item)}
-                  className="gap-2 text-red-600 focus:text-red-600"
-                >
-                  <Trash2 className="h-4 w-4" />
-                  Hapus
-                </DropdownMenuItem>
-              </DropdownMenuContent>
-            </DropdownMenu>
-          );
-        },
-      },
-    ],
-    []
-  );
-
-  const table = useReactTable({
-    data: filteredData,
-    columns,
-    getCoreRowModel: getCoreRowModel(),
-    getSortedRowModel: getSortedRowModel(),
-  });
 
   return (
     <AdminLayout breadcrumbs={breadcrumbs}>
@@ -338,185 +233,526 @@ export default function ManageOrganizationPage() {
               />
               Refresh
             </Button>
-            {/* <Button
-              onClick={() => {
-                console.log("Add button clicked");
-                setEditing(null);
-                setOpenAdd(true);
-                console.log("openAdd set to:", true);
-              }}
+            <Button
+              onClick={() => setOpenAdd(true)}
               className="bg-[#001B55] hover:bg-[#0b377f] text-white cursor-pointer"
             >
               <Plus className="h-4 w-4 mr-2" />
               Tambah
-            </Button> */}
+            </Button>
           </div>
         </div>
 
-        {/* Toolbar */}
-        <div className="flex flex-col md:flex-row gap-4 items-start md:items-center">
-          <div className="relative w-full md:w-72">
-            <Input
-              placeholder="Cari level / posisi / region..."
-              value={filters.search}
-              onChange={(e) =>
-                setFilters((f) => ({ ...f, search: e.target.value }))
-              }
-              className="pl-3 pr-3 py-2 rounded-xl border border-[#E5E7EB] focus-visible:ring-[#FF9C04]"
-            />
-          </div>
-        </div>
-
-        {/* Table Container */}
-        <div className="rounded-2xl border border-[#E5E7EB] bg-white overflow-hidden shadow-sm">
-          <div className="overflow-x-auto">
-            <table className="w-full text-sm">
-              <thead className="bg-[#001B55]/5 text-[#001B55]">
-                {table.getHeaderGroups().map((hg) => (
-                  <tr key={hg.id}>
-                    {hg.headers.map((h) => (
-                      <th
-                        key={h.id}
-                        className="text-left font-semibold px-4 py-3 border-b border-[#E5E7EB] text-xs uppercase tracking-wide"
-                      >
-                        {h.isPlaceholder
-                          ? null
-                          : flexRender(
-                              h.column.columnDef.header,
-                              h.getContext()
-                            )}
-                      </th>
-                    ))}
-                  </tr>
-                ))}
-              </thead>
-              <tbody>
-                {isLoading && (
-                  <tr>
-                    <td
-                      colSpan={columns.length}
-                      className="py-10 text-center text-[#6B7280]"
-                    >
-                      Memuat data...
-                    </td>
-                  </tr>
-                )}
-                {isError && !isLoading && (
-                  <tr>
-                    <td
-                      colSpan={columns.length}
-                      className="py-10 text-center text-red-600"
-                    >
-                      {(error as any)?.message || "Gagal memuat data"}
-                    </td>
-                  </tr>
-                )}
-                {!isLoading &&
-                  !isError &&
-                  table.getRowModel().rows.length === 0 && (
-                    <tr>
-                      <td
-                        colSpan={columns.length}
-                        className="py-10 text-center text-[#6B7280]"
-                      >
-                        Tidak ada data.
-                      </td>
-                    </tr>
-                  )}
-                {table.getRowModel().rows.map((row) => (
-                  <tr
-                    key={row.id}
-                    className="hover:bg-[#001B55]/3 transition-colors"
-                  >
-                    {row.getVisibleCells().map((cell) => (
-                      <td
-                        key={cell.id}
-                        className="px-4 py-3 border-b border-[#F1F2F4] align-middle"
-                      >
-                        {flexRender(
-                          cell.column.columnDef.cell,
-                          cell.getContext()
-                        )}
-                      </td>
-                    ))}
-                  </tr>
-                ))}
-              </tbody>
-            </table>
-          </div>
-        </div>
-
-        {/* Add Dialog */}
-        <AddOrganizationDialog
-          open={openAdd}
-          onOpenChange={setOpenAdd}
+        {/* Table */}
+        <OrganizationTable
+          data={struktur}
+          totalData={orgData?.meta?.total || 0}
+          loading={isLoading}
+          fetching={isFetching}
+          error={error}
+          isError={isError}
+          onRefresh={refetch}
+          filters={filters}
+          onFiltersChange={setFilters}
           regions={regions}
           sayapTypes={sayapTypes}
-          onCreate={handleCreate}
-          creating={createMut.isPending}
         />
 
-        {/* Edit Dialog */}
-        <EditOrganizationDialog
-          open={openEdit}
-          onOpenChange={(o) => {
-            if (!o) setEditing(null);
-            setOpenEdit(o);
-          }}
-          item={editing}
-          regions={regions}
-          sayapTypes={sayapTypes}
-          onUpdate={handleUpdate}
-          updating={updateMut.isPending}
-        />
-
-        {/* Delete Confirm */}
-        <Dialog
-          open={!!confirmDelete}
-          onOpenChange={(o) => !o && setConfirmDelete(null)}
-        >
-          <DialogContent className="sm:max-w-sm">
-            <DialogHeader>
-              <DialogTitle className="text-[#001B55]">
-                Hapus Struktur?
-              </DialogTitle>
-              <DialogDescription>
-                Tindakan ini tidak dapat dibatalkan. Data terkait tetap ada
-                (member tidak dihapus).
-              </DialogDescription>
+        {/* Inline Add Dialog */}
+        <Dialog open={openAdd} onOpenChange={setOpenAdd}>
+          <DialogContent className="sm:max-w-2xl bg-white border border-gray-200 shadow-xl rounded-xl max-h-[90vh] overflow-hidden">
+            {/* Header with Icon */}
+            <DialogHeader className="pb-4 border-b border-gray-100">
+              <div className="flex items-center gap-3">
+                <div className="w-10 h-10 bg-[#001B55] rounded-lg flex items-center justify-center">
+                  <Building2 className="h-5 w-5 text-white" />
+                </div>
+                <div>
+                  <DialogTitle className="text-lg font-semibold text-[#001B55]">
+                    Tambah Struktur Organisasi
+                  </DialogTitle>
+                  <DialogDescription className="text-sm text-gray-500">
+                    Buat entri struktur organisasi baru dengan detail lengkap
+                  </DialogDescription>
+                </div>
+              </div>
             </DialogHeader>
-            <div className="pt-2 space-y-2 text-sm">
-              <p>
-                Level:{" "}
-                <span className="font-semibold">
-                  {confirmDelete?.level.toUpperCase()}
-                </span>
-              </p>
-              <p>
-                Posisi:{" "}
-                <span className="font-semibold">{confirmDelete?.position}</span>
-              </p>
+
+            {/* Scrollable Form Content */}
+            <div className="overflow-y-auto flex-1 py-4">
+              <form onSubmit={handleSubmitAdd} className="space-y-6">
+                {/* Photo Profile Section - At Top */}
+                <div className="space-y-4">
+                  <div className="flex items-center gap-2 mb-3">
+                    <ImageIcon className="h-4 w-4 text-[#FF9C04]" />
+                    <h3 className="text-sm font-semibold text-[#001B55] uppercase tracking-wide">
+                      Foto Profil
+                    </h3>
+                  </div>
+
+                  <div className="w-full space-y-4">
+                    {/* Photo Preview - Full Width and Larger */}
+                    <div className="w-full h-48 border-2 border-dashed border-gray-300 rounded-xl overflow-hidden bg-gradient-to-br from-gray-50 to-gray-100 flex items-center justify-center relative group hover:border-[#FF9C04] transition-colors">
+                      {addForm.photoUrl && !addForm.useFileUpload ? (
+                        <img
+                          src={addForm.photoUrl}
+                          alt="Preview"
+                          className="w-full h-full object-cover transition-transform group-hover:scale-105"
+                          onError={(e) => {
+                            (e.target as HTMLImageElement).style.display =
+                              "none";
+                          }}
+                        />
+                      ) : addForm.photoFile ? (
+                        <img
+                          src={URL.createObjectURL(addForm.photoFile)}
+                          alt="Preview"
+                          className="w-full h-full object-cover transition-transform group-hover:scale-105"
+                        />
+                      ) : (
+                        <div className="text-center p-8">
+                          <div className="w-16 h-16 bg-[#FF9C04]/10 rounded-full flex items-center justify-center mx-auto mb-4">
+                            <ImageIcon className="h-8 w-8 text-[#FF9C04]" />
+                          </div>
+                          <p className="text-sm font-medium text-gray-600 mb-1">
+                            Foto Profil Organisasi
+                          </p>
+                          <p className="text-xs text-gray-500">
+                            Upload foto atau masukkan URL gambar
+                          </p>
+                        </div>
+                      )}
+                      {(addForm.photoUrl || addForm.photoFile) && (
+                        <div className="absolute inset-0 bg-black/0 group-hover:bg-black/10 transition-colors flex items-center justify-center opacity-0 group-hover:opacity-100">
+                          <div className="bg-white/90 rounded-lg px-3 py-1">
+                            <p className="text-xs text-gray-700 font-medium">
+                              Preview
+                            </p>
+                          </div>
+                        </div>
+                      )}
+                    </div>
+
+                    {/* Photo Upload Options */}
+                    <div className="w-full">
+                      <Tabs
+                        value={addForm.useFileUpload ? "upload" : "url"}
+                        onValueChange={(v) =>
+                          setAddForm((s) => ({
+                            ...s,
+                            useFileUpload: v === "upload",
+                            photoUrl: v === "upload" ? "" : s.photoUrl,
+                            photoFile: v === "url" ? null : s.photoFile,
+                          }))
+                        }
+                        className="w-full"
+                      >
+                        <TabsList className="grid w-full grid-cols-2 h-9">
+                          <TabsTrigger
+                            value="url"
+                            className="text-xs flex items-center gap-1"
+                          >
+                            <Link className="h-3 w-3" />
+                            URL Link
+                          </TabsTrigger>
+                          <TabsTrigger
+                            value="upload"
+                            className="text-xs flex items-center gap-1"
+                          >
+                            <Upload className="h-3 w-3" />
+                            Upload File
+                          </TabsTrigger>
+                        </TabsList>
+
+                        <TabsContent value="url" className="space-y-2 mt-3">
+                          <Input
+                            placeholder="https://example.com/image.jpg"
+                            value={addForm.photoUrl || ""}
+                            onChange={(e) =>
+                              setAddForm((s) => ({
+                                ...s,
+                                photoUrl: e.target.value,
+                              }))
+                            }
+                            className="h-9"
+                          />
+                        </TabsContent>
+
+                        <TabsContent value="upload" className="space-y-2 mt-3">
+                          <div className="relative">
+                            <input
+                              ref={fileInputRef}
+                              type="file"
+                              accept="image/*"
+                              onChange={(e) => {
+                                const file = e.target.files?.[0] || null;
+                                setAddForm((s) => ({ ...s, photoFile: file }));
+                              }}
+                              className="hidden"
+                            />
+                            <Button
+                              type="button"
+                              variant="outline"
+                              onClick={() => fileInputRef.current?.click()}
+                              className="w-full h-9 text-sm"
+                            >
+                              <Upload className="h-4 w-4 mr-2" />
+                              {addForm.photoFile
+                                ? addForm.photoFile.name
+                                : "Pilih file gambar"}
+                            </Button>
+                            {addForm.photoFile && (
+                              <Button
+                                type="button"
+                                variant="ghost"
+                                size="sm"
+                                onClick={() =>
+                                  setAddForm((s) => ({ ...s, photoFile: null }))
+                                }
+                                className="absolute -top-2 -right-2 h-6 w-6 p-0 rounded-full bg-red-100 hover:bg-red-200"
+                              >
+                                <X className="h-3 w-3 text-red-600" />
+                              </Button>
+                            )}
+                          </div>
+                        </TabsContent>
+                      </Tabs>
+                    </div>
+                  </div>
+                </div>
+
+                {/* Basic Information */}
+                <div className="space-y-4">
+                  <div className="flex items-center gap-2 mb-3">
+                    <Building2 className="h-4 w-4 text-[#001B55]" />
+                    <h3 className="text-sm font-semibold text-[#001B55] uppercase tracking-wide">
+                      Informasi Dasar
+                    </h3>
+                  </div>
+
+                  <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                    <div>
+                      <Label className="text-xs font-medium text-[#001B55] uppercase tracking-wide">
+                        Level Organisasi
+                      </Label>
+                      <Select
+                        value={addForm.level}
+                        onValueChange={(v) =>
+                          setAddForm((s) => ({
+                            ...s,
+                            level: v,
+                            regionId: undefined,
+                            sayapTypeId: undefined,
+                          }))
+                        }
+                      >
+                        <SelectTrigger className="h-10 mt-1">
+                          <SelectValue placeholder="Pilih level" />
+                        </SelectTrigger>
+                        <SelectContent>
+                          <SelectItem value="dpd">DPD</SelectItem>
+                          <SelectItem value="dpc">DPC</SelectItem>
+                          <SelectItem value="dprt">DPRT</SelectItem>
+                          <SelectItem value="sayap">Sayap</SelectItem>
+                          <SelectItem value="kader">Kader</SelectItem>
+                        </SelectContent>
+                      </Select>
+                    </div>
+
+                    <div>
+                      <Label className="text-xs font-medium text-[#001B55] uppercase tracking-wide">
+                        Posisi
+                      </Label>
+                      <Select
+                        value={addForm.position}
+                        onValueChange={(v) =>
+                          setAddForm((s) => ({ ...s, position: v }))
+                        }
+                      >
+                        <SelectTrigger className="h-10 mt-1">
+                          <SelectValue placeholder="Pilih posisi" />
+                        </SelectTrigger>
+                        <SelectContent>
+                          <SelectItem value="ketua">Ketua</SelectItem>
+                          <SelectItem value="sekretaris">Sekretaris</SelectItem>
+                          <SelectItem value="bendahara">Bendahara</SelectItem>
+                          <SelectItem value="wakil">Wakil</SelectItem>
+                          <SelectItem value="anggota">Anggota</SelectItem>
+                        </SelectContent>
+                      </Select>
+                    </div>
+                  </div>
+
+                  {/* Regional & Wing Fields */}
+                  <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                    {showRegion && (
+                      <div className="relative">
+                        <Label className="text-xs font-medium text-[#001B55] uppercase tracking-wide">
+                          Region (Cari)
+                        </Label>
+                        <div className="relative mt-1">
+                          <Input
+                            ref={regionInputRef}
+                            placeholder="Ketik untuk mencari region..."
+                            value={
+                              selectedRegion
+                                ? selectedRegion.name
+                                : regionSearch
+                            }
+                            onChange={(e) => {
+                              setRegionSearch(e.target.value);
+                              setShowRegionDropdown(true);
+                              if (!e.target.value) {
+                                setAddForm((s) => ({
+                                  ...s,
+                                  regionId: undefined,
+                                }));
+                              }
+                            }}
+                            onFocus={() => setShowRegionDropdown(true)}
+                            className="h-10"
+                          />
+                          {showRegionDropdown && (
+                            <div className="absolute z-50 w-full mt-1 bg-white border border-gray-200 rounded-lg shadow-lg max-h-48 overflow-y-auto">
+                              <div className="p-2">
+                                <button
+                                  type="button"
+                                  onClick={() => {
+                                    setAddForm((s) => ({
+                                      ...s,
+                                      regionId: undefined,
+                                    }));
+                                    setRegionSearch("");
+                                    setShowRegionDropdown(false);
+                                  }}
+                                  className="w-full text-left px-3 py-2 text-sm text-gray-500 hover:bg-gray-100 rounded"
+                                >
+                                  Tidak ada region
+                                </button>
+                                {filteredRegions.map((region) => (
+                                  <button
+                                    key={region.id}
+                                    type="button"
+                                    onClick={() => {
+                                      setAddForm((s) => ({
+                                        ...s,
+                                        regionId: region.id,
+                                      }));
+                                      setRegionSearch("");
+                                      setShowRegionDropdown(false);
+                                    }}
+                                    className="w-full text-left px-3 py-2 text-sm hover:bg-gray-100 rounded"
+                                  >
+                                    {region.name}
+                                    <span className="text-xs text-gray-500 ml-2">
+                                      ({region.type})
+                                    </span>
+                                  </button>
+                                ))}
+                                {filteredRegions.length === 0 &&
+                                  regionSearch && (
+                                    <div className="px-3 py-2 text-sm text-gray-500">
+                                      Tidak ditemukan "{regionSearch}"
+                                    </div>
+                                  )}
+                              </div>
+                            </div>
+                          )}
+                        </div>
+                      </div>
+                    )}
+
+                    {showSayap && (
+                      <div>
+                        <Label className="text-xs font-medium text-[#001B55] uppercase tracking-wide">
+                          Sayap
+                        </Label>
+                        <Select
+                          value={
+                            addForm.sayapTypeId
+                              ? String(addForm.sayapTypeId)
+                              : "none"
+                          }
+                          onValueChange={(v) =>
+                            setAddForm((s) => ({
+                              ...s,
+                              sayapTypeId: v === "none" ? undefined : Number(v),
+                            }))
+                          }
+                        >
+                          <SelectTrigger className="h-10 mt-1">
+                            <SelectValue placeholder="Pilih sayap" />
+                          </SelectTrigger>
+                          <SelectContent className="max-h-48">
+                            <SelectItem value="none">
+                              <span className="text-gray-500">Tidak ada</span>
+                            </SelectItem>
+                            {sayapTypes.map((s) => (
+                              <SelectItem key={s.id} value={String(s.id)}>
+                                {s.name}
+                              </SelectItem>
+                            ))}
+                          </SelectContent>
+                        </Select>
+                      </div>
+                    )}
+                  </div>
+                </div>
+
+                {/* Members Section */}
+                <div className="space-y-4">
+                  <div className="flex items-center gap-2 mb-3">
+                    <Users className="h-4 w-4 text-[#16A34A]" />
+                    <h3 className="text-sm font-semibold text-[#001B55] uppercase tracking-wide">
+                      Anggota (Opsional)
+                    </h3>
+                  </div>
+
+                  <div className="space-y-3">
+                    <div>
+                      <Label className="text-xs text-gray-600 mb-2 block">
+                        Cari dan pilih anggota
+                      </Label>
+                      <Input
+                        placeholder="Cari nama anggota..."
+                        value={memberSearch}
+                        onChange={(e) => setMemberSearch(e.target.value)}
+                        className="h-9 text-sm"
+                      />
+                    </div>
+
+                    <div className="max-h-48 overflow-y-auto rounded-lg border border-gray-200 bg-gray-50/50">
+                      {loadingMembers ? (
+                        <div className="p-4 text-center text-sm text-gray-500">
+                          <div className="animate-pulse">Memuat anggota...</div>
+                        </div>
+                      ) : members.length === 0 ? (
+                        <div className="p-4 text-center text-sm text-gray-500">
+                          {memberSearch
+                            ? "Tidak ditemukan"
+                            : "Tidak ada anggota"}
+                        </div>
+                      ) : (
+                        <div className="divide-y divide-gray-100">
+                          {members.map((m: MemberLookupItem) => {
+                            const checked = addForm.memberIds.includes(m.id);
+                            return (
+                              <label
+                                key={m.id}
+                                className={cn(
+                                  "flex items-center gap-3 p-3 cursor-pointer hover:bg-white transition-colors",
+                                  checked &&
+                                    "bg-white border-l-2 border-l-[#001B55]"
+                                )}
+                              >
+                                <input
+                                  type="checkbox"
+                                  checked={checked}
+                                  onChange={() =>
+                                    setAddForm((s) => ({
+                                      ...s,
+                                      memberIds: checked
+                                        ? s.memberIds.filter(
+                                            (id) => id !== m.id
+                                          )
+                                        : [...s.memberIds, m.id],
+                                    }))
+                                  }
+                                  className="h-4 w-4 rounded border-gray-300 text-[#001B55] focus:ring-[#001B55]"
+                                />
+                                <div className="flex-1 min-w-0">
+                                  <div className="text-sm font-medium text-gray-900 truncate">
+                                    {m.fullName}
+                                  </div>
+                                  <div className="text-xs text-gray-500 uppercase tracking-wide">
+                                    {m.status || "active"}
+                                  </div>
+                                </div>
+                              </label>
+                            );
+                          })}
+                        </div>
+                      )}
+                    </div>
+
+                    {/* Selected Members Summary */}
+                    {addForm.memberIds.length > 0 && (
+                      <div className="mt-3">
+                        <div className="text-xs text-gray-600 mb-2">
+                          Dipilih ({addForm.memberIds.length})
+                        </div>
+                        <div className="flex flex-wrap gap-1">
+                          {addForm.memberIds.map((id) => {
+                            const found = members.find(
+                              (m: MemberLookupItem) => m.id === id
+                            );
+                            return (
+                              <span
+                                key={id}
+                                className="inline-flex items-center gap-1 text-xs bg-[#001B55] text-white px-2 py-1 rounded-md"
+                              >
+                                {found?.fullName || `ID:${id}`}
+                                <button
+                                  type="button"
+                                  onClick={() =>
+                                    setAddForm((s) => ({
+                                      ...s,
+                                      memberIds: s.memberIds.filter(
+                                        (x) => x !== id
+                                      ),
+                                    }))
+                                  }
+                                  className="ml-1 text-white/70 hover:text-white"
+                                >
+                                  <X className="h-3 w-3" />
+                                </button>
+                              </span>
+                            );
+                          })}
+                        </div>
+                      </div>
+                    )}
+                  </div>
+                </div>
+              </form>
             </div>
-            <DialogFooter className="pt-4">
-              <Button
-                variant="outline"
-                onClick={() => setConfirmDelete(null)}
-                className="border-[#001B55]/30"
-              >
-                Batal
-              </Button>
-              <Button
-                onClick={() =>
-                  confirmDelete &&
-                  deleteMut.mutate(confirmDelete.id, {
-                    onSuccess: () => setConfirmDelete(null),
-                  })
-                }
-                disabled={deleteMut.isPending}
-                className="bg-red-600 hover:bg-red-700"
-              >
-                {deleteMut.isPending ? "Menghapus..." : "Hapus"}
-              </Button>
+
+            {/* Footer Actions */}
+            <DialogFooter className="pt-4 border-t border-gray-100">
+              <div className="flex gap-3 w-full">
+                <Button
+                  type="button"
+                  variant="outline"
+                  className="flex-1 h-10"
+                  onClick={() => setOpenAdd(false)}
+                >
+                  Batal
+                </Button>
+                <Button
+                  type="submit"
+                  disabled={createMut.isPending}
+                  onClick={() => {
+                    const form = document.querySelector("form");
+                    if (form) {
+                      const event = new Event("submit", {
+                        bubbles: true,
+                        cancelable: true,
+                      });
+                      form.dispatchEvent(event);
+                    }
+                  }}
+                  className="flex-1 h-10 bg-[#001B55] hover:bg-[#001B55]/90 text-white"
+                >
+                  {createMut.isPending ? (
+                    <div className="flex items-center gap-2">
+                      <div className="w-4 h-4 border-2 border-white/30 border-t-white rounded-full animate-spin" />
+                      Menyimpan...
+                    </div>
+                  ) : (
+                    "Simpan Organisasi"
+                  )}
+                </Button>
+              </div>
             </DialogFooter>
           </DialogContent>
         </Dialog>
