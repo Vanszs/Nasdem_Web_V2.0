@@ -160,6 +160,11 @@ export default function Members() {
   const [selectedMember, setSelectedMember] = useState<any | null>(null);
   const [detailOpen, setDetailOpen] = useState(false);
   const [addOpen, setAddOpen] = useState(false);
+  
+  // Debug effect to log state changes
+  useEffect(() => {
+    console.log("Add dialog open state:", addOpen);
+  }, [addOpen]);
 
   // FORM CREATE
   const [formData, setFormData] = useState({
