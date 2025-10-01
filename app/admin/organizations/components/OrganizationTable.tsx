@@ -27,7 +27,7 @@ export type StrukturItem = {
   region?: { id: number; name: string; type: string } | null;
   sayapType?: { id: number; name: string } | null;
   membersCount?: number;
-  members?: { id: number; fullName: string; status?: string }[];
+  members?: { id: number; fullName: string; status?: string; photoUrl?: string | null }[];
 };
 
 interface TableFilters {
@@ -57,7 +57,7 @@ interface OrganizationTableProps {
 interface MembersDialogProps {
   open: boolean;
   onOpenChange: (open: boolean) => void;
-  members: { id: number; fullName: string; status?: string }[];
+  members: { id: number; fullName: string; status?: string; photoUrl?: string | null }[];
   orgTitle: string;
 }
 
@@ -178,6 +178,9 @@ function MembersDialog({ open, onOpenChange, members, orgTitle }: MembersDialogP
                       No
                     </th>
                     <th className="text-left font-semibold px-4 py-3 border-b border-gray-200 text-xs uppercase tracking-wide text-[#16A34A]">
+                      Foto
+                    </th>
+                    <th className="text-left font-semibold px-4 py-3 border-b border-gray-200 text-xs uppercase tracking-wide text-[#16A34A]">
                       Nama Lengkap
                     </th>
                     <th className="text-left font-semibold px-4 py-3 border-b border-gray-200 text-xs uppercase tracking-wide text-[#16A34A]">
@@ -188,7 +191,7 @@ function MembersDialog({ open, onOpenChange, members, orgTitle }: MembersDialogP
                 <tbody>
                   {paginatedMembers.length === 0 ? (
                     <tr>
-                      <td colSpan={3} className="py-8 text-center text-gray-500">
+                      <td colSpan={4} className="py-8 text-center text-gray-500">
                         {search || statusFilter ? "Tidak ada data sesuai filter" : "Tidak ada anggota"}
                       </td>
                     </tr>
@@ -197,6 +200,19 @@ function MembersDialog({ open, onOpenChange, members, orgTitle }: MembersDialogP
                       <tr key={member.id} className="hover:bg-gray-50/50 transition-colors">
                         <td className="px-4 py-3 border-b border-gray-100">
                           {pageIndex * pageSize + idx + 1}
+                        </td>
+                        <td className="px-4 py-3 border-b border-gray-100">
+                          {member.photoUrl ? (
+                            <img
+                              src={member.photoUrl}
+                              alt={member.fullName}
+                              className="h-10 w-10 rounded-lg object-cover border border-gray-200 shadow-sm"
+                            />
+                          ) : (
+                            <div className="h-10 w-10 rounded-lg border border-dashed border-gray-300 bg-gray-50 flex items-center justify-center text-gray-400">
+                              <ImageIcon className="h-4 w-4" />
+                            </div>
+                          )}
                         </td>
                         <td className="px-4 py-3 border-b border-gray-100 font-medium text-gray-900">
                           {member.fullName}

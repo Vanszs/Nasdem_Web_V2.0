@@ -1,31 +1,31 @@
-"use client"
+"use client";
 
-import { useState } from "react"
-import { usePathname } from "next/navigation"
-import { Button } from "@/components/ui/button"
-import { Menu, X, Users, Phone, MapPin } from "lucide-react"
+import { useState } from "react";
+import { usePathname } from "next/navigation";
+import { Button } from "@/components/ui/button";
+import { Menu, X, Users, Phone, MapPin } from "lucide-react";
 
 const NasdemHeader = () => {
-  const [isMenuOpen, setIsMenuOpen] = useState(false)
-  const pathname = usePathname()
+  const [isMenuOpen, setIsMenuOpen] = useState(false);
+  const pathname = usePathname();
 
   // Function to check if a link is active
   const isActiveLink = (href: string) => {
     if (href === "/") {
-      return pathname === "/"
+      return pathname === "/";
     }
-    return pathname === href || pathname.startsWith(href)
-  }
+    return pathname === href || pathname.startsWith(href);
+  };
 
   // Function to get link classes with active state
   const getLinkClasses = (href: string, baseClasses: string = "") => {
-    const isActive = isActiveLink(href)
+    const isActive = isActiveLink(href);
     return `${baseClasses} ${
-      isActive 
+      isActive
         ? "text-[#FF9C04] font-bold relative" // Active state: kuning/orange dengan bold dan relative positioning
         : "text-primary-foreground hover:text-[#FF9C04] transition-all duration-300 relative group"
-    }`
-  }
+    }`;
+  };
 
   // Function to render active indicator
   const ActiveIndicator = ({ isActive }: { isActive: boolean }) => (
@@ -35,7 +35,7 @@ const NasdemHeader = () => {
       )}
       <span className="absolute -bottom-1 left-0 right-0 h-0.5 bg-[#FF9C04] rounded-full scale-x-0 group-hover:scale-x-100 transition-transform duration-300 origin-left"></span>
     </>
-  )
+  );
 
   return (
     <header className="sticky top-0 z-50 bg-primary/95 backdrop-blur-md border-b border-primary-foreground/10">
@@ -66,8 +66,12 @@ const NasdemHeader = () => {
               N
             </div>
             <div className="flex flex-col">
-              <span className="font-bold text-primary-foreground text-lg">NasDem</span>
-              <span className="text-primary-foreground/80 text-xs">Sidoarjo</span>
+              <span className="font-bold text-primary-foreground text-lg">
+                NasDem
+              </span>
+              <span className="text-primary-foreground/80 text-xs">
+                Sidoarjo
+              </span>
             </div>
           </div>
 
@@ -80,43 +84,64 @@ const NasdemHeader = () => {
               </a>
             </li>
             <li className="relative">
-              <a href="#profil" className={getLinkClasses("#profil", "story-link")}>
+              <a
+                href="#profil"
+                className={getLinkClasses("#profil", "story-link")}
+              >
                 Profil
                 <ActiveIndicator isActive={isActiveLink("#profil")} />
               </a>
             </li>
             <li className="relative">
-              <a href="/visi-misi" className={getLinkClasses("/visi-misi", "story-link")}>
+              <a
+                href="/visi-misi"
+                className={getLinkClasses("/visi-misi", "story-link")}
+              >
                 Visi Misi
                 <ActiveIndicator isActive={isActiveLink("/visi-misi")} />
               </a>
             </li>
             <li className="relative">
-              <a href="#program" className={getLinkClasses("#program", "story-link")}>
+              <a
+                href="#program"
+                className={getLinkClasses("#program", "story-link")}
+              >
                 Program
                 <ActiveIndicator isActive={isActiveLink("#program")} />
               </a>
             </li>
             <li className="relative">
-              <a href="/berita" className={getLinkClasses("/berita", "story-link")}>
+              <a
+                href="/berita"
+                className={getLinkClasses("/berita", "story-link")}
+              >
                 Berita
                 <ActiveIndicator isActive={isActiveLink("/berita")} />
               </a>
             </li>
             <li className="relative">
-              <a href="/galeri" className={getLinkClasses("/galeri", "story-link")}>
+              <a
+                href="/galeri"
+                className={getLinkClasses("/galeri", "story-link")}
+              >
                 Galeri
                 <ActiveIndicator isActive={isActiveLink("/galeri")} />
               </a>
             </li>
             <li className="relative">
-              <a href="/struktur" className={getLinkClasses("/struktur", "story-link")}>
+              <a
+                href="/struktur"
+                className={getLinkClasses("/struktur", "story-link")}
+              >
                 Struktur
                 <ActiveIndicator isActive={isActiveLink("/struktur")} />
               </a>
             </li>
             <li className="relative">
-              <a href="/kontak" className={getLinkClasses("/kontak", "story-link")}>
+              <a
+                href="/kontak"
+                className={getLinkClasses("/kontak", "story-link")}
+              >
                 Kontak
                 <ActiveIndicator isActive={isActiveLink("/kontak")} />
               </a>
@@ -125,7 +150,11 @@ const NasdemHeader = () => {
 
           {/* CTA Button */}
           <div className="hidden md:flex items-center gap-3">
-            <Button variant="secondary" size="sm" className="hover-scale font-medium">
+            <Button
+              variant="secondary"
+              size="sm"
+              className="hover-scale font-medium"
+            >
               Bergabung
             </Button>
             <Button
@@ -161,7 +190,10 @@ const NasdemHeader = () => {
                   </a>
                 </li>
                 <li className="relative">
-                  <a href="#profil" className={getLinkClasses("#profil", "block py-2 pl-4")}>
+                  <a
+                    href="#profil"
+                    className={getLinkClasses("#profil", "block py-2 pl-4")}
+                  >
                     Profil
                     {isActiveLink("#profil") && (
                       <span className="absolute left-0 top-1/2 transform -translate-y-1/2 w-1 h-6 bg-[#FF9C04] rounded-r-full"></span>
@@ -169,7 +201,10 @@ const NasdemHeader = () => {
                   </a>
                 </li>
                 <li className="relative">
-                  <a href="/visi-misi" className={getLinkClasses("/visi-misi", "block py-2 pl-4")}>
+                  <a
+                    href="/visi-misi"
+                    className={getLinkClasses("/visi-misi", "block py-2 pl-4")}
+                  >
                     Visi Misi
                     {isActiveLink("/visi-misi") && (
                       <span className="absolute left-0 top-1/2 transform -translate-y-1/2 w-1 h-6 bg-[#FF9C04] rounded-r-full"></span>
@@ -177,7 +212,10 @@ const NasdemHeader = () => {
                   </a>
                 </li>
                 <li className="relative">
-                  <a href="#program" className={getLinkClasses("#program", "block py-2 pl-4")}>
+                  <a
+                    href="#program"
+                    className={getLinkClasses("#program", "block py-2 pl-4")}
+                  >
                     Program
                     {isActiveLink("#program") && (
                       <span className="absolute left-0 top-1/2 transform -translate-y-1/2 w-1 h-6 bg-[#FF9C04] rounded-r-full"></span>
@@ -185,7 +223,10 @@ const NasdemHeader = () => {
                   </a>
                 </li>
                 <li className="relative">
-                  <a href="/berita" className={getLinkClasses("/berita", "block py-2 pl-4")}>
+                  <a
+                    href="/berita"
+                    className={getLinkClasses("/berita", "block py-2 pl-4")}
+                  >
                     Berita
                     {isActiveLink("/berita") && (
                       <span className="absolute left-0 top-1/2 transform -translate-y-1/2 w-1 h-6 bg-[#FF9C04] rounded-r-full"></span>
@@ -193,7 +234,10 @@ const NasdemHeader = () => {
                   </a>
                 </li>
                 <li className="relative">
-                  <a href="/galeri" className={getLinkClasses("/galeri", "block py-2 pl-4")}>
+                  <a
+                    href="/galeri"
+                    className={getLinkClasses("/galeri", "block py-2 pl-4")}
+                  >
                     Galeri
                     {isActiveLink("/galeri") && (
                       <span className="absolute left-0 top-1/2 transform -translate-y-1/2 w-1 h-6 bg-[#FF9C04] rounded-r-full"></span>
@@ -201,7 +245,10 @@ const NasdemHeader = () => {
                   </a>
                 </li>
                 <li className="relative">
-                  <a href="/struktur" className={getLinkClasses("/struktur", "block py-2 pl-4")}>
+                  <a
+                    href="/struktur"
+                    className={getLinkClasses("/struktur", "block py-2 pl-4")}
+                  >
                     Struktur
                     {isActiveLink("/struktur") && (
                       <span className="absolute left-0 top-1/2 transform -translate-y-1/2 w-1 h-6 bg-[#FF9C04] rounded-r-full"></span>
@@ -209,7 +256,10 @@ const NasdemHeader = () => {
                   </a>
                 </li>
                 <li className="relative">
-                  <a href="/kontak" className={getLinkClasses("/kontak", "block py-2 pl-4")}>
+                  <a
+                    href="/kontak"
+                    className={getLinkClasses("/kontak", "block py-2 pl-4")}
+                  >
                     Kontak
                     {isActiveLink("/kontak") && (
                       <span className="absolute left-0 top-1/2 transform -translate-y-1/2 w-1 h-6 bg-[#FF9C04] rounded-r-full"></span>
@@ -234,7 +284,7 @@ const NasdemHeader = () => {
         )}
       </div>
     </header>
-  )
-}
+  );
+};
 
-export default NasdemHeader
+export default NasdemHeader;

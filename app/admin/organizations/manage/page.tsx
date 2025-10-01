@@ -10,6 +10,7 @@ import {
   Upload,
   Link,
   X,
+  CalendarIcon,
 } from "lucide-react";
 import { useDebounce } from "@/hooks/use-debounce";
 import { Button } from "@/components/ui/button";
@@ -60,6 +61,8 @@ interface AddFormState {
   photoUrl?: string;
   photoFile?: File | null;
   useFileUpload: boolean;
+  startDate: string;
+  endDate: string;
   memberIds: number[];
 }
 
@@ -71,6 +74,8 @@ const initialAddForm: AddFormState = {
   photoUrl: "",
   photoFile: null,
   useFileUpload: false,
+  startDate: "",
+  endDate: "",
   memberIds: [],
 };
 
@@ -197,6 +202,8 @@ export default function ManageOrganizationPage() {
         regionId: addForm.regionId,
         sayapTypeId: addForm.sayapTypeId,
         photoUrl: finalPhotoUrl || undefined,
+        startDate: addForm.startDate || undefined,
+        endDate: addForm.endDate || undefined,
         memberIds: addForm.memberIds,
       },
       {
@@ -260,179 +267,178 @@ export default function ManageOrganizationPage() {
 
         {/* Inline Add Dialog */}
         <Dialog open={openAdd} onOpenChange={setOpenAdd}>
-          <DialogContent className="sm:max-w-2xl bg-white border border-gray-200 shadow-xl rounded-xl max-h-[90vh] overflow-hidden">
-            {/* Header with Icon */}
-            <DialogHeader className="pb-4 border-b border-gray-100">
+          <DialogContent className="sm:max-w-2xl h-[85vh] overflow-hidden bg-white shadow-xl rounded-xl p-0 flex flex-col">
+            {/* Header */}
+            <DialogHeader className="shrink-0 px-5 py-4 border-b border-gray-100">
               <div className="flex items-center gap-3">
-                <div className="w-10 h-10 bg-[#001B55] rounded-lg flex items-center justify-center">
+                <div className="flex h-10 w-10 items-center justify-center rounded-lg bg-[#001B55]">
                   <Building2 className="h-5 w-5 text-white" />
                 </div>
-                <div>
-                  <DialogTitle className="text-lg font-semibold text-[#001B55]">
+                <div className="min-w-0">
+                  <DialogTitle className="text-base font-semibold text-[#001B55] truncate">
                     Tambah Struktur Organisasi
                   </DialogTitle>
-                  <DialogDescription className="text-sm text-gray-500">
-                    Buat entri struktur organisasi baru dengan detail lengkap
+                  <DialogDescription className="text-xs text-gray-500">
+                    Buat struktur organisasi baru
                   </DialogDescription>
                 </div>
               </div>
             </DialogHeader>
 
-            {/* Scrollable Form Content */}
-            <div className="overflow-y-auto flex-1 py-4">
-              <form onSubmit={handleSubmitAdd} className="space-y-6">
-                {/* Photo Profile Section - At Top */}
-                <div className="space-y-4">
-                  <div className="flex items-center gap-2 mb-3">
-                    <ImageIcon className="h-4 w-4 text-[#FF9C04]" />
-                    <h3 className="text-sm font-semibold text-[#001B55] uppercase tracking-wide">
-                      Foto Profil
-                    </h3>
+            {/* Scroll Area */}
+            <div className="flex-1 min-h-0 overflow-y-auto px-5 pb-4 pt-3 space-y-6">
+              <form
+                onSubmit={handleSubmitAdd}
+                className="space-y-8"
+                aria-label="Form tambah organisasi"
+              >
+                {/* Foto Profil */}
+                <section className="space-y-4">
+                  <div className="flex items-center gap-2">
+                    <div className="flex h-8 w-8 items-center justify-center rounded-md bg-[#FF9C04]/10 text-[#FF9C04]">
+                      <ImageIcon className="h-4 w-4" />
+                    </div>
+                    <div className="min-w-0">
+                      <h3 className="text-xs font-semibold tracking-wide text-[#001B55] uppercase">
+                        Foto Profil
+                      </h3>
+                      <p className="text-[11px] text-gray-500">
+                        Gunakan foto terbaru untuk struktur ini
+                      </p>
+                    </div>
                   </div>
-
-                  <div className="w-full space-y-4">
-                    {/* Photo Preview - Full Width and Larger */}
-                    <div className="w-full h-48 border-2 border-dashed border-gray-300 rounded-xl overflow-hidden bg-gradient-to-br from-gray-50 to-gray-100 flex items-center justify-center relative group hover:border-[#FF9C04] transition-colors">
-                      {addForm.photoUrl && !addForm.useFileUpload ? (
-                        <img
-                          src={addForm.photoUrl}
-                          alt="Preview"
-                          className="w-full h-full object-cover transition-transform group-hover:scale-105"
-                          onError={(e) => {
-                            (e.target as HTMLImageElement).style.display =
-                              "none";
-                          }}
-                        />
-                      ) : addForm.photoFile ? (
+                  <div className="space-y-3">
+                    <div className="flex h-44 w-full items-center justify-center overflow-hidden rounded-lg border-2 border-dashed border-gray-300 bg-gray-50">
+                      {addForm.useFileUpload && addForm.photoFile ? (
                         <img
                           src={URL.createObjectURL(addForm.photoFile)}
                           alt="Preview"
-                          className="w-full h-full object-cover transition-transform group-hover:scale-105"
+                          className="h-full w-full object-cover"
+                        />
+                      ) : addForm.photoUrl ? (
+                        <img
+                          src={addForm.photoUrl}
+                          alt="Preview"
+                          className="h-full w-full object-cover"
+                          onError={(e) => {
+                            (
+                              e.currentTarget as HTMLImageElement
+                            ).style.display = "none";
+                          }}
                         />
                       ) : (
-                        <div className="text-center p-8">
-                          <div className="w-16 h-16 bg-[#FF9C04]/10 rounded-full flex items-center justify-center mx-auto mb-4">
-                            <ImageIcon className="h-8 w-8 text-[#FF9C04]" />
-                          </div>
-                          <p className="text-sm font-medium text-gray-600 mb-1">
-                            Foto Profil Organisasi
+                        <div className="text-center px-4">
+                          <p className="text-sm font-medium text-gray-600">
+                            Belum ada foto
                           </p>
-                          <p className="text-xs text-gray-500">
-                            Upload foto atau masukkan URL gambar
+                          <p className="text-[11px] text-gray-500">
+                            Tambahkan foto melalui URL atau unggah file
                           </p>
-                        </div>
-                      )}
-                      {(addForm.photoUrl || addForm.photoFile) && (
-                        <div className="absolute inset-0 bg-black/0 group-hover:bg-black/10 transition-colors flex items-center justify-center opacity-0 group-hover:opacity-100">
-                          <div className="bg-white/90 rounded-lg px-3 py-1">
-                            <p className="text-xs text-gray-700 font-medium">
-                              Preview
-                            </p>
-                          </div>
                         </div>
                       )}
                     </div>
-
-                    {/* Photo Upload Options */}
-                    <div className="w-full">
-                      <Tabs
-                        value={addForm.useFileUpload ? "upload" : "url"}
-                        onValueChange={(v) =>
-                          setAddForm((s) => ({
-                            ...s,
-                            useFileUpload: v === "upload",
-                            photoUrl: v === "upload" ? "" : s.photoUrl,
-                            photoFile: v === "url" ? null : s.photoFile,
-                          }))
-                        }
-                        className="w-full"
-                      >
-                        <TabsList className="grid w-full grid-cols-2 h-9">
-                          <TabsTrigger
-                            value="url"
-                            className="text-xs flex items-center gap-1"
-                          >
-                            <Link className="h-3 w-3" />
-                            URL Link
-                          </TabsTrigger>
-                          <TabsTrigger
-                            value="upload"
-                            className="text-xs flex items-center gap-1"
-                          >
-                            <Upload className="h-3 w-3" />
-                            Upload File
-                          </TabsTrigger>
-                        </TabsList>
-
-                        <TabsContent value="url" className="space-y-2 mt-3">
-                          <Input
-                            placeholder="https://example.com/image.jpg"
-                            value={addForm.photoUrl || ""}
-                            onChange={(e) =>
-                              setAddForm((s) => ({
-                                ...s,
-                                photoUrl: e.target.value,
-                              }))
-                            }
-                            className="h-9"
+                    <Tabs
+                      value={addForm.useFileUpload ? "upload" : "url"}
+                      onValueChange={(value) =>
+                        setAddForm((current) => ({
+                          ...current,
+                          useFileUpload: value === "upload",
+                          photoFile:
+                            value === "upload" ? current.photoFile : null,
+                        }))
+                      }
+                    >
+                      <TabsList className="grid w-full grid-cols-2 h-8">
+                        <TabsTrigger value="url" className="text-[11px]">
+                          URL Foto
+                        </TabsTrigger>
+                        <TabsTrigger value="upload" className="text-[11px]">
+                          Unggah File
+                        </TabsTrigger>
+                      </TabsList>
+                      <TabsContent value="url" className="space-y-2 pt-3">
+                        <Label className="text-[11px] text-gray-600">
+                          Tautan gambar
+                        </Label>
+                        <Input
+                          placeholder="https://domain.com/foto.jpg"
+                          value={addForm.photoUrl}
+                          onChange={(e) =>
+                            setAddForm((cur) => ({
+                              ...cur,
+                              photoUrl: e.target.value,
+                            }))
+                          }
+                          className="h-8 text-sm"
+                        />
+                      </TabsContent>
+                      <TabsContent value="upload" className="space-y-2 pt-3">
+                        <div className="relative">
+                          <input
+                            ref={fileInputRef}
+                            type="file"
+                            accept="image/*"
+                            onChange={(e) => {
+                              const file = e.target.files?.[0] || null;
+                              setAddForm((cur) => ({
+                                ...cur,
+                                photoFile: file,
+                              }));
+                            }}
+                            className="hidden"
                           />
-                        </TabsContent>
-
-                        <TabsContent value="upload" className="space-y-2 mt-3">
-                          <div className="relative">
-                            <input
-                              ref={fileInputRef}
-                              type="file"
-                              accept="image/*"
-                              onChange={(e) => {
-                                const file = e.target.files?.[0] || null;
-                                setAddForm((s) => ({ ...s, photoFile: file }));
-                              }}
-                              className="hidden"
-                            />
+                          <Button
+                            type="button"
+                            variant="outline"
+                            onClick={() => fileInputRef.current?.click()}
+                            className="h-8 w-full text-xs justify-center"
+                          >
+                            <Upload className="h-3 w-3 mr-1" />
+                            {addForm.photoFile
+                              ? addForm.photoFile.name
+                              : "Pilih file gambar"}
+                          </Button>
+                          {addForm.photoFile && (
                             <Button
                               type="button"
-                              variant="outline"
-                              onClick={() => fileInputRef.current?.click()}
-                              className="w-full h-9 text-sm"
+                              size="icon"
+                              variant="ghost"
+                              onClick={() =>
+                                setAddForm((cur) => ({
+                                  ...cur,
+                                  photoFile: null,
+                                }))
+                              }
+                              className="absolute -right-2 -top-2 h-6 w-6 rounded-full bg-red-100 text-red-600 hover:bg-red-200"
                             >
-                              <Upload className="h-4 w-4 mr-2" />
-                              {addForm.photoFile
-                                ? addForm.photoFile.name
-                                : "Pilih file gambar"}
+                              <X className="h-3 w-3" />
                             </Button>
-                            {addForm.photoFile && (
-                              <Button
-                                type="button"
-                                variant="ghost"
-                                size="sm"
-                                onClick={() =>
-                                  setAddForm((s) => ({ ...s, photoFile: null }))
-                                }
-                                className="absolute -top-2 -right-2 h-6 w-6 p-0 rounded-full bg-red-100 hover:bg-red-200"
-                              >
-                                <X className="h-3 w-3 text-red-600" />
-                              </Button>
-                            )}
-                          </div>
-                        </TabsContent>
-                      </Tabs>
+                          )}
+                        </div>
+                      </TabsContent>
+                    </Tabs>
+                  </div>
+                </section>
+
+                {/* Informasi Dasar */}
+                <section className="space-y-4">
+                  <div className="flex items-center gap-2">
+                    <div className="flex h-8 w-8 items-center justify-center rounded-md bg-[#001B55]/10 text-[#001B55]">
+                      <Building2 className="h-4 w-4" />
+                    </div>
+                    <div className="min-w-0">
+                      <h3 className="text-xs font-semibold tracking-wide text-[#001B55] uppercase">
+                        Informasi Dasar
+                      </h3>
+                      <p className="text-[11px] text-gray-500">
+                        Level & posisi struktur organisasi
+                      </p>
                     </div>
                   </div>
-                </div>
-
-                {/* Basic Information */}
-                <div className="space-y-4">
-                  <div className="flex items-center gap-2 mb-3">
-                    <Building2 className="h-4 w-4 text-[#001B55]" />
-                    <h3 className="text-sm font-semibold text-[#001B55] uppercase tracking-wide">
-                      Informasi Dasar
-                    </h3>
-                  </div>
-
-                  <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                    <div>
-                      <Label className="text-xs font-medium text-[#001B55] uppercase tracking-wide">
+                  {/* Converted grid to vertical stack for full-width selects */}
+                  <div className="space-y-3">
+                    <div className="space-y-1.5">
+                      <Label className="text-[11px] text-gray-600">
                         Level Organisasi
                       </Label>
                       <Select
@@ -446,7 +452,7 @@ export default function ManageOrganizationPage() {
                           }))
                         }
                       >
-                        <SelectTrigger className="h-10 mt-1">
+                        <SelectTrigger className="h-9 text-sm w-full">
                           <SelectValue placeholder="Pilih level" />
                         </SelectTrigger>
                         <SelectContent>
@@ -458,9 +464,8 @@ export default function ManageOrganizationPage() {
                         </SelectContent>
                       </Select>
                     </div>
-
-                    <div>
-                      <Label className="text-xs font-medium text-[#001B55] uppercase tracking-wide">
+                    <div className="space-y-1.5">
+                      <Label className="text-[11px] text-gray-600">
                         Posisi
                       </Label>
                       <Select
@@ -469,7 +474,7 @@ export default function ManageOrganizationPage() {
                           setAddForm((s) => ({ ...s, position: v }))
                         }
                       >
-                        <SelectTrigger className="h-10 mt-1">
+                        <SelectTrigger className="h-9 text-sm w-full">
                           <SelectValue placeholder="Pilih posisi" />
                         </SelectTrigger>
                         <SelectContent>
@@ -482,155 +487,217 @@ export default function ManageOrganizationPage() {
                       </Select>
                     </div>
                   </div>
+                </section>
 
-                  {/* Regional & Wing Fields */}
-                  <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                    {showRegion && (
-                      <div className="relative">
-                        <Label className="text-xs font-medium text-[#001B55] uppercase tracking-wide">
-                          Region (Cari)
-                        </Label>
-                        <div className="relative mt-1">
-                          <Input
-                            ref={regionInputRef}
-                            placeholder="Ketik untuk mencari region..."
-                            value={
-                              selectedRegion
-                                ? selectedRegion.name
-                                : regionSearch
-                            }
-                            onChange={(e) => {
-                              setRegionSearch(e.target.value);
-                              setShowRegionDropdown(true);
-                              if (!e.target.value) {
-                                setAddForm((s) => ({
-                                  ...s,
-                                  regionId: undefined,
-                                }));
+                {/* Wilayah & Sayap */}
+                {(showRegion || showSayap) && (
+                  <section className="space-y-4">
+                    <div className="flex items-center gap-2">
+                      <div className="flex h-8 w-8 items-center justify-center rounded-md bg-[#001B55]/10 text-[#001B55]">
+                        <Users className="h-4 w-4" />
+                      </div>
+                      <div className="min-w-0">
+                        <h3 className="text-xs font-semibold tracking-wide text-[#001B55] uppercase">
+                          Wilayah & Sayap
+                        </h3>
+                        <p className="text-[11px] text-gray-500">
+                          Filter wilayah atau tipe sayap
+                        </p>
+                      </div>
+                    </div>
+                    {/* Converted grid to vertical stack for full-width region/sayap */}
+                    <div className="space-y-3">
+                      {showRegion && (
+                        <div className="space-y-1.5">
+                          <Label className="text-[11px] text-gray-600">
+                            Region (Cari)
+                          </Label>
+                          <div className="relative">
+                            <Input
+                              ref={regionInputRef}
+                              placeholder="Ketik region..."
+                              value={
+                                selectedRegion
+                                  ? selectedRegion.name
+                                  : regionSearch
                               }
-                            }}
-                            onFocus={() => setShowRegionDropdown(true)}
-                            className="h-10"
-                          />
-                          {showRegionDropdown && (
-                            <div className="absolute z-50 w-full mt-1 bg-white border border-gray-200 rounded-lg shadow-lg max-h-48 overflow-y-auto">
-                              <div className="p-2">
-                                <button
-                                  type="button"
-                                  onClick={() => {
-                                    setAddForm((s) => ({
-                                      ...s,
-                                      regionId: undefined,
-                                    }));
-                                    setRegionSearch("");
-                                    setShowRegionDropdown(false);
-                                  }}
-                                  className="w-full text-left px-3 py-2 text-sm text-gray-500 hover:bg-gray-100 rounded"
-                                >
-                                  Tidak ada region
-                                </button>
-                                {filteredRegions.map((region) => (
+                              onChange={(e) => {
+                                setRegionSearch(e.target.value);
+                                setShowRegionDropdown(true);
+                                if (!e.target.value) {
+                                  setAddForm((s) => ({ ...s, regionId: undefined }));
+                                }
+                              }}
+                              onFocus={() => setShowRegionDropdown(true)}
+                              className="h-9 text-sm pr-8 w-full"
+                            />
+                            {showRegionDropdown && (
+                              <div className="absolute z-50 w-full mt-1 bg-white border border-gray-200 rounded-md shadow-lg max-h-48 overflow-y-auto">
+                                <div className="p-1 space-y-1">
                                   <button
-                                    key={region.id}
                                     type="button"
                                     onClick={() => {
-                                      setAddForm((s) => ({
-                                        ...s,
-                                        regionId: region.id,
-                                      }));
+                                      setAddForm((s) => ({ ...s, regionId: undefined }));
                                       setRegionSearch("");
                                       setShowRegionDropdown(false);
                                     }}
-                                    className="w-full text-left px-3 py-2 text-sm hover:bg-gray-100 rounded"
+                                    className="w-full text-left px-2 py-1.5 text-xs text-gray-500 hover:bg-gray-100 rounded"
                                   >
-                                    {region.name}
-                                    <span className="text-xs text-gray-500 ml-2">
-                                      ({region.type})
-                                    </span>
+                                    Tidak ada region
                                   </button>
-                                ))}
-                                {filteredRegions.length === 0 &&
-                                  regionSearch && (
-                                    <div className="px-3 py-2 text-sm text-gray-500">
+                                  {filteredRegions.map((region) => (
+                                    <button
+                                      key={region.id}
+                                      type="button"
+                                      onClick={() => {
+                                        setAddForm((s) => ({ ...s, regionId: region.id }));
+                                        setRegionSearch("");
+                                        setShowRegionDropdown(false);
+                                      }}
+                                      className="w-full text-left px-2 py-1.5 text-xs hover:bg-gray-100 rounded"
+                                    >
+                                      {region.name}
+                                      <span className="text-[10px] text-gray-500 ml-1">
+                                        ({region.type})
+                                      </span>
+                                    </button>
+                                  ))}
+                                  {filteredRegions.length === 0 && regionSearch && (
+                                    <div className="px-2 py-1.5 text-[11px] text-gray-500">
                                       Tidak ditemukan "{regionSearch}"
                                     </div>
                                   )}
+                                </div>
                               </div>
-                            </div>
-                          )}
+                            )}
+                          </div>
                         </div>
-                      </div>
-                    )}
+                      )}
+                      {showSayap && (
+                        <div className="space-y-1.5">
+                          <Label className="text-[11px] text-gray-600">
+                            Sayap
+                          </Label>
+                          <Select
+                            value={
+                              addForm.sayapTypeId
+                                ? String(addForm.sayapTypeId)
+                                : "none"
+                            }
+                            onValueChange={(v) =>
+                              setAddForm((s) => ({
+                                ...s,
+                                sayapTypeId: v === "none" ? undefined : Number(v),
+                              }))
+                            }
+                          >
+                            <SelectTrigger className="h-9 text-sm w-full">
+                              <SelectValue placeholder="Pilih sayap" />
+                            </SelectTrigger>
+                            <SelectContent>
+                              <SelectItem value="none">Tidak ada</SelectItem>
+                              {sayapTypes.map((s) => (
+                                <SelectItem key={s.id} value={String(s.id)}>
+                                  {s.name}
+                                </SelectItem>
+                              ))}
+                            </SelectContent>
+                          </Select>
+                        </div>
+                      )}
+                    </div>
+                  </section>
+                )}
 
-                    {showSayap && (
-                      <div>
-                        <Label className="text-xs font-medium text-[#001B55] uppercase tracking-wide">
-                          Sayap
-                        </Label>
-                        <Select
-                          value={
-                            addForm.sayapTypeId
-                              ? String(addForm.sayapTypeId)
-                              : "none"
-                          }
-                          onValueChange={(v) =>
+                {/* Periode Jabatan */}
+                <section className="space-y-4">
+                  <div className="flex items-center gap-2">
+                    <div className="flex h-8 w-8 items-center justify-center rounded-md bg-[#FF9C04]/10 text-[#FF9C04]">
+                      <CalendarIcon className="h-4 w-4" />
+                    </div>
+                    <div className="min-w-0">
+                      <h3 className="text-xs font-semibold tracking-wide text-[#001B55] uppercase">
+                        Periode Jabatan
+                      </h3>
+                      <p className="text-[11px] text-gray-500">
+                        Tanggal mulai & berakhir (opsional)
+                      </p>
+                    </div>
+                  </div>
+                  <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                    <div className="space-y-1.5">
+                      <Label className="text-[11px] text-gray-600">
+                        Tanggal Mulai
+                      </Label>
+                      <div className="relative">
+                        <Input
+                          type="date"
+                          value={addForm.startDate}
+                          onChange={(e) =>
                             setAddForm((s) => ({
                               ...s,
-                              sayapTypeId: v === "none" ? undefined : Number(v),
+                              startDate: e.target.value,
                             }))
                           }
-                        >
-                          <SelectTrigger className="h-10 mt-1">
-                            <SelectValue placeholder="Pilih sayap" />
-                          </SelectTrigger>
-                          <SelectContent className="max-h-48">
-                            <SelectItem value="none">
-                              <span className="text-gray-500">Tidak ada</span>
-                            </SelectItem>
-                            {sayapTypes.map((s) => (
-                              <SelectItem key={s.id} value={String(s.id)}>
-                                {s.name}
-                              </SelectItem>
-                            ))}
-                          </SelectContent>
-                        </Select>
+                          className="h-9 pr-8 text-sm"
+                        />
+                        <CalendarIcon className="absolute right-2 top-1/2 h-4 w-4 -translate-y-1/2 text-[#001B55]/40" />
                       </div>
-                    )}
-                  </div>
-                </div>
-
-                {/* Members Section */}
-                <div className="space-y-4">
-                  <div className="flex items-center gap-2 mb-3">
-                    <Users className="h-4 w-4 text-[#16A34A]" />
-                    <h3 className="text-sm font-semibold text-[#001B55] uppercase tracking-wide">
-                      Anggota (Opsional)
-                    </h3>
-                  </div>
-
-                  <div className="space-y-3">
-                    <div>
-                      <Label className="text-xs text-gray-600 mb-2 block">
-                        Cari dan pilih anggota
-                      </Label>
-                      <Input
-                        placeholder="Cari nama anggota..."
-                        value={memberSearch}
-                        onChange={(e) => setMemberSearch(e.target.value)}
-                        className="h-9 text-sm"
-                      />
                     </div>
+                    <div className="space-y-1.5">
+                      <Label className="text-[11px] text-gray-600">
+                        Tanggal Berakhir
+                      </Label>
+                      <div className="relative">
+                        <Input
+                          type="date"
+                          value={addForm.endDate}
+                          onChange={(e) =>
+                            setAddForm((s) => ({
+                              ...s,
+                              endDate: e.target.value,
+                            }))
+                          }
+                          className="h-9 pr-8 text-sm"
+                        />
+                        <CalendarIcon className="absolute right-2 top-1/2 h-4 w-4 -translate-y-1/2 text-[#001B55]/40" />
+                      </div>
+                    </div>
+                  </div>
+                </section>
 
-                    <div className="max-h-48 overflow-y-auto rounded-lg border border-gray-200 bg-gray-50/50">
+                {/* Anggota Terhubung */}
+                <section className="space-y-4">
+                  <div className="flex items-center gap-2">
+                    <div className="flex h-8 w-8 items-center justify-center rounded-md bg-emerald-500/10 text-emerald-600">
+                      <Users className="h-4 w-4" />
+                    </div>
+                    <div className="min-w-0">
+                      <h3 className="text-xs font-semibold tracking-wide text-[#001B55] uppercase">
+                        Anggota Terhubung
+                      </h3>
+                      <p className="text-[11px] text-gray-500">
+                        Pilih anggota terkait struktur ini
+                      </p>
+                    </div>
+                  </div>
+                  <div className="space-y-2">
+                    <Input
+                      placeholder="Cari nama anggota..."
+                      value={memberSearch}
+                      onChange={(e) => setMemberSearch(e.target.value)}
+                      className="h-9 text-sm"
+                    />
+                    <div className="max-h-44 overflow-y-auto rounded-md border border-gray-200 bg-white">
                       {loadingMembers ? (
-                        <div className="p-4 text-center text-sm text-gray-500">
-                          <div className="animate-pulse">Memuat anggota...</div>
+                        <div className="p-3 text-center text-xs text-gray-500">
+                          Memuat anggota...
                         </div>
                       ) : members.length === 0 ? (
-                        <div className="p-4 text-center text-sm text-gray-500">
+                        <div className="p-3 text-center text-xs text-gray-500">
                           {memberSearch
                             ? "Tidak ditemukan"
-                            : "Tidak ada anggota"}
+                            : "Belum ada data anggota"}
                         </div>
                       ) : (
                         <div className="divide-y divide-gray-100">
@@ -640,9 +707,8 @@ export default function ManageOrganizationPage() {
                               <label
                                 key={m.id}
                                 className={cn(
-                                  "flex items-center gap-3 p-3 cursor-pointer hover:bg-white transition-colors",
-                                  checked &&
-                                    "bg-white border-l-2 border-l-[#001B55]"
+                                  "flex items-center gap-3 px-3 py-2 cursor-pointer text-sm",
+                                  checked && "bg-white"
                                 )}
                               >
                                 <input
@@ -661,12 +727,12 @@ export default function ManageOrganizationPage() {
                                   className="h-4 w-4 rounded border-gray-300 text-[#001B55] focus:ring-[#001B55]"
                                 />
                                 <div className="flex-1 min-w-0">
-                                  <div className="text-sm font-medium text-gray-900 truncate">
+                                  <p className="truncate text-xs font-medium text-gray-800">
                                     {m.fullName}
-                                  </div>
-                                  <div className="text-xs text-gray-500 uppercase tracking-wide">
+                                  </p>
+                                  <p className="text-[10px] uppercase tracking-wide text-gray-500">
                                     {m.status || "active"}
-                                  </div>
+                                  </p>
                                 </div>
                               </label>
                             );
@@ -674,14 +740,12 @@ export default function ManageOrganizationPage() {
                         </div>
                       )}
                     </div>
-
-                    {/* Selected Members Summary */}
                     {addForm.memberIds.length > 0 && (
-                      <div className="mt-3">
-                        <div className="text-xs text-gray-600 mb-2">
+                      <div className="space-y-1">
+                        <p className="text-[11px] font-medium text-gray-600">
                           Dipilih ({addForm.memberIds.length})
-                        </div>
-                        <div className="flex flex-wrap gap-1">
+                        </p>
+                        <div className="flex flex-wrap gap-1.5">
                           {addForm.memberIds.map((id) => {
                             const found = members.find(
                               (m: MemberLookupItem) => m.id === id
@@ -689,7 +753,7 @@ export default function ManageOrganizationPage() {
                             return (
                               <span
                                 key={id}
-                                className="inline-flex items-center gap-1 text-xs bg-[#001B55] text-white px-2 py-1 rounded-md"
+                                className="inline-flex items-center gap-1.5 rounded-md bg-[#001B55] px-2 py-1 text-[10px] text-white shadow-sm"
                               >
                                 {found?.fullName || `ID:${id}`}
                                 <button
@@ -702,7 +766,7 @@ export default function ManageOrganizationPage() {
                                       ),
                                     }))
                                   }
-                                  className="ml-1 text-white/70 hover:text-white"
+                                  className="text-white/70 hover:text-white"
                                 >
                                   <X className="h-3 w-3" />
                                 </button>
@@ -713,18 +777,19 @@ export default function ManageOrganizationPage() {
                       </div>
                     )}
                   </div>
-                </div>
+                </section>
               </form>
             </div>
 
-            {/* Footer Actions */}
-            <DialogFooter className="pt-4 border-t border-gray-100">
-              <div className="flex gap-3 w-full">
+            {/* Footer */}
+            <DialogFooter className="shrink-0 border-t border-gray-200 bg-white/80 backdrop-blur px-5 py-4">
+              <div className="flex w-full gap-3">
                 <Button
                   type="button"
                   variant="outline"
-                  className="flex-1 h-10"
                   onClick={() => setOpenAdd(false)}
+                  className="h-9 flex-1 border-gray-300 text-gray-700 hover:bg-gray-50 text-sm"
+                  disabled={createMut.isPending}
                 >
                   Batal
                 </Button>
@@ -732,22 +797,24 @@ export default function ManageOrganizationPage() {
                   type="submit"
                   disabled={createMut.isPending}
                   onClick={() => {
-                    const form = document.querySelector("form");
+                    const form = document.querySelector(
+                      "#add-organization-scroll form"
+                    );
                     if (form) {
-                      const event = new Event("submit", {
+                      const evt = new Event("submit", {
                         bubbles: true,
                         cancelable: true,
                       });
-                      form.dispatchEvent(event);
+                      form.dispatchEvent(evt);
                     }
                   }}
-                  className="flex-1 h-10 bg-[#001B55] hover:bg-[#001B55]/90 text-white"
+                  className="h-9 flex-1 bg-[#001B55] hover:bg-[#001B55]/90 text-white text-sm"
                 >
                   {createMut.isPending ? (
-                    <div className="flex items-center gap-2">
-                      <div className="w-4 h-4 border-2 border-white/30 border-t-white rounded-full animate-spin" />
+                    <span className="flex items-center gap-2">
+                      <span className="h-3.5 w-3.5 animate-spin rounded-full border-2 border-white/40 border-t-white" />
                       Menyimpan...
-                    </div>
+                    </span>
                   ) : (
                     "Simpan Organisasi"
                   )}

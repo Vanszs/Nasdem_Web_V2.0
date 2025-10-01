@@ -41,6 +41,22 @@ function isSensitive(pathname: string) {
 export async function middleware(req: NextRequest) {
   const { pathname } = req.nextUrl;
 
+  // Protect admin pages (not API) - require login token
+  if (pathname.startsWith("/admin")) {
+    const hasAuthCookie = req.cookies.get("token");
+    if (!hasAuthCookie) {
+      const loginUrl = req.nextUrl.clone();
+      loginUrl.pathname = "/auth";
+      loginUrl.searchParams.set("redirect", pathname);
+      return NextResponse.redirect(loginUrl);
+    }
+  }
+
+  // Existing API handling
+  if (!pathname.startsWith("/api")) {
+    return NextResponse.next();
+  }
+
   // CORS / Origin Gate (skip entirely in development)
   if (!isDev) {
     const origin = req.headers.get("origin");

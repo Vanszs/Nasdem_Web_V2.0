@@ -3,13 +3,20 @@ import * as React from "react";
 import { Button } from "@/components/ui/button";
 import {
   DropdownMenu,
-  DropdownMenuTrigger,
   DropdownMenuContent,
   DropdownMenuItem,
   DropdownMenuSeparator,
+  DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
-import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription, DialogFooter } from "@/components/ui/dialog";
-import { Pencil, Trash2, MoreHorizontal } from "lucide-react";
+import {
+  Dialog,
+  DialogContent,
+  DialogDescription,
+  DialogFooter,
+  DialogHeader,
+  DialogTitle,
+} from "@/components/ui/dialog";
+import { MoreHorizontal, Pencil, Trash2 } from "lucide-react";
 import { EditOrganizationDialog } from "./EditOrganizationDialog";
 import { useOrganizationMutations } from "@/app/admin/organizations/hooks/useOrganizations";
 import type { StrukturItem } from "./OrganizationTable";
@@ -32,23 +39,43 @@ export function OrganizationActions({ item, regions, sayapTypes }: OrganizationA
     <>
       <DropdownMenu>
         <DropdownMenuTrigger asChild>
-          <Button variant="ghost" size="icon" className="h-8 w-8 text-[#001B55]">
-            <MoreHorizontal className="h-4 w-4" />
+          <Button
+            variant="ghost"
+            className="h-9 rounded-full border border-[#001B55]/20 bg-white/80 px-4 text-xs font-semibold uppercase tracking-wide text-[#001B55] shadow-sm transition-all hover:border-[#001B55]/40 hover:bg-white hover:shadow-md"
+          >
+            <MoreHorizontal className="mr-2 h-4 w-4" />
+            Aksi
           </Button>
         </DropdownMenuTrigger>
-        <DropdownMenuContent align="end" className="w-40">
-          <DropdownMenuItem onClick={() => setOpenEdit(true)} className="gap-2">
-            <Pencil className="h-4 w-4" />
-            Edit
+        <DropdownMenuContent
+          align="end"
+          className="w-56 rounded-2xl border border-[#001B55]/15 bg-white/95 p-2 shadow-2xl backdrop-blur"
+        >
+          <DropdownMenuItem
+            onClick={() => setOpenEdit(true)}
+            className="group gap-3 rounded-xl px-3 py-2 text-sm text-[#001B55] transition-colors hover:bg-[#001B55]/5 focus:bg-[#001B55]/5"
+          >
+            <span className="flex h-8 w-8 items-center justify-center rounded-full bg-[#001B55]/10 text-[#001B55] transition-colors group-hover:bg-[#001B55]/15">
+              <Pencil className="h-4 w-4" />
+            </span>
+            <span className="flex flex-col">
+              <span className="font-medium">Edit Struktur</span>
+              <span className="text-xs text-gray-500">Perbarui rincian organisasi</span>
+            </span>
           </DropdownMenuItem>
-          <DropdownMenuSeparator />
-            <DropdownMenuItem
-              onClick={() => setOpenDelete(true)}
-              className="gap-2 text-red-600 focus:text-red-600"
-            >
+          <DropdownMenuSeparator className="my-2 h-px bg-gradient-to-r from-transparent via-[#001B55]/20 to-transparent" />
+          <DropdownMenuItem
+            onClick={() => setOpenDelete(true)}
+            className="group gap-3 rounded-xl px-3 py-2 text-sm text-red-600 transition-colors hover:bg-red-50 focus:bg-red-50"
+          >
+            <span className="flex h-8 w-8 items-center justify-center rounded-full bg-red-50 text-red-500 transition-colors group-hover:bg-red-100">
               <Trash2 className="h-4 w-4" />
-              Hapus
-            </DropdownMenuItem>
+            </span>
+            <span className="flex flex-col">
+              <span className="font-medium">Hapus</span>
+              <span className="text-xs text-red-400">Hapus struktur ini secara permanen</span>
+            </span>
+          </DropdownMenuItem>
         </DropdownMenuContent>
       </DropdownMenu>
 
@@ -67,41 +94,55 @@ export function OrganizationActions({ item, regions, sayapTypes }: OrganizationA
 
       {/* Delete Confirmation */}
       <Dialog open={openDelete} onOpenChange={(o) => setOpenDelete(o)}>
-        <DialogContent className="sm:max-w-sm">
-          <DialogHeader>
-            <DialogTitle className="text-[#001B55]">Hapus Struktur?</DialogTitle>
-            <DialogDescription>
-              Tindakan ini tidak dapat dibatalkan. Data member tetap ada.
-            </DialogDescription>
-          </DialogHeader>
-          <div className="pt-2 space-y-2 text-sm">
-            <p>
-              Level: <span className="font-semibold">{item.level.toUpperCase()}</span>
-            </p>
-            <p>
-              Posisi: <span className="font-semibold">{item.position}</span>
-            </p>
+        <DialogContent className="sm:max-w-sm border-0 bg-white/95 backdrop-blur-xl shadow-2xl">
+          <div className="pointer-events-none absolute inset-0 rounded-2xl bg-gradient-to-br from-red-100/60 via-transparent to-red-200/40" />
+          <div className="relative space-y-4">
+            <DialogHeader className="space-y-3 text-center">
+              <div className="mx-auto flex h-14 w-14 items-center justify-center rounded-2xl bg-red-500 text-white shadow-lg">
+                <Trash2 className="h-6 w-6" />
+              </div>
+              <DialogTitle className="text-lg font-semibold text-red-700">
+                Hapus Struktur?
+              </DialogTitle>
+              <DialogDescription className="text-sm text-gray-600">
+                Tindakan ini tidak dapat dibatalkan. Data anggota tetap tersimpan.
+              </DialogDescription>
+            </DialogHeader>
+            <div className="space-y-2 rounded-xl bg-white/70 p-4 text-sm shadow-inner">
+              <p>
+                <span className="text-gray-500">Level:</span>{" "}
+                <span className="font-semibold text-[#001B55]">
+                  {item.level.toUpperCase()}
+                </span>
+              </p>
+              <p>
+                <span className="text-gray-500">Posisi:</span>{" "}
+                <span className="font-semibold text-[#001B55]">
+                  {item.position}
+                </span>
+              </p>
+            </div>
+            <DialogFooter className="gap-2 pt-2">
+              <Button
+                variant="outline"
+                onClick={() => setOpenDelete(false)}
+                className="flex-1 rounded-xl border-[#001B55]/20 text-[#001B55] hover:bg-[#001B55]/5"
+              >
+                Batal
+              </Button>
+              <Button
+                onClick={() =>
+                  deleteMut.mutate(item.id, {
+                    onSuccess: () => setOpenDelete(false),
+                  })
+                }
+                disabled={deleteMut.isPending}
+                className="flex-1 rounded-xl bg-gradient-to-r from-red-500 via-red-600 to-red-500 text-white shadow-lg hover:brightness-105"
+              >
+                {deleteMut.isPending ? "Menghapus..." : "Hapus"}
+              </Button>
+            </DialogFooter>
           </div>
-          <DialogFooter className="pt-4">
-            <Button
-              variant="outline"
-              onClick={() => setOpenDelete(false)}
-              className="border-[#001B55]/30"
-            >
-              Batal
-            </Button>
-            <Button
-              onClick={() =>
-                deleteMut.mutate(item.id, {
-                  onSuccess: () => setOpenDelete(false),
-                })
-              }
-              disabled={deleteMut.isPending}
-              className="bg-red-600 hover:bg-red-700"
-            >
-              {deleteMut.isPending ? "Menghapus..." : "Hapus"}
-            </Button>
-          </DialogFooter>
         </DialogContent>
       </Dialog>
     </>

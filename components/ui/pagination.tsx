@@ -130,69 +130,98 @@ export function SimplePagination({
   totalItems,
 }: SimplePaginationProps) {
   if (totalPages <= 1) return null;
-  const pages: number[] = [];
-  const window = 2;
-  const start = Math.max(1, page - window);
-  const end = Math.min(totalPages, page + window);
-  for (let i = start; i <= end; i++) pages.push(i);
+  const paginateTo = (nextPage: number) => {
+    if (nextPage < 1 || nextPage > totalPages || nextPage === page) return;
+    onChange(nextPage);
+  };
+
+  const buildPages = (): (number | "ellipsis")[] => {
+    if (totalPages <= 5) {
+      return Array.from({ length: totalPages }, (_, idx) => idx + 1);
+    }
+
+    const pages: (number | "ellipsis")[] = [1];
+    const siblings = 1;
+    const leftBound = Math.max(2, page - siblings);
+    const rightBound = Math.min(totalPages - 1, page + siblings);
+
+    if (leftBound > 2) {
+      pages.push("ellipsis");
+    }
+
+    for (let p = leftBound; p <= rightBound; p++) {
+      pages.push(p);
+    }
+
+    if (rightBound < totalPages - 1) {
+      pages.push("ellipsis");
+    }
+
+    pages.push(totalPages);
+    return pages;
+  };
+
+  const pages = buildPages();
   return (
-    <div className="flex flex-col md:flex-row md:items-center justify-between gap-4 p-4 bg-white rounded-xl border border-[#E5E7EB]">
+    <div className="flex flex-col gap-3 rounded-xl border border-[#E5E7EB] bg-white px-4 py-3 md:flex-row md:items-center md:justify-between">
       <div className="text-xs md:text-sm text-[#6B7280]">
-        Halaman <span className="font-semibold text-[#001B55]">{page}</span> /{" "}
-        {totalPages}
+        Halaman <span className="font-semibold text-[#001B55]">{page}</span> dari {totalPages}
         {typeof totalItems === "number" && (
-          <span className="ml-2">({totalItems} data)</span>
+          <span className="ml-2 text-xs md:text-sm">({totalItems} data)</span>
         )}
       </div>
-      <div className="flex items-center gap-2">
-        <Button
-          variant="outline"
-          size="sm"
-          disabled={page === 1}
-          onClick={() => onChange(page - 1)}
-        >
-          Prev
-        </Button>
-        {start > 1 && (
-          <>
-            <Button variant="outline" size="sm" onClick={() => onChange(1)}>
-              1
-            </Button>
-            {start > 2 && <span className="text-xs px-1">…</span>}
-          </>
-        )}
-        {pages.map((p) => (
-          <Button
-            key={p}
-            size="sm"
-            variant={p === page ? "default" : "outline"}
-            onClick={() => onChange(p)}
-            className={p === page ? "bg-[#001B55]" : ""}
-          >
-            {p}
-          </Button>
-        ))}
-        {end < totalPages && (
-          <>
-            {end < totalPages - 1 && <span className="text-xs px-1">…</span>}
-            <Button
-              variant="outline"
-              size="sm"
-              onClick={() => onChange(totalPages)}
-            >
-              {totalPages}
-            </Button>
-          </>
-        )}
-        <Button
-          variant="outline"
-          size="sm"
-          disabled={page === totalPages}
-          onClick={() => onChange(page + 1)}
-        >
-          Next
-        </Button>
-      </div>
+      <Pagination className="w-full md:w-auto">
+        <PaginationContent>
+          <PaginationItem>
+            <PaginationPrevious
+              href="#"
+              onClick={(event) => {
+                event.preventDefault();
+                paginateTo(page - 1);
+              }}
+              className={cn(
+                "rounded-lg",
+                page === 1 && "pointer-events-none opacity-40"
+              )}
+            />
+          </PaginationItem>
+          {pages.map((p, idx) => (
+            <PaginationItem key={`${p}-${idx}`}>
+              {p === "ellipsis" ? (
+                <PaginationEllipsis />
+              ) : (
+                <PaginationLink
+                  href="#"
+                  isActive={p === page}
+                  onClick={(event) => {
+                    event.preventDefault();
+                    paginateTo(p);
+                  }}
+                  className={cn(
+                    "rounded-lg",
+                    p === page && "border-[#001B55] text-[#001B55]"
+                  )}
+                >
+                  {p}
+                </PaginationLink>
+              )}
+            </PaginationItem>
+          ))}
+          <PaginationItem>
+            <PaginationNext
+              href="#"
+              onClick={(event) => {
+                event.preventDefault();
+                paginateTo(page + 1);
+              }}
+              className={cn(
+                "rounded-lg",
+                page === totalPages && "pointer-events-none opacity-40"
+              )}
+            />
+          </PaginationItem>
+        </PaginationContent>
+      </Pagination>
     </div>
   );
 }

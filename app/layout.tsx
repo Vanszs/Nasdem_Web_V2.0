@@ -16,12 +16,17 @@ export default function RootLayout({
   children: React.ReactNode;
 }>) {
   return (
-    <html lang="en" className={`${GeistSans.variable} ${GeistMono.variable}`}>
-      <Providers>
-        <body style={{ fontFamily: GeistSans.style.fontFamily }}>
-          {children}
-        </body>
-      </Providers>
+    <html
+      lang="en"
+      className={`${GeistSans.variable} ${GeistMono.variable}`}
+      suppressHydrationWarning
+    >
+      <body
+        style={{ fontFamily: GeistSans.style.fontFamily }}
+        suppressHydrationWarning
+      >
+        <Providers>{children}</Providers>
+      </body>
     </html>
   );
 }
