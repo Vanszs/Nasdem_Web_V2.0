@@ -55,7 +55,7 @@ export function KPICard({
     <Card
       className={cn(
         "group relative overflow-hidden transition-all duration-300 hover:scale-[1.01]",
-        "shadow-md hover:shadow-lg bg-white backdrop-blur-sm",
+        "shadow-lg hover:shadow-xl bg-white backdrop-blur-sm border-2 border-gray-200/80 hover:border-[#FF9C04]/30",
         className
       )}
     >

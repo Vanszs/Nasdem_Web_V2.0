@@ -146,8 +146,7 @@ export function RecentActivity() {
         return (
           <div
             key={activity.id}
-            className="group relative p-4 rounded-xl border bg-white hover:border-[#FF9C04]/30 hover:shadow-md transition-all duration-300"
-            style={{ borderColor: "rgba(0,0,0,0.08)" }}
+            className="group relative p-4 rounded-xl border-2 border-gray-200/80 bg-white hover:border-[#FF9C04]/40 hover:shadow-lg transition-all duration-300"
           >
             {/* Priority indicator */}
             <div
@@ -227,8 +226,7 @@ export function RecentActivity() {
 
       {/* View All Button */}
       <div
-        className="pt-4 text-center border-t"
-        style={{ borderColor: "rgba(0,0,0,0.08)" }}
+        className="pt-4 text-center border-t-2 border-gray-200/80"
       >
         <button className="text-sm text-[#001B55] hover:text-[#FF9C04] font-medium transition-colors duration-300 hover:underline px-4 py-2 rounded-lg hover:bg-[#FF9C04]/10">
           Lihat semua aktivitas →

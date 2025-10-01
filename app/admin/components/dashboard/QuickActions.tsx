@@ -52,10 +52,10 @@ export function QuickActions() {
         <SafeLink key={action.title} to={action.href}>
           <div
             className={cn(
-              "group/item relative overflow-hidden rounded-2xl p-4 transition-all duration-300 hover:-translate-y-0.5 hover:shadow-lg cursor-pointer",
+              "group/item relative overflow-hidden rounded-2xl p-4 transition-all duration-300 hover:-translate-y-0.5 hover:shadow-xl cursor-pointer",
               "bg-gradient-to-br",
               action.gradient,
-              "border-2 border-gray-200/70 hover:border-[#FF9C04]/40"
+              "border-2 border-gray-300/90 hover:border-[#FF9C04]/60 shadow-md hover:shadow-lg"
             )}
           >
             {/* Enhanced Hover Effect Background */}
@@ -95,7 +95,7 @@ export function QuickActions() {
       ))}
 
       {/* Enhanced Add More Button - Non-glossy */}
-      <div className="pt-4 border-t border-gray-200/60">
+      <div className="pt-4 border-t-2 border-gray-300/80">
         <Button
           variant="outline"
           className="w-full h-12 rounded-2xl bg-white border-2 border-gray-300 hover:border-[#FF9C04] hover:bg-[#FF9C04]/5 text-[#001B55] hover:text-[#FF9C04] transition-all duration-300 group/add font-medium"
