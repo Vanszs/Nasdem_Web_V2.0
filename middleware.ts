@@ -3,7 +3,7 @@ import type { NextRequest } from "next/server";
 import { rateLimit } from "@/lib/rate-limit";
 
 export const config = {
-  matcher: ["/api/:path*"],
+  matcher: ["/api/:path*", "/admin", "/admin/:path*"],
 };
 
 const isDev = process.env.NODE_ENV === "development";
