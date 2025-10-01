@@ -90,6 +90,12 @@ if (roleError) return roleError;
 - `Party` → `Caleg` → `DprdCalegResult` (candidate results)
 
 ## 🎨 UI/UX Conventions
+## MODERN UI/UX STYLE — KEY DIRECTIVES
+- **Clean, flat, and futuristic**, not glossy or heavy 3D.
+- **Creative geometry**: rounded corners, pill-shaped active tabs, softly curved section dividers.
+- **Micro-interactions**: gentle hover, animated bubble tab transitions, subtle motion.
+- **Generous white space** and balanced negative space for an uncluttered, premium feel.
+
 
 ### Component Architecture
 - Use Shadcn/ui components from `components/ui/`
