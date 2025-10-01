@@ -1,76 +1,67 @@
 "use client";
-import { useState, useRef, useEffect } from "react";
+import { useState, useEffect } from "react";
 import { usePathname } from "next/navigation";
 import {
   LayoutDashboard,
   FileText,
   Image,
   Users,
-  ChevronDown,
-  Menu,
-  X,
-  Sparkles,
-  UserPlus,
-  Monitor,
+  Plus,
   BarChart3,
+  ChevronRight,
+  ChevronDown,
+  Monitor,
   Globe,
   Network,
   FolderKanban,
+  UserPlus,
+  Sparkles,
 } from "lucide-react";
 
 import { SafeNavLink } from "./SafeNavLink";
-import { Button } from "@/components/ui/button";
 
 const menuItems = [
   {
     title: "Dashboard",
     url: "/admin",
     icon: LayoutDashboard,
-    badge: "Home",
   },
   {
     title: "CMS",
     icon: Monitor,
     isCollapsible: true,
-    badge: "Content",
     subItems: [
       {
         title: "Berita",
         url: "/admin/news",
         icon: FileText,
-        description: "Kelola berita dan artikel",
       },
       {
         title: "Galeri",
         url: "/admin/gallery",
         icon: Image,
-        description: "Kelola foto dan media",
       },
       {
         title: "Landing Page",
         url: "/admin/landing",
         icon: Globe,
-        description: "Kelola halaman utama",
       },
     ],
   },
   {
     title: "Struktur Organisasi",
-    icon: Monitor,
+    icon: Network,
     isCollapsible: true,
-    badge: "Organization",
     subItems: [
       {
         title: "Organisasi",
         url: "/admin/organizations",
         icon: Network,
-        description: "Kelola struktur partai",
       },
       {
         title: "Kelola Struktur",
         url: "/admin/organizations/manage",
         icon: FolderKanban,
-        description: "Kelola foto dan media",
       },
     ],
   },
@@ -78,13 +69,11 @@ const menuItems = [
     title: "User",
     url: "/admin/user",
     icon: UserPlus,
-    badge: "Management",
   },
   {
     title: "Statistik Pemilu",
     url: "/admin/statistik-pemilu",
     icon: BarChart3,
-    badge: "Analytics",
   },
 ];
 
@@ -103,7 +92,6 @@ export function ModernSidebar({
   const getInitialOpenGroups = () => {
     const groups: string[] = [];
 
-    // Check each menu item to see if current path matches any of its subitems
     menuItems.forEach((item) => {
       if (item.isCollapsible && item.subItems) {
         const hasActiveSubItem = item.subItems.some(
@@ -117,22 +105,15 @@ export function ModernSidebar({
       }
     });
 
-    // Always keep "CMS" open by default if no other groups are active
-    if (groups.length === 0) {
-      groups.push("CMS");
+    if (groups.length === 0 && menuItems[1]?.isCollapsible) {
+      groups.push(menuItems[1].title);
     }
 
     return groups;
   };
 
-  const [openGroups, setOpenGroups] = useState<string[]>(
-    getInitialOpenGroups()
-  );
-  const [mousePos, setMousePos] = useState({ x: 0, y: 0 });
-  const [hoveredItem, setHoveredItem] = useState<string | null>(null);
-  const sidebarRef = useRef<HTMLDivElement>(null);
+  const [openGroups, setOpenGroups] = useState<string[]>(getInitialOpenGroups());
 
-  // Update open groups when path changes
   useEffect(() => {
     const newOpenGroups = getInitialOpenGroups();
     setOpenGroups(newOpenGroups);
@@ -148,245 +129,430 @@ export function ModernSidebar({
     );
   };
 
-  // Mouse tracking for interactive effects
-  useEffect(() => {
-    const handleMouseMove = (e: MouseEvent) => {
-      if (sidebarRef.current) {
-        const rect = sidebarRef.current.getBoundingClientRect();
-        setMousePos({
-          x: e.clientX - rect.left,
-          y: e.clientY - rect.top,
-        });
-      }
-    };
-
-    if (sidebarRef.current) {
-      sidebarRef.current.addEventListener("mousemove", handleMouseMove);
-    }
-
-    return () => {
-      if (sidebarRef.current) {
-        sidebarRef.current.removeEventListener("mousemove", handleMouseMove);
-      }
-    };
-  }, []);
-
-  const getNavClassName = ({ isActive }: { isActive: boolean }) =>
-    `group relative flex items-center gap-3 px-4 py-3 mx-3 rounded-smooth font-medium transition-all duration-500 ease-[cubic-bezier(0.16,1,0.3,1)] overflow-hidden ${
-      isActive
-        ? "text-white/85 bg-white/[0.12] text-white scale-[1.01] shadow-lg shadow-white/10"
-        : "text-white/85 hover:bg-white/[0.12] hover:text-white hover:scale-[1.01] hover:shadow-lg hover:shadow-white/10"
-    }`;
-
   return (
     <div
-      ref={sidebarRef}
-      className={`relative h-screen flex flex-col transition-all duration-700 ease-[cubic-bezier(0.16,1,0.3,1)] ${
+      className={`relative h-screen flex flex-col transition-all duration-500 ease-in-out ${
         isCollapsed ? "w-20" : "w-80"
-      } backdrop-blur-xl border-r-4 border-white/20 hover:border-white/30 transition-border duration-300 overflow-hidden shadow-2xl`}
+      }`}
       style={{
-        background: `
-          radial-gradient(circle at ${mousePos.x}px ${mousePos.y}px, rgba(255,255,255,0.05) 0%, transparent 50%),
-          linear-gradient(135deg, hsl(218, 100%, 17%) 0%, hsl(218, 100%, 17%) 40%, hsl(218, 100%, 15%) 100%)
-        `,
+        background: "linear-gradient(135deg, rgba(0, 27, 85, 0.95) 0%, rgba(0, 27, 85, 0.98) 100%)",
+        boxShadow: "0px 48px 48px -24px rgba(0, 27, 85, 0.4), 0px 0px 80px -20px rgba(255, 156, 4, 0.2)",
+        backdropFilter: "blur(60px)",
+        borderTopRightRadius: "24px",
+        borderBottomRightRadius: "24px",
+        borderTopLeftRadius: "0px",
+        borderBottomLeftRadius: "0px",
       }}
     >
-      {/* Header with Glass Effect */}
+      {/* Header with Logo */}
       <div className="relative p-6 border-b border-white/10">
-        <div className="relative flex items-center justify-between">
-          <div className="flex items-center gap-4">
+        {/* Logo & Brand */}
+        <div className={`flex items-center gap-4 ${isCollapsed ? "justify-center" : "justify-between"}`}>
+          <div className={`flex items-center gap-4 ${isCollapsed ? "flex-col" : ""}`}>
             <div
-              className="relative w-12 h-12 rounded-smooth flex items-center justify-center shadow-2xl"
+              className="relative w-12 h-12 rounded-2xl flex items-center justify-center shadow-2xl"
               style={{
-                background:
-                  "linear-gradient(135deg, hsl(33, 100%, 51%) 0%, hsl(38, 95%, 55%) 100%)",
-                boxShadow: "0 8px 32px hsla(33, 100%, 51%, 0.4)",
+                background: "linear-gradient(135deg, #FF9C04 0%, #FFB04A 100%)",
+                boxShadow: "0 8px 32px rgba(255, 156, 4, 0.4)",
               }}
             >
               <Sparkles className="text-white w-6 h-6 z-10" />
             </div>
             {!isCollapsed && (
-              <div className="space-y-1 transition-all duration-500">
-                <h2 className="font-bold text-white text-xl tracking-tight bg-gradient-to-r from-white to-white/80 bg-clip-text">
+              <div className="space-y-1">
+                <h2
+                  className="font-bold text-white text-xl tracking-tight"
+                  style={{
+                    textShadow: "0px 0px 12px rgba(255, 255, 255, 0.8)",
+                  }}
+                >
                   NasDem
                 </h2>
-                <p className="text-white/70 text-sm font-medium flex items-center gap-1">
-                  <span className="w-2 h-2 bg-green-400 rounded-full animate-pulse"></span>
+                <p className="text-white/70 text-xs font-medium flex items-center gap-1.5">
+                  <span className="w-2 h-2 bg-[#53C22B] rounded-full animate-pulse"></span>
                   Kabupaten Sidoarjo
                 </p>
               </div>
             )}
           </div>
-          {onToggle && (
-            <Button
-              variant="ghost"
-              size="icon"
+          
+          {/* Toggle Button */}
+          {!isCollapsed && (
+            <button
               onClick={onToggle}
-              className="text-white/80 hover:text-white hover:bg-white/10 h-10 w-10 rounded-smooth transition-all duration-300 hover:scale-110"
+              className="p-2 rounded-full hover:bg-white/10 transition-colors"
             >
-              <div className="transition-transform duration-300">
-                {isCollapsed ? (
-                  <Menu className="h-5 w-5" />
-                ) : (
-                  <X className="h-5 w-5" />
-                )}
-              </div>
-            </Button>
+              <ChevronRight className="w-4 h-4 text-white/60 rotate-180" />
+            </button>
           )}
         </div>
       </div>
 
-      {/* Navigation with Enhanced Animations and No Scrollbar */}
+      {/* Line Separator */}
       <div
-        className="flex-1 overflow-y-auto overflow-x-hidden px-4 pb-4 pt-1 space-y-2 min-h-0 scrollbar-hide"
+        className="mx-0 my-0"
         style={{
-          scrollbarWidth: "none",
-          msOverflowStyle: "none",
+          height: "1px",
+          background:
+            "radial-gradient(50% 50% at 50% 50%, rgba(255, 156, 4, 0.3) 0%, rgba(255, 156, 4, 0) 100%)",
+        }}
+      />
+
+      {/* Main Navigation */}
+      <div 
+        className={`py-4 flex-1 overflow-y-auto space-y-1 scrollbar-hide transition-all duration-500 ${
+          isCollapsed ? "px-2" : "px-4"
+        }`}
+        style={{
+          scrollbarWidth: 'none',
+          msOverflowStyle: 'none',
         }}
       >
-        <style jsx>{`
-          div::-webkit-scrollbar {
+        <style jsx global>{`
+          .scrollbar-hide::-webkit-scrollbar {
             display: none !important;
-            width: 0 !important;
+            width: 0px !important;
+            height: 0px !important;
+          }
+          .scrollbar-hide {
+            -ms-overflow-style: none !important;
+            scrollbar-width: none !important;
           }
         `}</style>
+
+        {/* Main Menu Title */}
+        {!isCollapsed && (
+          <div className="px-3 py-2 flex items-center">
+            <span
+              className="text-[10px] text-white/50 uppercase tracking-widest font-semibold"
+              style={{ letterSpacing: "0.05em" }}
+            >
+              Main Menu
+            </span>
+          </div>
+        )}
+
+        {/* Menu Items */}
         <div className="space-y-1">
           {menuItems.map((item, index) => (
-            <div
-              key={item.title}
-              className="relative"
-              style={{
-                animationDelay: `${index * 100}ms`,
-              }}
-            >
+            <div key={item.title} className="relative group/item">
               {item.isCollapsible ? (
                 <div className="relative">
                   <button
-                    onClick={() => toggleGroup(item.title)}
-                    onMouseEnter={() => setHoveredItem(item.title)}
-                    onMouseLeave={() => setHoveredItem(null)}
-                    className={`w-full group relative flex items-center gap-3 px-4 py-3 mx-3 rounded-smooth font-medium transition-all duration-500 ease-[cubic-bezier(0.16,1,0.3,1)] overflow-hidden ${
+                    onClick={() => !isCollapsed && toggleGroup(item.title)}
+                    className={`w-full group relative flex items-center ${
+                      isCollapsed ? "justify-center px-0" : "gap-3 px-4"
+                    } py-3 rounded-2xl font-medium transition-all duration-300 ${
                       isGroupActive(item.subItems)
-                        ? "bg-white/[0.12] text-white scale-[1.01] shadow-lg shadow-white/10"
-                        : "text-white/85 hover:bg-white/[0.12] hover:text-white hover:scale-[1.01]"
+                        ? "bg-[#FF9C04]/10 text-white shadow-lg"
+                        : "text-white/70 hover:bg-white/5 hover:text-white"
                     }`}
                   >
-                    <div className="relative z-10 flex items-center gap-3 w-full">
-                      <item.icon className="h-5 w-5 flex-shrink-0 transition-all duration-300 group-hover:scale-110" />
+                    {/* Active Indicator */}
+                    {isGroupActive(item.subItems) && !isCollapsed && (
+                      <div
+                        className="absolute left-0 top-1/2 -translate-y-1/2 w-1 h-8 rounded-r-full"
+                        style={{
+                          background: "linear-gradient(180deg, #FF9C04 0%, #FFB04A 100%)",
+                          boxShadow: "0px 0px 12px rgba(255, 156, 4, 0.6)",
+                        }}
+                      />
+                    )}
+
+                    {/* Glow Effect */}
+                    {isGroupActive(item.subItems) && (
+                      <div
+                        className="absolute inset-0 pointer-events-none rounded-2xl"
+                        style={{
+                          background:
+                            "radial-gradient(50% 50% at 50% 50%, rgba(255, 156, 4, 0.15) 0%, rgba(255, 156, 4, 0) 100%)",
+                        }}
+                      />
+                    )}
+
+                    <div className={`relative z-10 flex items-center ${isCollapsed ? "" : "gap-3 w-full"}`}>
+                      <item.icon
+                        className={`h-5 w-5 flex-shrink-0 transition-all duration-300 ${
+                          isGroupActive(item.subItems)
+                            ? "text-[#FF9C04]"
+                            : "text-white/70 group-hover:text-white"
+                        }`}
+                        style={{
+                          filter: isGroupActive(item.subItems)
+                            ? "drop-shadow(0px 0px 8px rgba(255, 156, 4, 0.5))"
+                            : "none",
+                        }}
+                      />
                       {!isCollapsed && (
                         <>
-                          <div className="flex-1 flex flex-col items-start">
-                            <span className="font-semibold text-sm">
-                              {item.title}
-                            </span>
-                            <span className="text-xs text-white/70 group-hover:text-white/80">
-                              {item.badge}
-                            </span>
-                          </div>
+                          <span
+                            className={`flex-1 text-left text-sm font-semibold ${
+                              isGroupActive(item.subItems)
+                                ? "text-white"
+                                : "group-hover:text-white"
+                            }`}
+                            style={{
+                              textShadow: isGroupActive(item.subItems)
+                                ? "0px 0px 12px rgba(255, 255, 255, 0.4)"
+                                : "none",
+                            }}
+                          >
+                            {item.title}
+                          </span>
                           <ChevronDown
-                            className={`h-4 w-4 text-white/70 group-hover:text-white transition-all duration-500 ease-[cubic-bezier(0.16,1,0.3,1)] ${
-                              openGroups.includes(item.title)
-                                ? "rotate-180"
-                                : ""
-                            } group-hover:scale-110`}
+                            className={`h-4 w-4 transition-transform duration-500 ${
+                              openGroups.includes(item.title) ? "rotate-180" : ""
+                            } ${
+                              isGroupActive(item.subItems)
+                                ? "text-[#FF9C04]"
+                                : "text-white/50 group-hover:text-white/70"
+                            }`}
                           />
                         </>
                       )}
                     </div>
-
-                    {/* Active indicator */}
-                    {isGroupActive(item.subItems) && (
-                      <div className="absolute left-0 top-1/2 transform -translate-y-1/2 w-1 h-6 bg-white/80 rounded-r-full" />
-                    )}
                   </button>
+                  
+                  {/* Tooltip for collapsed state */}
+                  {isCollapsed && (
+                    <div className="absolute left-full ml-2 top-1/2 -translate-y-1/2 px-3 py-2 bg-[#001B55] text-white text-sm font-medium rounded-lg shadow-xl opacity-0 invisible group-hover/item:opacity-100 group-hover/item:visible transition-all duration-200 whitespace-nowrap z-50 pointer-events-none">
+                      {item.title}
+                      <div className="absolute right-full top-1/2 -translate-y-1/2 border-4 border-transparent border-r-[#001B55]"></div>
+                    </div>
+                  )}
 
+                  {/* Submenu */}
                   {!isCollapsed && openGroups.includes(item.title) && (
-                    <div className="mt-2 ml-4 space-y-1 animate-in slide-in-from-top-2 duration-300">
-                      {item.subItems?.map((subItem, subIndex) => (
-                        <SafeNavLink
-                          key={subItem.url}
-                          to={subItem.url}
-                          className={({ isActive }) =>
-                            `group relative flex items-center gap-3 px-6 py-3 mx-2 rounded-smooth transition-all duration-300 ${
-                              isActive
-                                ? "bg-white/[0.12] text-white"
-                                : "text-white/80 hover:bg-white/10 hover:text-white"
-                            }`
-                          }
-                        >
-                          <div className="w-6 h-[2px] bg-white/60 rounded-full group-hover:bg-white/80 transition-all duration-300" />
-                          <subItem.icon className="h-4 w-4 flex-shrink-0 text-white/80 group-hover:text-white transition-all duration-300 group-hover:scale-110" />
-                          <div className="flex flex-col">
-                            <span className="text-sm font-medium">
+                    <div className="ml-8 mt-1 mb-2 space-y-0.5 relative animate-in slide-in-from-top-2 duration-300">
+                      {/* Vertical line connector */}
+                      <div
+                        className="absolute left-0 top-0 bottom-0 w-px"
+                        style={{
+                          background: "rgba(255, 156, 4, 0.2)",
+                        }}
+                      />
+
+                      {item.subItems?.map((subItem) => {
+                        const SubIcon = subItem.icon;
+                        const subItemActive = isActive(subItem.url);
+                        return (
+                          <SafeNavLink
+                            key={subItem.url}
+                            to={subItem.url}
+                            className={`group relative flex items-center gap-3 px-4 py-2.5 rounded-xl transition-all duration-300 ${
+                              subItemActive
+                                ? "bg-[#FF9C04]/20 text-white"
+                                : "text-white/60 hover:bg-white/5 hover:text-white"
+                            }`}
+                          >
+                            {/* Connection Dot */}
+                            <div
+                              className={`w-2 h-2 rounded-full transition-all duration-300 ${
+                                subItemActive ? "bg-[#FF9C04]" : "bg-white/30"
+                              }`}
+                              style={{
+                                boxShadow: subItemActive
+                                  ? "0px 0px 8px rgba(255, 156, 4, 0.6)"
+                                  : "none",
+                              }}
+                            />
+
+                            <SubIcon
+                              className={`h-4 w-4 flex-shrink-0 transition-all duration-300 ${
+                                subItemActive
+                                  ? "text-[#FF9C04]"
+                                  : "text-white/50 group-hover:text-white/70"
+                              }`}
+                            />
+
+                            <span
+                              className={`text-sm font-medium ${
+                                subItemActive ? "text-white" : "group-hover:text-white"
+                              }`}
+                            >
                               {subItem.title}
                             </span>
-                            <span className="text-xs text-white/60 group-hover:text-white/70">
-                              {subItem.description}
-                            </span>
-                          </div>
-                        </SafeNavLink>
-                      ))}
+
+                            {/* Active Glow */}
+                            {subItemActive && (
+                              <div
+                                className="absolute inset-0 pointer-events-none rounded-xl"
+                                style={{
+                                  background:
+                                    "radial-gradient(50% 50% at 50% 50%, rgba(255, 156, 4, 0.1) 0%, rgba(255, 156, 4, 0) 100%)",
+                                }}
+                              />
+                            )}
+                          </SafeNavLink>
+                        );
+                      })}
                     </div>
                   )}
                 </div>
               ) : (
-                <SafeNavLink
-                  to={item.url ?? "#"}
-                  className={({ isActive }) => getNavClassName({ isActive })}
-                >
-                  <div className="relative z-10 flex items-center gap-3 w-full">
-                    <item.icon className="h-5 w-5 flex-shrink-0 text-white/90 group-hover:text-white transition-all duration-300 group-hover:scale-110" />
-                    {!isCollapsed && (
-                      <div className="flex-1 flex flex-col items-start">
-                        <span className="font-semibold text-sm">
+                <>
+                  <SafeNavLink
+                    to={item.url ?? "#"}
+                    className={`group relative flex items-center ${
+                      isCollapsed ? "justify-center px-0" : "gap-3 px-4"
+                    } py-3 rounded-2xl font-medium transition-all duration-300 ${
+                      isActive(item.url ?? "")
+                        ? "bg-[#FF9C04]/10 text-white shadow-lg"
+                        : "text-white/70 hover:bg-white/5 hover:text-white"
+                    }`}
+                  >
+                    {/* Active Indicator */}
+                    {isActive(item.url ?? "") && !isCollapsed && (
+                      <div
+                        className="absolute left-0 top-1/2 -translate-y-1/2 w-1 h-8 rounded-r-full"
+                        style={{
+                          background:
+                            "linear-gradient(180deg, #FF9C04 0%, #FFB04A 100%)",
+                          boxShadow: "0px 0px 12px rgba(255, 156, 4, 0.6)",
+                        }}
+                      />
+                    )}
+
+                    {/* Glow Effect */}
+                    {isActive(item.url ?? "") && (
+                      <div
+                        className="absolute inset-0 pointer-events-none rounded-2xl"
+                        style={{
+                          background:
+                            "radial-gradient(50% 50% at 50% 50%, rgba(255, 156, 4, 0.15) 0%, rgba(255, 156, 4, 0) 100%)",
+                        }}
+                      />
+                    )}
+
+                    <div className={`relative z-10 flex items-center ${isCollapsed ? "" : "gap-3 w-full"}`}>
+                      <item.icon
+                        className={`h-5 w-5 flex-shrink-0 transition-all duration-300 ${
+                          isActive(item.url ?? "")
+                            ? "text-[#FF9C04]"
+                            : "text-white/70 group-hover:text-white"
+                        }`}
+                        style={{
+                          filter: isActive(item.url ?? "")
+                            ? "drop-shadow(0px 0px 8px rgba(255, 156, 4, 0.5))"
+                            : "none",
+                        }}
+                      />
+                      {!isCollapsed && (
+                        <span
+                          className={`flex-1 text-left text-sm font-semibold ${
+                            isActive(item.url ?? "") ? "text-white" : "group-hover:text-white"
+                          }`}
+                          style={{
+                            textShadow: isActive(item.url ?? "")
+                              ? "0px 0px 12px rgba(255, 255, 255, 0.4)"
+                              : "none",
+                          }}
+                        >
                           {item.title}
                         </span>
-                        <span className="text-xs text-white/70 group-hover:text-white/80">
-                          {item.badge}
-                        </span>
-                      </div>
-                    )}
-                  </div>
-
-                  {/* Active indicator */}
-                  {isActive(item.url ?? "") && (
-                    <div className="absolute left-0 top-1/2 transform -translate-y-1/2 w-1 h-6 bg-white/80 rounded-r-full" />
+                      )}
+                    </div>
+                  </SafeNavLink>
+                  
+                  {/* Tooltip for collapsed state */}
+                  {isCollapsed && (
+                    <div className="absolute left-full ml-2 top-1/2 -translate-y-1/2 px-3 py-2 bg-[#001B55] text-white text-sm font-medium rounded-lg shadow-xl opacity-0 invisible group-hover/item:opacity-100 group-hover/item:visible transition-all duration-200 whitespace-nowrap z-50 pointer-events-none">
+                      {item.title}
+                      <div className="absolute right-full top-1/2 -translate-y-1/2 border-4 border-transparent border-r-[#001B55]"></div>
+                    </div>
                   )}
-                </SafeNavLink>
+                </>
               )}
             </div>
           ))}
         </div>
       </div>
 
-      {/* Bottom Glass Overlay with Status - Fixed Position */}
-      <div className="relative p-4 border-t border-white/10 flex-shrink-0 mt-auto">
-        <div className="absolute inset-0 bg-gradient-to-t from-black/20 via-transparent to-transparent" />
-        {!isCollapsed && (
-          <div className="relative flex items-center gap-3 text-white/60 text-xs">
-            <div className="w-2 h-2 bg-green-400 rounded-full animate-pulse" />
-            <span className="flex-1">System Online</span>
-            <span className="text-white/40">v2.1.0</span>
-          </div>
-        )}
-        {isCollapsed && (
-          <div className="relative flex justify-center">
-            <div className="w-2 h-2 bg-green-400 rounded-full animate-pulse" />
-          </div>
-        )}
-      </div>
+      {/* Line Separator */}
+      <div
+        className="mx-0 my-0"
+        style={{
+          height: "1px",
+          background:
+            "radial-gradient(50% 50% at 50% 50%, rgba(255, 156, 4, 0.3) 0%, rgba(255, 156, 4, 0) 100%)",
+        }}
+      />
 
-      {/* Tooltip for collapsed state */}
-      {isCollapsed && hoveredItem && (
+      {/* Promo Block */}
+      {!isCollapsed && (
         <div
-          className="fixed left-24 bg-gray-900 text-white px-3 py-2 rounded-smooth shadow-xl z-50 pointer-events-none transition-all duration-200"
+          className="mx-5 mb-5 mt-5 p-5 rounded-2xl flex flex-col gap-4"
           style={{
-            top: `${mousePos.y - 20}px`,
-            opacity: hoveredItem ? 1 : 0,
+            background:
+              "linear-gradient(135deg, rgba(255, 156, 4, 0.1) 0%, rgba(0, 27, 85, 0.2) 100%)",
+            boxShadow: "0px 20px 40px -12px rgba(255, 156, 4, 0.3)",
+            borderRadius: "20px",
+            border: "1px solid rgba(255, 156, 4, 0.2)",
           }}
         >
-          {hoveredItem}
+          <div className="space-y-2">
+            <h4
+              className="text-sm text-white font-bold text-center"
+              style={{
+                textShadow: "0px 0px 12px rgba(255, 255, 255, 0.4)",
+              }}
+            >
+              Quick Actions
+            </h4>
+            <p className="text-[11px] text-white/70 text-center leading-relaxed">
+              Kelola konten dan data partai dengan mudah
+            </p>
+          </div>
+
+          <SafeNavLink to="/admin/news/create">
+            <button
+              className="w-full flex items-center justify-center gap-2 px-5 py-3 rounded-xl font-semibold text-sm text-white transition-all hover:scale-105 active:scale-95 hover:shadow-xl"
+              style={{
+                background: "linear-gradient(135deg, #FF9C04 0%, #FFB04A 100%)",
+                boxShadow: "0px 8px 24px rgba(255, 156, 4, 0.4)",
+              }}
+            >
+              <div className="w-5 h-5 rounded-full bg-white/20 flex items-center justify-center">
+                <Plus className="w-3.5 h-3.5" />
+              </div>
+              <span>Buat Konten Baru</span>
+            </button>
+          </SafeNavLink>
         </div>
+      )}
+
+      {/* Collapsed state: Add Content Button at bottom */}
+      {isCollapsed && (
+        <div className="p-4 flex justify-center">
+          <SafeNavLink to="/admin/news/create">
+            <button
+              className="w-12 h-12 rounded-xl flex items-center justify-center transition-all hover:scale-110 active:scale-95"
+              style={{
+                background: "linear-gradient(135deg, #FF9C04 0%, #FFB04A 100%)",
+                boxShadow: "0px 8px 24px rgba(255, 156, 4, 0.4)",
+              }}
+            >
+              <Plus className="w-5 h-5 text-white" />
+            </button>
+          </SafeNavLink>
+        </div>
+      )}
+
+      {/* Arrow Button for collapsed state */}
+      {isCollapsed && (
+        <button
+          onClick={onToggle}
+          className="absolute -right-3 top-16 w-7 h-7 rounded-full flex items-center justify-center transition-all hover:scale-110 shadow-lg"
+          style={{
+            background: "rgba(15, 9, 12, 0.4)",
+            backdropFilter: "blur(68.49px)",
+            boxShadow: "0 4px 16px rgba(0, 0, 0, 0.3)",
+          }}
+        >
+          <ChevronRight 
+            className="w-3.5 h-3.5 text-white/60"
+          />
+        </button>
       )}
     </div>
   );
