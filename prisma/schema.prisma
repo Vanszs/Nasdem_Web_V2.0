@@ -65,6 +65,7 @@ model User {
   role      UserRole
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
+  deletedAt DateTime? @db.Timestamptz
 
   // Relations
   news      News[]
@@ -74,6 +75,7 @@ model User {
 
   @@index([username])
   @@index([role])
+  @@index([deletedAt])
 }
 
 model Party {
@@ -106,6 +108,9 @@ model News {
   content      String?
   publishDate  DateTime?
   thumbnailUrl String?   @db.VarChar(255)
+  createdAt    DateTime  @default(now())
+  updatedAt    DateTime  @updatedAt
+  deletedAt    DateTime? @db.Timestamptz
 
   // Author
   userId Int?
@@ -113,6 +118,7 @@ model News {
 
   @@index([publishDate])
   @@index([userId])
+  @@index([deletedAt])
 }
 
 model Program {
@@ -122,6 +128,9 @@ model Program {
   startDate   DateTime?
   endDate     DateTime?
   photoUrl    String?   @db.VarChar(255)
+  createdAt   DateTime  @default(now())
+  updatedAt   DateTime  @updatedAt
+  deletedAt   DateTime? @db.Timestamptz
 
   // Relations
   categoryId Int?
@@ -133,6 +142,7 @@ model Program {
   @@index([categoryId])
   @@index([userId])
   @@index([startDate])
+  @@index([deletedAt])
 }
 
 model Gallery {
@@ -141,12 +151,16 @@ model Gallery {
   url        String    @db.VarChar(255)
   caption    String?
   uploadDate DateTime? @default(now())
+  createdAt  DateTime  @default(now())
+  updatedAt  DateTime  @updatedAt
+  deletedAt  DateTime? @db.Timestamptz
 
   userId Int?
   user   User? @relation(fields: [userId], references: [id], onDelete: SetNull, onUpdate: Cascade)
 
   @@index([userId])
   @@index([uploadDate])
+  @@index([deletedAt])
 }
 
 // ---------------------------
@@ -210,6 +224,9 @@ model Member {
   photoUrl    String?       @db.VarChar(255)
   joinDate    DateTime?     @default(now())
   endDate     DateTime?
+  createdAt   DateTime      @default(now())
+  updatedAt   DateTime      @updatedAt
+  deletedAt   DateTime?     @db.Timestamptz
 
   // Optional link ke CMS user
   userId Int?
@@ -223,6 +240,7 @@ model Member {
   @@index([userId])
   @@index([strukturId])
   @@index([fullName])
+  @@index([deletedAt])
 }
 
 // ---------------------------
