@@ -1,9 +1,34 @@
 import { NextResponse } from "next/server";
+import { addToBlacklist } from "@/lib/jwt-middleware";
+import { requireAuth } from "@/lib/jwt-middleware";
+import { UserRole } from "@/lib/rbac";
 
-// Logout route: clears all cookies (best-effort) including the JWT token
+// Logout route: clears all cookies and adds token to blacklist
 export async function POST(req: Request) {
+  // First verify the token is valid before logging out
+  const authError = requireAuth(req as any);
+  if (authError) {
+    // Even if token is invalid, still clear cookies
+    const response = NextResponse.json({ success: true });
+    clearAllCookies(response, req);
+    return response;
+  }
+
   const response = NextResponse.json({ success: true });
 
+  // Get the token and add it to blacklist
+  const token = (req as any).cookies?.get("token")?.value;
+  if (token) {
+    addToBlacklist(token);
+  }
+
+  // Clear all cookies
+  clearAllCookies(response, req);
+
+  return response;
+}
+
+function clearAllCookies(response: NextResponse, req: Request) {
   // Parse incoming cookies and expire them
   const raw = req.headers.get("cookie");
   if (raw) {
@@ -16,6 +41,9 @@ export async function POST(req: Request) {
           value: "",
           path: "/",
           maxAge: 0,
+          httpOnly: true,
+          secure: process.env.NODE_ENV === "production",
+          sameSite: "strict",
         });
       }
     }
@@ -27,11 +55,10 @@ export async function POST(req: Request) {
     value: "",
     path: "/",
     httpOnly: true,
-    sameSite: "lax",
+    secure: process.env.NODE_ENV === "production",
+    sameSite: "strict",
     maxAge: 0,
   });
-
-  return response;
 }
 
 export async function GET(req: Request) {
