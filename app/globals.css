@@ -324,3 +324,22 @@
     transform: translateX(0);
   }
 }
+
+/* Scroll down indicator animation */
+@keyframes scrollDown {
+  0% {
+    opacity: 0;
+    transform: translateY(0);
+  }
+  50% {
+    opacity: 1;
+  }
+  100% {
+    opacity: 0;
+    transform: translateY(10px);
+  }
+}
+
+.animate-scroll-down {
+  animation: scrollDown 1.5s ease-in-out infinite;
+}

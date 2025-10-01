@@ -41,25 +41,25 @@ const NasdemHeader = () => {
     <header className="sticky top-0 z-50 bg-primary/95 backdrop-blur-md border-b border-primary-foreground/10">
       <div className="container mx-auto px-4">
         {/* Top contact bar */}
-        <div className="hidden md:flex items-center justify-between py-2 text-xs text-primary-foreground/80 border-b border-primary-foreground/10">
-          <div className="flex items-center gap-6">
-            <div className="flex items-center gap-2">
+        <div className="hidden md:flex items-center justify-between py-1.5 text-xs text-primary-foreground/80 border-b border-primary-foreground/10">
+          <div className="flex items-center gap-4">
+            <div className="flex items-center gap-1.5">
               <MapPin size={12} />
               <span>Jl. Raya Sidoarjo, Kab. Sidoarjo, Jawa Timur</span>
             </div>
-            <div className="flex items-center gap-2">
+            <div className="flex items-center gap-1.5">
               <Phone size={12} />
               <span>(031) 1234-5678</span>
             </div>
           </div>
-          <div className="flex items-center gap-2">
+          <div className="flex items-center gap-1.5">
             <Users size={12} />
             <span>Anggota: 500+ Kader Aktif</span>
           </div>
         </div>
 
         {/* Main navigation */}
-        <nav className="flex items-center justify-between py-4">
+        <nav className="flex items-center justify-between py-3">
           {/* Logo */}
           <div className="flex items-center gap-3">
             <div className="w-10 h-10 bg-secondary rounded-full flex items-center justify-center font-bold text-primary text-lg">
