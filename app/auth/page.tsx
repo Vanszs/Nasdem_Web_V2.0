@@ -54,7 +54,8 @@ export default function LoginPage() {
       </div>
 
       {/* Main Login Card */}
-      <div className="relative z-10 w-full max-w-6xl mx-4 grid lg:grid-cols-2 gap-0 bg-white/95 backdrop-blur-xl rounded-3xl shadow-[0_20px_60px_rgba(0,0,0,0.3)] overflow-hidden">
+      <div className="relative z-10 w-full max-w-6xl mx-4 overflow-hidden rounded-3xl shadow-[0_20px_60px_rgba(0,0,0,0.3)]">
+        <div className="grid lg:grid-cols-2 gap-0 bg-white/95 backdrop-blur-xl">
         
         {/* Left Side - Branding */}
         <div className="hidden lg:flex flex-col justify-center p-12 bg-gradient-to-br from-[#001B55]/95 via-[#001B55]/90 to-[#002a7a]/95 text-white relative overflow-hidden backdrop-blur-sm">
@@ -236,6 +237,7 @@ export default function LoginPage() {
               </p>
             </div>
           </div>
+        </div>
         </div>
       </div>
 
