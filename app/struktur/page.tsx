@@ -117,8 +117,8 @@ export default async function StrukturPage() {
       </section>
 
       {/* Main Structure */}
-      <section className="py-16">
-        <div className="container mx-auto px-4">
+      <section className="py-16 bg-gradient-to-b from-white to-gray-50">
+        <div className="container mx-auto px-4 sm:px-6 lg:px-8">
           <div className="text-center mb-12">
             <h2 className="text-3xl font-bold text-nasdem-blue mb-4">Pengurus Harian DPD</h2>
             <p className="text-lg text-gray-600">Struktur kepengurusan utama DPD Partai NasDem Sidoarjo</p>
@@ -126,7 +126,7 @@ export default async function StrukturPage() {
 
           {/* Chairman */}
           <div className="text-center mb-12">
-            <Card className="inline-block p-8 bg-nasdem-light-gray">
+            <Card className="inline-block p-8 bg-white border-2 border-nasdem-blue/20 shadow-xl hover:shadow-2xl hover:border-nasdem-blue/40 transition-all duration-300">
               <CardContent className="text-center space-y-4">
                 <img
                   src="/placeholder.svg?height=150&width=150"
@@ -147,7 +147,7 @@ export default async function StrukturPage() {
 
           {/* Vice Chairmen */}
           <div className="grid md:grid-cols-2 gap-8 mb-12">
-            <Card className="p-6 text-center">
+            <Card className="p-6 text-center border-2 border-nasdem-blue/20 shadow-lg hover:shadow-2xl hover:border-nasdem-blue/40 transition-all duration-300 hover:-translate-y-1">
               <CardContent className="space-y-4">
                 <img
                   src="/placeholder.svg?height=120&width=120"
@@ -162,7 +162,7 @@ export default async function StrukturPage() {
               </CardContent>
             </Card>
 
-            <Card className="p-6 text-center">
+            <Card className="p-6 text-center border-2 border-nasdem-blue/20 shadow-lg hover:shadow-2xl hover:border-nasdem-blue/40 transition-all duration-300 hover:-translate-y-1">
               <CardContent className="space-y-4">
                 <img
                   src="/placeholder.svg?height=120&width=120"
@@ -200,7 +200,7 @@ export default async function StrukturPage() {
                 bidang: "Pemberdayaan Perempuan",
               },
             ].map((person, index) => (
-              <Card key={index} className="p-4 text-center hover:shadow-lg transition-shadow">
+              <Card key={index} className="p-4 text-center border-2 border-nasdem-blue/20 shadow-lg hover:shadow-2xl hover:border-nasdem-blue/40 transition-all duration-300 hover:-translate-y-1">
                 <CardContent className="space-y-3">
                   <img
                     src={`/placeholder.svg?height=100&width=100&query=Indonesian political leader portrait ${index % 2 === 0 ? "male" : "female"}`}
@@ -218,7 +218,7 @@ export default async function StrukturPage() {
           </div>
 
           {/* Regional Structure */}
-          <div className="bg-nasdem-light-gray rounded-2xl p-8 mb-12">
+          <div className="bg-white rounded-2xl p-8 mb-12 border-2 border-nasdem-blue/20 shadow-xl hover:shadow-2xl transition-all duration-300">
             <h2 className="text-3xl font-bold text-nasdem-blue text-center mb-8">
               Struktur Per Daerah Pemilihan (Dapil)
             </h2>
@@ -232,7 +232,7 @@ export default async function StrukturPage() {
                 { dapil: "Dapil 5", wilayah: "Tanggulangin, Jabon, Buduran", koordinator: "Ir. Sari Indah, M.T." },
                 { dapil: "Dapil 6", wilayah: "Tarik, Prambon, Tulangan", koordinator: "Dr. Budi Santoso" },
               ].map((dapil, index) => (
-                <Card key={index} className="p-4 hover:shadow-lg transition-shadow">
+                <Card key={index} className="p-4 border-2 border-nasdem-blue/20 shadow-lg hover:shadow-2xl hover:border-nasdem-blue/40 transition-all duration-300 hover:-translate-y-1">
                   <CardContent className="space-y-3">
                     <div className="flex items-center gap-2 mb-2">
                       <div className="w-8 h-8 bg-nasdem-orange rounded-full flex items-center justify-center">
@@ -256,7 +256,7 @@ export default async function StrukturPage() {
             </div>
           </div>
 
-          <div className="bg-white rounded-2xl p-8 shadow-lg">
+          <div className="bg-white rounded-2xl p-8 shadow-xl border-2 border-nasdem-blue/20 hover:shadow-2xl hover:border-nasdem-blue/40 transition-all duration-300">
             <h2 className="text-3xl font-bold text-nasdem-blue text-center mb-8">Struktur Organisasi Lengkap</h2>
             <p className="text-center text-gray-600 mb-8">
               Struktur lengkap per Kecamatan, Desa, TPS, Koordinator, dan Kader

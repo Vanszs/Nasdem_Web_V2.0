@@ -49,18 +49,18 @@ export default function NewsHomepage() {
   const regularNews = newsData.filter(newsItem => !newsItem.featured).slice(0, 3)
 
   return (
-    <section id="berita" className="py-16 md:py-24">
-      <div className="container mx-auto px-4">
+    <section id="berita" className="py-16 md:py-24 bg-gradient-to-b from-white to-gray-50">
+      <div className="container mx-auto px-4 sm:px-6 lg:px-8">
         {/* Section Header */}
-        <div className="text-center mb-16">
-          <div className="inline-flex items-center gap-2 bg-secondary/10 rounded-full px-4 py-2 mb-4">
+        <div className="text-center mb-12 md:mb-16">
+          <div className="inline-flex items-center gap-2 bg-secondary/10 rounded-full px-5 py-2 mb-4 shadow-sm border border-secondary/20">
             <div className="w-2 h-2 bg-secondary rounded-full animate-pulse"></div>
-            <span className="text-primary text-sm font-medium">Berita Terkini</span>
+            <span className="text-primary text-sm font-semibold">Berita Terkini</span>
           </div>
-          <h2 className="text-3xl md:text-4xl font-bold text-primary mb-4">
+          <h2 className="text-3xl md:text-4xl lg:text-5xl font-bold text-primary mb-4 leading-tight">
             Berita & <span className="text-secondary">Kegiatan</span>
           </h2>
-          <p className="text-muted-foreground text-lg max-w-2xl mx-auto">
+          <p className="text-muted-foreground text-base md:text-lg max-w-2xl mx-auto leading-relaxed">
             Ikuti perkembangan terbaru dan kegiatan DPD NasDem Sidoarjo
           </p>
         </div>
@@ -68,7 +68,7 @@ export default function NewsHomepage() {
         {/* Featured News */}
         {featuredNews && (
           <div className="mb-12">
-            <div className="bg-white rounded-2xl shadow-lg overflow-hidden hover:shadow-xl transition-all duration-300 border border-primary/10">
+            <div className="bg-white rounded-2xl shadow-xl overflow-hidden hover:shadow-2xl transition-all duration-300 border-2 border-nasdem-blue/20 hover:border-nasdem-blue/40">
               <div className="grid md:grid-cols-2 gap-0">
                 <div className="aspect-video md:aspect-square relative overflow-hidden">
                   <img
@@ -114,7 +114,7 @@ export default function NewsHomepage() {
           {regularNews.slice(0, 3).map((newsItem) => (
             <div
               key={newsItem.id}
-              className="bg-white rounded-xl shadow-lg overflow-hidden hover:shadow-xl transition-all duration-300 border border-primary/10 hover:border-secondary/30"
+              className="bg-white rounded-xl shadow-lg overflow-hidden hover:shadow-2xl transition-all duration-300 border-2 border-nasdem-blue/20 hover:border-nasdem-blue/40 hover:-translate-y-1"
             >
               <div className="aspect-video relative overflow-hidden">
                 <img

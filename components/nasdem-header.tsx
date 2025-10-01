@@ -103,11 +103,11 @@ const NasdemHeader = () => {
             </li>
             <li className="relative">
               <a
-                href="#program"
-                className={getLinkClasses("#program", "story-link")}
+                href="/program"
+                className={getLinkClasses("/program", "story-link")}
               >
                 Program
-                <ActiveIndicator isActive={isActiveLink("#program")} />
+                <ActiveIndicator isActive={isActiveLink("/program")} />
               </a>
             </li>
             <li className="relative">
@@ -213,11 +213,11 @@ const NasdemHeader = () => {
                 </li>
                 <li className="relative">
                   <a
-                    href="#program"
-                    className={getLinkClasses("#program", "block py-2 pl-4")}
+                    href="/program"
+                    className={getLinkClasses("/program", "block py-2 pl-4")}
                   >
                     Program
-                    {isActiveLink("#program") && (
+                    {isActiveLink("/program") && (
                       <span className="absolute left-0 top-1/2 transform -translate-y-1/2 w-1 h-6 bg-[#FF9C04] rounded-r-full"></span>
                     )}
                   </a>

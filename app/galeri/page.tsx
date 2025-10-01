@@ -17,8 +17,8 @@ export default function GaleriPage() {
       </section>
 
       {/* Gallery Content */}
-      <section className="py-16">
-        <div className="container mx-auto px-4">
+      <section className="py-16 bg-gradient-to-b from-white to-gray-50">
+        <div className="container mx-auto px-4 sm:px-6 lg:px-8">
           {/* Filter Tabs */}
           <div className="flex flex-wrap gap-2 mb-8">
             {["Semua", "Program Kerja", "Kegiatan Sosial", "Rapat", "Kampanye", "Pelatihan"].map((filter) => (
@@ -41,7 +41,7 @@ export default function GaleriPage() {
             {Array.from({ length: 20 }, (_, i) => i + 1).map((item) => (
               <div
                 key={item}
-                className="relative group overflow-hidden rounded-lg bg-white shadow-md hover:shadow-lg transition-shadow"
+                className="relative group overflow-hidden rounded-lg bg-white shadow-lg border-2 border-nasdem-blue/20 hover:border-nasdem-blue/40 hover:shadow-2xl transition-all duration-300 hover:-translate-y-1"
               >
                 <img
                   src={`/placeholder.svg?height=250&width=300&query=NasDem Sidoarjo political event ${item}`}

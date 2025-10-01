@@ -51,7 +51,7 @@ export default function NewsContent({ news, recentNews, categories, currentPage,
         {/* Featured News */}
         {featuredNews && (
           <div className="mb-16">
-            <Card className="overflow-hidden border-0 shadow-[0_8px_30px_rgb(0,0,0,0.12)] hover:shadow-[0_16px_40px_rgb(0,0,0,0.16)] transition-all duration-300">
+            <Card className="overflow-hidden border-2 border-nasdem-blue/20 shadow-xl hover:shadow-2xl hover:border-nasdem-blue/40 transition-all duration-300">
               <div className="grid lg:grid-cols-2 gap-0">
                 <div className="relative">
                   <Image
@@ -105,7 +105,7 @@ export default function NewsContent({ news, recentNews, categories, currentPage,
               {regularNews.map((newsItem) => (
                 <Card
                   key={newsItem.id}
-                  className="overflow-hidden border hover:shadow-[0_8px_30px_rgb(0,0,0,0.12)] transition-all duration-300 hover:-translate-y-1 group cursor-pointer"
+                  className="overflow-hidden border-2 border-nasdem-blue/20 hover:border-nasdem-blue/40 hover:shadow-2xl transition-all duration-300 hover:-translate-y-1 group cursor-pointer shadow-lg"
                 >
                   <div className="relative">
                     <Image
@@ -206,23 +206,23 @@ export default function NewsContent({ news, recentNews, categories, currentPage,
           {/* Sidebar */}
           <div className="space-y-8">
             {/* Recent News */}
-            <Card className="p-6 border-0 shadow-[0_4px_20px_rgb(0,0,0,0.08)]">
+            <Card className="p-6 border-2 border-nasdem-blue/20 shadow-lg hover:shadow-xl hover:border-nasdem-blue/40 transition-all duration-300">
               <h3 className="text-xl font-bold text-nasdem-blue mb-6 flex items-center">
                 <Eye className="h-5 w-5 mr-2 text-nasdem-orange" />
                 Berita Terbaru
               </h3>
-              <div className="space-y-4">
+              <div className="space-y-5">
                 {recentNews.map((item) => (
-                  <div key={item.id} className="flex gap-3 group cursor-pointer">
+                  <div key={item.id} className="flex gap-3 group cursor-pointer pb-5 border-b border-gray-200 last:border-b-0 last:pb-0 hover:bg-gray-50/80 p-2 rounded-lg transition-all duration-200 hover:shadow-md hover:-translate-y-0.5">
                     <Image
                       src={item.image_url || "/placeholder.svg?height=60&width=80&query=NasDem news thumbnail"}
                       alt={item.title}
                       width={80}
                       height={60}
-                      className="w-20 h-15 object-cover rounded-lg"
+                      className="w-20 h-15 object-cover rounded-lg flex-shrink-0 group-hover:shadow-lg transition-shadow duration-200"
                     />
                     <div className="flex-1">
-                      <h4 className="font-semibold text-sm text-nasdem-blue mb-1 line-clamp-2 group-hover:text-nasdem-orange transition-colors">
+                      <h4 className="font-semibold text-sm text-nasdem-blue mb-1.5 line-clamp-2 group-hover:text-nasdem-orange transition-colors">
                         {item.title}
                       </h4>
                       <p className="text-xs text-gray-500 flex items-center">
@@ -236,23 +236,24 @@ export default function NewsContent({ news, recentNews, categories, currentPage,
             </Card>
 
             {/* Categories */}
-            <Card className="p-6 border-0 shadow-[0_4px_20px_rgb(0,0,0,0.08)]">
+            <Card className="p-6 border-2 border-nasdem-blue/20 shadow-lg hover:shadow-xl hover:border-nasdem-blue/40 transition-all duration-300">
               <h3 className="text-xl font-bold text-nasdem-blue mb-6">Kategori</h3>
-              <div className="space-y-2">
+              <div className="space-y-3">
                 {categories.map((category) => (
-                  <Button
+                  <button
                     key={category.value}
-                    variant="ghost"
-                    className="w-full justify-start text-gray-600 hover:text-nasdem-orange hover:bg-nasdem-orange/5 transition-colors"
+                    className="w-full text-left px-4 py-3 rounded-lg bg-white border-2 border-gray-200 hover:border-nasdem-orange hover:bg-nasdem-orange/5 transition-all duration-200 group shadow-sm hover:shadow-md"
                   >
-                    {category.name}
-                  </Button>
+                    <span className="font-medium text-gray-700 group-hover:text-nasdem-orange transition-colors">
+                      {category.name}
+                    </span>
+                  </button>
                 ))}
               </div>
             </Card>
 
             {/* Newsletter Signup */}
-            <Card className="p-6 border-0 shadow-[0_4px_20px_rgb(0,0,0,0.08)] bg-gradient-to-br from-nasdem-blue to-nasdem-blue/90 text-white">
+            <Card className="p-6 border-2 border-nasdem-blue/40 shadow-lg hover:shadow-xl transition-all duration-300 bg-gradient-to-br from-nasdem-blue to-nasdem-blue/90 text-white">
               <h3 className="text-xl font-bold mb-4">Berlangganan Berita</h3>
               <p className="text-white/80 text-sm mb-4">
                 Dapatkan update terbaru kegiatan NasDem Sidoarjo langsung di email Anda.

@@ -44,33 +44,33 @@ const programs = [
 
 export function ProgramsSection() {
   return (
-    <section id="program" className="py-16 md:py-24 bg-nasdem-light-gray">
-      <div className="container mx-auto px-4">
+    <section id="program" className="py-16 md:py-24 bg-gradient-to-b from-gray-50 to-white">
+      <div className="container mx-auto px-4 sm:px-6 lg:px-8">
         {/* Section Header */}
-        <div className="text-center mb-16">
-          <div className="inline-flex items-center gap-2 bg-nasdem-orange/10 rounded-full px-4 py-2 mb-4">
-            <div className="w-2 h-2 bg-nasdem-orange rounded-full"></div>
-            <span className="text-nasdem-blue text-sm font-medium">Program Unggulan</span>
+        <div className="text-center mb-12 md:mb-16">
+          <div className="inline-flex items-center gap-2 bg-nasdem-orange/10 rounded-full px-5 py-2 mb-4 shadow-sm border border-nasdem-orange/20">
+            <div className="w-2 h-2 bg-nasdem-orange rounded-full animate-pulse"></div>
+            <span className="text-nasdem-blue text-sm font-semibold">Program Unggulan</span>
           </div>
-          <h2 className="text-3xl md:text-5xl font-bold text-nasdem-blue mb-4">
+          <h2 className="text-3xl md:text-4xl lg:text-5xl font-bold text-nasdem-blue mb-4 leading-tight">
             Program <span className="text-nasdem-orange">Kerja</span> Kami
           </h2>
-          <p className="text-gray-600 text-lg max-w-2xl mx-auto">
+          <p className="text-gray-600 text-base md:text-lg max-w-2xl mx-auto leading-relaxed">
             Komitmen nyata untuk memajukan Sidoarjo melalui program-program yang berdampak langsung bagi masyarakat.
           </p>
         </div>
 
         {/* Programs Grid */}
-        <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-8 mb-12">
+        <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-6 md:gap-8 mb-12">
           {programs.map((program, index) => {
             const IconComponent = program.icon
             return (
               <div
                 key={index}
-                className="bg-white rounded-2xl p-8 border hover:shadow-xl transition-all duration-300 hover:-translate-y-1 group"
+                className="bg-white rounded-2xl p-6 md:p-8 border-2 border-nasdem-blue/20 hover:border-nasdem-blue/40 shadow-lg hover:shadow-2xl transition-all duration-300 hover:-translate-y-2 group"
               >
                 <div className="flex items-start gap-4 mb-4">
-                  <div className="flex-shrink-0 w-12 h-12 bg-nasdem-blue/10 rounded-lg flex items-center justify-center group-hover:bg-nasdem-orange/10 transition-colors">
+                  <div className="flex-shrink-0 w-12 h-12 bg-nasdem-blue/10 rounded-lg flex items-center justify-center group-hover:bg-nasdem-orange/10 transition-colors border border-nasdem-blue/20 group-hover:border-nasdem-orange/30">
                     <IconComponent className="text-nasdem-blue group-hover:text-nasdem-orange h-6 w-6 transition-colors" />
                   </div>
                   <div className="flex-1">
