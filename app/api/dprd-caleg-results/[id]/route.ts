@@ -10,8 +10,8 @@ export async function GET(
     const result = await db.dprdCalegResult.findUnique({
       where: { id: parseInt(params.id) },
       include: {
-        Caleg: { include: { Party: true } },
-        analysis: { select: { id: true, year: true } },
+        caleg: { include: { party: true } },
+        electionAnalysis: { select: { id: true, year: true } },
       },
     });
     if (!result)
@@ -38,13 +38,13 @@ export async function PUT(
   if (roleError) return roleError;
   try {
     // PUT
-    const { analysisId, calegId, votes } = await req.json();
+    const { electionAnalysisId, calegId, votes } = await req.json();
     const updated = await db.dprdCalegResult.update({
       where: { id: parseInt(params.id) },
-      data: { analysisId, calegId, votes },
+      data: { electionAnalysisId, calegId, votes },
       include: {
-        Caleg: { include: { Party: true } },
-        analysis: { select: { id: true, year: true } },
+        caleg: { include: { party: true } },
+        electionAnalysis: { select: { id: true, year: true } },
       },
     });
     return NextResponse.json({ success: true, data: updated });

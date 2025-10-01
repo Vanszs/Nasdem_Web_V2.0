@@ -4,7 +4,7 @@ import { requireAuth, requireRole } from "@/lib/jwt-middleware";
 
 export async function GET() {
   const tpses = await db.tps.findMany({
-    include: { Desa: true },
+    include: { desa: true },
     orderBy: { number: "asc" },
   });
   return NextResponse.json({ success: true, data: tpses });

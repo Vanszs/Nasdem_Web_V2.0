@@ -9,7 +9,7 @@ export async function GET(
   try {
     const party = await db.party.findUnique({
       where: { id: parseInt(params.id) },
-      include: { Caleg: true, DprdPartyResult: true },
+      include: { caleg: true, dprdPartyResults: true },
     });
     if (!party)
       return NextResponse.json(
@@ -38,7 +38,7 @@ export async function PUT(
     const updated = await db.party.update({
       where: { id: parseInt(params.id) },
       data: { name, abbreviation, logoUrl },
-      include: { Caleg: true, DprdPartyResult: true },
+      include: { caleg: true, dprdPartyResults: true },
     });
     return NextResponse.json({ success: true, data: updated });
   } catch (err: any) {

@@ -4,7 +4,7 @@ import { requireAuth, requireRole } from "@/lib/jwt-middleware";
 
 export async function GET() {
   const dapils = await db.dapil.findMany({
-    include: { Kecamatan: true },
+    include: { kecamatan: true },
     orderBy: { name: "asc" },
   });
   return NextResponse.json({ success: true, data: dapils });

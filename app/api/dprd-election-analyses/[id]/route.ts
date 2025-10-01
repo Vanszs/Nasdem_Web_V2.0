@@ -10,12 +10,12 @@ export async function GET(
     const analysis = await db.dprdElectionAnalysis.findUnique({
       where: { id: parseInt(params.id) },
       include: {
-        Dapil: true,
-        Kecamatan: true,
-        Desa: true,
-        Tps: true,
-        DprdPartyResult: { include: { Party: true } },
-        DprdCalegResult: { include: { Caleg: { include: { Party: true } } } },
+        dapil: true,
+        kecamatan: true,
+        desa: true,
+        tps: true,
+        partyResults: { include: { party: true } },
+        calegResults: { include: { caleg: { include: { party: true } } } },
       },
     });
     if (!analysis)

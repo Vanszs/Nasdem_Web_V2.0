@@ -14,6 +14,8 @@ import {
   Monitor,
   BarChart3,
   Globe,
+  Network,
+  FolderKanban,
 } from "lucide-react";
 
 import { SafeNavLink } from "./SafeNavLink";
@@ -53,10 +55,24 @@ const menuItems = [
     ],
   },
   {
-    title: "Members",
-    url: "/admin/members",
-    icon: Users,
-    badge: "People",
+    title: "Struktur Organisasi",
+    icon: Monitor,
+    isCollapsible: true,
+    badge: "Organization",
+    subItems: [
+      {
+        title: "Organisasi",
+        url: "/admin/organizations",
+        icon: Network,
+        description: "Kelola struktur partai",
+      },
+      {
+        title: "Kelola Struktur",
+        url: "/admin/organizations/manage",
+        icon: FolderKanban,
+        description: "Kelola foto dan media",
+      },
+    ],
   },
   {
     title: "User",

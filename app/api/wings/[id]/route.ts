@@ -9,7 +9,7 @@ export async function GET(
   try {
     const sayap = await db.sayapType.findUnique({
       where: { id: parseInt(params.id) },
-      include: { StrukturOrganisasi: true },
+      include: { strukturOrganisasi: true },
     });
     if (!sayap)
       return NextResponse.json(
@@ -38,7 +38,7 @@ export async function PUT(
     const updated = await db.sayapType.update({
       where: { id: parseInt(params.id) },
       data: { name, description },
-      include: { StrukturOrganisasi: true },
+      include: { strukturOrganisasi: true },
     });
     return NextResponse.json({ success: true, data: updated });
   } catch (err: any) {

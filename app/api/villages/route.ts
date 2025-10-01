@@ -4,7 +4,7 @@ import { requireAuth, requireRole } from "@/lib/jwt-middleware";
 
 export async function GET() {
   const desas = await db.desa.findMany({
-    include: { Kecamatan: true, Tps: true },
+    include: { kecamatan: true, tps: true },
     orderBy: { name: "asc" },
   });
   return NextResponse.json({ success: true, data: desas });

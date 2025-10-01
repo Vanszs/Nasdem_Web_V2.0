@@ -29,6 +29,7 @@ import {
   BreadcrumbSeparator,
 } from "@/components/ui/breadcrumb";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
+import { useRouter } from "next/navigation";
 
 interface TopNavbarProps {
   breadcrumbs?: { label: string; href?: string }[];
@@ -40,10 +41,21 @@ export function TopNavbar({
   onToggleSidebar,
 }: TopNavbarProps) {
   const [searchQuery, setSearchQuery] = useState("");
+  const router = useRouter();
 
   const handleSearch = (e: React.FormEvent) => {
     e.preventDefault();
     console.log("Search:", searchQuery);
+  };
+
+  const handleLogout = async () => {
+    try {
+      await fetch("/api/auth/logout", { method: "POST" });
+    } catch (e) {
+      console.error("Logout error", e);
+    } finally {
+      router.replace("/");
+    }
   };
 
   return (
@@ -283,7 +295,10 @@ export function TopNavbar({
                   <span>Pengaturan</span>
                 </DropdownMenuItem>
                 <DropdownMenuSeparator className="my-2" />
-                <DropdownMenuItem className="px-3 py-2 cursor-pointer hover:bg-red-50 text-red-600 rounded-lg transition-colors duration-200">
+                <DropdownMenuItem
+                  onClick={handleLogout}
+                  className="px-3 py-2 cursor-pointer hover:bg-red-50 text-red-600 rounded-lg transition-colors duration-200"
+                >
                   <LogOut className="mr-3 h-4 w-4" />
                   <span>Keluar</span>
                 </DropdownMenuItem>

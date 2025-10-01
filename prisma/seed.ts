@@ -6,7 +6,6 @@ import {
   RegionType,
   MemberStatus,
   GenderEnum,
-  GalleryType,
 } from "@prisma/client";
 import bcrypt from "bcrypt";
 
@@ -20,7 +19,6 @@ async function hash(password: string) {
 async function main() {
   console.log("Seeding database...");
 
-  // Gunakan env agar mudah diubah tanpa edit file
   const DEFAULT_SUPERADMIN_PASSWORD =
     process.env.SEED_SUPERADMIN_PASSWORD || "Nasdem!123";
   const DEFAULT_EDITOR_PASSWORD =
@@ -116,7 +114,6 @@ async function main() {
   });
   const sayapTypeList = await db.sayapType.findMany();
 
-  // REGIONS
   await db.region.createMany({
     data: [
       { name: "Kabupaten Sidoarjo", type: RegionType.kabupaten },
@@ -128,17 +125,15 @@ async function main() {
     skipDuplicates: true,
   });
   const regions = await db.region.findMany();
-  const kabupaten = regions.find((r) => r.type === "kabupaten");
+  const kabupaten = regions.find((r) => r.type === RegionType.kabupaten);
   const kecA = regions.find((r) => r.name === "Kecamatan A");
 
-  // STRUKTUR ORGANISASI
   await db.strukturOrganisasi.createMany({
     data: [
       {
         level: OrgLevel.dpd,
         position: PositionEnum.ketua,
         regionId: kabupaten?.id,
-        startDate: new Date(),
       },
       {
         level: OrgLevel.dpd,
@@ -199,27 +194,53 @@ async function main() {
   });
 
   // DAPIL → KECAMATAN → DESA → TPS
-  const dapil = await db.dapil.create({ data: { name: "Dapil 1" } });
-  const kecamatan = await db.kecamatan.create({
-    data: { name: "Kecamatan A", dapilId: dapil.id },
+  const dapil = await db.dapil.upsert({
+    where: { name: "Dapil 1" },
+    update: {},
+    create: { name: "Dapil 1" },
   });
-  const desa = await db.desa.create({
-    data: { name: "Desa A1", kecamatanId: kecamatan.id },
+  const kecamatan = await db.kecamatan.upsert({
+    where: { dapilId_name: { dapilId: dapil.id, name: "Kecamatan A" } },
+    update: {},
+    create: { name: "Kecamatan A", dapilId: dapil.id },
   });
-  const tps1 = await db.tps.create({ data: { number: 1, desaId: desa.id } });
-  await db.tps.create({ data: { number: 2, desaId: desa.id } });
+  const desa = await db.desa.upsert({
+    where: { kecamatanId_name: { kecamatanId: kecamatan.id, name: "Desa A1" } },
+    update: {},
+    create: { name: "Desa A1", kecamatanId: kecamatan.id },
+  });
+  const tps1 = await db.tps.upsert({
+    where: { desaId_number: { desaId: desa.id, number: "1" } },
+    update: {},
+    create: { number: "1", desaId: desa.id },
+  });
+  await db.tps.upsert({
+    where: { desaId_number: { desaId: desa.id, number: "2" } },
+    update: {},
+    create: { number: "2", desaId: desa.id },
+  });
 
-  // CALEG
-  const calegA = await db.caleg.create({
-    data: { name: "Caleg Utama", partyId: parties[0].id },
+  // CALEG (field = fullName)
+  const calegA = await db.caleg.upsert({
+    where: {
+      partyId_fullName: { partyId: parties[0].id, fullName: "Caleg Utama" },
+    },
+    update: {},
+    create: { fullName: "Caleg Utama", partyId: parties[0].id },
   });
-  const calegB = await db.caleg.create({
-    data: { name: "Caleg Penantang", partyId: parties[1].id },
+  const calegB = await db.caleg.upsert({
+    where: {
+      partyId_fullName: { partyId: parties[1].id, fullName: "Caleg Penantang" },
+    },
+    update: {},
+    create: { fullName: "Caleg Penantang", partyId: parties[1].id },
   });
 
-  // ANALISIS + HASIL
-  const analysis2024 = await db.dprdElectionAnalysis.create({
-    data: {
+  // ANALISIS + HASIL (turnoutPercent Decimal -> string OK)
+  const analysis2024 = await db.dprdElectionAnalysis.upsert({
+    where: { year_tpsId: { year: 2024, tpsId: tps1.id } },
+    update: {},
+    create: {
       year: 2024,
       dapilId: dapil.id,
       kecamatanId: kecamatan.id,
@@ -228,23 +249,31 @@ async function main() {
       totalValidVotes: 1200,
       invalidVotes: 45,
       totalVotes: 1245,
-      turnoutPercent: 72.5,
+      turnoutPercent: "72.50",
       notes: "TPS 1 berjalan lancar",
     },
   });
 
   await db.dprdPartyResult.createMany({
     data: [
-      { analysisId: analysis2024.id, partyId: parties[0].id, votes: 450 },
-      { analysisId: analysis2024.id, partyId: parties[1].id, votes: 300 },
+      {
+        electionAnalysisId: analysis2024.id,
+        partyId: parties[0].id,
+        votes: 450,
+      },
+      {
+        electionAnalysisId: analysis2024.id,
+        partyId: parties[1].id,
+        votes: 300,
+      },
     ],
     skipDuplicates: true,
   });
 
   await db.dprdCalegResult.createMany({
     data: [
-      { analysisId: analysis2024.id, calegId: calegA.id, votes: 260 },
-      { analysisId: analysis2024.id, calegId: calegB.id, votes: 210 },
+      { electionAnalysisId: analysis2024.id, calegId: calegA.id, votes: 260 },
+      { electionAnalysisId: analysis2024.id, calegId: calegB.id, votes: 210 },
     ],
     skipDuplicates: true,
   });
@@ -258,7 +287,7 @@ async function main() {
         description: "Meningkatkan kapasitas wirausaha lokal.",
         startDate: new Date("2024-03-01"),
         endDate: new Date("2024-03-05"),
-        categoryId: categoryFirst?.id || 1,
+        categoryId: categoryFirst?.id,
         userId: superadmin.id,
       },
       {
@@ -266,7 +295,7 @@ async function main() {
         description: "Sosialisasi hidup sehat di kecamatan.",
         startDate: new Date("2024-04-10"),
         endDate: new Date("2024-04-12"),
-        categoryId: categoryFirst?.id || 1,
+        categoryId: categoryFirst?.id,
         userId: superadmin.id,
       },
     ],
@@ -292,25 +321,25 @@ async function main() {
     skipDuplicates: true,
   });
 
-  // GALLERY
+  // GALLERY (type string sesuai schema)
   await db.gallery.createMany({
     data: [
       {
-        type: GalleryType.photo,
+        type: "photo",
         url: "/uploads/gallery/rapat-1.jpg",
         caption: "Rapat internal pengurus",
         uploadDate: new Date(),
         userId: superadmin.id,
       },
       {
-        type: GalleryType.photo,
+        type: "photo",
         url: "/uploads/gallery/umkm-1.jpg",
         caption: "Program UMKM berjalan",
         uploadDate: new Date(),
         userId: superadmin.id,
       },
       {
-        type: GalleryType.video,
+        type: "video",
         url: "https://www.youtube.com/watch?v=dQw4w9WgXcQ",
         caption: "Dokumentasi kegiatan",
         uploadDate: new Date(),
@@ -329,5 +358,5 @@ main()
     process.exit(1);
   })
   .finally(async () => {
-    db.$disconnect();
+    await db.$disconnect();
   });

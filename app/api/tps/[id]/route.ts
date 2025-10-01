@@ -8,7 +8,7 @@ export async function GET(
 ) {
   const tps = await db.tps.findUnique({
     where: { id: parseInt(params.id) },
-    include: { Desa: true },
+    include: { desa: true },
   });
   if (!tps)
     return NextResponse.json(

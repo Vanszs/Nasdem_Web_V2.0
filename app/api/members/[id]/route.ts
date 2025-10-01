@@ -9,9 +9,7 @@ export async function GET(
   try {
     const member = await db.member.findUnique({
       where: { id: parseInt(params.id) },
-      include: {
-        StrukturOrganisasi: true,
-      },
+      include: { struktur: true },
     });
     if (!member)
       return NextResponse.json(
@@ -75,9 +73,7 @@ export async function PUT(
         endDate: endDate ? new Date(endDate) : undefined,
         gender: normGender,
       },
-      include: {
-        StrukturOrganisasi: true,
-      },
+      include: { struktur: true },
     });
     return NextResponse.json({ success: true, data: updated });
   } catch (err: any) {

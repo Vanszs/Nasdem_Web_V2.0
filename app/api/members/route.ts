@@ -42,7 +42,7 @@ export async function GET(req: NextRequest) {
     if (sayapTypeId) strukturFilter.sayapTypeId = parseInt(sayapTypeId);
     if (regionId) strukturFilter.regionId = parseInt(regionId);
     if (Object.keys(strukturFilter).length) {
-      where.StrukturOrganisasi = { is: strukturFilter };
+      where.struktur = { is: strukturFilter };
     }
 
     const [total, data] = await Promise.all([
@@ -64,7 +64,7 @@ export async function GET(req: NextRequest) {
           bio: true,
           gender: true,
           dateOfBirth: true,
-          StrukturOrganisasi: includeStruktur
+          struktur: includeStruktur
             ? {
                 select: {
                   id: true,
@@ -72,8 +72,8 @@ export async function GET(req: NextRequest) {
                   position: true,
                   sayapTypeId: true,
                   regionId: true,
-                  SayapType: { select: { id: true, name: true } },
-                  Region: { select: { id: true, name: true, type: true } },
+                  sayapType: { select: { id: true, name: true } },
+                  region: { select: { id: true, name: true, type: true } },
                 },
               }
             : false,

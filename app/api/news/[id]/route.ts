@@ -10,7 +10,7 @@ export async function GET(
   try {
     const news = await db.news.findUnique({
       where: { id: parseInt(params.id) },
-      include: { User: { select: { id: true, username: true, email: true } } },
+      include: { user: { select: { id: true, username: true, email: true } } },
     });
 
     if (!news)
@@ -51,7 +51,7 @@ export async function PUT(
         thumbnailUrl,
         userId,
       },
-      include: { User: { select: { id: true, username: true, email: true } } },
+      include: { user: { select: { id: true, username: true, email: true } } },
     });
 
     return NextResponse.json({ success: true, data: updated });

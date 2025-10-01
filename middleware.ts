@@ -3,8 +3,10 @@ import type { NextRequest } from "next/server";
 import { rateLimit } from "@/lib/rate-limit";
 
 export const config = {
-  matcher: ["/api/:path*"],
+  matcher: ["/api/:path*", "/admin", "/admin/:path*"],
 };
+
+const isDev = process.env.NODE_ENV === "development";
 
 // Konfigurasi
 const DEFAULT_LIMIT = 100; // 100 request / menit / IP
@@ -39,20 +41,39 @@ function isSensitive(pathname: string) {
 export async function middleware(req: NextRequest) {
   const { pathname } = req.nextUrl;
 
-  // CORS / Origin Gate (deny external)
-  const origin = req.headers.get("origin");
-  if (origin && ALLOWED_ORIGINS.length) {
-    if (!ALLOWED_ORIGINS.includes(origin)) {
-      return NextResponse.json(
-        { success: false, error: "Origin not allowed" },
-        { status: 403 }
-      );
+  // Protect admin pages (not API) - require login token
+  if (pathname.startsWith("/admin")) {
+    const hasAuthCookie = req.cookies.get("token");
+    if (!hasAuthCookie) {
+      const loginUrl = req.nextUrl.clone();
+      loginUrl.pathname = "/auth";
+      loginUrl.searchParams.set("redirect", pathname);
+      return NextResponse.redirect(loginUrl);
     }
   }
 
-  // API Key (optional bypass if provided and valid)
+  // Existing API handling
+  if (!pathname.startsWith("/api")) {
+    return NextResponse.next();
+  }
+
+  // CORS / Origin Gate (skip entirely in development)
+  if (!isDev) {
+    const origin = req.headers.get("origin");
+    if (origin && ALLOWED_ORIGINS.length) {
+      if (!ALLOWED_ORIGINS.includes(origin)) {
+        return NextResponse.json(
+          { success: false, error: "Origin not allowed" },
+          { status: 403 }
+        );
+      }
+    }
+  }
+
+  // API Key (skip enforcement in development)
   const apiKey = req.headers.get("x-api-key");
-  const hasValidInternalKey = INTERNAL_KEY && apiKey === INTERNAL_KEY;
+  const hasValidInternalKey =
+    isDev || (INTERNAL_KEY && apiKey === INTERNAL_KEY);
 
   // Hit basic abuse patterns (block very large bodies for non-upload)
   const contentLength = req.headers.get("content-length");

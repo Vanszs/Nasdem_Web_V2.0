@@ -6,10 +6,10 @@ export async function GET() {
   try {
     const calegs = await db.caleg.findMany({
       include: {
-        Party: true,
-        results: true,
+        party: true,
+        dprdCalegResults: true,
       },
-      orderBy: { name: "asc" },
+      orderBy: { fullName: "asc" },
     });
     return NextResponse.json({ success: true, data: calegs });
   } catch (err: any) {
@@ -26,10 +26,10 @@ export async function POST(req: NextRequest) {
   const roleError = requireRole(req, ["superadmin", "analyst"]);
   if (roleError) return roleError;
   try {
-    const { name, partyId } = await req.json();
+    const { fullName, partyId, photoUrl } = await req.json();
     const caleg = await db.caleg.create({
-      data: { name, partyId },
-      include: { Party: true, results: true },
+      data: { fullName, partyId, photoUrl: photoUrl || undefined },
+      include: { party: true, dprdCalegResults: true },
     });
     return NextResponse.json({ success: true, data: caleg });
   } catch (err: any) {

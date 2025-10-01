@@ -8,7 +8,7 @@ export async function GET(
 ) {
   const desa = await db.desa.findUnique({
     where: { id: parseInt(params.id) },
-    include: { Kecamatan: true, Tps: true },
+    include: { kecamatan: true, tps: true },
   });
   if (!desa)
     return NextResponse.json(

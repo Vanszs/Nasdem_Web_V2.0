@@ -7,8 +7,8 @@ export async function GET() {
   try {
     const programs = await db.program.findMany({
       include: {
-        Category: true,
-        User: { select: { id: true, username: true, email: true } },
+        category: true,
+        user: { select: { id: true, username: true, email: true } },
       },
     });
     return NextResponse.json({ success: true, data: programs });
