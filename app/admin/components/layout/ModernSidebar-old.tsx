@@ -1,6 +1,5 @@
 "use client";
-
-import { useState, useEffect, useRef, KeyboardEvent } from "react";
+import { useState, useEffect } from "react";
 import { usePathname } from "next/navigation";
 import {
   LayoutDashboard,
@@ -26,31 +25,26 @@ const menuItems = [
     title: "Dashboard",
     url: "/admin",
     icon: LayoutDashboard,
-    ariaLabel: "Dashboard utama",
   },
   {
     title: "CMS",
     icon: Monitor,
     isCollapsible: true,
-    ariaLabel: "Menu Content Management System",
     subItems: [
       {
         title: "Berita",
         url: "/admin/news",
         icon: FileText,
-        ariaLabel: "Kelola berita",
       },
       {
         title: "Galeri",
         url: "/admin/gallery",
         icon: Image,
-        ariaLabel: "Kelola galeri foto dan video",
       },
       {
         title: "Landing Page",
         url: "/admin/landing",
         icon: Globe,
-        ariaLabel: "Edit halaman landing",
       },
     ],
   },
@@ -58,19 +52,16 @@ const menuItems = [
     title: "Struktur Organisasi",
     icon: Network,
     isCollapsible: true,
-    ariaLabel: "Menu struktur organisasi",
     subItems: [
       {
         title: "Organisasi",
         url: "/admin/organizations",
         icon: Network,
-        ariaLabel: "Kelola data organisasi",
       },
       {
         title: "Kelola Struktur",
         url: "/admin/organizations/manage",
         icon: FolderKanban,
-        ariaLabel: "Kelola struktur organisasi",
       },
     ],
   },
@@ -78,13 +69,11 @@ const menuItems = [
     title: "User",
     url: "/admin/user",
     icon: UserPlus,
-    ariaLabel: "Kelola pengguna",
   },
   {
     title: "Statistik Pemilu",
     url: "/admin/statistik-pemilu",
     icon: BarChart3,
-    ariaLabel: "Lihat statistik dan data pemilu",
   },
 ];
 
@@ -98,7 +87,6 @@ export function ModernSidebar({
   onToggle,
 }: ModernSidebarProps) {
   const currentPath = usePathname() || "/";
-  const sidebarRef = useRef<HTMLElement>(null);
 
   // Automatically determine which groups should be open based on current path
   const getInitialOpenGroups = () => {
@@ -124,9 +112,7 @@ export function ModernSidebar({
     return groups;
   };
 
-  const [openGroups, setOpenGroups] = useState<string[]>(
-    getInitialOpenGroups()
-  );
+  const [openGroups, setOpenGroups] = useState<string[]>(getInitialOpenGroups());
 
   useEffect(() => {
     const newOpenGroups = getInitialOpenGroups();
@@ -143,69 +129,32 @@ export function ModernSidebar({
     );
   };
 
-  // Keyboard navigation handler
-  const handleKeyDown = (event: KeyboardEvent<HTMLDivElement>) => {
-    const { key } = event;
-    const focusableElements = sidebarRef.current?.querySelectorAll<HTMLElement>(
-      'a[href], button:not([disabled])'
-    );
-
-    if (!focusableElements) return;
-
-    const currentIndex = Array.from(focusableElements).indexOf(
-      document.activeElement as HTMLElement
-    );
-
-    if (key === "ArrowDown") {
-      event.preventDefault();
-      const nextIndex = (currentIndex + 1) % focusableElements.length;
-      focusableElements[nextIndex]?.focus();
-    } else if (key === "ArrowUp") {
-      event.preventDefault();
-      const prevIndex =
-        (currentIndex - 1 + focusableElements.length) %
-        focusableElements.length;
-      focusableElements[prevIndex]?.focus();
-    }
-  };
-
   return (
-    <nav
-      ref={sidebarRef}
-      aria-label="Navigasi utama admin"
-      onKeyDown={handleKeyDown}
+    <div
       className={`relative h-screen flex flex-col transition-all duration-500 ease-in-out ${
         isCollapsed ? "w-20" : "w-80"
       }`}
       style={{
-        background:
-          "linear-gradient(135deg, rgba(0, 27, 85, 0.95) 0%, rgba(0, 27, 85, 0.98) 100%)",
-        boxShadow:
-          "0px 48px 48px -24px rgba(0, 27, 85, 0.4), 0px 0px 80px -20px rgba(255, 156, 4, 0.2)",
+        background: "linear-gradient(135deg, rgba(0, 27, 85, 0.95) 0%, rgba(0, 27, 85, 0.98) 100%)",
+        boxShadow: "0px 48px 48px -24px rgba(0, 27, 85, 0.4), 0px 0px 80px -20px rgba(255, 156, 4, 0.2)",
         backdropFilter: "blur(60px)",
         borderTopRightRadius: "24px",
         borderBottomRightRadius: "24px",
+        borderTopLeftRadius: "0px",
+        borderBottomLeftRadius: "0px",
       }}
     >
       {/* Header with Logo */}
       <div className="relative p-6 border-b border-white/10">
-        <div
-          className={`flex items-center gap-4 ${
-            isCollapsed ? "justify-center" : "justify-between"
-          }`}
-        >
-          <div
-            className={`flex items-center gap-4 ${isCollapsed ? "flex-col" : ""}`}
-          >
+        {/* Logo & Brand */}
+        <div className={`flex items-center gap-4 ${isCollapsed ? "justify-center" : "justify-between"}`}>
+          <div className={`flex items-center gap-4 ${isCollapsed ? "flex-col" : ""}`}>
             <div
               className="relative w-12 h-12 rounded-2xl flex items-center justify-center shadow-2xl"
               style={{
-                background:
-                  "linear-gradient(135deg, #FF9C04 0%, #FFB04A 100%)",
+                background: "linear-gradient(135deg, #FF9C04 0%, #FFB04A 100%)",
                 boxShadow: "0 8px 32px rgba(255, 156, 4, 0.4)",
               }}
-              role="img"
-              aria-label="Logo NasDem Sidoarjo"
             >
               <Sparkles className="text-white w-6 h-6 z-10" />
             </div>
@@ -220,24 +169,18 @@ export function ModernSidebar({
                   NasDem
                 </h2>
                 <p className="text-white/70 text-xs font-medium flex items-center gap-1.5">
-                  <span
-                    className="w-2 h-2 bg-[#53C22B] rounded-full animate-pulse"
-                    role="status"
-                    aria-label="Status online"
-                  ></span>
+                  <span className="w-2 h-2 bg-[#53C22B] rounded-full animate-pulse"></span>
                   Kabupaten Sidoarjo
                 </p>
               </div>
             )}
           </div>
-
+          
           {/* Toggle Button */}
           {!isCollapsed && (
             <button
               onClick={onToggle}
-              className="p-2 rounded-full hover:bg-white/10 transition-colors focus:outline-none focus:ring-2 focus:ring-brand-accent focus:ring-offset-2 focus:ring-offset-brand-primary"
-              aria-label="Tutup sidebar"
-              aria-expanded={!isCollapsed}
+              className="p-2 rounded-full hover:bg-white/10 transition-colors"
             >
               <ChevronRight className="w-4 h-4 text-white/60 rotate-180" />
             </button>
@@ -253,19 +196,17 @@ export function ModernSidebar({
           background:
             "radial-gradient(50% 50% at 50% 50%, rgba(255, 156, 4, 0.3) 0%, rgba(255, 156, 4, 0) 100%)",
         }}
-        aria-hidden="true"
       />
 
       {/* Main Navigation */}
-      <div
+      <div 
         className={`py-4 flex-1 overflow-y-auto space-y-1 scrollbar-hide transition-all duration-500 ${
           isCollapsed ? "px-2" : "px-4"
         }`}
         style={{
-          scrollbarWidth: "none",
-          msOverflowStyle: "none",
+          scrollbarWidth: 'none',
+          msOverflowStyle: 'none',
         }}
-        role="list"
       >
         <style jsx global>{`
           .scrollbar-hide::-webkit-scrollbar {
@@ -293,41 +234,43 @@ export function ModernSidebar({
 
         {/* Menu Items */}
         <div className="space-y-1">
-          {menuItems.map((item) => (
-            <div key={item.title} className="relative group/item" role="listitem">
+          {menuItems.map((item, index) => (
+            <div key={item.title} className="relative group/item">
               {item.isCollapsible ? (
                 <div className="relative">
                   <button
                     onClick={() => !isCollapsed && toggleGroup(item.title)}
                     className={`w-full group relative flex items-center ${
                       isCollapsed ? "justify-center px-0" : "gap-3 px-4"
-                    } py-3 rounded-2xl font-medium transition-all duration-300 focus:outline-none focus:ring-2 focus:ring-brand-accent focus:ring-offset-2 focus:ring-offset-brand-primary ${
+                    } py-3 rounded-2xl font-medium transition-all duration-300 ${
                       isGroupActive(item.subItems)
                         ? "bg-[#FF9C04]/10 text-white shadow-lg"
                         : "text-white/70 hover:bg-white/5 hover:text-white"
                     }`}
-                    aria-label={item.ariaLabel}
-                    aria-expanded={openGroups.includes(item.title)}
-                    aria-controls={`submenu-${item.title}`}
                   >
                     {/* Active Indicator */}
                     {isGroupActive(item.subItems) && !isCollapsed && (
                       <div
                         className="absolute left-0 top-1/2 -translate-y-1/2 w-1 h-8 rounded-r-full"
                         style={{
-                          background:
-                            "linear-gradient(180deg, #FF9C04 0%, #FFB04A 100%)",
+                          background: "linear-gradient(180deg, #FF9C04 0%, #FFB04A 100%)",
                           boxShadow: "0px 0px 12px rgba(255, 156, 4, 0.6)",
                         }}
-                        aria-hidden="true"
                       />
                     )}
 
-                    <div
-                      className={`relative z-10 flex items-center ${
-                        isCollapsed ? "" : "gap-3 w-full"
-                      }`}
-                    >
+                    {/* Glow Effect */}
+                    {isGroupActive(item.subItems) && (
+                      <div
+                        className="absolute inset-0 pointer-events-none rounded-2xl"
+                        style={{
+                          background:
+                            "radial-gradient(50% 50% at 50% 50%, rgba(255, 156, 4, 0.15) 0%, rgba(255, 156, 4, 0) 100%)",
+                        }}
+                      />
+                    )}
+
+                    <div className={`relative z-10 flex items-center ${isCollapsed ? "" : "gap-3 w-full"}`}>
                       <item.icon
                         className={`h-5 w-5 flex-shrink-0 transition-all duration-300 ${
                           isGroupActive(item.subItems)
@@ -339,7 +282,6 @@ export function ModernSidebar({
                             ? "drop-shadow(0px 0px 8px rgba(255, 156, 4, 0.5))"
                             : "none",
                         }}
-                        aria-hidden="true"
                       />
                       {!isCollapsed && (
                         <>
@@ -349,6 +291,11 @@ export function ModernSidebar({
                                 ? "text-white"
                                 : "group-hover:text-white"
                             }`}
+                            style={{
+                              textShadow: isGroupActive(item.subItems)
+                                ? "0px 0px 12px rgba(255, 255, 255, 0.4)"
+                                : "none",
+                            }}
                           >
                             {item.title}
                           </span>
@@ -360,19 +307,15 @@ export function ModernSidebar({
                                 ? "text-[#FF9C04]"
                                 : "text-white/50 group-hover:text-white/70"
                             }`}
-                            aria-hidden="true"
                           />
                         </>
                       )}
                     </div>
                   </button>
-
+                  
                   {/* Tooltip for collapsed state */}
                   {isCollapsed && (
-                    <div
-                      className="absolute left-full ml-2 top-1/2 -translate-y-1/2 px-3 py-2 bg-[#001B55] text-white text-sm font-medium rounded-lg shadow-xl opacity-0 invisible group-hover/item:opacity-100 group-hover/item:visible transition-all duration-200 whitespace-nowrap z-50 pointer-events-none"
-                      role="tooltip"
-                    >
+                    <div className="absolute left-full ml-2 top-1/2 -translate-y-1/2 px-3 py-2 bg-[#001B55] text-white text-sm font-medium rounded-lg shadow-xl opacity-0 invisible group-hover/item:opacity-100 group-hover/item:visible transition-all duration-200 whitespace-nowrap z-50 pointer-events-none">
                       {item.title}
                       <div className="absolute right-full top-1/2 -translate-y-1/2 border-4 border-transparent border-r-[#001B55]"></div>
                     </div>
@@ -380,19 +323,13 @@ export function ModernSidebar({
 
                   {/* Submenu */}
                   {!isCollapsed && openGroups.includes(item.title) && (
-                    <div
-                      id={`submenu-${item.title}`}
-                      className="ml-8 mt-1 mb-2 space-y-0.5 relative animate-in slide-in-from-top-2 duration-300"
-                      role="list"
-                      aria-label={`Submenu ${item.title}`}
-                    >
+                    <div className="ml-8 mt-1 mb-2 space-y-0.5 relative animate-in slide-in-from-top-2 duration-300">
                       {/* Vertical line connector */}
                       <div
                         className="absolute left-0 top-0 bottom-0 w-px"
                         style={{
                           background: "rgba(255, 156, 4, 0.2)",
                         }}
-                        aria-hidden="true"
                       />
 
                       {item.subItems?.map((subItem) => {
@@ -402,13 +339,11 @@ export function ModernSidebar({
                           <SafeNavLink
                             key={subItem.url}
                             to={subItem.url}
-                            className={`group relative flex items-center gap-3 px-4 py-2.5 rounded-xl transition-all duration-300 focus:outline-none focus:ring-2 focus:ring-brand-accent focus:ring-offset-2 focus:ring-offset-brand-primary ${
+                            className={`group relative flex items-center gap-3 px-4 py-2.5 rounded-xl transition-all duration-300 ${
                               subItemActive
                                 ? "bg-[#FF9C04]/20 text-white"
                                 : "text-white/60 hover:bg-white/5 hover:text-white"
                             }`}
-                            aria-label={subItem.ariaLabel}
-                            aria-current={subItemActive ? "page" : undefined}
                           >
                             {/* Connection Dot */}
                             <div
@@ -420,7 +355,6 @@ export function ModernSidebar({
                                   ? "0px 0px 8px rgba(255, 156, 4, 0.6)"
                                   : "none",
                               }}
-                              aria-hidden="true"
                             />
 
                             <SubIcon
@@ -429,18 +363,26 @@ export function ModernSidebar({
                                   ? "text-[#FF9C04]"
                                   : "text-white/50 group-hover:text-white/70"
                               }`}
-                              aria-hidden="true"
                             />
 
                             <span
                               className={`text-sm font-medium ${
-                                subItemActive
-                                  ? "text-white"
-                                  : "group-hover:text-white"
+                                subItemActive ? "text-white" : "group-hover:text-white"
                               }`}
                             >
                               {subItem.title}
                             </span>
+
+                            {/* Active Glow */}
+                            {subItemActive && (
+                              <div
+                                className="absolute inset-0 pointer-events-none rounded-xl"
+                                style={{
+                                  background:
+                                    "radial-gradient(50% 50% at 50% 50%, rgba(255, 156, 4, 0.1) 0%, rgba(255, 156, 4, 0) 100%)",
+                                }}
+                              />
+                            )}
                           </SafeNavLink>
                         );
                       })}
@@ -453,13 +395,11 @@ export function ModernSidebar({
                     to={item.url ?? "#"}
                     className={`group relative flex items-center ${
                       isCollapsed ? "justify-center px-0" : "gap-3 px-4"
-                    } py-3 rounded-2xl font-medium transition-all duration-300 focus:outline-none focus:ring-2 focus:ring-brand-accent focus:ring-offset-2 focus:ring-offset-brand-primary ${
+                    } py-3 rounded-2xl font-medium transition-all duration-300 ${
                       isActive(item.url ?? "")
                         ? "bg-[#FF9C04]/10 text-white shadow-lg"
                         : "text-white/70 hover:bg-white/5 hover:text-white"
                     }`}
-                    aria-label={item.ariaLabel}
-                    aria-current={isActive(item.url ?? "") ? "page" : undefined}
                   >
                     {/* Active Indicator */}
                     {isActive(item.url ?? "") && !isCollapsed && (
@@ -470,15 +410,21 @@ export function ModernSidebar({
                             "linear-gradient(180deg, #FF9C04 0%, #FFB04A 100%)",
                           boxShadow: "0px 0px 12px rgba(255, 156, 4, 0.6)",
                         }}
-                        aria-hidden="true"
                       />
                     )}
 
-                    <div
-                      className={`relative z-10 flex items-center ${
-                        isCollapsed ? "" : "gap-3 w-full"
-                      }`}
-                    >
+                    {/* Glow Effect */}
+                    {isActive(item.url ?? "") && (
+                      <div
+                        className="absolute inset-0 pointer-events-none rounded-2xl"
+                        style={{
+                          background:
+                            "radial-gradient(50% 50% at 50% 50%, rgba(255, 156, 4, 0.15) 0%, rgba(255, 156, 4, 0) 100%)",
+                        }}
+                      />
+                    )}
+
+                    <div className={`relative z-10 flex items-center ${isCollapsed ? "" : "gap-3 w-full"}`}>
                       <item.icon
                         className={`h-5 w-5 flex-shrink-0 transition-all duration-300 ${
                           isActive(item.url ?? "")
@@ -490,28 +436,27 @@ export function ModernSidebar({
                             ? "drop-shadow(0px 0px 8px rgba(255, 156, 4, 0.5))"
                             : "none",
                         }}
-                        aria-hidden="true"
                       />
                       {!isCollapsed && (
                         <span
                           className={`flex-1 text-left text-sm font-semibold ${
-                            isActive(item.url ?? "")
-                              ? "text-white"
-                              : "group-hover:text-white"
+                            isActive(item.url ?? "") ? "text-white" : "group-hover:text-white"
                           }`}
+                          style={{
+                            textShadow: isActive(item.url ?? "")
+                              ? "0px 0px 12px rgba(255, 255, 255, 0.4)"
+                              : "none",
+                          }}
                         >
                           {item.title}
                         </span>
                       )}
                     </div>
                   </SafeNavLink>
-
+                  
                   {/* Tooltip for collapsed state */}
                   {isCollapsed && (
-                    <div
-                      className="absolute left-full ml-2 top-1/2 -translate-y-1/2 px-3 py-2 bg-[#001B55] text-white text-sm font-medium rounded-lg shadow-xl opacity-0 invisible group-hover/item:opacity-100 group-hover/item:visible transition-all duration-200 whitespace-nowrap z-50 pointer-events-none"
-                      role="tooltip"
-                    >
+                    <div className="absolute left-full ml-2 top-1/2 -translate-y-1/2 px-3 py-2 bg-[#001B55] text-white text-sm font-medium rounded-lg shadow-xl opacity-0 invisible group-hover/item:opacity-100 group-hover/item:visible transition-all duration-200 whitespace-nowrap z-50 pointer-events-none">
                       {item.title}
                       <div className="absolute right-full top-1/2 -translate-y-1/2 border-4 border-transparent border-r-[#001B55]"></div>
                     </div>
@@ -531,10 +476,9 @@ export function ModernSidebar({
           background:
             "radial-gradient(50% 50% at 50% 50%, rgba(255, 156, 4, 0.3) 0%, rgba(255, 156, 4, 0) 100%)",
         }}
-        aria-hidden="true"
       />
 
-      {/* Quick Actions */}
+      {/* Promo Block */}
       {!isCollapsed && (
         <div
           className="mx-5 mb-5 mt-5 p-5 rounded-2xl flex flex-col gap-4"
@@ -562,13 +506,11 @@ export function ModernSidebar({
 
           <SafeNavLink to="/admin/news/create">
             <button
-              className="w-full flex items-center justify-center gap-2 px-5 py-3 rounded-xl font-semibold text-sm text-white transition-all hover:scale-105 active:scale-95 hover:shadow-xl focus:outline-none focus:ring-2 focus:ring-white focus:ring-offset-2 focus:ring-offset-brand-primary"
+              className="w-full flex items-center justify-center gap-2 px-5 py-3 rounded-xl font-semibold text-sm text-white transition-all hover:scale-105 active:scale-95 hover:shadow-xl"
               style={{
-                background:
-                  "linear-gradient(135deg, #FF9C04 0%, #FFB04A 100%)",
+                background: "linear-gradient(135deg, #FF9C04 0%, #FFB04A 100%)",
                 boxShadow: "0px 8px 24px rgba(255, 156, 4, 0.4)",
               }}
-              aria-label="Buat konten baru"
             >
               <div className="w-5 h-5 rounded-full bg-white/20 flex items-center justify-center">
                 <Plus className="w-3.5 h-3.5" />
@@ -584,13 +526,11 @@ export function ModernSidebar({
         <div className="p-4 flex justify-center">
           <SafeNavLink to="/admin/news/create">
             <button
-              className="w-12 h-12 rounded-xl flex items-center justify-center transition-all hover:scale-110 active:scale-95 focus:outline-none focus:ring-2 focus:ring-brand-accent focus:ring-offset-2 focus:ring-offset-brand-primary"
+              className="w-12 h-12 rounded-xl flex items-center justify-center transition-all hover:scale-110 active:scale-95"
               style={{
-                background:
-                  "linear-gradient(135deg, #FF9C04 0%, #FFB04A 100%)",
+                background: "linear-gradient(135deg, #FF9C04 0%, #FFB04A 100%)",
                 boxShadow: "0px 8px 24px rgba(255, 156, 4, 0.4)",
               }}
-              aria-label="Buat konten baru"
             >
               <Plus className="w-5 h-5 text-white" />
             </button>
@@ -602,18 +542,18 @@ export function ModernSidebar({
       {isCollapsed && (
         <button
           onClick={onToggle}
-          className="absolute -right-3 top-16 w-7 h-7 rounded-full flex items-center justify-center transition-all hover:scale-110 shadow-lg focus:outline-none focus:ring-2 focus:ring-brand-accent"
+          className="absolute -right-3 top-16 w-7 h-7 rounded-full flex items-center justify-center transition-all hover:scale-110 shadow-lg"
           style={{
             background: "rgba(15, 9, 12, 0.4)",
             backdropFilter: "blur(68.49px)",
             boxShadow: "0 4px 16px rgba(0, 0, 0, 0.3)",
           }}
-          aria-label="Buka sidebar"
-          aria-expanded={!isCollapsed}
         >
-          <ChevronRight className="w-3.5 h-3.5 text-white/60" />
+          <ChevronRight 
+            className="w-3.5 h-3.5 text-white/60"
+          />
         </button>
       )}
-    </nav>
+    </div>
   );
 }
