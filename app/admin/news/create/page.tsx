@@ -1,103 +1,171 @@
 "use client";
-import { useState } from "react";
+
+import { useMemo, useRef, useState } from "react";
+import { z } from "zod";
+import { zodResolver } from "@hookform/resolvers/zod";
+import { useForm } from "react-hook-form";
+import { useRouter } from "next/navigation";
+import { toast } from "sonner";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
-import { Badge } from "@/components/ui/badge";
-import {
-  Select,
-  SelectContent,
-  SelectItem,
-  SelectTrigger,
-  SelectValue,
-} from "@/components/ui/select";
 import { Textarea } from "@/components/ui/textarea";
+import { AdminLayout } from "../../components/layout/AdminLayout";
 import {
-  FileText,
-  Save,
-  Eye,
   ArrowLeft,
   Calendar,
+  Eye,
+  FileText,
   Image,
-  Plus,
+  Save,
+  Loader2,
   X,
 } from "lucide-react";
-import { useRouter, useParams } from "next/navigation";
-import { AdminLayout } from "../../components/layout/AdminLayout";
+import { useCreateNews } from "@/app/admin/news/hooks";
 
-export default function Create() {
+const formSchema = z.object({
+  title: z.string().min(3, "Judul minimal 3 karakter"),
+  content: z
+    .string()
+    .min(20, "Konten minimal 20 karakter agar layak publikasi"),
+  publishDate: z.string().min(1, "Tanggal publikasi wajib diisi"),
+  thumbnailUrl: z
+    .string()
+    .url("Unggah gambar sampul terlebih dahulu"),
+});
+
+type FormValues = z.infer<typeof formSchema>;
+
+function getDefaultPublishDate() {
+  const now = new Date();
+  const offset = now.getTimezoneOffset();
+  const localDate = new Date(now.getTime() - offset * 60 * 1000);
+  return localDate.toISOString().slice(0, 16);
+}
+
+export default function CreateNewsPage() {
   const router = useRouter();
-  const params = useParams<{ type?: string }>();
-  const type = params?.type;
-  const [formData, setFormData] = useState({
-    title: "",
-    excerpt: "",
-    content: "",
-    author: "Admin",
-    publishDate: new Date().toISOString().split("T")[0],
-    status: "DRAFT",
-    category: "Kegiatan",
-    featured: false,
-    image: null as File | null,
-    imageUrl: "",
+  const mutation = useCreateNews();
+  const fileInputRef = useRef<HTMLInputElement | null>(null);
+  const [isUploading, setIsUploading] = useState(false);
+
+  const form = useForm<FormValues>({
+    resolver: zodResolver(formSchema),
+    defaultValues: useMemo(
+      () => ({
+        title: "",
+        content: "",
+        publishDate: getDefaultPublishDate(),
+        thumbnailUrl: "",
+      }),
+      []
+    ),
   });
 
-  const handleInputChange = (field: string, value: string | boolean) => {
-    setFormData((prev) => ({ ...prev, [field]: value }));
-  };
+  const {
+    register,
+    handleSubmit,
+    watch,
+    setValue,
+    setError,
+    clearErrors,
+    formState: { errors, isSubmitting },
+  } = form;
 
-  const handleImageUpload = (e: React.ChangeEvent<HTMLInputElement>) => {
-    if (e.target.files && e.target.files[0]) {
-      const file = e.target.files[0];
-      setFormData((prev) => ({
-        ...prev,
-        image: file,
-        imageUrl: URL.createObjectURL(file),
-      }));
+  const thumbnailUrl = watch("thumbnailUrl");
+
+  const handleFileChange = async (
+    event: React.ChangeEvent<HTMLInputElement>
+  ) => {
+    const file = event.target.files?.[0];
+    if (!file) return;
+
+    setIsUploading(true);
+    try {
+      const formData = new FormData();
+      formData.append("file", file);
+      formData.append("scope", "news");
+
+      const res = await fetch("/api/upload?scope=news", {
+        method: "POST",
+        body: formData,
+      });
+      const json = await res.json();
+      if (!res.ok || !json.success) {
+        throw new Error(json.error || "Gagal mengunggah gambar");
+      }
+
+      setValue("thumbnailUrl", json.url, { shouldValidate: true });
+      clearErrors("thumbnailUrl");
+      toast.success("Gambar berhasil diunggah", {
+        description: "Gunakan pratinjau di bawah untuk memastikan tampilannya.",
+      });
+    } catch (error) {
+      setError("thumbnailUrl", {
+        type: "manual",
+        message: (error as Error).message,
+      });
+      toast.error("Upload gagal", {
+        description: (error as Error).message,
+      });
+      if (fileInputRef.current) {
+        fileInputRef.current.value = "";
+      }
+    } finally {
+      setIsUploading(false);
     }
   };
 
-  const removeImage = () => {
-    setFormData((prev) => ({
-      ...prev,
-      image: null,
-      imageUrl: "",
-    }));
+  const handleRemoveImage = () => {
+    setValue("thumbnailUrl", "", { shouldValidate: true });
+    if (fileInputRef.current) {
+      fileInputRef.current.value = "";
+    }
+    toast.info("Gambar sampul dihapus", {
+      description: "Unggah gambar baru sebelum menyimpan berita.",
+    });
   };
 
-  const handleSubmit = (e: React.FormEvent) => {
-    e.preventDefault();
-    // Simulate form submission
-    console.log("Submitting news:", formData);
+  const onSubmit = handleSubmit(async (values) => {
+    try {
+      const payload = {
+        title: values.title,
+        content: values.content,
+        publishDate: values.publishDate
+          ? new Date(values.publishDate).toISOString()
+          : undefined,
+        thumbnailUrl: values.thumbnailUrl.trim(),
+      };
 
-    // Show success message
-    alert("Berita berhasil disimpan!");
+      await mutation.mutateAsync(payload);
+      toast.success("Berita berhasil dibuat", {
+        description: "Artikel siap ditinjau atau dipublikasikan.",
+      });
+      router.push("/admin/news");
+    } catch (error) {
+      toast.error("Gagal menyimpan berita", {
+        description: (error as Error).message,
+      });
+    }
+  });
 
-    // Navigate back to news list
-    router.push("/admin/news");
-  };
-
-  const handlePreview = () => {
-    // Simulate preview functionality
-    alert("Pratinjau berita");
-  };
+  const isBusy = isSubmitting || mutation.isPending || isUploading;
 
   const breadcrumbs = [
     { label: "Dashboard", href: "/admin" },
     { label: "Berita", href: "/admin/news" },
-    { label: type === "new" ? "Tulis Berita" : "Edit Berita" },
+    { label: "Tulis Berita" },
   ];
 
   return (
     <AdminLayout breadcrumbs={breadcrumbs}>
-      <div className="space-y-6">
-        {/* Header Section */}
-        <div className="bg-white/70 backdrop-blur-sm border-2 border-gray-200/80 rounded-2xl p-6 shadow-sm hover:shadow-md transition-all duration-300">
-          <div className="flex items-center justify-between">
+      <form onSubmit={onSubmit} className="space-y-6">
+        <div className="bg-white/80 backdrop-blur-sm border-2 border-gray-200 rounded-2xl p-6 shadow-sm">
+          <div className="flex flex-col gap-4 lg:flex-row lg:items-center lg:justify-between">
             <div className="flex items-center gap-4">
               <Button
                 variant="outline"
-                size="sm"
+                type="button"
                 onClick={() => router.push("/admin/news")}
                 className="border-2 border-gray-200 hover:border-gray-300"
               >
@@ -105,250 +173,186 @@ export default function Create() {
                 Kembali
               </Button>
               <div>
-                <h1 className="text-2xl font-bold">
-                  {type === "new" ? "Tulis Berita Baru" : "Edit Berita"}
-                </h1>
-                <p className="text-muted-foreground">
-                  {type === "new"
-                    ? "Buat dan publikasi artikel berita"
-                    : "Edit artikel berita"}
+                <h1 className="text-2xl font-bold">Tulis Berita Baru</h1>
+                <p className="text-muted-foreground text-sm">
+                  Isi informasi berita dengan lengkap sebelum dipublikasikan.
                 </p>
               </div>
             </div>
-            <div className="flex gap-2">
+            <div className="flex items-center gap-2">
               <Button
+                type="button"
                 variant="outline"
-                onClick={handlePreview}
+                disabled={isBusy}
+                onClick={() =>
+                  toast.info("Pratinjau belum tersedia", {
+                    description: "Fitur pratinjau akan hadir segera.",
+                  })
+                }
                 className="border-2 border-gray-200 hover:border-gray-300"
               >
                 <Eye className="mr-2 h-4 w-4" />
                 Pratinjau
               </Button>
               <Button
-                className="bg-[#FF9C04] hover:bg-[#001B55] text-white border-2 border-[#FF9C04] hover:border-[#001B55] shadow-lg hover:shadow-xl transition-all duration-300 transform hover:scale-105"
-                onClick={handleSubmit}
+                type="submit"
+                disabled={isBusy}
+                className="bg-[#FF9C04] hover:bg-[#001B55] text-white border-2 border-[#FF9C04] hover:border-[#001B55] shadow-lg transition-all duration-300"
               >
                 <Save className="mr-2 h-4 w-4" />
-                Simpan
+                {isBusy ? "Menyimpan..." : "Simpan"}
               </Button>
             </div>
           </div>
         </div>
 
-        <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
-          {/* Main Content */}
-          <div className="lg:col-span-2 space-y-6">
+        <div className="grid grid-cols-1 gap-6 lg:grid-cols-3">
+          <div className="space-y-6 lg:col-span-2">
             <Card className="border-2 border-gray-300/80 shadow-lg">
-              <CardContent className="p-6">
-                <div className="space-y-4">
-                  <div>
-                    <label className="block text-sm font-medium mb-2">
-                      Judul Berita *
-                    </label>
-                    <Input
-                      value={formData.title}
-                      onChange={(e) =>
-                        handleInputChange("title", e.target.value)
-                      }
-                      placeholder="Masukkan judul berita"
-                      className="border-2 border-gray-200 hover:border-gray-300 focus:border-brand-primary"
-                    />
-                  </div>
+              <CardHeader>
+                <CardTitle className="flex items-center gap-2 text-lg">
+                  <FileText className="h-5 w-5" />
+                  Konten Utama
+                </CardTitle>
+              </CardHeader>
+              <CardContent className="space-y-4">
+                <div>
+                  <label className="block text-sm font-medium mb-2">
+                    Judul Berita *
+                  </label>
+                  <Input
+                    {...register("title")}
+                    placeholder="Masukkan judul berita"
+                    disabled={isBusy}
+                    className="border-2 border-gray-200 hover:border-gray-300 focus:border-brand-primary"
+                  />
+                  {errors.title && (
+                    <p className="mt-2 text-xs text-red-600">
+                      {errors.title.message}
+                    </p>
+                  )}
+                </div>
 
-                  <div>
-                    <label className="block text-sm font-medium mb-2">
-                      Ringkasan *
-                    </label>
-                    <Textarea
-                      value={formData.excerpt}
-                      onChange={(e) =>
-                        handleInputChange("excerpt", e.target.value)
-                      }
-                      placeholder="Masukkan ringkasan berita"
-                      className="border-2 border-gray-200 hover:border-gray-300 focus:border-brand-primary min-h-[100px]"
-                    />
-                  </div>
-
-                  <div>
-                    <label className="block text-sm font-medium mb-2">
-                      Konten Berita *
-                    </label>
-                    <Textarea
-                      value={formData.content}
-                      onChange={(e) =>
-                        handleInputChange("content", e.target.value)
-                      }
-                      placeholder="Tulis konten berita di sini..."
-                      className="border-2 border-gray-200 hover:border-gray-300 focus:border-brand-primary min-h-[300px]"
-                    />
-                  </div>
+                <div>
+                  <label className="block text-sm font-medium mb-2">
+                    Konten Berita *
+                  </label>
+                  <Textarea
+                    {...register("content")}
+                    placeholder="Tulis konten berita di sini..."
+                    disabled={isBusy}
+                    className="border-2 border-gray-200 hover:border-gray-300 focus:border-brand-primary min-h-[280px]"
+                  />
+                  {errors.content && (
+                    <p className="mt-2 text-xs text-red-600">
+                      {errors.content.message}
+                    </p>
+                  )}
                 </div>
               </CardContent>
             </Card>
           </div>
 
-          {/* Sidebar */}
           <div className="space-y-6">
             <Card className="border-2 border-gray-300/80 shadow-lg">
               <CardHeader className="pb-3">
-                <CardTitle className="text-lg flex items-center gap-2">
+                <CardTitle className="flex items-center gap-2 text-lg">
                   <Calendar className="h-5 w-5" />
-                  Publikasi
+                  Pengaturan Publikasi
                 </CardTitle>
               </CardHeader>
-              <CardContent className="p-6 pt-0 space-y-4">
+              <CardContent className="space-y-4">
                 <div>
                   <label className="block text-sm font-medium mb-2">
-                    Status
-                  </label>
-                  <Select
-                    value={formData.status}
-                    onValueChange={(value) =>
-                      handleInputChange("status", value)
-                    }
-                  >
-                    <SelectTrigger className="border-2 border-gray-200 hover:border-gray-300 focus:border-brand-primary">
-                      <SelectValue />
-                    </SelectTrigger>
-                    <SelectContent>
-                      <SelectItem value="DRAFT">Draft</SelectItem>
-                      <SelectItem value="PUBLISHED">Published</SelectItem>
-                      <SelectItem value="SCHEDULED">Scheduled</SelectItem>
-                      <SelectItem value="ARCHIVED">Archived</SelectItem>
-                    </SelectContent>
-                  </Select>
-                </div>
-
-                <div>
-                  <label className="block text-sm font-medium mb-2">
-                    Tanggal Publikasi
+                    Tanggal Publikasi *
                   </label>
                   <Input
-                    type="date"
-                    value={formData.publishDate}
-                    onChange={(e) =>
-                      handleInputChange("publishDate", e.target.value)
-                    }
+                    type="datetime-local"
+                    {...register("publishDate")}
+                    disabled={isBusy}
                     className="border-2 border-gray-200 hover:border-gray-300 focus:border-brand-primary"
                   />
-                </div>
-
-                <div>
-                  <label className="block text-sm font-medium mb-2">
-                    Kategori
-                  </label>
-                  <Select
-                    value={formData.category}
-                    onValueChange={(value) =>
-                      handleInputChange("category", value)
-                    }
-                  >
-                    <SelectTrigger className="border-2 border-gray-200 hover:border-gray-300 focus:border-brand-primary">
-                      <SelectValue />
-                    </SelectTrigger>
-                    <SelectContent>
-                      <SelectItem value="Kegiatan">Kegiatan</SelectItem>
-                      <SelectItem value="Event">Event</SelectItem>
-                      <SelectItem value="Dokumentasi">Dokumentasi</SelectItem>
-                      <SelectItem value="Pengumuman">Pengumuman</SelectItem>
-                    </SelectContent>
-                  </Select>
-                </div>
-
-                <div className="flex items-center justify-between">
-                  <label className="block text-sm font-medium">Featured</label>
-                  <div className="relative inline-block w-10 mr-2 align-middle select-none">
-                    <input
-                      type="checkbox"
-                      checked={formData.featured}
-                      onChange={(e) =>
-                        handleInputChange("featured", e.target.checked)
-                      }
-                      className="sr-only"
-                      id="featured-toggle"
-                    />
-                    <label
-                      htmlFor="featured-toggle"
-                      className={`block h-6 w-10 rounded-full cursor-pointer transition-colors duration-200 ease-in-out ${
-                        formData.featured ? "bg-[#FF9C04]" : "bg-gray-300"
-                      }`}
-                    >
-                      <span
-                        className={`absolute left-1 top-1 bg-white w-4 h-4 rounded-full transition-transform duration-200 ease-in-out ${
-                          formData.featured ? "transform translate-x-4" : ""
-                        }`}
-                      />
-                    </label>
-                  </div>
+                  {errors.publishDate && (
+                    <p className="mt-2 text-xs text-red-600">
+                      {errors.publishDate.message}
+                    </p>
+                  )}
+                  <p className="mt-1 text-xs text-muted-foreground">
+                    Waktu publikasi akan dikonversi otomatis ke zona waktu server.
+                  </p>
                 </div>
               </CardContent>
             </Card>
 
             <Card className="border-2 border-gray-300/80 shadow-lg">
               <CardHeader className="pb-3">
-                <CardTitle className="text-lg flex items-center gap-2">
+                <CardTitle className="flex items-center gap-2 text-lg">
                   <Image className="h-5 w-5" />
-                  Gambar Utama
+                  Sampul Berita
                 </CardTitle>
               </CardHeader>
-              <CardContent className="p-6 pt-0 space-y-4">
-                {formData.imageUrl ? (
-                  <div className="relative">
-                    <div className="aspect-video bg-gray-100 rounded-lg overflow-hidden">
+              <CardContent className="space-y-4">
+                <input type="hidden" {...register("thumbnailUrl")} />
+
+                <div className="space-y-2">
+                  <label className="block text-sm font-medium">
+                    Unggah Gambar Sampul
+                  </label>
+                  <Input
+                    ref={fileInputRef}
+                    type="file"
+                    accept="image/png,image/jpeg,image/webp"
+                    onChange={handleFileChange}
+                    disabled={isBusy}
+                    className="border-2 border-dashed border-gray-300 hover:border-gray-400 cursor-pointer"
+                  />
+                  <p className="text-xs text-muted-foreground">
+                    Format yang didukung: JPG, PNG, WEBP (maksimal 5MB).
+                  </p>
+                  {errors.thumbnailUrl && (
+                    <p className="text-xs text-red-600">
+                      {errors.thumbnailUrl.message}
+                    </p>
+                  )}
+                  {isUploading && (
+                    <div className="flex items-center gap-2 text-xs text-muted-foreground">
+                      <Loader2 className="h-3.5 w-3.5 animate-spin" />
+                      Mengunggah gambar...
+                    </div>
+                  )}
+                </div>
+
+                {thumbnailUrl && (
+                  <div className="rounded-lg border border-dashed border-gray-300 bg-gray-50 p-4">
+                    <p className="text-xs text-muted-foreground mb-2">
+                      Pratinjau gambar sampul:
+                    </p>
+                    <div className="relative aspect-video overflow-hidden rounded-md bg-white">
+                      {/* eslint-disable-next-line @next/next/no-img-element */}
                       <img
-                        src={formData.imageUrl}
-                        alt="Preview"
-                        className="w-full h-full object-cover"
+                        src={thumbnailUrl}
+                        alt="Pratinjau gambar sampul"
+                        className="h-full w-full object-cover"
                       />
                     </div>
                     <Button
-                      variant="outline"
+                      type="button"
+                      variant="ghost"
                       size="sm"
-                      onClick={removeImage}
-                      className="absolute top-2 right-2 bg-white/80 hover:bg-white border-2 border-gray-200"
+                      onClick={handleRemoveImage}
+                      disabled={isBusy}
+                      className="mt-3 text-xs text-red-600 hover:text-red-600 hover:bg-red-50"
                     >
-                      <X className="h-4 w-4" />
+                      <X className="mr-2 h-3.5 w-3.5" />
+                      Hapus gambar
                     </Button>
                   </div>
-                ) : (
-                  <div className="border-2 border-dashed border-gray-300 rounded-lg p-8 text-center">
-                    <Image className="mx-auto h-12 w-12 text-gray-400 mb-3" />
-                    <p className="text-sm text-gray-600 mb-3">
-                      Upload gambar utama berita
-                    </p>
-                    <label className="cursor-pointer">
-                      <span className="inline-flex items-center px-4 py-2 border border-transparent text-sm font-medium rounded-md shadow-sm text-white bg-[#FF9C04] hover:bg-[#FF9C04]/90 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-[#FF9C04]">
-                        <Plus className="mr-2 h-4 w-4" />
-                        Pilih Gambar
-                      </span>
-                      <input
-                        type="file"
-                        className="hidden"
-                        accept="image/*"
-                        onChange={handleImageUpload}
-                      />
-                    </label>
-                  </div>
                 )}
-
-                <div>
-                  <label className="block text-sm font-medium mb-2">
-                    Penulis
-                  </label>
-                  <Input
-                    value={formData.author}
-                    onChange={(e) =>
-                      handleInputChange("author", e.target.value)
-                    }
-                    placeholder="Nama penulis"
-                    className="border-2 border-gray-200 hover:border-gray-300 focus:border-brand-primary"
-                  />
-                </div>
               </CardContent>
             </Card>
           </div>
         </div>
-      </div>
+      </form>
     </AdminLayout>
   );
 }

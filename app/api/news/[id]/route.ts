@@ -81,7 +81,12 @@ export async function PUT(
       data: {
         title,
         content,
-        publishDate: publishDate ? new Date(publishDate) : undefined,
+        publishDate:
+          publishDate === null
+            ? null
+            : publishDate
+            ? new Date(publishDate)
+            : undefined,
         thumbnailUrl,
         userId,
       },

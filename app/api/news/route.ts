@@ -9,13 +9,47 @@ export async function GET(req: NextRequest) {
   try {
     // Extract and validate query parameters
     const query = extractQueryParams(newsSchemas.list, req.nextUrl.searchParams);
-    
+
+    const now = new Date();
     const where: any = {};
+
+    if (query.status === "archived") {
+      where.deletedAt = { not: null };
+    } else {
+      where.deletedAt = null;
+    }
+
     if (query.search) {
       where.OR = [
         { title: { contains: query.search, mode: "insensitive" } },
         { content: { contains: query.search, mode: "insensitive" } },
       ];
+    }
+
+    if (query.status === "draft") {
+      where.publishDate = null;
+    } else {
+      const publishDateFilter: any = {};
+
+      if (query.status === "scheduled") {
+        publishDateFilter.gt = now;
+      }
+
+      if (query.status === "published") {
+        publishDateFilter.lte = now;
+      }
+
+      if (query.startDate) {
+        publishDateFilter.gte = new Date(query.startDate);
+      }
+
+      if (query.endDate) {
+        publishDateFilter.lte = new Date(query.endDate);
+      }
+
+      if (Object.keys(publishDateFilter).length) {
+        where.publishDate = publishDateFilter;
+      }
     }
 
     const [total, newsList] = await Promise.all([
@@ -39,7 +73,7 @@ export async function GET(req: NextRequest) {
         pageSize: query.pageSize!,
         total,
         totalPages: Math.ceil(total / (query.pageSize || 20)),
-      }
+      },
     });
   } catch (err: any) {
     console.error("Error fetching news:", err);

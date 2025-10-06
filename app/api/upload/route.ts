@@ -19,6 +19,7 @@ const ALLOWED_SCOPES: Record<string, string> = {
   program: "programs",
   struktur: "struktur",
   caleg: "caleg",
+  news: "news",
 };
 
 function resolveScope(input?: string | null): string {

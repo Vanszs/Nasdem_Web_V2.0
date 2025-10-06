@@ -104,7 +104,7 @@ export const newsSchemas = {
     title: z.string().min(1, "Title is required").max(255, "Title too long"),
     content: z.string().optional(),
     publishDate: baseSchemas.date,
-    thumbnailUrl: baseSchemas.url,
+    thumbnailUrl: z.string().url("Thumbnail URL is required"),
   }),
   update: z.object({
     title: z.string().min(1, "Title is required").max(255, "Title too long").optional(),
@@ -114,6 +114,9 @@ export const newsSchemas = {
   }),
   list: z.object({
     search: z.string().optional(),
+    status: z.enum(["draft", "scheduled", "published", "archived"]).optional(),
+    startDate: baseSchemas.date,
+    endDate: baseSchemas.date,
     ...baseSchemas.pagination.shape,
   }),
 };
