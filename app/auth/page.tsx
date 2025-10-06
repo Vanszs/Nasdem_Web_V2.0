@@ -1,6 +1,7 @@
 "use client";
 
 import * as React from "react";
+import Image from "next/image";
 import { Eye, EyeOff, ArrowRight, Shield, Lock, Mail, Sparkles } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -67,11 +68,13 @@ export default function LoginPage() {
           <div className="relative z-10 space-y-8">
             {/* Logo */}
             <div className="flex items-center gap-4 mb-8">
-              <div className="w-16 h-16 bg-[#FF9C04] rounded-2xl flex items-center justify-center shadow-lg shadow-[#FF9C04]/30 relative">
-                <Shield className="w-9 h-9 text-white" />
-                <div className="absolute -top-1 -right-1">
-                  <Sparkles className="w-5 h-5 text-[#FF9C04] animate-pulse" />
-                </div>
+              <div className="relative w-16 h-16 flex-shrink-0 rounded-2xl border-2 border-white/20 p-2 bg-white/5">
+                <Image
+                  src="/logo-nasdem.png"
+                  alt="Logo NasDem"
+                  fill
+                  className="object-contain rounded-xl"
+                />
               </div>
               <div>
                 <h1 className="text-3xl font-bold">NasDem</h1>
@@ -110,8 +113,13 @@ export default function LoginPage() {
         <div className="flex flex-col justify-center p-8 lg:p-12">
           {/* Mobile Logo */}
           <div className="lg:hidden flex items-center gap-3 mb-8">
-            <div className="w-12 h-12 bg-[#001B55] rounded-xl flex items-center justify-center shadow-lg">
-              <Shield className="w-6 h-6 text-[#FF9C04]" />
+            <div className="relative w-12 h-12 flex-shrink-0 rounded-xl border-2 border-[#001B55]/20 p-1.5 bg-[#001B55]/5">
+              <Image
+                src="/logo-nasdem.png"
+                alt="Logo NasDem"
+                fill
+                className="object-contain rounded-lg"
+              />
             </div>
             <div>
               <h1 className="text-xl font-bold text-[#001B55]">NasDem Sidoarjo</h1>

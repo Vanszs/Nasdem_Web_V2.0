@@ -555,15 +555,15 @@ export function StatistikDataTable({ data, loading }: StatistikDataTableProps) {
       <div className="overflow-x-auto">
         <table className="w-full min-w-max">
           <thead>
-            <tr className="bg-[#F9FAFB] border-b border-[#E5E7EB]">
-              <th className="px-6 py-4 text-left text-xs font-bold uppercase tracking-wide text-[#374151] w-72">
+            <tr className="bg-gray-200 border-b-2 border-[#001B55]/20">
+              <th className="px-6 py-4 text-left text-xs font-bold uppercase tracking-wide text-[#001B55] w-72">
                 Partai / Caleg
               </th>
               {columnKeys.map((col) => (
                 <th
                   key={col}
                   onClick={() => handleSortColumn(col)}
-                  className="px-4 py-4 text-left text-xs font-bold uppercase tracking-wide text-[#374151] cursor-pointer hover:bg-[#F3F4F6] whitespace-nowrap"
+                  className="px-4 py-4 text-left text-xs font-bold uppercase tracking-wide text-[#001B55] cursor-pointer hover:bg-gray-300 whitespace-nowrap"
                 >
                   <div className="flex items-center gap-1">
                     {pivotLevel === "dapil" && col.startsWith("Dapil")
@@ -575,19 +575,19 @@ export function StatistikDataTable({ data, loading }: StatistikDataTableProps) {
               ))}
               <th
                 onClick={handleSortTotal}
-                className="px-5 py-4 text-left text-xs font-bold uppercase tracking-wide text-[#374151] cursor-pointer hover:bg-[#F3F4F6] whitespace-nowrap"
+                className="px-5 py-4 text-left text-xs font-bold uppercase tracking-wide text-[#001B55] cursor-pointer hover:bg-slate-300 whitespace-nowrap"
               >
                 <div className="flex items-center gap-1">
                   Total
                   <SortIcon active={sortField === "_total"} />
                 </div>
               </th>
-              <th className="px-5 py-4 text-left text-xs font-bold uppercase tracking-wide text-[#374151] whitespace-nowrap">
+              <th className="px-5 py-4 text-left text-xs font-bold uppercase tracking-wide text-[#001B55] whitespace-nowrap">
                 %
               </th>
             </tr>
           </thead>
-          <tbody className="divide-y divide-[#F1F5F9]">
+          <tbody className="divide-y divide-[#E5E7EB]">
             {paginated.map((row, idx) => {
               if (row._rowType === "group") {
                 const g = row as GroupRow;
@@ -595,7 +595,7 @@ export function StatistikDataTable({ data, loading }: StatistikDataTableProps) {
                 return (
                   <tr
                     key={`g-${g._groupKey}-${idx}`}
-                    className="bg-[#F8FAFC] hover:bg-[#F1F5F9] transition-colors"
+                    className="bg-white hover:bg-blue-50 transition-colors border-b-2 border-gray-200"
                   >
                     <td className="px-6 py-4">
                       <div className="flex items-center gap-3">
@@ -664,7 +664,8 @@ export function StatistikDataTable({ data, loading }: StatistikDataTableProps) {
               return (
                 <tr
                   key={`c-${c._groupKey}-${c.caleg}-${idx}`}
-                  className="hover:bg-[#F9FAFB] transition-colors"
+                  className="hover:bg-blue-100 transition-colors"
+                  style={{ backgroundColor: idx % 2 === 0 ? '#ffffff' : '#eff1f3' }}
                 >
                   <td className="pl-16 pr-4 py-3">
                     <div className="flex flex-col">

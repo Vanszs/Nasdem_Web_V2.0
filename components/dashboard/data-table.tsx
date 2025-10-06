@@ -135,7 +135,7 @@ export function DataTable<T extends Record<string, any>>({
         <table className="w-full" aria-label="Data table">
           <thead
             className={cn(
-              "bg-muted border-b border-border",
+              "bg-gray-200 border-b border-border",
               stickyHeader && "sticky top-0 z-10"
             )}
           >
@@ -144,7 +144,7 @@ export function DataTable<T extends Record<string, any>>({
                 <th
                   key={column.key}
                   className={cn(
-                    "px-4 py-3 text-sm font-semibold text-text-primary",
+                    "px-4 py-3 text-sm font-bold text-[#001B55]",
                     column.align === "right" && "text-right",
                     column.align === "center" && "text-center",
                     column.align === "left" && "text-left",
@@ -161,7 +161,8 @@ export function DataTable<T extends Record<string, any>>({
             {paginatedData.map((row, rowIndex) => (
               <tr
                 key={row[rowKey] || rowIndex}
-                className="hover:bg-muted/50 transition-colors"
+                className="hover:bg-blue-100 transition-colors"
+                style={{ backgroundColor: rowIndex % 2 === 0 ? '#ffffff' : '#eff1f3' }}
               >
                 {columns.map((column) => (
                   <td

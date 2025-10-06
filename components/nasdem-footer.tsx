@@ -1,5 +1,6 @@
 import { Button } from "@/components/ui/button"
 import { MapPin, Phone, Mail, Facebook, Instagram, Youtube, Twitter } from "lucide-react"
+import Image from "next/image"
 
 const NasdemFooter = () => {
   return (
@@ -10,8 +11,13 @@ const NasdemFooter = () => {
           {/* Brand & Contact */}
           <div className="lg:col-span-2">
             <div className="flex items-center gap-3 mb-6">
-              <div className="w-12 h-12 bg-secondary rounded-full flex items-center justify-center font-bold text-primary text-xl">
-                N
+              <div className="relative w-12 h-12 flex-shrink-0 rounded-lg border-2 border-white/20 p-1 bg-white/5">
+                <Image
+                  src="/logo-nasdem.png"
+                  alt="Logo NasDem"
+                  fill
+                  className="object-contain rounded-md"
+                />
               </div>
               <div className="flex flex-col">
                 <span className="font-bold text-primary-foreground text-xl">DPD Partai NasDem</span>

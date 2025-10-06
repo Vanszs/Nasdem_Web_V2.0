@@ -384,9 +384,8 @@ export function MemberDetailDialog({
                         {kaderList.map((k, i) => (
                           <tr
                             key={k.id}
-                            className={
-                              i % 2 === 0 ? "bg-slate-50/30" : "bg-white"
-                            }
+                            className="hover:bg-blue-100 transition-colors"
+                            style={{ backgroundColor: i % 2 === 0 ? '#ffffff' : '#eff1f3' }}
                           >
                             <td className="px-4 py-3 text-sm text-slate-700">
                               {i + 1}

@@ -554,7 +554,7 @@ function StatistikPemiluPage() {
   ];
 
   const PARTAI_META: Record<string, { color: string; logo: string }> = {
-    NasDem: { color: "#001B55", logo: "/placeholder-logo.png" },
+    NasDem: { color: "#001B55", logo: "/logo-nasdem.png" },
     "PDI-P": { color: "#DC2626", logo: "/placeholder-logo.png" },
     Golkar: { color: "#FFA500", logo: "/placeholder-logo.png" },
     PKB: { color: "#16A085", logo: "/placeholder-logo.png" },
@@ -583,7 +583,7 @@ function StatistikPemiluPage() {
       suara: 44120,
       persentase: 35.2,
       color: "#001B55",
-      logo: "/placeholder-logo.png",
+      logo: "/logo-nasdem.png",
       position: 1,
     },
     {
@@ -1028,10 +1028,10 @@ function StatistikPemiluPage() {
             <span className="text-sm font-medium text-[#001B55]">
               Filter Aktif:
             </span>
-            <Badge className="px-3 py-1 bg-[#001B55] text-white hover:bg-[#001B55]/90 text-xs">
+            <Badge className="px-3 py-1 border border-[#001B55]/20 bg-white text-[#001B55] text-xs">
               {filters.tahun}
             </Badge>
-            <Badge className="px-3 py-1 bg-[#FF9C04] text-white hover:bg-[#FF9C04]/90 text-xs">
+            <Badge className="px-3 py-1 border border-[#001B55]/20 bg-white text-[#001B55] text-xs">
               {
                 filterOptions.jenisPemilu.find(
                   (j) => j.value === filters.jenisPemilu
@@ -1039,7 +1039,7 @@ function StatistikPemiluPage() {
               }
             </Badge>
             {filters.dapil !== "ALL_DAPIL" && (
-              <Badge className="px-3 py-1 bg-[#16A34A] text-white hover:bg-[#16A34A]/90 text-xs">
+              <Badge className="px-3 py-1 border border-emerald-500/20 bg-white text-emerald-600 text-xs">
                 {
                   filterOptions.dapil.find((d) => d.value === filters.dapil)
                     ?.label
@@ -1047,7 +1047,7 @@ function StatistikPemiluPage() {
               </Badge>
             )}
             {filters.kecamatan !== "ALL_KECAMATAN" && filters.kecamatan && (
-              <Badge className="px-3 py-1 bg-[#F59E0B] text-white hover:bg-[#F59E0B]/90 text-xs">
+              <Badge className="px-3 py-1 border border-blue-500/20 bg-white text-blue-600 text-xs">
                 {
                   filterOptions.kecamatan.find(
                     (k) => k.value === filters.kecamatan
@@ -1056,12 +1056,12 @@ function StatistikPemiluPage() {
               </Badge>
             )}
             {filters.desa && filters.desa !== "ALL_DESA" && (
-              <Badge className="px-3 py-1 bg-[#6B7280] text-white hover:bg-[#6B7280]/90 text-xs">
+              <Badge className="px-3 py-1 border border-gray-400/20 bg-white text-gray-600 text-xs">
                 {filters.desa}
               </Badge>
             )}
             {filters.tps && filters.tps !== "ALL_TPS" && (
-              <Badge className="px-3 py-1 bg-[#C81E1E] text-white hover:bg-[#C81E1E]/90 text-xs">
+              <Badge className="px-3 py-1 border border-red-500/20 bg-white text-red-600 text-xs">
                 TPS {filters.tps}
               </Badge>
             )}

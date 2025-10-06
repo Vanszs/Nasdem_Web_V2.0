@@ -129,18 +129,22 @@ export function UserPage() {
           <div className="overflow-x-auto">
             <Table>
               <TableHeader>
-                <TableRow className="border-b border-[#001B55]/10">
-                  <TableHead className="py-4 px-6 text-[#001B55] font-semibold text-sm">Nama</TableHead>
-                  <TableHead className="py-4 px-6 text-[#001B55] font-semibold text-sm">Email</TableHead>
-                  <TableHead className="py-4 px-6 text-[#001B55] font-semibold text-sm">Role</TableHead>
-                  <TableHead className="py-4 px-6 text-[#001B55] font-semibold text-sm">Status</TableHead>
-                  <TableHead className="py-4 px-6 text-[#001B55] font-semibold text-sm">Last Login</TableHead>
-                  <TableHead className="py-4 px-6 text-[#001B55] font-semibold text-sm">Aksi</TableHead>
+                <TableRow className="bg-gray-200 border-b-2 border-gray-300">
+                  <TableHead className="py-4 px-6 text-[#001B55] font-bold text-sm">Nama</TableHead>
+                  <TableHead className="py-4 px-6 text-[#001B55] font-bold text-sm">Email</TableHead>
+                  <TableHead className="py-4 px-6 text-[#001B55] font-bold text-sm">Role</TableHead>
+                  <TableHead className="py-4 px-6 text-[#001B55] font-bold text-sm">Status</TableHead>
+                  <TableHead className="py-4 px-6 text-[#001B55] font-bold text-sm">Last Login</TableHead>
+                  <TableHead className="py-4 px-6 text-[#001B55] font-bold text-sm">Aksi</TableHead>
                 </TableRow>
               </TableHeader>
               <TableBody>
                 {users.map((user, index) => (
-                  <TableRow key={user.id} className="border-b border-gray-100 hover:bg-gray-50 transition-all duration-200">
+                  <TableRow 
+                    key={user.id} 
+                    className="border-b border-gray-100 hover:bg-blue-100 transition-all duration-200"
+                    style={{ backgroundColor: index % 2 === 0 ? '#ffffff' : '#eff1f3' }}
+                  >
                     <TableCell className="py-5 px-6 font-medium text-[#001B55]">{user.name}</TableCell>
                     <TableCell className="py-5 px-6 text-gray-600">
                       {user.email}
@@ -150,10 +154,10 @@ export function UserPage() {
                         variant="outline"
                         className={`border-0 font-medium text-white shadow-sm transition-all duration-200 hover:shadow-md ${
                           user.role === "Admin"
-                            ? "bg-gradient-to-r from-[#001B55] to-[#001B55]/90 hover:from-[#001B55]/90 hover:to-[#001B55]"
+                            ? "bg-[#001B55] hover:bg-[#001B55]/90"
                             : user.role === "Editor"
-                            ? "bg-gradient-to-r from-[#FF9C04] to-[#FF9C04]/90 hover:from-[#FF9C04]/90 hover:to-[#FF9C04]"
-                            : "bg-gradient-to-r from-gray-500 to-gray-400 hover:from-gray-400 hover:to-gray-500"
+                            ? "bg-blue-500 hover:bg-blue-600"
+                            : "bg-gray-500 hover:bg-gray-600"
                         }`}
                       >
                         {user.role}
@@ -164,8 +168,8 @@ export function UserPage() {
                         variant="outline"
                         className={`border-0 font-medium text-white shadow-sm transition-all duration-200 hover:shadow-md ${
                           user.status === "Active"
-                            ? "bg-gradient-to-r from-emerald-500 to-emerald-400 hover:from-emerald-400 hover:to-emerald-500"
-                            : "bg-gradient-to-r from-gray-400 to-gray-300 hover:from-gray-300 hover:to-gray-400"
+                            ? "bg-emerald-500 hover:bg-emerald-600"
+                            : "bg-gray-400 hover:bg-gray-500"
                         }`}
                       >
                         {user.status}

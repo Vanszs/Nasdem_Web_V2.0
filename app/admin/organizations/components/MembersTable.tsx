@@ -478,7 +478,8 @@ export function MembersTable({
               {data.map((row, rowIndex) => (
                 <tr
                   key={row.id}
-                  className="hover:bg-[#001B55]/3 transition-colors"
+                  className="hover:bg-blue-100 transition-colors"
+                  style={{ backgroundColor: rowIndex % 2 === 0 ? '#ffffff' : '#eff1f3' }}
                 >
                   {table
                     .getRowModel()

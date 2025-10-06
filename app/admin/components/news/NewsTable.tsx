@@ -263,7 +263,7 @@ export function NewsTable() {
       <div className="overflow-hidden rounded-2xl border-2 border-gray-100">
         <Table>
           <TableHeader>
-            <TableRow className="bg-gradient-to-r from-gray-50 to-gray-100/50 border-b-2 border-gray-200">
+            <TableRow className="bg-gray-200 border-b-2 border-gray-300">
               <TableHead className="w-12 pl-6">
                 <Checkbox
                   checked={
@@ -293,10 +293,11 @@ export function NewsTable() {
                 </TableCell>
               </TableRow>
             ) : (
-              paginatedNews.map((newsItem) => (
+              paginatedNews.map((newsItem, index) => (
                 <TableRow 
                   key={newsItem.id}
-                  className="hover:bg-gray-50/50 transition-colors duration-200 border-b border-gray-100"
+                  className="hover:bg-blue-100 transition-colors duration-200 border-b border-gray-100"
+                  style={{ backgroundColor: index % 2 === 0 ? '#ffffff' : '#eff1f3' }}
                 >
                   <TableCell className="pl-6">
                     <Checkbox

@@ -251,7 +251,7 @@ export function EditMemberDialog({
           <form onSubmit={onSubmit} className="space-y-8 py-2" id="edit-member-form">
             <section className="space-y-4">
               <div className="flex items-center gap-2">
-                <div className="flex h-8 w-8 items-center justify-center rounded-md bg-[#FF9C04]/10 text-[#FF9C04]">
+                <div className="flex h-8 w-8 items-center justify-center rounded-md bg-[#001B55]/10 text-[#001B55]">
                   <ImageIcon className="h-4 w-4" />
                 </div>
                 <div className="min-w-0">

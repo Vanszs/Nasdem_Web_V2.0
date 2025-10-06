@@ -18,7 +18,7 @@ import {
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
 import {
-  Image as ImageIcon,
+  Image,
   Upload,
   Plus,
   Search,
@@ -27,6 +27,7 @@ import {
   Camera,
   ChevronLeft,
   ChevronRight,
+  ImageIcon,
   Filter,
   Grid3X3,
   List,
@@ -38,9 +39,6 @@ import {
 } from "lucide-react";
 import { useRouter } from "next/navigation";
 import { AdminLayout } from "../components/layout/AdminLayout";
-import { PageHeader } from "../components/ui/PageHeader";
-import { ContentCard } from "../components/ui/ContentCard";
-import { ActionButton } from "../components/ui/ActionButton";
 
 interface GalleryItem {
   id: string;
@@ -148,23 +146,23 @@ export default function Gallery() {
   const categoryConfig = {
     kegiatan: {
       label: "Kegiatan",
-      className: "border border-[#001B55]/20 bg-[#001B55] text-white shadow-sm",
+      className: "bg-gradient-to-r from-[#001B55] to-[#001B55]/90 text-white border border-[#001B55]/20 shadow-sm",
       iconColor: "text-[#001B55]",
     },
     dokumentasi: {
       label: "Dokumentasi", 
-      className: "border border-emerald-500/20 bg-emerald-500 text-white shadow-sm",
-      iconColor: "text-emerald-500",
+      className: "bg-gradient-to-r from-[#16A34A] to-[#16A34A]/90 text-white border border-[#16A34A]/20 shadow-sm",
+      iconColor: "text-[#16A34A]",
     },
     event: {
       label: "Event",
-      className: "border border-[#001B55]/20 bg-white text-[#001B55] shadow-sm",
-      iconColor: "text-[#001B55]",
+      className: "bg-gradient-to-r from-[#FF9C04] to-[#FF9C04]/90 text-white border border-[#FF9C04]/20 shadow-sm",
+      iconColor: "text-[#FF9C04]",
     },
     lainnya: {
       label: "Lainnya",
-      className: "border border-gray-500/20 bg-gray-500 text-white shadow-sm",
-      iconColor: "text-gray-500",
+      className: "bg-gradient-to-r from-[#6B7280] to-[#6B7280]/90 text-white border border-[#6B7280]/20 shadow-sm",
+      iconColor: "text-[#6B7280]",
     },
   };
 
@@ -174,11 +172,11 @@ export default function Gallery() {
     <AdminLayout breadcrumbs={breadcrumbs}>
       <div className="space-y-8">
         {/* Modern Header Section */}
-        <div className="bg-white border border-[#001B55]/10 rounded-3xl p-8 shadow-sm hover:shadow-lg transition-all duration-300">
+        <div className="bg-gradient-to-br from-[#FFFFFF] via-[#F0F0F0]/30 to-[#FF9C04]/5 backdrop-blur-sm border border-gray-200/50 rounded-3xl p-8 shadow-sm hover:shadow-lg transition-all duration-300">
           <div className="flex flex-col lg:flex-row lg:items-center lg:justify-between gap-6">
             <div className="space-y-4">
               <div className="flex items-center gap-4">
-                <div className="p-3 bg-[#001B55] rounded-2xl shadow-lg">
+                <div className="p-3 bg-gradient-to-br from-[#FF9C04] to-[#FF9C04]/80 rounded-2xl shadow-lg">
                   <ImageIcon className="w-7 h-7 text-white" />
                 </div>
                 <div>
@@ -195,7 +193,7 @@ export default function Gallery() {
               <div className="flex flex-wrap gap-4">
                 <div className="bg-[#FFFFFF] rounded-2xl px-4 py-3 border border-gray-200/50 shadow-sm">
                   <div className="flex items-center gap-3">
-                    <div className="w-2 h-2 bg-[#001B55] rounded-full animate-pulse"></div>
+                    <div className="w-2 h-2 bg-[#FF9C04] rounded-full animate-pulse"></div>
                     <span className="text-sm font-semibold text-[#001B55]">{totalItems} Media</span>
                   </div>
                 </div>
@@ -224,7 +222,7 @@ export default function Gallery() {
                 </span>
               </Button>
               <Button
-                className="bg-[#001B55] hover:bg-[#001B55]/90 text-white shadow-lg hover:shadow-xl transition-all duration-300 font-semibold"
+                className="bg-gradient-to-r from-[#FF9C04] to-[#FF9C04]/90 hover:from-[#001B55] hover:to-[#001B55] text-white shadow-lg hover:shadow-xl transition-all duration-300 font-semibold"
                 onClick={() => router.push("/admin/gallery/upload")}
               >
                 <Upload className="w-4 h-4 mr-2" />
@@ -247,7 +245,7 @@ export default function Gallery() {
                   placeholder="Cari judul, deskripsi, atau tag media..."
                   value={searchTerm}
                   onChange={(e) => setSearchTerm(e.target.value)}
-                  className="pl-12 pr-4 py-3 border-2 border-gray-300/70 hover:border-[#001B55]/50 focus:border-[#001B55] focus:ring-2 focus:ring-[#001B55]/20 rounded-2xl bg-white transition-all duration-300 text-[#001B55] placeholder:text-[#6B7280] shadow-sm"
+                  className="pl-12 pr-4 py-3 border-2 border-gray-300/70 hover:border-[#FF9C04]/50 focus:border-[#FF9C04] focus:ring-2 focus:ring-[#FF9C04]/20 rounded-2xl bg-white transition-all duration-300 text-[#001B55] placeholder:text-[#6B7280] shadow-sm"
                 />
               </div>
               
@@ -256,7 +254,7 @@ export default function Gallery() {
                 <div className="flex items-center gap-3">
                   <Filter className="w-5 h-5 text-[#6B7280]" />
                   <Select value={categoryFilter} onValueChange={setCategoryFilter}>
-                    <SelectTrigger className="min-w-[200px] border-2 border-gray-300/70 hover:border-[#001B55]/50 focus:border-[#001B55] rounded-2xl bg-white transition-all duration-300 shadow-sm">
+                    <SelectTrigger className="min-w-[200px] border-2 border-gray-300/70 hover:border-[#FF9C04]/50 focus:border-[#FF9C04] rounded-2xl bg-white transition-all duration-300 shadow-sm">
                       <SelectValue placeholder="Filter kategori" />
                     </SelectTrigger>
                     <SelectContent className="rounded-2xl border border-gray-200/50 shadow-xl">
@@ -274,13 +272,13 @@ export default function Gallery() {
                       </SelectItem>
                       <SelectItem value="dokumentasi" className="rounded-xl">
                         <div className="flex items-center gap-3">
-                          <div className="w-3 h-3 rounded-full bg-emerald-500"></div>
+                          <div className="w-3 h-3 rounded-full bg-[#16A34A]"></div>
                           Dokumentasi
                         </div>
                       </SelectItem>
                       <SelectItem value="event" className="rounded-xl">
                         <div className="flex items-center gap-3">
-                          <div className="w-3 h-3 rounded-full bg-[#001B55]"></div>
+                          <div className="w-3 h-3 rounded-full bg-[#FF9C04]"></div>
                           Event
                         </div>
                       </SelectItem>
@@ -302,7 +300,7 @@ export default function Gallery() {
                 {searchTerm && (
                   <Badge 
                     variant="secondary" 
-                    className="bg-[#001B55]/10 text-[#001B55] border border-[#001B55]/20 px-3 py-1 rounded-full"
+                    className="bg-[#FF9C04]/10 text-[#FF9C04] border border-[#FF9C04]/20 px-3 py-1 rounded-full"
                   >
                     Search: "{searchTerm}"
                   </Badge>
@@ -331,18 +329,18 @@ export default function Gallery() {
               {paginatedItems.map((item) => (
                 <Card
                   key={item.id}
-                  className={`bg-white border border-gray-200/50 shadow-sm hover:shadow-xl hover:border-[#001B55]/30 transition-all duration-300 overflow-hidden group cursor-pointer ${
+                  className={`bg-white border border-gray-200/50 shadow-sm hover:shadow-xl hover:border-[#FF9C04]/30 transition-all duration-300 overflow-hidden group cursor-pointer ${
                     viewMode === "list" ? "flex flex-row h-auto min-h-[280px]" : ""
                   } rounded-3xl`}
                   onClick={() => router.push(`/admin/gallery/${item.id}`)}
                 >
                   <div
-                    className={`relative bg-gray-100 flex items-center justify-center overflow-hidden transition-all duration-300 ${
+                    className={`relative bg-gradient-to-br from-[#F0F0F0] to-gray-100 flex items-center justify-center overflow-hidden group-hover:bg-gradient-to-br group-hover:from-[#001B55]/20 group-hover:to-[#FF9C04]/20 transition-all duration-300 ${
                       viewMode === "list"
                         ? "w-80 h-auto flex-shrink-0 min-h-[200px] rounded-l-2xl"
                         : "aspect-[4/3]"
                     }`}>
-
+                    <div className="absolute inset-0 bg-gradient-to-br from-[#001B55]/5 to-[#FF9C04]/5"></div>
                     <Camera className="h-12 w-12 text-[#6B7280]/40 relative z-10" />
                     
                     {/* Enhanced Hover Overlay */}
@@ -404,7 +402,7 @@ export default function Gallery() {
                         {/* Header with Action Menu */}
                         <div className="flex items-start justify-between gap-4">
                           <div className="flex-1 min-w-0">
-                            <h3 className="font-bold text-[#001B55] text-lg leading-tight mb-2 group-hover:text-[#001B55]/80 transition-colors duration-300">
+                            <h3 className="font-bold text-[#001B55] text-lg leading-tight mb-2 group-hover:text-[#FF9C04] transition-colors duration-300">
                               {item.title}
                             </h3>
                             <Badge className={`${categoryConfig[item.category].className} text-xs font-semibold px-3 py-1 rounded-full inline-block`}>
@@ -440,7 +438,7 @@ export default function Gallery() {
                                   className="flex items-center gap-3 rounded-xl hover:bg-gray-50 cursor-pointer"
                                   onClick={() => router.push(`/admin/gallery/edit/${item.id}`)}
                                 >
-                                  <Edit className="h-4 w-4 text-[#001B55]" />
+                                  <Edit className="h-4 w-4 text-[#FF9C04]" />
                                   <span>Edit Media</span>
                                 </DropdownMenuItem>
                                 <DropdownMenuItem 
@@ -467,7 +465,7 @@ export default function Gallery() {
                         <div className="space-y-3">
                           <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 text-sm text-[#6B7280]">
                             <div className="flex items-center gap-2">
-                              <Calendar className="h-4 w-4 text-[#001B55] flex-shrink-0" />
+                              <Calendar className="h-4 w-4 text-[#FF9C04] flex-shrink-0" />
                               <span className="font-medium">Tanggal Upload:</span>
                               <span>{new Date(item.uploadDate).toLocaleDateString("id-ID", { 
                                 day: "numeric", 
@@ -499,7 +497,7 @@ export default function Gallery() {
                                 {item.tags.map((tag) => (
                                   <span
                                     key={tag}
-                                    className="text-xs bg-[#F0F0F0] text-[#6B7280] px-3 py-1.5 rounded-full font-medium hover:bg-[#001B55]/10 hover:text-[#001B55] transition-colors duration-200 cursor-pointer"
+                                    className="text-xs bg-[#F0F0F0] text-[#6B7280] px-3 py-1.5 rounded-full font-medium hover:bg-[#FF9C04]/10 hover:text-[#FF9C04] transition-colors duration-200 cursor-pointer"
                                   >
                                     #{tag}
                                   </span>
@@ -513,7 +511,7 @@ export default function Gallery() {
                       <div className="space-y-3">
                         {/* Grid View Content (unchanged) */}
                         <div className="flex items-start justify-between gap-3">
-                          <h3 className="font-bold text-[#001B55] text-base leading-tight line-clamp-2 group-hover:text-[#001B55]/80 transition-colors duration-300">
+                          <h3 className="font-bold text-[#001B55] text-base leading-tight line-clamp-2 group-hover:text-[#FF9C04] transition-colors duration-300">
                             {item.title}
                           </h3>
                           <DropdownMenu>
@@ -541,7 +539,7 @@ export default function Gallery() {
                                 className="flex items-center gap-3 rounded-xl hover:bg-gray-50 cursor-pointer"
                                 onClick={() => router.push(`/admin/gallery/edit/${item.id}`)}
                               >
-                                <Edit className="h-4 w-4 text-[#001B55]" />
+                                <Edit className="h-4 w-4 text-[#FF9C04]" />
                                 <span>Edit Media</span>
                               </DropdownMenuItem>
                               <DropdownMenuItem 
@@ -584,7 +582,7 @@ export default function Gallery() {
                             {item.tags.slice(0, 3).map((tag) => (
                               <span
                                 key={tag}
-                                className="text-xs bg-[#F0F0F0] text-[#6B7280] px-2 py-1 rounded-full font-medium hover:bg-[#001B55]/10 hover:text-[#001B55] transition-colors duration-200"
+                                className="text-xs bg-[#F0F0F0] text-[#6B7280] px-2 py-1 rounded-full font-medium hover:bg-[#FF9C04]/10 hover:text-[#FF9C04] transition-colors duration-200"
                               >
                                 #{tag}
                               </span>
@@ -617,7 +615,7 @@ export default function Gallery() {
                       size="sm"
                       onClick={() => handlePageChange(currentPage - 1)}
                       disabled={currentPage === 1}
-                      className="border border-gray-200/50 hover:border-[#001B55] hover:bg-[#001B55]/5 hover:text-[#001B55] disabled:opacity-40 disabled:cursor-not-allowed rounded-xl px-4 py-2 transition-all duration-300"
+                      className="border border-gray-200/50 hover:border-[#FF9C04] hover:bg-[#FF9C04]/5 hover:text-[#FF9C04] disabled:opacity-40 disabled:cursor-not-allowed rounded-xl px-4 py-2 transition-all duration-300"
                     >
                       <ChevronLeft className="h-4 w-4 mr-1" />
                       Previous
@@ -644,8 +642,8 @@ export default function Gallery() {
                             onClick={() => handlePageChange(page)}
                             className={`min-w-[40px] h-10 rounded-xl font-semibold transition-all duration-300 ${
                               page === currentPage
-                                ? "bg-[#001B55] border-[#001B55] text-white shadow-lg"
-                                : "border border-gray-200/50 hover:border-[#001B55] hover:bg-[#001B55]/5 hover:text-[#001B55] text-[#6B7280]"
+                                ? "bg-gradient-to-r from-[#001B55] to-[#001B55]/90 border-[#001B55] text-white shadow-lg"
+                                : "border border-gray-200/50 hover:border-[#FF9C04] hover:bg-[#FF9C04]/5 hover:text-[#FF9C04] text-[#6B7280]"
                             }`}
                           >
                             {page}
@@ -659,7 +657,7 @@ export default function Gallery() {
                       size="sm"
                       onClick={() => handlePageChange(currentPage + 1)}
                       disabled={currentPage === totalPages}
-                      className="border border-gray-200/50 hover:border-[#001B55] hover:bg-[#001B55]/5 hover:text-[#001B55] disabled:opacity-40 disabled:cursor-not-allowed rounded-xl px-4 py-2 transition-all duration-300"
+                      className="border border-gray-200/50 hover:border-[#FF9C04] hover:bg-[#FF9C04]/5 hover:text-[#FF9C04] disabled:opacity-40 disabled:cursor-not-allowed rounded-xl px-4 py-2 transition-all duration-300"
                     >
                       Next
                       <ChevronRight className="h-4 w-4 ml-1" />
@@ -670,15 +668,15 @@ export default function Gallery() {
             )}
           </>
         ) : (
-          <Card className="bg-white border border-[#001B55]/10 shadow-sm hover:shadow-lg transition-all duration-300 rounded-3xl overflow-hidden">
+          <Card className="bg-gradient-to-br from-[#FFFFFF] via-[#F0F0F0]/30 to-[#FF9C04]/5 border border-gray-200/50 hover:border-[#FF9C04]/30 shadow-sm hover:shadow-lg transition-all duration-300 rounded-3xl overflow-hidden">
             <CardContent className="p-16 text-center">
               <div className="max-w-md mx-auto space-y-6">
                 {/* Animated Icon */}
                 <div className="relative">
-                  <div className="w-24 h-24 mx-auto bg-[#001B55]/10 rounded-3xl flex items-center justify-center border border-[#001B55]/20">
+                  <div className="w-24 h-24 mx-auto bg-gradient-to-br from-[#FF9C04]/10 to-[#001B55]/10 rounded-3xl flex items-center justify-center border border-gray-200/50">
                     <ImageIcon className="h-12 w-12 text-[#6B7280]/60" />
                   </div>
-                  <div className="absolute -top-2 -right-2 w-6 h-6 bg-[#001B55] rounded-full flex items-center justify-center shadow-lg animate-bounce">
+                  <div className="absolute -top-2 -right-2 w-6 h-6 bg-gradient-to-br from-[#FF9C04] to-[#FF9C04]/80 rounded-full flex items-center justify-center shadow-lg animate-bounce">
                     <Plus className="h-3 w-3 text-white" />
                   </div>
                 </div>
@@ -695,7 +693,7 @@ export default function Gallery() {
                 <div className="space-y-4">
                   <Button
                     size="lg"
-                    className="bg-[#001B55] hover:bg-[#001B55]/90 text-white shadow-lg hover:shadow-xl transition-all duration-300 font-semibold px-8 py-3 rounded-2xl"
+                    className="bg-gradient-to-r from-[#FF9C04] to-[#FF9C04]/90 hover:from-[#001B55] hover:to-[#001B55] text-white shadow-lg hover:shadow-xl transition-all duration-300 font-semibold px-8 py-3 rounded-2xl"
                     onClick={() => router.push("/admin/gallery/upload")}
                   >
                     <Upload className="w-5 h-5 mr-3" />
@@ -705,11 +703,11 @@ export default function Gallery() {
                   {/* Quick Stats */}
                   <div className="flex items-center justify-center gap-6 text-sm text-[#6B7280]">
                     <div className="flex items-center gap-2">
-                      <div className="w-2 h-2 bg-emerald-500 rounded-full"></div>
+                      <div className="w-2 h-2 bg-[#16A34A] rounded-full"></div>
                       <span>Foto & Video</span>
                     </div>
                     <div className="flex items-center gap-2">
-                      <div className="w-2 h-2 bg-[#001B55] rounded-full"></div>
+                      <div className="w-2 h-2 bg-[#FF9C04] rounded-full"></div>
                       <span>Organisasi Otomatis</span>
                     </div>
                   </div>

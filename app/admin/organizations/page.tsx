@@ -289,20 +289,20 @@ export default function Members() {
   const statusConfig = {
     active: {
       label: "Aktif",
-      className: "bg-gradient-to-r from-emerald-500 to-emerald-600 text-white",
+      className: "bg-emerald-500 text-white",
     },
     inactive: {
       label: "Tidak Aktif",
-      className: "bg-gradient-to-r from-slate-400 to-slate-500 text-white",
+      className: "bg-slate-400 text-white",
     },
     suspended: {
       label: "Suspended",
-      className: "bg-gradient-to-r from-amber-500 to-amber-600 text-white",
+      className: "bg-amber-500 text-white",
     },
   };
   const departmentConfig = {
     dpd: { label: "DPD", className: "bg-[#001B55] text-white" },
-    sayap: { label: "Sayap", className: "bg-[#FF9C04] text-white" },
+    sayap: { label: "Sayap", className: "bg-blue-500 text-white" },
     dpc: { label: "DPC", className: "bg-emerald-600 text-white" },
     dprt: { label: "DPRT", className: "bg-amber-700 text-white" },
     kader: { label: "Kader", className: "bg-purple-600 text-white" },

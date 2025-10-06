@@ -1,6 +1,7 @@
 "use client"
 
 import { useState, useEffect } from "react"
+import Image from "next/image"
 import { Button } from "@/components/ui/button"
 import { Menu, X } from "lucide-react"
 
@@ -36,8 +37,14 @@ export function Header() {
         <div className="flex items-center justify-between h-16">
           {/* Logo */}
           <div className="flex items-center space-x-3">
-            <div className="w-10 h-10 bg-nasdem-orange rounded-full flex items-center justify-center">
-              <span className="text-white font-bold text-lg">N</span>
+            <div className="relative w-10 h-10 flex-shrink-0 rounded-lg border-2 border-white/30 p-1 bg-white/10">
+              <Image
+                src="/logo-nasdem.png"
+                alt="Logo NasDem"
+                fill
+                className="object-contain rounded-md"
+                priority
+              />
             </div>
             <div className="text-white">
               <h1 className="font-bold text-lg">NasDem Sidoarjo</h1>

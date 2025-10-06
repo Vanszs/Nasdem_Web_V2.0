@@ -1,6 +1,7 @@
 "use client";
 import { useState } from "react";
 import { usePathname } from "next/navigation";
+import NextImage from "next/image";
 import {
   LayoutDashboard,
   FileText,
@@ -111,10 +112,13 @@ export function AppSidebar() {
         {/* Logo Section */}
         <div className="p-8 border-b border-sidebar-border/20">
           <div className="flex items-center gap-4">
-            <div className="w-12 h-12 bg-gradient-to-br from-accent to-accent/80 rounded-2xl flex items-center justify-center shadow-[var(--shadow-glow)] floating-element">
-              <span className="text-accent-foreground font-bold text-lg">
-                N
-              </span>
+            <div className="relative w-12 h-12 flex-shrink-0 rounded-xl border-2 border-accent/20 p-1.5 bg-accent/5">
+              <NextImage
+                src="/logo-nasdem.png"
+                alt="Logo NasDem"
+                fill
+                className="object-contain rounded-lg"
+              />
             </div>
             {state === "expanded" && (
               <div className="space-y-1">

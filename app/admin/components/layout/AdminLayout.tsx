@@ -34,14 +34,16 @@ export function AdminLayout({ children, breadcrumbs }: AdminLayoutProps) {
       
       {/* Main Content Area */}
       <div className={`min-h-screen flex flex-col transition-all duration-500 ${
-        sidebarCollapsed ? 'lg:ml-20' : 'lg:ml-80'
+        sidebarCollapsed ? 'lg:ml-20' : 'lg:ml-72'
       }`}>
         {/* Top Navigation */}
         <TopNavbar breadcrumbs={breadcrumbs} onToggleSidebar={() => setSidebarMobileOpen(!sidebarMobileOpen)} />
         
         {/* Main Content */}
-        <main className="flex-1 p-6">
-          {children}
+        <main className="flex-1">
+          <div className="p-6">
+            {children}
+          </div>
         </main>
       </div>
       

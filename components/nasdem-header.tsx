@@ -2,6 +2,7 @@
 
 import { useState } from "react";
 import { usePathname } from "next/navigation";
+import Image from "next/image";
 import { Button } from "@/components/ui/button";
 import { Menu, X, Users, Phone, MapPin } from "lucide-react";
 
@@ -62,8 +63,14 @@ const NasdemHeader = () => {
         <nav className="flex items-center justify-between py-3">
           {/* Logo */}
           <div className="flex items-center gap-3">
-            <div className="w-10 h-10 bg-secondary rounded-full flex items-center justify-center font-bold text-primary text-lg">
-              N
+            <div className="relative w-10 h-10 flex-shrink-0 rounded-lg border-2 border-white/20 p-1 bg-white/5">
+              <Image
+                src="/logo-nasdem.png"
+                alt="Logo NasDem"
+                fill
+                className="object-contain rounded-md"
+                priority
+              />
             </div>
             <div className="flex flex-col">
               <span className="font-bold text-primary-foreground text-lg">

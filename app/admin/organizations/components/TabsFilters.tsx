@@ -79,7 +79,7 @@ export function TabsFilters(props: Props) {
           </TabsTrigger>
           <TabsTrigger
             value="sayap"
-            className="px-4 py-2 rounded-xl font-medium text-sm transition-all duration-300 data-[state=active]:!bg-[#FF9C04] data-[state=active]:!text-white data-[state=active]:shadow-lg text-[#6B7280] hover:text-[#FF9C04] hover:bg-[#FF9C04]/5"
+            className="px-4 py-2 rounded-xl font-medium text-sm transition-all duration-300 data-[state=active]:!bg-[#001B55] data-[state=active]:!text-white data-[state=active]:shadow-lg text-[#6B7280] hover:text-[#001B55] hover:bg-[#001B55]/5"
           >
             <Target className="h-4 w-4 mr-1.5" />
             Sayap
@@ -124,7 +124,7 @@ export function TabsFilters(props: Props) {
         <TabsContent value="sayap" className="mt-6">
           <div className="flex flex-col md:flex-row gap-4">
             <div className="relative flex-1">
-              <Search className="absolute left-4 top-1/2 transform -translate-y-1/2 text-[#FF9C04] h-5 w-5" />
+              <Search className="absolute left-4 top-1/2 transform -translate-y-1/2 text-[#001B55] h-5 w-5" />
               <Input
                 placeholder="Cari nama atau posisi sayap..."
                 value={sayapFilters.searchTerm}
@@ -134,7 +134,7 @@ export function TabsFilters(props: Props) {
                     searchTerm: e.target.value,
                   })
                 }
-                className="pl-12 pr-4 py-3 bg-white/90 backdrop-blur-sm border-2 border-gray-200/80 hover:border-[#FF9C04]/60 focus:border-[#FF9C04] rounded-full transition-all duration-300 text-sm shadow-sm hover:shadow-md focus:shadow-lg"
+                className="pl-12 pr-4 py-3 bg-white/90 backdrop-blur-sm border-2 border-gray-200/80 hover:border-[#001B55]/60 focus:border-[#001B55] rounded-full transition-all duration-300 text-sm shadow-sm hover:shadow-md focus:shadow-lg"
               />
             </div>
             <Select
@@ -143,7 +143,7 @@ export function TabsFilters(props: Props) {
                 setSayapFilters({ ...sayapFilters, departmentFilter: v })
               }
             >
-              <SelectTrigger className="w-full md:w-[220px] rounded-lg border-2 border-gray-200/80 hover:border-[#FF9C04]/60 focus:border-[#FF9C04] transition-colors">
+              <SelectTrigger className="w-full md:w-[220px] rounded-lg border-2 border-gray-200/80 hover:border-[#001B55]/60 focus:border-[#001B55] transition-colors">
                 <SelectValue placeholder="Filter Sayap" />
               </SelectTrigger>
               <SelectContent>

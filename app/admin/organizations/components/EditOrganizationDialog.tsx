@@ -281,7 +281,7 @@ export function EditOrganizationDialog({
               {/* Photo Section */}
               <section className="space-y-5">
                 <div className="flex items-center gap-2">
-                  <div className="flex h-9 w-9 items-center justify-center rounded-xl bg-[#FF9C04]/10 text-[#FF9C04]">
+                  <div className="flex h-9 w-9 items-center justify-center rounded-xl bg-[#001B55]/10 text-[#001B55]">
                     <ImageIcon className="h-4 w-4" />
                   </div>
                   <div>
@@ -582,7 +582,7 @@ export function EditOrganizationDialog({
               {/* Period */}
               <section className="space-y-5">
                 <div className="flex items-center gap-2">
-                  <div className="flex h-9 w-9 items-center justify-center rounded-xl bg-[#FF9C04]/10 text-[#FF9C04]">
+                  <div className="flex h-9 w-9 items-center justify-center rounded-xl bg-[#001B55]/10 text-[#001B55]">
                     <CalendarIcon className="h-4 w-4" />
                   </div>
                   <div>

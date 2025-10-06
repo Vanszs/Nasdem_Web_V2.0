@@ -197,7 +197,11 @@ function MembersDialog({ open, onOpenChange, members, orgTitle }: MembersDialogP
                     </tr>
                   ) : (
                     paginatedMembers.map((member, idx) => (
-                      <tr key={member.id} className="hover:bg-gray-50/50 transition-colors">
+                      <tr 
+                        key={member.id} 
+                        className="hover:bg-blue-100 transition-colors"
+                        style={{ backgroundColor: idx % 2 === 0 ? '#ffffff' : '#eff1f3' }}
+                      >
                         <td className="px-4 py-3 border-b border-gray-100">
                           {pageIndex * pageSize + idx + 1}
                         </td>
@@ -251,7 +255,7 @@ const levelColors: Record<string, string> = {
   dpd: "bg-[#001B55] text-white",
   dpc: "bg-emerald-600 text-white",
   dprt: "bg-amber-600 text-white",
-  sayap: "bg-[#FF9C04] text-white",
+  sayap: "bg-blue-500 text-white",
   kader: "bg-purple-600 text-white",
 };
 
@@ -692,7 +696,8 @@ export function OrganizationTable({
               {data.map((row, idx) => (
                 <tr
                   key={row.id}
-                  className="hover:bg-[#001B55]/3 transition-colors"
+                  className="hover:bg-blue-100 transition-colors"
+                  style={{ backgroundColor: idx % 2 === 0 ? '#ffffff' : '#eff1f3' }}
                 >
                   {table.getRowModel().rows[idx]?.getVisibleCells().map((cell) => (
                     <td

@@ -652,18 +652,22 @@ export default function Landing() {
               <CardContent className="p-6">
                 <Table>
                   <TableHeader>
-                    <TableRow>
-                      <TableHead>Preview</TableHead>
-                      <TableHead>Judul</TableHead>
-                      <TableHead>Subjudul</TableHead>
-                      <TableHead>Status</TableHead>
-                      <TableHead>Urutan</TableHead>
-                      <TableHead className="text-right">Aksi</TableHead>
+                    <TableRow className="bg-gray-200 border-b-2 border-gray-300">
+                      <TableHead className="font-bold text-[#001B55]">Preview</TableHead>
+                      <TableHead className="font-bold text-[#001B55]">Judul</TableHead>
+                      <TableHead className="font-bold text-[#001B55]">Subjudul</TableHead>
+                      <TableHead className="font-bold text-[#001B55]">Status</TableHead>
+                      <TableHead className="font-bold text-[#001B55]">Urutan</TableHead>
+                      <TableHead className="text-right font-bold text-[#001B55]">Aksi</TableHead>
                     </TableRow>
                   </TableHeader>
                   <TableBody>
-                    {heroBanners.map((banner) => (
-                      <TableRow key={banner.id}>
+                    {heroBanners.map((banner, index) => (
+                      <TableRow 
+                        key={banner.id} 
+                        className="hover:bg-blue-100 transition-colors duration-200"
+                        style={{ backgroundColor: index % 2 === 0 ? '#ffffff' : '#eff1f3' }}
+                      >
                         <TableCell>
                           <div className="w-16 h-10 bg-gray-200 rounded overflow-hidden">
                             <img
