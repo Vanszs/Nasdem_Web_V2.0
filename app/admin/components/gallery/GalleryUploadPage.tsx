@@ -1,3 +1,5 @@
+"use client";
+
 import { AdminLayout } from "../layout/AdminLayout";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
