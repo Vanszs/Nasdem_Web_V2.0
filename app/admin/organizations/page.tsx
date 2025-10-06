@@ -1,12 +1,16 @@
 "use client";
 import { useState, useMemo, useEffect } from "react";
 import { AdminLayout } from "../components/layout/AdminLayout";
+import { toast } from "sonner";
 import { MemberCard } from "./components/MemberCard";
 import { AddMemberDialog } from "./components/AddMemberDialog";
 import { MemberDetailDialog } from "./components/MemberDetailDialog";
 import { useMembers } from "./hooks/useMembers";
 import { useDebounce } from "../../../hooks/use-debounce";
 import { SimplePagination } from "@/components/ui/pagination";
+import { useCreateMember } from "./hooks/useCreateMember";
+import { useStrukturOptions } from "./hooks/useStrukturOptions";
+import { useUploadImage } from "./hooks/useUploadImage";
 import { useRegions } from "./hooks/useRegions";
 import { TabsFilters } from "./components/TabsFilters";
 import {
@@ -159,7 +163,26 @@ export default function Members() {
     console.log("Add dialog open state:", addOpen);
   }, [addOpen]);
 
-  const { data: regionsData } = useRegions();
+  // FORM CREATE
+  const [formData, setFormData] = useState({
+    fullName: "",
+    email: "",
+    phone: "",
+    dateOfBirth: "",
+    address: "",
+    bio: "",
+    gender: "" as "" | "MALE" | "FEMALE",
+    status: "ACTIVE" as "ACTIVE" | "INACTIVE",
+    strukturId: null as string | null,
+    joinDate: new Date().toISOString().split("T")[0],
+    endDate: "",
+    photoFile: null as File | null,
+    photoUrl: "",
+  });
+
+  const { data: strukturOptionsData } = useStrukturOptions();
+  const { mutate: uploadImage, isPending: uploadingImage } = useUploadImage();
+  const { data: regionsData, isLoading: regionsLoading } = useRegions();
 
   // Bentuk opsi kecamatan untuk TabsFilters
   const kecamatanOptions = useMemo(
@@ -170,6 +193,92 @@ export default function Members() {
         .map((r: any) => ({ value: String(r.id), label: r.name })),
     [regionsData]
   );
+
+  // CREATE MEMBER (hapus setMembers yang tidak ada)
+  const { mutate: mutateCreate, isPending: creating } = useCreateMember(
+    () => {
+      toast.success("Berhasil", { description: "Anggota ditambahkan" });
+      // invalidate sudah di hook useCreateMember -> data otomatis refresh
+      setFormData({
+        fullName: "",
+        email: "",
+        phone: "",
+        dateOfBirth: "",
+        address: "",
+        bio: "",
+        gender: "",
+        status: "ACTIVE",
+        strukturId: null,
+        joinDate: new Date().toISOString().split("T")[0],
+        endDate: "",
+        photoFile: null,
+        photoUrl: "",
+      });
+      setAddOpen(false);
+    },
+    (err) =>
+      toast.error("Gagal", {
+        description: err.message || "Gagal menambah anggota",
+      })
+  );
+
+  const [photoError, setPhotoError] = useState<string | null>(null);
+
+  const handleAddMember = () => {
+    setPhotoError(null);
+    if (!formData.fullName) {
+      toast.error("Validasi", { description: "Nama lengkap wajib diisi" });
+      return;
+    }
+    const hasFile = !!formData.photoFile;
+    const hasUrl = !!formData.photoUrl.trim();
+    if (hasFile && hasUrl) {
+      setPhotoError("Pilih salah satu: file atau URL.");
+      toast.error("Validasi", { description: "Jangan pilih dua sumber foto" });
+      return;
+    }
+    if (!hasFile && !hasUrl) {
+      setPhotoError("Pilih file atau isi URL foto");
+      toast.error("Validasi", { description: "Wajib pilih sumber foto" });
+      return;
+    }
+    const proceed = (finalPhotoUrl?: string) => {
+      mutateCreate({
+        fullName: formData.fullName,
+        email: formData.email || undefined,
+        phone: formData.phone || undefined,
+        address: formData.address || undefined,
+        bio: formData.bio || undefined,
+        gender: formData.gender || undefined,
+        status: formData.status,
+        strukturId: formData.strukturId
+          ? Number(formData.strukturId)
+          : undefined,
+        photoUrl: finalPhotoUrl || formData.photoUrl || undefined,
+        joinDate: formData.joinDate
+          ? new Date(formData.joinDate).toISOString()
+          : undefined,
+        endDate: formData.endDate
+          ? new Date(formData.endDate).toISOString()
+          : undefined,
+        dateOfBirth: formData.dateOfBirth
+          ? new Date(formData.dateOfBirth).toISOString()
+          : undefined,
+      });
+    };
+    if (hasFile) {
+      uploadImage(
+        { file: formData.photoFile!, scope: "member" },
+        {
+          onSuccess: (res) => proceed(res.url),
+          onError: (e: any) => {
+            setPhotoError(e.message || "Upload gagal");
+            toast.error("Upload Gagal", { description: e.message });
+          },
+        }
+      );
+    } else proceed();
+  };
 
   const openDetail = (m: any) => {
     setSelectedMember(m);
@@ -219,7 +328,17 @@ export default function Members() {
                 Kelola data anggota & struktur Partai NasDem Kabupaten Sidoarjo
               </p>
             </div>
-            <AddMemberDialog onOpenChange={setAddOpen} />
+            <AddMemberDialog
+              formData={formData}
+              setFormData={(fn) => setFormData((prev) => fn(prev))}
+              onAdd={handleAddMember}
+              open={addOpen}
+              onOpenChange={setAddOpen}
+              submitting={creating}
+              uploading={uploadingImage}
+              photoError={photoError}
+              strukturOptions={strukturOptionsData}
+            />
           </div>
         </div>
 

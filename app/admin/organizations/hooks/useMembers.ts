@@ -9,9 +9,6 @@ export interface MembersQueryParams {
   page: number;
   pageSize: number;
   search?: string;
-  name?: string;
-  email?: string;
-  address?: string;
   status?: string;
   gender?: string;
   level?: string;
@@ -26,9 +23,6 @@ function buildQuery(params: MembersQueryParams) {
   qp.set("page", String(params.page));
   qp.set("pageSize", String(params.pageSize));
   if (params.search) qp.set("search", params.search);
-  if (params.name) qp.set("name", params.name);
-  if (params.email) qp.set("email", params.email);
-  if (params.address) qp.set("address", params.address);
   if (params.status && params.status !== "all") qp.set("status", params.status);
   if (params.gender && params.gender !== "all") qp.set("gender", params.gender);
   if (params.level && params.level !== "all") qp.set("level", params.level);

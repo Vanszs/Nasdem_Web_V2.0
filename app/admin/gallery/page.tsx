@@ -18,7 +18,7 @@ import {
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
 import {
-  Image,
+  Image as ImageIcon,
   Upload,
   Plus,
   Search,
@@ -27,7 +27,6 @@ import {
   Camera,
   ChevronLeft,
   ChevronRight,
-  ImageIcon,
   Filter,
   Grid3X3,
   List,
@@ -39,6 +38,9 @@ import {
 } from "lucide-react";
 import { useRouter } from "next/navigation";
 import { AdminLayout } from "../components/layout/AdminLayout";
+import { PageHeader } from "../components/ui/PageHeader";
+import { ContentCard } from "../components/ui/ContentCard";
+import { ActionButton } from "../components/ui/ActionButton";
 
 interface GalleryItem {
   id: string;

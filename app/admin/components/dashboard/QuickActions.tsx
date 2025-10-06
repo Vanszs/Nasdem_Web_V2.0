@@ -28,8 +28,8 @@ const quickActions = [
     iconBg: "from-[#FF9C04] to-[#FF9C04]/80",
   },
   {
-    title: "Kelola Member",
-    description: "Kelola data anggota & kader",
+    title: "Kelola Struktur",
+    description: "Update data pengurus dan organisasi",
     href: "/admin/members",
     icon: Users,
     gradient: "from-[#001B55]/10 via-[#FF9C04]/5 to-transparent",

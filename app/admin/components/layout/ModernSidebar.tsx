@@ -1,5 +1,6 @@
 "use client";
-import { useState, useEffect } from "react";
+
+import { useState, useEffect, useRef, KeyboardEvent } from "react";
 import { usePathname } from "next/navigation";
 import {
   LayoutDashboard,
@@ -25,26 +26,31 @@ const menuItems = [
     title: "Dashboard",
     url: "/admin",
     icon: LayoutDashboard,
+    ariaLabel: "Dashboard utama",
   },
   {
     title: "CMS",
     icon: Monitor,
     isCollapsible: true,
+    ariaLabel: "Menu Content Management System",
     subItems: [
       {
         title: "Berita",
         url: "/admin/news",
         icon: FileText,
+        ariaLabel: "Kelola berita",
       },
       {
         title: "Galeri",
         url: "/admin/gallery",
         icon: Image,
+        ariaLabel: "Kelola galeri foto dan video",
       },
       {
         title: "Landing Page",
         url: "/admin/landing",
         icon: Globe,
+        ariaLabel: "Edit halaman landing",
       },
     ],
   },
@@ -52,16 +58,19 @@ const menuItems = [
     title: "Struktur Organisasi",
     icon: Network,
     isCollapsible: true,
+    ariaLabel: "Menu struktur organisasi",
     subItems: [
       {
         title: "Organisasi",
         url: "/admin/organizations",
         icon: Network,
+        ariaLabel: "Kelola data organisasi",
       },
       {
         title: "Kelola Struktur",
         url: "/admin/organizations/manage",
         icon: FolderKanban,
+        ariaLabel: "Kelola struktur organisasi",
       },
     ],
   },
@@ -69,11 +78,13 @@ const menuItems = [
     title: "User",
     url: "/admin/user",
     icon: UserPlus,
+    ariaLabel: "Kelola pengguna",
   },
   {
     title: "Statistik Pemilu",
     url: "/admin/statistik-pemilu",
     icon: BarChart3,
+    ariaLabel: "Lihat statistik dan data pemilu",
   },
 ];
 
@@ -87,11 +98,10 @@ export function ModernSidebar({
   onToggle,
 }: ModernSidebarProps) {
   const currentPath = usePathname() || "/";
+  const sidebarRef = useRef<HTMLElement>(null);
 
-  // Automatically determine which groups should be open based on current path
   const getInitialOpenGroups = () => {
     const groups: string[] = [];
-
     menuItems.forEach((item) => {
       if (item.isCollapsible && item.subItems) {
         const hasActiveSubItem = item.subItems.some(
@@ -104,11 +114,9 @@ export function ModernSidebar({
         }
       }
     });
-
     if (groups.length === 0 && menuItems[1]?.isCollapsible) {
       groups.push(menuItems[1].title);
     }
-
     return groups;
   };
 
@@ -131,155 +139,130 @@ export function ModernSidebar({
     );
   };
 
+  const handleKeyDown = (event: KeyboardEvent<HTMLDivElement>) => {
+    const { key } = event;
+    const focusableElements = sidebarRef.current?.querySelectorAll<HTMLElement>(
+      'a[href], button:not([disabled])'
+    );
+    if (!focusableElements) return;
+    const currentIndex = Array.from(focusableElements).indexOf(
+      document.activeElement as HTMLElement
+    );
+    if (key === "ArrowDown") {
+      event.preventDefault();
+      const nextIndex = (currentIndex + 1) % focusableElements.length;
+      focusableElements[nextIndex]?.focus();
+    } else if (key === "ArrowUp") {
+      event.preventDefault();
+      const prevIndex =
+        (currentIndex - 1 + focusableElements.length) %
+        focusableElements.length;
+      focusableElements[prevIndex]?.focus();
+    }
+  };
+
   return (
-    <div
-      className={`relative h-screen flex flex-col transition-all duration-500 ease-in-out ${
-        isCollapsed ? "w-20" : "w-80"
-      }`}
-      style={{
-        background:
-          "linear-gradient(135deg, rgba(0, 27, 85, 0.95) 0%, rgba(0, 27, 85, 0.98) 100%)",
-        boxShadow:
-          "0px 48px 48px -24px rgba(0, 27, 85, 0.4), 0px 0px 80px -20px rgba(255, 156, 4, 0.2)",
-        backdropFilter: "blur(60px)",
-        borderTopRightRadius: "24px",
-        borderBottomRightRadius: "24px",
-        borderTopLeftRadius: "0px",
-        borderBottomLeftRadius: "0px",
-      }}
+    <nav
+      ref={sidebarRef}
+      aria-label="Navigasi utama admin"
+      onKeyDown={handleKeyDown}
+      className={`relative h-screen flex flex-col transition-all duration-300 ease-in-out ${
+        isCollapsed ? "w-20" : "w-72"
+      } bg-white border-r border-[#001B55]/10 shadow-sm`}
     >
       {/* Header with Logo */}
-      <div className="relative p-6 border-b border-white/10">
-        {/* Logo & Brand */}
+      <div className="relative p-5 border-b border-[#001B55]/10">
         <div
-          className={`flex items-center gap-4 ${
+          className={`flex items-center gap-3 ${
             isCollapsed ? "justify-center" : "justify-between"
           }`}
         >
           <div
-            className={`flex items-center gap-4 ${
-              isCollapsed ? "flex-col" : ""
-            }`}
+            className={`flex items-center gap-3 ${isCollapsed ? "flex-col" : ""}`}
           >
             <div
-              className="relative w-12 h-12 rounded-2xl flex items-center justify-center shadow-2xl"
-              style={{
-                background: "linear-gradient(135deg, #FF9C04 0%, #FFB04A 100%)",
-                boxShadow: "0 8px 32px rgba(255, 156, 4, 0.4)",
-              }}
+              className="relative w-11 h-11 rounded-xl flex items-center justify-center bg-white border-2 border-[#001B55]/20 shadow-sm"
+              role="img"
+              aria-label="Logo NasDem Sidoarjo"
             >
-              <Sparkles className="text-white w-6 h-6 z-10" />
+              <Sparkles className="text-[#001B55] w-5 h-5 z-10" />
             </div>
             {!isCollapsed && (
-              <div className="space-y-1">
-                <h2
-                  className="font-bold text-white text-xl tracking-tight"
-                  style={{
-                    textShadow: "0px 0px 12px rgba(255, 255, 255, 0.8)",
-                  }}
-                >
+              <div className="space-y-0.5">
+                <h2 className="font-bold text-[#001B55] text-base tracking-tight">
                   NasDem
                 </h2>
-                <p className="text-white/70 text-xs font-medium flex items-center gap-1.5">
-                  <span className="w-2 h-2 bg-[#53C22B] rounded-full animate-pulse"></span>
-                  Kabupaten Sidoarjo
+                <p className="text-gray-600 text-xs font-medium flex items-center gap-1.5">
+                  <span
+                    className="w-2 h-2 bg-[#001B55]/40 rounded-full animate-pulse"
+                    role="status"
+                    aria-label="Status online"
+                  ></span>
+                  Kab. Sidoarjo
                 </p>
               </div>
             )}
           </div>
 
-          {/* Toggle Button */}
           {!isCollapsed && (
             <button
               onClick={onToggle}
-              className="p-2 rounded-full hover:bg-white/10 transition-colors"
+              className="p-2 rounded-lg hover:bg-gray-100 transition-all duration-200 focus:outline-none focus:ring-2 focus:ring-[#001B55]/30 focus:ring-offset-1"
+              aria-label="Tutup sidebar"
+              aria-expanded={!isCollapsed}
             >
-              <ChevronRight className="w-4 h-4 text-white/60 rotate-180" />
+              <ChevronRight className="w-4 h-4 text-gray-500" />
             </button>
           )}
         </div>
       </div>
 
-      {/* Line Separator */}
-      <div
-        className="mx-0 my-0"
-        style={{
-          height: "1px",
-          background:
-            "radial-gradient(50% 50% at 50% 50%, rgba(255, 156, 4, 0.3) 0%, rgba(255, 156, 4, 0) 100%)",
-        }}
-      />
-
       {/* Main Navigation */}
       <div
-        className={`py-4 flex-1 overflow-y-auto space-y-1 scrollbar-hide transition-all duration-500 ${
-          isCollapsed ? "px-2" : "px-4"
+        className={`py-3 flex-1 overflow-y-auto scrollbar-hide transition-all duration-300 ${
+          isCollapsed ? "px-2" : "px-3"
         }`}
         style={{
           scrollbarWidth: "none",
           msOverflowStyle: "none",
         }}
+        role="list"
       >
         <style jsx global>{`
           .scrollbar-hide::-webkit-scrollbar {
             display: none !important;
-            width: 0px !important;
-            height: 0px !important;
-          }
-          .scrollbar-hide {
-            -ms-overflow-style: none !important;
-            scrollbar-width: none !important;
           }
         `}</style>
 
-        {/* Main Menu Title */}
         {!isCollapsed && (
-          <div className="px-3 py-2 flex items-center">
-            <span
-              className="text-[10px] text-white/50 uppercase tracking-widest font-semibold"
-              style={{ letterSpacing: "0.05em" }}
-            >
-              Main Menu
+          <div className="px-3 py-2 mb-2">
+            <span className="text-xs text-gray-500 uppercase tracking-wider font-semibold">
+              Menu Utama
             </span>
           </div>
         )}
 
-        {/* Menu Items */}
         <div className="space-y-1">
-          {menuItems.map((item, index) => (
-            <div key={item.title} className="relative group/item">
+          {menuItems.map((item) => (
+            <div key={item.title} className="relative group/item" role="listitem">
               {item.isCollapsible ? (
                 <div className="relative">
                   <button
                     onClick={() => !isCollapsed && toggleGroup(item.title)}
                     className={`w-full group relative flex items-center ${
-                      isCollapsed ? "justify-center px-0" : "gap-3 px-4"
-                    } py-3 rounded-2xl font-medium transition-all duration-300 ${
+                      isCollapsed ? "justify-center px-0" : "gap-3 px-3"
+                    } py-2.5 rounded-lg font-medium transition-all duration-200 focus:outline-none focus:ring-2 focus:ring-[#001B55]/30 focus:ring-offset-1 ${
                       isGroupActive(item.subItems)
-                        ? "bg-[#FF9C04]/10 text-white shadow-lg"
-                        : "text-white/70 hover:bg-white/5 hover:text-white"
+                        ? "bg-white text-[#001B55] border-l-3 border-[#001B55]/30 shadow-sm"
+                        : "text-gray-600 hover:bg-gray-50 hover:text-[#001B55]"
                     }`}
+                    aria-label={item.ariaLabel}
+                    aria-expanded={openGroups.includes(item.title)}
                   >
-                    {/* Active Indicator */}
                     {isGroupActive(item.subItems) && !isCollapsed && (
                       <div
-                        className="absolute left-0 top-1/2 -translate-y-1/2 w-1 h-8 rounded-r-full"
-                        style={{
-                          background:
-                            "linear-gradient(180deg, #FF9C04 0%, #FFB04A 100%)",
-                          boxShadow: "0px 0px 12px rgba(255, 156, 4, 0.6)",
-                        }}
-                      />
-                    )}
-
-                    {/* Glow Effect */}
-                    {isGroupActive(item.subItems) && (
-                      <div
-                        className="absolute inset-0 pointer-events-none rounded-2xl"
-                        style={{
-                          background:
-                            "radial-gradient(50% 50% at 50% 50%, rgba(255, 156, 4, 0.15) 0%, rgba(255, 156, 4, 0) 100%)",
-                        }}
+                        className="absolute left-0 top-0 bottom-0 w-1 bg-[#001B55]/30 rounded-r"
+                        aria-hidden="true"
                       />
                     )}
 
@@ -289,68 +272,44 @@ export function ModernSidebar({
                       }`}
                     >
                       <item.icon
-                        className={`h-5 w-5 flex-shrink-0 transition-all duration-300 ${
+                        className={`h-5 w-5 flex-shrink-0 transition-colors ${
                           isGroupActive(item.subItems)
-                            ? "text-[#FF9C04]"
-                            : "text-white/70 group-hover:text-white"
+                            ? "text-[#001B55]"
+                            : ""
                         }`}
-                        style={{
-                          filter: isGroupActive(item.subItems)
-                            ? "drop-shadow(0px 0px 8px rgba(255, 156, 4, 0.5))"
-                            : "none",
-                        }}
+                        aria-hidden="true"
                       />
                       {!isCollapsed && (
                         <>
-                          <span
-                            className={`flex-1 text-left text-sm font-semibold ${
-                              isGroupActive(item.subItems)
-                                ? "text-white"
-                                : "group-hover:text-white"
-                            }`}
-                            style={{
-                              textShadow: isGroupActive(item.subItems)
-                                ? "0px 0px 12px rgba(255, 255, 255, 0.4)"
-                                : "none",
-                            }}
-                          >
+                          <span className="flex-1 text-left text-sm font-semibold">
                             {item.title}
                           </span>
                           <ChevronDown
-                            className={`h-4 w-4 transition-transform duration-500 ${
-                              openGroups.includes(item.title)
-                                ? "rotate-180"
-                                : ""
-                            } ${
-                              isGroupActive(item.subItems)
-                                ? "text-[#FF9C04]"
-                                : "text-white/50 group-hover:text-white/70"
+                            className={`h-4 w-4 transition-transform duration-200 ${
+                              openGroups.includes(item.title) ? "rotate-180 text-[#001B55]" : ""
                             }`}
+                            aria-hidden="true"
                           />
                         </>
                       )}
                     </div>
                   </button>
 
-                  {/* Tooltip for collapsed state */}
                   {isCollapsed && (
-                    <div className="absolute left-full ml-2 top-1/2 -translate-y-1/2 px-3 py-2 bg-[#001B55] text-white text-sm font-medium rounded-lg shadow-xl opacity-0 invisible group-hover/item:opacity-100 group-hover/item:visible transition-all duration-200 whitespace-nowrap z-50 pointer-events-none">
+                    <div
+                      className="absolute left-full ml-3 top-1/2 -translate-y-1/2 px-3 py-2 bg-white border-2 border-[#001B55] text-[#001B55] text-sm font-semibold rounded-lg shadow-xl opacity-0 invisible group-hover/item:opacity-100 group-hover/item:visible transition-all duration-200 whitespace-nowrap z-50 pointer-events-none"
+                      role="tooltip"
+                    >
                       {item.title}
-                      <div className="absolute right-full top-1/2 -translate-y-1/2 border-4 border-transparent border-r-[#001B55]"></div>
+                      <div className="absolute right-full top-1/2 -translate-y-1/2 border-[5px] border-transparent border-r-white drop-shadow-lg"></div>
                     </div>
                   )}
 
-                  {/* Submenu */}
                   {!isCollapsed && openGroups.includes(item.title) && (
-                    <div className="ml-8 mt-1 mb-2 space-y-0.5 relative animate-in slide-in-from-top-2 duration-300">
-                      {/* Vertical line connector */}
-                      <div
-                        className="absolute left-0 top-0 bottom-0 w-px"
-                        style={{
-                          background: "rgba(255, 156, 4, 0.2)",
-                        }}
-                      />
-
+                    <div
+                      className="ml-8 mt-1 mb-1 space-y-1 pl-3 border-l border-[#001B55]/20"
+                      role="list"
+                    >
                       {item.subItems?.map((subItem) => {
                         const SubIcon = subItem.icon;
                         const subItemActive = isActive(subItem.url);
@@ -358,52 +317,21 @@ export function ModernSidebar({
                           <SafeNavLink
                             key={subItem.url}
                             to={subItem.url}
-                            className={`group relative flex items-center gap-3 px-4 py-2.5 rounded-xl transition-all duration-300 ${
+                            className={`group relative flex items-center gap-2.5 px-3 py-2 rounded-lg transition-all duration-200 focus:outline-none focus:ring-2 focus:ring-[#001B55]/30 focus:ring-offset-1 ${
                               subItemActive
-                                ? "bg-[#FF9C04]/20 text-white"
-                                : "text-white/60 hover:bg-white/5 hover:text-white"
+                                ? "bg-white text-[#001B55] font-semibold border-l-2 border-[#001B55]/40"
+                                : "text-gray-600 hover:bg-gray-50 hover:text-[#001B55]"
                             }`}
+                            aria-label={subItem.ariaLabel}
+                            aria-current={subItemActive ? "page" : undefined}
                           >
-                            {/* Connection Dot */}
-                            <div
-                              className={`w-2 h-2 rounded-full transition-all duration-300 ${
-                                subItemActive ? "bg-[#FF9C04]" : "bg-white/30"
-                              }`}
-                              style={{
-                                boxShadow: subItemActive
-                                  ? "0px 0px 8px rgba(255, 156, 4, 0.6)"
-                                  : "none",
-                              }}
-                            />
-
                             <SubIcon
-                              className={`h-4 w-4 flex-shrink-0 transition-all duration-300 ${
-                                subItemActive
-                                  ? "text-[#FF9C04]"
-                                  : "text-white/50 group-hover:text-white/70"
+                              className={`h-4 w-4 flex-shrink-0 ${
+                                subItemActive ? "text-[#001B55]" : ""
                               }`}
+                              aria-hidden="true"
                             />
-
-                            <span
-                              className={`text-sm font-medium ${
-                                subItemActive
-                                  ? "text-white"
-                                  : "group-hover:text-white"
-                              }`}
-                            >
-                              {subItem.title}
-                            </span>
-
-                            {/* Active Glow */}
-                            {subItemActive && (
-                              <div
-                                className="absolute inset-0 pointer-events-none rounded-xl"
-                                style={{
-                                  background:
-                                    "radial-gradient(50% 50% at 50% 50%, rgba(255, 156, 4, 0.1) 0%, rgba(255, 156, 4, 0) 100%)",
-                                }}
-                              />
-                            )}
+                            <span className="text-sm">{subItem.title}</span>
                           </SafeNavLink>
                         );
                       })}
@@ -415,33 +343,19 @@ export function ModernSidebar({
                   <SafeNavLink
                     to={item.url ?? "#"}
                     className={`group relative flex items-center ${
-                      isCollapsed ? "justify-center px-0" : "gap-3 px-4"
-                    } py-3 rounded-2xl font-medium transition-all duration-300 ${
+                      isCollapsed ? "justify-center px-0" : "gap-3 px-3"
+                    } py-2.5 rounded-lg font-medium transition-all duration-200 focus:outline-none focus:ring-2 focus:ring-[#001B55]/30 focus:ring-offset-1 ${
                       isActive(item.url ?? "")
-                        ? "bg-[#FF9C04]/10 text-white shadow-lg"
-                        : "text-white/70 hover:bg-white/5 hover:text-white"
+                        ? "bg-white text-[#001B55] border-l-3 border-[#001B55]/30 shadow-sm"
+                        : "text-gray-600 hover:bg-gray-50 hover:text-[#001B55]"
                     }`}
+                    aria-label={item.ariaLabel}
+                    aria-current={isActive(item.url ?? "") ? "page" : undefined}
                   >
-                    {/* Active Indicator */}
                     {isActive(item.url ?? "") && !isCollapsed && (
                       <div
-                        className="absolute left-0 top-1/2 -translate-y-1/2 w-1 h-8 rounded-r-full"
-                        style={{
-                          background:
-                            "linear-gradient(180deg, #FF9C04 0%, #FFB04A 100%)",
-                          boxShadow: "0px 0px 12px rgba(255, 156, 4, 0.6)",
-                        }}
-                      />
-                    )}
-
-                    {/* Glow Effect */}
-                    {isActive(item.url ?? "") && (
-                      <div
-                        className="absolute inset-0 pointer-events-none rounded-2xl"
-                        style={{
-                          background:
-                            "radial-gradient(50% 50% at 50% 50%, rgba(255, 156, 4, 0.15) 0%, rgba(255, 156, 4, 0) 100%)",
-                        }}
+                        className="absolute left-0 top-0 bottom-0 w-1 bg-[#001B55]/30 rounded-r"
+                        aria-hidden="true"
                       />
                     )}
 
@@ -451,41 +365,28 @@ export function ModernSidebar({
                       }`}
                     >
                       <item.icon
-                        className={`h-5 w-5 flex-shrink-0 transition-all duration-300 ${
+                        className={`h-5 w-5 flex-shrink-0 ${
                           isActive(item.url ?? "")
-                            ? "text-[#FF9C04]"
-                            : "text-white/70 group-hover:text-white"
+                            ? "text-[#001B55]"
+                            : ""
                         }`}
-                        style={{
-                          filter: isActive(item.url ?? "")
-                            ? "drop-shadow(0px 0px 8px rgba(255, 156, 4, 0.5))"
-                            : "none",
-                        }}
+                        aria-hidden="true"
                       />
                       {!isCollapsed && (
-                        <span
-                          className={`flex-1 text-left text-sm font-semibold ${
-                            isActive(item.url ?? "")
-                              ? "text-white"
-                              : "group-hover:text-white"
-                          }`}
-                          style={{
-                            textShadow: isActive(item.url ?? "")
-                              ? "0px 0px 12px rgba(255, 255, 255, 0.4)"
-                              : "none",
-                          }}
-                        >
+                        <span className="flex-1 text-left text-sm font-semibold">
                           {item.title}
                         </span>
                       )}
                     </div>
                   </SafeNavLink>
 
-                  {/* Tooltip for collapsed state */}
                   {isCollapsed && (
-                    <div className="absolute left-full ml-2 top-1/2 -translate-y-1/2 px-3 py-2 bg-[#001B55] text-white text-sm font-medium rounded-lg shadow-xl opacity-0 invisible group-hover/item:opacity-100 group-hover/item:visible transition-all duration-200 whitespace-nowrap z-50 pointer-events-none">
+                    <div
+                      className="absolute left-full ml-3 top-1/2 -translate-y-1/2 px-3 py-2 bg-white border-2 border-[#001B55] text-[#001B55] text-sm font-semibold rounded-lg shadow-xl opacity-0 invisible group-hover/item:opacity-100 group-hover/item:visible transition-all duration-200 whitespace-nowrap z-50 pointer-events-none"
+                      role="tooltip"
+                    >
                       {item.title}
-                      <div className="absolute right-full top-1/2 -translate-y-1/2 border-4 border-transparent border-r-[#001B55]"></div>
+                      <div className="absolute right-full top-1/2 -translate-y-1/2 border-[5px] border-transparent border-r-white drop-shadow-lg"></div>
                     </div>
                   )}
                 </>
@@ -495,90 +396,56 @@ export function ModernSidebar({
         </div>
       </div>
 
-      {/* Line Separator */}
-      <div
-        className="mx-0 my-0"
-        style={{
-          height: "1px",
-          background:
-            "radial-gradient(50% 50% at 50% 50%, rgba(255, 156, 4, 0.3) 0%, rgba(255, 156, 4, 0) 100%)",
-        }}
-      />
-
-      {/* Promo Block */}
+      {/* Quick Actions */}
       {!isCollapsed && (
-        <div
-          className="mx-5 mb-5 mt-5 p-5 rounded-2xl flex flex-col gap-4"
-          style={{
-            background:
-              "linear-gradient(135deg, rgba(255, 156, 4, 0.1) 0%, rgba(0, 27, 85, 0.2) 100%)",
-            boxShadow: "0px 20px 40px -12px rgba(255, 156, 4, 0.3)",
-            borderRadius: "20px",
-            border: "1px solid rgba(255, 156, 4, 0.2)",
-          }}
-        >
-          <div className="space-y-2">
-            <h4
-              className="text-sm text-white font-bold text-center"
-              style={{
-                textShadow: "0px 0px 12px rgba(255, 255, 255, 0.4)",
-              }}
-            >
-              Quick Actions
-            </h4>
-            <p className="text-[11px] text-white/70 text-center leading-relaxed">
-              Kelola konten dan data partai dengan mudah
-            </p>
+        <div className="m-4 p-4 bg-white border-2 border-[#001B55]/20 rounded-xl shadow-sm">
+          <div className="space-y-3">
+            <div className="space-y-1 pb-3 border-b border-[#001B55]/20">
+              <h4 className="text-sm text-[#001B55] font-bold flex items-center gap-2">
+                <Sparkles className="w-4 h-4 text-[#001B55]/60" />
+                Quick Actions
+              </h4>
+              <p className="text-xs text-gray-600">
+                Kelola konten dengan mudah
+              </p>
+            </div>
+
+            <SafeNavLink to="/admin/news/create">
+              <button
+                className="w-full flex items-center justify-center gap-2 px-4 py-2.5 bg-white border border-[#001B55]/30 text-[#001B55] hover:bg-[#001B55]/5 rounded-lg font-semibold text-sm transition-all hover:scale-[1.02] focus:outline-none focus:ring-2 focus:ring-[#001B55]/30 focus:ring-offset-2"
+                aria-label="Buat konten baru"
+              >
+                <Plus className="w-4 h-4" />
+                <span>Buat Konten Baru</span>
+              </button>
+            </SafeNavLink>
           </div>
-
-          <SafeNavLink to="/admin/news/create">
-            <button
-              className="w-full flex items-center justify-center gap-2 px-5 py-3 rounded-xl font-semibold text-sm text-white transition-all hover:scale-105 active:scale-95 hover:shadow-xl"
-              style={{
-                background: "linear-gradient(135deg, #FF9C04 0%, #FFB04A 100%)",
-                boxShadow: "0px 8px 24px rgba(255, 156, 4, 0.4)",
-              }}
-            >
-              <div className="w-5 h-5 rounded-full bg-white/20 flex items-center justify-center">
-                <Plus className="w-3.5 h-3.5" />
-              </div>
-              <span>Buat Konten Baru</span>
-            </button>
-          </SafeNavLink>
         </div>
       )}
 
-      {/* Collapsed state: Add Content Button at bottom */}
       {isCollapsed && (
-        <div className="p-4 flex justify-center">
+        <div className="p-3 flex justify-center border-t border-[#001B55]/10">
           <SafeNavLink to="/admin/news/create">
             <button
-              className="w-12 h-12 rounded-xl flex items-center justify-center transition-all hover:scale-110 active:scale-95"
-              style={{
-                background: "linear-gradient(135deg, #FF9C04 0%, #FFB04A 100%)",
-                boxShadow: "0px 8px 24px rgba(255, 156, 4, 0.4)",
-              }}
+              className="w-12 h-12 rounded-lg flex items-center justify-center bg-white border border-[#001B55]/30 text-[#001B55] hover:bg-[#001B55]/5 transition-all hover:scale-110 focus:outline-none focus:ring-2 focus:ring-[#001B55]/30 focus:ring-offset-1"
+              aria-label="Buat konten baru"
             >
-              <Plus className="w-5 h-5 text-white" />
+              <Plus className="w-5 h-5" />
             </button>
           </SafeNavLink>
         </div>
       )}
 
-      {/* Arrow Button for collapsed state */}
       {isCollapsed && (
         <button
           onClick={onToggle}
-          className="absolute -right-3 top-16 w-7 h-7 rounded-full flex items-center justify-center transition-all hover:scale-110 shadow-lg"
-          style={{
-            background: "rgba(15, 9, 12, 0.4)",
-            backdropFilter: "blur(68.49px)",
-            boxShadow: "0 4px 16px rgba(0, 0, 0, 0.3)",
-          }}
+          className="absolute -right-3 top-20 w-7 h-7 rounded-full flex items-center justify-center bg-white border-2 border-[#001B55]/20 shadow-md hover:shadow-lg hover:border-[#001B55] hover:scale-110 transition-all focus:outline-none focus:ring-2 focus:ring-[#001B55]/30"
+          aria-label="Buka sidebar"
+          aria-expanded={!isCollapsed}
         >
-          <ChevronRight className="w-3.5 h-3.5 text-white/60" />
+          <ChevronRight className="w-4 h-4 text-[#001B55]" />
         </button>
       )}
-    </div>
+    </nav>
   );
 }
