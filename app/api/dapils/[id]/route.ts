@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from "next/server";
 import { db } from "@/lib/db";
 import { requireAuth, requireRole } from "@/lib/jwt-middleware";
+import { UserRole } from "@/lib/rbac";
 
 export async function GET(
   req: NextRequest,
@@ -23,7 +24,7 @@ export async function PUT(
 ) {
   const authError = requireAuth(req);
   if (authError) return authError;
-  const roleError = requireRole(req, ["editor", "superadmin"]);
+  const roleError = requireRole(req, [UserRole.EDITOR, UserRole.SUPERADMIN]);
   if (roleError) return roleError;
   const { name } = await req.json();
   const updated = await db.dapil.update({
@@ -39,7 +40,7 @@ export async function DELETE(
 ) {
   const authError = requireAuth(req);
   if (authError) return authError;
-  const roleError = requireRole(req, ["editor", "superadmin"]);
+  const roleError = requireRole(req, [UserRole.EDITOR, UserRole.SUPERADMIN]);
   if (roleError) return roleError;
   await db.dapil.delete({ where: { id: parseInt(params.id) } });
   return NextResponse.json({ success: true, message: "Region deleted" });

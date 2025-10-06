@@ -58,13 +58,13 @@ enum ElectionType {
 // Core CMS
 // ---------------------------
 model User {
-  id        Int      @id @default(autoincrement())
-  username  String   @db.VarChar(50)
-  email     String   @unique @db.VarChar(100)
-  password  String   @db.VarChar(255)
+  id        Int       @id @default(autoincrement())
+  username  String    @db.VarChar(50)
+  email     String    @unique @db.VarChar(100)
+  password  String    @db.VarChar(255)
   role      UserRole
-  createdAt DateTime @default(now())
-  updatedAt DateTime @updatedAt
+  createdAt DateTime  @default(now())
+  updatedAt DateTime  @updatedAt
   deletedAt DateTime? @db.Timestamptz
 
   // Relations
@@ -236,9 +236,15 @@ model Member {
   strukturId Int?
   struktur   StrukturOrganisasi? @relation(fields: [strukturId], references: [id], onDelete: SetNull, onUpdate: Cascade)
 
+  // Cadres relationship: a DPRT member can have up to 10 cadres (enforced in API)
+  parentDprtMemberId Int?
+  parentDprtMember   Member?  @relation("MemberCadres", fields: [parentDprtMemberId], references: [id], onDelete: SetNull, onUpdate: Cascade)
+  cadres             Member[] @relation("MemberCadres")
+
   @@index([status])
   @@index([userId])
   @@index([strukturId])
+  @@index([parentDprtMemberId])
   @@index([fullName])
   @@index([deletedAt])
 }

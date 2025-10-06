@@ -1,21 +1,28 @@
 import { NextRequest, NextResponse } from "next/server";
 import { db } from "@/lib/db";
 import { requireAuth, requireRole } from "@/lib/jwt-middleware";
+import { OrgLevel, PositionEnum, Prisma } from "@prisma/client";
+import { pickEnumValue, toInt, toIntArray } from "@/lib/parsers";
+import { UserRole } from "@/lib/rbac";
 
-const LEVELS = ["dpd", "dpc", "dprt", "sayap", "kader"];
-const POSITIONS = ["ketua", "sekretaris", "bendahara", "wakil", "anggota"];
+const LEVELS = Object.values(OrgLevel);
+const POSITIONS = Object.values(PositionEnum);
 
 export async function GET(req: NextRequest) {
   const authError = requireAuth(req);
   if (authError) return authError;
-  const roleError = requireRole(req, ["superadmin", "editor", "analyst"]);
+  const roleError = requireRole(req, [
+    UserRole.SUPERADMIN,
+    UserRole.EDITOR,
+    UserRole.ANALYST,
+  ]);
   if (roleError) return roleError;
 
   try {
     const { searchParams } = req.nextUrl;
-    const level = searchParams.get("level");
-    const position = searchParams.get("position");
-    const regionId = searchParams.get("regionId");
+    const level = pickEnumValue(searchParams.get("level"), LEVELS);
+    const position = pickEnumValue(searchParams.get("position"), POSITIONS);
+    const regionId = toInt(searchParams.get("regionId"));
     const search = (searchParams.get("search") || "").trim();
     const skip = Math.max(parseInt(searchParams.get("skip") || "0", 10), 0);
     const take = Math.min(
@@ -23,18 +30,42 @@ export async function GET(req: NextRequest) {
       200
     );
 
-    const where: any = {};
-    if (level && LEVELS.includes(level)) where.level = level;
-    if (position && POSITIONS.includes(position)) where.position = position;
-    if (regionId && !isNaN(parseInt(regionId)))
-      where.regionId = parseInt(regionId);
+    const where: Prisma.StrukturOrganisasiWhereInput = {};
+    if (level) where.level = level;
+    if (position) where.position = position;
+    if (regionId !== undefined) where.regionId = regionId;
+
     if (search) {
-      where.OR = [
-        { position: { contains: search, mode: "insensitive" } },
-        { level: { contains: search, mode: "insensitive" } },
+      const lower = search.toLowerCase();
+      const levelMatches = LEVELS.filter((value) =>
+        value.toLowerCase().includes(lower)
+      );
+      const positionMatches = POSITIONS.filter((value) =>
+        value.toLowerCase().includes(lower)
+      );
+
+      const orConditions: Prisma.StrukturOrganisasiWhereInput[] = [];
+      if (positionMatches.length) {
+        orConditions.push({ position: { in: positionMatches } });
+      }
+      if (levelMatches.length) {
+        orConditions.push({ level: { in: levelMatches } });
+      }
+      orConditions.push(
         { region: { name: { contains: search, mode: "insensitive" } } },
-        { sayapType: { name: { contains: search, mode: "insensitive" } } },
-      ];
+        { sayapType: { name: { contains: search, mode: "insensitive" } } }
+      );
+
+      // Normalize AND to an array before pushing
+      const andArray: Prisma.StrukturOrganisasiWhereInput[] = Array.isArray(
+        (where as any).AND
+      )
+        ? ([...(where as any).AND] as Prisma.StrukturOrganisasiWhereInput[])
+        : (where as any).AND
+        ? [(where as any).AND as Prisma.StrukturOrganisasiWhereInput]
+        : [];
+      andArray.push({ OR: orConditions });
+      (where as any).AND = andArray;
     }
 
     const [total, rows] = await Promise.all([
@@ -83,21 +114,26 @@ export async function GET(req: NextRequest) {
 export async function POST(req: NextRequest) {
   const authError = requireAuth(req);
   if (authError) return authError;
-  const roleError = requireRole(req, ["editor", "superadmin"]);
+  const roleError = requireRole(req, [UserRole.EDITOR, UserRole.SUPERADMIN]);
   if (roleError) return roleError;
 
   try {
     const body = await req.json();
-    const { level, position, sayapTypeId, regionId, photoUrl, memberIds } =
-      body;
+    const level = pickEnumValue(body.level, LEVELS);
+    const position = pickEnumValue(body.position, POSITIONS);
+    const sayapTypeId = toInt(body.sayapTypeId);
+    const regionId = toInt(body.regionId);
+    const photoUrl =
+      typeof body.photoUrl === "string" ? body.photoUrl : undefined;
+    const memberIds = toIntArray(body.memberIds);
 
-    if (!LEVELS.includes(level)) {
+    if (!level) {
       return NextResponse.json(
         { success: false, error: "Level tidak valid" },
         { status: 400 }
       );
     }
-    if (!POSITIONS.includes(position)) {
+    if (!position) {
       return NextResponse.json(
         { success: false, error: "Posisi tidak valid" },
         { status: 400 }
@@ -105,16 +141,13 @@ export async function POST(req: NextRequest) {
     }
 
     // Prepare connect members if provided
-    let membersConnect: { id: number }[] | undefined = undefined;
-    if (Array.isArray(memberIds) && memberIds.length) {
-      const uniqueIds = [
-        ...new Set(memberIds.filter((n: any) => Number.isInteger(n))),
-      ];
-      if (uniqueIds.length) {
-        const valid = await db.member.findMany({
-          where: { id: { in: uniqueIds } },
-          select: { id: true },
-        });
+    let membersConnect: { id: number }[] | undefined;
+    if (memberIds.length) {
+      const valid = await db.member.findMany({
+        where: { id: { in: memberIds } },
+        select: { id: true },
+      });
+      if (valid.length) {
         membersConnect = valid.map((v) => ({ id: v.id }));
       }
     }
@@ -123,8 +156,8 @@ export async function POST(req: NextRequest) {
       data: {
         level,
         position,
-        sayapTypeId: sayapTypeId || undefined,
-        regionId: regionId || undefined,
+        sayapTypeId: sayapTypeId ?? undefined,
+        regionId: regionId ?? undefined,
         photoUrl: photoUrl || undefined,
         ...(membersConnect ? { members: { connect: membersConnect } } : {}),
       },

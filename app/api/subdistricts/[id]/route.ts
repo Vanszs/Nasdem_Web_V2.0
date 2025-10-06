@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from "next/server";
 import { db } from "@/lib/db";
 import { requireAuth, requireRole } from "@/lib/jwt-middleware";
+import { toInt } from "@/lib/parsers";
 
 export async function GET(
   req: NextRequest,
@@ -25,7 +26,15 @@ export async function PUT(
   if (authError) return authError;
   const roleError = requireRole(req, ["editor", "superadmin"]);
   if (roleError) return roleError;
-  const { name, dapilId } = await req.json();
+  const body = await req.json();
+  const dapilId = toInt(body.dapilId);
+  if (dapilId === undefined) {
+    return NextResponse.json(
+      { success: false, error: "dapilId harus berupa angka" },
+      { status: 400 }
+    );
+  }
+  const name = body.name;
   const updated = await db.kecamatan.update({
     where: { id: parseInt(params.id) },
     data: { name, dapilId },

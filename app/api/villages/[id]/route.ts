@@ -1,6 +1,8 @@
 import { NextRequest, NextResponse } from "next/server";
 import { db } from "@/lib/db";
 import { requireAuth, requireRole } from "@/lib/jwt-middleware";
+import { toInt } from "@/lib/parsers";
+import { UserRole } from "@/lib/rbac";
 
 export async function GET(
   req: NextRequest,
@@ -24,9 +26,17 @@ export async function PUT(
 ) {
   const authError = requireAuth(req);
   if (authError) return authError;
-  const roleError = requireRole(req, ["editor", "superadmin"]);
+  const roleError = requireRole(req, [UserRole.EDITOR, UserRole.SUPERADMIN]);
   if (roleError) return roleError;
-  const { name, kecamatanId } = await req.json();
+  const body = await req.json();
+  const kecamatanId = toInt(body.kecamatanId);
+  if (kecamatanId === undefined) {
+    return NextResponse.json(
+      { success: false, error: "kecamatanId harus berupa angka" },
+      { status: 400 }
+    );
+  }
+  const name = body.name;
   const updated = await db.desa.update({
     where: { id: parseInt(params.id) },
     data: { name, kecamatanId },
@@ -40,7 +50,7 @@ export async function DELETE(
 ) {
   const authError = requireAuth(req);
   if (authError) return authError;
-  const roleError = requireRole(req, ["editor", "superadmin"]);
+  const roleError = requireRole(req, [UserRole.EDITOR, UserRole.SUPERADMIN]);
   if (roleError) return roleError;
   await db.desa.delete({ where: { id: parseInt(params.id) } });
   return NextResponse.json({ success: true, message: "Village deleted" });

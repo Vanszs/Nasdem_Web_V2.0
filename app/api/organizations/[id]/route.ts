@@ -1,9 +1,12 @@
 import { NextRequest, NextResponse } from "next/server";
 import { db } from "@/lib/db";
 import { requireAuth, requireRole } from "@/lib/jwt-middleware";
+import { OrgLevel, PositionEnum } from "@prisma/client";
+import { pickEnumValue, toInt } from "@/lib/parsers";
+import { UserRole } from "@/lib/rbac";
 
-const LEVELS = ["dpd", "dpc", "dprt", "sayap", "kader"];
-const POSITIONS = ["ketua", "sekretaris", "bendahara", "wakil", "anggota"];
+const LEVELS = Object.values(OrgLevel);
+const POSITIONS = Object.values(PositionEnum);
 
 export async function GET(
   req: NextRequest,
@@ -11,7 +14,11 @@ export async function GET(
 ) {
   const authError = requireAuth(req);
   if (authError) return authError;
-  const roleError = requireRole(req, ["superadmin", "editor", "analyst"]);
+  const roleError = requireRole(req, [
+    UserRole.SUPERADMIN,
+    UserRole.EDITOR,
+    UserRole.ANALYST,
+  ]);
   if (roleError) return roleError;
 
   try {
@@ -68,19 +75,24 @@ export async function PUT(
 ) {
   const authError = requireAuth(req);
   if (authError) return authError;
-  const roleError = requireRole(req, ["editor", "superadmin"]);
+  const roleError = requireRole(req, [UserRole.EDITOR, UserRole.SUPERADMIN]);
   if (roleError) return roleError;
   try {
-    const { level, position, sayapTypeId, regionId, photoUrl } =
-      await req.json();
+    const body = await req.json();
+    const level = pickEnumValue(body.level, LEVELS);
+    const position = pickEnumValue(body.position, POSITIONS);
+    const sayapTypeId = toInt(body.sayapTypeId);
+    const regionId = toInt(body.regionId);
+    const photoUrl =
+      typeof body.photoUrl === "string" ? body.photoUrl : undefined;
 
-    if (level && !LEVELS.includes(level)) {
+    if (body.level && !level) {
       return NextResponse.json(
         { success: false, error: "Level tidak valid" },
         { status: 400 }
       );
     }
-    if (position && !POSITIONS.includes(position)) {
+    if (body.position && !position) {
       return NextResponse.json(
         { success: false, error: "Posisi tidak valid" },
         { status: 400 }
@@ -90,10 +102,10 @@ export async function PUT(
     const updated = await db.strukturOrganisasi.update({
       where: { id: parseInt(params.id) },
       data: {
-        level: level || undefined,
-        position: position || undefined,
-        sayapTypeId: sayapTypeId !== undefined ? sayapTypeId : undefined,
-        regionId: regionId !== undefined ? regionId : undefined,
+        level: level ?? undefined,
+        position: position ?? undefined,
+        sayapTypeId: sayapTypeId ?? undefined,
+        regionId: regionId ?? undefined,
         photoUrl: photoUrl || undefined,
       },
       include: { sayapType: true, region: true },
@@ -113,7 +125,7 @@ export async function DELETE(
 ) {
   const authError = requireAuth(req);
   if (authError) return authError;
-  const roleError = requireRole(req, ["editor", "superadmin"]);
+  const roleError = requireRole(req, [UserRole.EDITOR, UserRole.SUPERADMIN]);
   if (roleError) return roleError;
   try {
     await db.strukturOrganisasi.delete({ where: { id: parseInt(params.id) } });

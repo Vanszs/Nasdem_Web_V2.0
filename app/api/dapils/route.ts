@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from "next/server";
 import { db } from "@/lib/db";
 import { requireAuth, requireRole } from "@/lib/jwt-middleware";
+import { UserRole } from "@/lib/rbac";
 
 export async function GET() {
   const dapils = await db.dapil.findMany({
@@ -14,7 +15,7 @@ export async function POST(req: NextRequest) {
   const authError = requireAuth(req);
   if (authError) return authError;
 
-  const roleError = requireRole(req, ["editor", "superadmin"]);
+  const roleError = requireRole(req, [UserRole.EDITOR, UserRole.SUPERADMIN]);
   if (roleError) return roleError;
 
   const { name } = await req.json();

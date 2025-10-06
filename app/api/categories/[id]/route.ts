@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from "next/server";
 import { db } from "@/lib/db";
 import { requireAuth, requireRole } from "@/lib/jwt-middleware";
+import { UserRole } from "@/lib/rbac";
 
 // detail kategori
 export async function GET(
@@ -35,7 +36,7 @@ export async function PUT(
   const authError = requireAuth(req);
   if (authError) return authError;
 
-  const roleError = requireRole(req, ["editor", "superadmin"]);
+  const roleError = requireRole(req, [UserRole.EDITOR, UserRole.SUPERADMIN]);
   if (roleError) return roleError;
 
   try {
@@ -63,7 +64,7 @@ export async function DELETE(
   const authError = requireAuth(req);
   if (authError) return authError;
 
-  const roleError = requireRole(req, ["editor", "superadmin"]);
+  const roleError = requireRole(req, [UserRole.EDITOR, UserRole.SUPERADMIN]);
   if (roleError) return roleError;
 
   try {

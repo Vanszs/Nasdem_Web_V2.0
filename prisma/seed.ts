@@ -1,4 +1,5 @@
 import {
+  Prisma,
   PrismaClient,
   UserRole,
   OrgLevel,
@@ -127,69 +128,91 @@ async function main() {
   const regions = await db.region.findMany();
   const kabupaten = regions.find((r) => r.type === RegionType.kabupaten);
   const kecA = regions.find((r) => r.name === "Kecamatan A");
+  const garnita = sayapTypeList.find((s) => s.name === "Garnita");
+
+  if (!kabupaten || !kecA || !garnita) {
+    throw new Error("Seed prerequisite data missing (region/sayap type)");
+  }
+
+  const strukturData = [
+    {
+      level: OrgLevel.dpd,
+      position: PositionEnum.ketua,
+      regionId: kabupaten.id,
+    },
+    {
+      level: OrgLevel.dpd,
+      position: PositionEnum.sekretaris,
+      regionId: kabupaten.id,
+    },
+    {
+      level: OrgLevel.dpc,
+      position: PositionEnum.ketua,
+      regionId: kecA.id,
+    },
+    {
+      level: OrgLevel.sayap,
+      position: PositionEnum.ketua,
+      sayapTypeId: garnita.id,
+    },
+  ].map((entry) => ({
+    ...entry,
+    regionId: entry.regionId ?? undefined,
+    sayapTypeId: entry.sayapTypeId ?? undefined,
+  }));
 
   await db.strukturOrganisasi.createMany({
-    data: [
-      {
-        level: OrgLevel.dpd,
-        position: PositionEnum.ketua,
-        regionId: kabupaten?.id,
-      },
-      {
-        level: OrgLevel.dpd,
-        position: PositionEnum.sekretaris,
-        regionId: kabupaten?.id,
-      },
-      {
-        level: OrgLevel.dpc,
-        position: PositionEnum.ketua,
-        regionId: kecA?.id,
-      },
-      {
-        level: OrgLevel.sayap,
-        position: PositionEnum.ketua,
-        sayapTypeId: sayapTypeList.find((s) => s.name === "Garnita")?.id,
-      },
-    ],
+    data: strukturData,
     skipDuplicates: true,
   });
   const strukturList = await db.strukturOrganisasi.findMany();
 
   // MEMBERS
+  const strukturKetuaDpd = strukturList.find(
+    (s) => s.position === PositionEnum.ketua && s.level === OrgLevel.dpd
+  );
+  const strukturSekretarisDpd = strukturList.find(
+    (s) => s.position === PositionEnum.sekretaris && s.level === OrgLevel.dpd
+  );
+  const strukturKetuaDpc = strukturList.find(
+    (s) => s.position === PositionEnum.ketua && s.level === OrgLevel.dpc
+  );
+
+  const membersData = [
+    {
+      fullName: "Ahmad Ketua",
+      email: "ahmad.ketua@nasdem.local",
+      phone: "08111111111",
+      status: MemberStatus.active,
+      gender: GenderEnum.male,
+      strukturId: strukturKetuaDpd?.id,
+      joinDate: new Date("2023-01-10"),
+    },
+    {
+      fullName: "Siti Sekretaris",
+      email: "siti.sekretaris@nasdem.local",
+      phone: "08222222222",
+      status: MemberStatus.active,
+      gender: GenderEnum.female,
+      strukturId: strukturSekretarisDpd?.id,
+      joinDate: new Date("2023-02-15"),
+    },
+    {
+      fullName: "Budi DPC",
+      email: "budi.dpc@nasdem.local",
+      phone: "08333333333",
+      status: MemberStatus.inactive,
+      gender: GenderEnum.male,
+      strukturId: strukturKetuaDpc?.id,
+      joinDate: new Date("2024-01-05"),
+    },
+  ].map((member) => ({
+    ...member,
+    strukturId: member.strukturId ?? undefined,
+  }));
+
   await db.member.createMany({
-    data: [
-      {
-        fullName: "Ahmad Ketua",
-        email: "ahmad.ketua@nasdem.local",
-        phone: "08111111111",
-        status: MemberStatus.active,
-        gender: GenderEnum.male,
-        strukturId: strukturList.find(
-          (s) => s.position === PositionEnum.ketua && s.level === OrgLevel.dpd
-        )?.id,
-        joinDate: new Date("2023-01-10"),
-      },
-      {
-        fullName: "Siti Sekretaris",
-        email: "siti.sekretaris@nasdem.local",
-        phone: "08222222222",
-        status: MemberStatus.active,
-        gender: GenderEnum.female,
-        strukturId: strukturList.find(
-          (s) => s.position === PositionEnum.sekretaris
-        )?.id,
-        joinDate: new Date("2023-02-15"),
-      },
-      {
-        fullName: "Budi DPC",
-        email: "budi.dpc@nasdem.local",
-        phone: "08333333333",
-        status: MemberStatus.inactive,
-        gender: GenderEnum.male,
-        strukturId: strukturList.find((s) => s.level === OrgLevel.dpc)?.id,
-        joinDate: new Date("2024-01-05"),
-      },
-    ],
+    data: membersData,
     skipDuplicates: true,
   });
 
@@ -249,7 +272,7 @@ async function main() {
       totalValidVotes: 1200,
       invalidVotes: 45,
       totalVotes: 1245,
-      turnoutPercent: "72.50",
+      turnoutPercent: new Prisma.Decimal("72.50"),
       notes: "TPS 1 berjalan lancar",
     },
   });
@@ -280,25 +303,30 @@ async function main() {
 
   // PROGRAM
   const categoryFirst = await db.category.findFirst();
+  const programData = [
+    {
+      title: "Pelatihan UMKM",
+      description: "Meningkatkan kapasitas wirausaha lokal.",
+      startDate: new Date("2024-03-01"),
+      endDate: new Date("2024-03-05"),
+      categoryId: categoryFirst?.id,
+      userId: superadmin.id,
+    },
+    {
+      title: "Gerakan Sehat",
+      description: "Sosialisasi hidup sehat di kecamatan.",
+      startDate: new Date("2024-04-10"),
+      endDate: new Date("2024-04-12"),
+      categoryId: categoryFirst?.id,
+      userId: superadmin.id,
+    },
+  ].map((program) => ({
+    ...program,
+    categoryId: program.categoryId ?? undefined,
+  }));
+
   await db.program.createMany({
-    data: [
-      {
-        title: "Pelatihan UMKM",
-        description: "Meningkatkan kapasitas wirausaha lokal.",
-        startDate: new Date("2024-03-01"),
-        endDate: new Date("2024-03-05"),
-        categoryId: categoryFirst?.id,
-        userId: superadmin.id,
-      },
-      {
-        title: "Gerakan Sehat",
-        description: "Sosialisasi hidup sehat di kecamatan.",
-        startDate: new Date("2024-04-10"),
-        endDate: new Date("2024-04-12"),
-        categoryId: categoryFirst?.id,
-        userId: superadmin.id,
-      },
-    ],
+    data: programData,
     skipDuplicates: true,
   });
 

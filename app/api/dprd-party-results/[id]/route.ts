@@ -1,6 +1,8 @@
 import { NextRequest, NextResponse } from "next/server";
 import { db } from "@/lib/db";
 import { requireAuth, requireRole } from "@/lib/jwt-middleware";
+import { toInt } from "@/lib/parsers";
+import { UserRole } from "@/lib/rbac";
 
 export async function GET(
   req: NextRequest,
@@ -34,11 +36,22 @@ export async function PUT(
 ) {
   const authError = requireAuth(req);
   if (authError) return authError;
-  const roleError = requireRole(req, ["superadmin", "analyst"]);
+  const roleError = requireRole(req, [UserRole.SUPERADMIN, UserRole.ANALYST]);
   if (roleError) return roleError;
   try {
-    // PUT handler
-    const { electionAnalysisId, partyId, votes } = await req.json();
+    const body = await req.json();
+    const electionAnalysisId = toInt(body.electionAnalysisId);
+    const partyId = toInt(body.partyId);
+    if (electionAnalysisId === undefined || partyId === undefined) {
+      return NextResponse.json(
+        {
+          success: false,
+          error: "electionAnalysisId dan partyId harus berupa angka",
+        },
+        { status: 400 }
+      );
+    }
+    const votes = toInt(body.votes) ?? undefined;
     const updated = await db.dprdPartyResult.update({
       where: { id: parseInt(params.id) },
       data: { electionAnalysisId, partyId, votes },
@@ -62,7 +75,7 @@ export async function DELETE(
 ) {
   const authError = requireAuth(req);
   if (authError) return authError;
-  const roleError = requireRole(req, ["superadmin", "analyst"]);
+  const roleError = requireRole(req, [UserRole.SUPERADMIN, UserRole.ANALYST]);
   if (roleError) return roleError;
   try {
     await db.dprdPartyResult.delete({ where: { id: parseInt(params.id) } });

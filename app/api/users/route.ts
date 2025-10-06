@@ -4,6 +4,7 @@ import bcrypt from "bcrypt";
 import { requireAuth, requireRole } from "@/lib/jwt-middleware";
 import { z } from "zod";
 import { UserRole } from "@/lib/rbac";
+import { pickEnumValue } from "@/lib/parsers";
 
 // Validation schemas
 const createUserSchema = z.object({
@@ -42,7 +43,8 @@ export async function GET(req: NextRequest) {
         { email: { contains: search, mode: "insensitive" } },
       ];
     }
-    if (role) where.role = role;
+    const roleFilter = pickEnumValue(role, Object.values(UserRole));
+    if (roleFilter) where.role = roleFilter;
 
     const [total, users] = await Promise.all([
       db.user.count({ where }),

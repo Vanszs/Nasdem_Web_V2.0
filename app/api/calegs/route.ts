@@ -1,6 +1,8 @@
 import { NextRequest, NextResponse } from "next/server";
 import { db } from "@/lib/db";
 import { requireAuth, requireRole } from "@/lib/jwt-middleware";
+import { toInt } from "@/lib/parsers";
+import { UserRole } from "@/lib/rbac";
 
 export async function GET() {
   try {
@@ -23,10 +25,20 @@ export async function GET() {
 export async function POST(req: NextRequest) {
   const authError = requireAuth(req);
   if (authError) return authError;
-  const roleError = requireRole(req, ["superadmin", "analyst"]);
+  const roleError = requireRole(req, [UserRole.SUPERADMIN, UserRole.ANALYST]);
   if (roleError) return roleError;
   try {
-    const { fullName, partyId, photoUrl } = await req.json();
+    const body = await req.json();
+    const partyId = toInt(body.partyId);
+    if (partyId === undefined) {
+      return NextResponse.json(
+        { success: false, error: "partyId harus berupa angka" },
+        { status: 400 }
+      );
+    }
+    const { fullName } = body;
+    const photoUrl =
+      typeof body.photoUrl === "string" ? body.photoUrl : undefined;
     const caleg = await db.caleg.create({
       data: { fullName, partyId, photoUrl: photoUrl || undefined },
       include: { party: true, dprdCalegResults: true },

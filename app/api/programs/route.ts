@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from "next/server";
 import { db } from "@/lib/db";
 import { requireAuth, requireRole } from "@/lib/jwt-middleware";
+import { toInt } from "@/lib/parsers";
 
 // list semua program
 export async function GET() {
@@ -30,8 +31,10 @@ export async function POST(req: NextRequest) {
 
   try {
     const userId = (req as any).user.userId;
-    const { title, description, startDate, endDate, categoryId, photoUrl } =
-      await req.json();
+    const body = await req.json();
+    const categoryId = toInt(body.categoryId);
+    const { title, description, startDate, endDate } = body;
+    const photoUrl = typeof body.photoUrl === "string" ? body.photoUrl : undefined;
 
     const program = await db.program.create({
       data: {
@@ -39,7 +42,7 @@ export async function POST(req: NextRequest) {
         description,
         startDate: startDate ? new Date(startDate) : undefined,
         endDate: endDate ? new Date(endDate) : undefined,
-        categoryId,
+        categoryId: categoryId ?? undefined,
         photoUrl,
         userId,
       },
