@@ -1,3 +1,5 @@
+"use client";
+
 import { Plus, Newspaper, FileText } from "lucide-react";
 import { AdminLayout } from "../components/layout/AdminLayout";
 import { SafeLink } from "../components/layout/SafeLink";
