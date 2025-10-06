@@ -19,12 +19,7 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
-import {
-  Tabs,
-  TabsContent,
-  TabsList,
-  TabsTrigger,
-} from "@/components/ui/tabs";
+import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Textarea } from "@/components/ui/textarea";
 import { Edit3, ImageIcon, Upload, Link, X } from "lucide-react";
 import { useForm } from "react-hook-form";
@@ -45,7 +40,9 @@ const optionalString = z.string().optional().or(z.literal(""));
 
 const editMemberSchema = z.object({
   fullName: z.string().min(1, "Nama wajib diisi"),
-  email: z.union([z.string().email("Email tidak valid"), z.literal("")]).optional(),
+  email: z
+    .union([z.string().email("Email tidak valid"), z.literal("")])
+    .optional(),
   phone: optionalString,
   gender: z.enum(["male", "female"]),
   status: z.enum(["active", "inactive", "suspended"]),
@@ -158,7 +155,13 @@ export function EditMemberDialog({
   }, [useFileUpload]);
 
   const updateMemberMutation = useMutation({
-    mutationFn: async ({ id, data }: { id: number; data: Record<string, unknown> }) => {
+    mutationFn: async ({
+      id,
+      data,
+    }: {
+      id: number;
+      data: Record<string, unknown>;
+    }) => {
       const res = await fetch(`/api/members/${id}`, {
         method: "PUT",
         headers: { "Content-Type": "application/json" },
@@ -248,17 +251,23 @@ export function EditMemberDialog({
         </DialogHeader>
 
         <div className="flex-1 min-h-0 overflow-y-auto px-5 pb-4 pt-3">
-          <form onSubmit={onSubmit} className="space-y-8 py-2" id="edit-member-form">
+          <form
+            onSubmit={onSubmit}
+            className="space-y-8 py-2"
+            id="edit-member-form"
+          >
             <section className="space-y-4">
               <div className="flex items-center gap-2">
-                <div className="flex h-8 w-8 items-center justify-center rounded-md bg-[#001B55]/10 text-[#001B55]">
+                <div className="flex h-8 w-8 items-center justify-center rounded-md bg-[#FF9C04]/10 text-[#FF9C04]">
                   <ImageIcon className="h-4 w-4" />
                 </div>
                 <div className="min-w-0">
                   <h3 className="text-xs font-semibold tracking-wide text-[#001B55] uppercase">
                     Foto Profil
                   </h3>
-                  <p className="text-[11px] text-gray-500">Perbarui foto profil member</p>
+                  <p className="text-[11px] text-gray-500">
+                    Perbarui foto profil member
+                  </p>
                 </div>
               </div>
               <div className="space-y-3">
@@ -275,13 +284,19 @@ export function EditMemberDialog({
                       alt="Preview"
                       className="h-full w-full object-cover"
                       onError={(event) => {
-                        (event.currentTarget as HTMLImageElement).style.display = "none";
+                        (
+                          event.currentTarget as HTMLImageElement
+                        ).style.display = "none";
                       }}
                     />
                   ) : (
                     <div className="text-center px-4">
-                      <p className="text-sm font-medium text-gray-600">Belum ada foto</p>
-                      <p className="text-[11px] text-gray-500">Tambahkan foto melalui URL atau unggah file</p>
+                      <p className="text-sm font-medium text-gray-600">
+                        Belum ada foto
+                      </p>
+                      <p className="text-[11px] text-gray-500">
+                        Tambahkan foto melalui URL atau unggah file
+                      </p>
                     </div>
                   )}
                 </div>
@@ -289,7 +304,9 @@ export function EditMemberDialog({
                   value={useFileUpload ? "upload" : "url"}
                   onValueChange={(value) => {
                     const shouldUpload = value === "upload";
-                    setValue("useFileUpload", shouldUpload, { shouldValidate: true });
+                    setValue("useFileUpload", shouldUpload, {
+                      shouldValidate: true,
+                    });
                     if (shouldUpload) {
                       setValue("photoUrl", "");
                     } else {
@@ -308,7 +325,9 @@ export function EditMemberDialog({
                     </TabsTrigger>
                   </TabsList>
                   <TabsContent value="url" className="space-y-2 pt-3">
-                    <Label className="text-[11px] text-gray-600">Tautan gambar</Label>
+                    <Label className="text-[11px] text-gray-600">
+                      Tautan gambar
+                    </Label>
                     <Input
                       placeholder="https://domain.com/foto.jpg"
                       disabled={useFileUpload}
@@ -368,13 +387,17 @@ export function EditMemberDialog({
                   <h3 className="text-xs font-semibold tracking-wide text-[#001B55] uppercase">
                     Informasi Member
                   </h3>
-                  <p className="text-[11px] text-gray-500">Perbarui data identitas dan kontak</p>
+                  <p className="text-[11px] text-gray-500">
+                    Perbarui data identitas dan kontak
+                  </p>
                 </div>
               </div>
 
               <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                 <div className="space-y-1.5 md:col-span-2">
-                  <Label className="text-[11px] text-gray-600">Nama Lengkap</Label>
+                  <Label className="text-[11px] text-gray-600">
+                    Nama Lengkap
+                  </Label>
                   <Input
                     placeholder="Nama lengkap"
                     className="h-9 text-sm"
@@ -414,7 +437,9 @@ export function EditMemberDialog({
                   <Select
                     value={genderValue}
                     onValueChange={(value) =>
-                      setValue("gender", value as "male" | "female", { shouldValidate: true })
+                      setValue("gender", value as "male" | "female", {
+                        shouldValidate: true,
+                      })
                     }
                   >
                     <SelectTrigger className="h-9 text-sm w-full">
@@ -459,7 +484,9 @@ export function EditMemberDialog({
                   )}
                 </div>
                 <div className="space-y-1.5">
-                  <Label className="text-[11px] text-gray-600">Tanggal Lahir</Label>
+                  <Label className="text-[11px] text-gray-600">
+                    Tanggal Lahir
+                  </Label>
                   <Input
                     type="date"
                     className="h-9 text-sm"
@@ -485,7 +512,9 @@ export function EditMemberDialog({
                   />
                 </div>
                 <div className="space-y-1.5">
-                  <Label className="text-[11px] text-gray-600">Tanggal Bergabung</Label>
+                  <Label className="text-[11px] text-gray-600">
+                    Tanggal Bergabung
+                  </Label>
                   <Input
                     type="date"
                     className="h-9 text-sm"
