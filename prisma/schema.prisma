@@ -54,6 +54,24 @@ enum ElectionType {
   dprd
 }
 
+enum BenefitStatus {
+  pending
+  granted
+  revoked
+}
+
+enum ApplicationType {
+  nasdem_muda
+  member
+}
+
+enum ApplicationStatus {
+  pending
+  reviewed
+  approved
+  rejected
+}
+
 // ---------------------------
 // Core CMS
 // ---------------------------
@@ -241,12 +259,78 @@ model Member {
   parentDprtMember   Member?  @relation("MemberCadres", fields: [parentDprtMemberId], references: [id], onDelete: SetNull, onUpdate: Cascade)
   cadres             Member[] @relation("MemberCadres")
 
+  // Benefit assignments and public applications
+  memberBenefits MemberBenefit[]
+  applications   MembershipApplication[]
+
   @@index([status])
   @@index([userId])
   @@index([strukturId])
   @@index([parentDprtMemberId])
   @@index([fullName])
   @@index([deletedAt])
+}
+
+model Benefit {
+  id          Int       @id @default(autoincrement())
+  title       String    @db.VarChar(150)
+  description String?
+  category    String?   @db.VarChar(100)
+  startDate   DateTime?
+  endDate     DateTime?
+  createdAt   DateTime  @default(now())
+  updatedAt   DateTime  @updatedAt
+  deletedAt   DateTime? @db.Timestamptz
+
+  assignments MemberBenefit[]
+
+  @@index([title])
+  @@index([category])
+  @@index([deletedAt])
+}
+
+model MemberBenefit {
+  id        Int           @id @default(autoincrement())
+  memberId  Int
+  benefitId Int
+  status    BenefitStatus @default(granted)
+  grantedAt DateTime?
+  notes     String?
+  createdAt DateTime      @default(now())
+  updatedAt DateTime      @updatedAt
+
+  member  Member  @relation(fields: [memberId], references: [id], onDelete: Cascade, onUpdate: Cascade)
+  benefit Benefit @relation(fields: [benefitId], references: [id], onDelete: Cascade, onUpdate: Cascade)
+
+  @@unique([memberId, benefitId])
+  @@index([memberId])
+  @@index([benefitId])
+  @@index([status])
+}
+
+model MembershipApplication {
+  id              Int               @id @default(autoincrement())
+  fullName        String            @db.VarChar(150)
+  email           String?           @db.VarChar(100)
+  phone           String?           @db.VarChar(30)
+  address         String?
+  dateOfBirth     DateTime?
+  gender          GenderEnum?
+  occupation      String?           @db.VarChar(100)
+  motivation      String?
+  applicationType ApplicationType
+  status          ApplicationStatus @default(pending)
+  submittedAt     DateTime          @default(now())
+  reviewedAt      DateTime?
+  notes           String?
+  memberId        Int?
+
+  member Member? @relation(fields: [memberId], references: [id], onDelete: SetNull, onUpdate: Cascade)
+
+  @@index([applicationType])
+  @@index([status])
+  @@index([submittedAt])
+  @@index([memberId])
 }
 
 // ---------------------------

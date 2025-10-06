@@ -3,6 +3,7 @@ import { db } from "@/lib/db";
 import { requireAuth, requireRole } from "@/lib/jwt-middleware";
 import { UserRole } from "@/lib/rbac";
 import { z } from "zod";
+import { BenefitStatus } from "@prisma/client";
 
 // List query schema defined inline
 // Supports both page/pageSize and take/skip (from some tables)
@@ -26,6 +27,10 @@ const listQuerySchema = z.object({
   sayapTypeId: z.coerce.number().optional(),
   regionId: z.coerce.number().optional(),
   unassigned: z.coerce.boolean().optional().default(false),
+  withBenefits: z.coerce.boolean().optional(),
+  hasBenefit: z.coerce.boolean().optional(),
+  benefitId: z.coerce.number().int().optional(),
+  benefitStatus: z.nativeEnum(BenefitStatus).optional(),
 });
 
 // Create body schema defined inline
@@ -131,7 +136,22 @@ export async function GET(req: NextRequest) {
       andConditions.push({ struktur: { is: strukturFilter } });
     }
 
+    const benefitFilter: any = {};
+    if (parsed.benefitId) benefitFilter.benefitId = parsed.benefitId;
+    if (parsed.benefitStatus) benefitFilter.status = parsed.benefitStatus;
+    if (Object.keys(benefitFilter).length) {
+      andConditions.push({ memberBenefits: { some: benefitFilter } });
+    }
+
+    if (parsed.hasBenefit === true) {
+      andConditions.push({ memberBenefits: { some: {} } });
+    } else if (parsed.hasBenefit === false) {
+      andConditions.push({ memberBenefits: { none: {} } });
+    }
+
     const where = andConditions.length ? { AND: andConditions } : {};
+
+    const includeBenefits = parsed.withBenefits === true;
 
     const [total, data] = await Promise.all([
       db.member.count({ where }),
@@ -162,6 +182,26 @@ export async function GET(req: NextRequest) {
                   regionId: true,
                   sayapType: { select: { id: true, name: true } },
                   region: { select: { id: true, name: true, type: true } },
+                },
+              }
+            : false,
+          memberBenefits: includeBenefits
+            ? {
+                select: {
+                  id: true,
+                  status: true,
+                  grantedAt: true,
+                  notes: true,
+                  benefit: {
+                    select: {
+                      id: true,
+                      title: true,
+                      category: true,
+                      description: true,
+                      startDate: true,
+                      endDate: true,
+                    },
+                  },
                 },
               }
             : false,
