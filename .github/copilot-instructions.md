@@ -1,5 +1,8 @@
 # CLAUDE.md
 
+
+JANGAN MELAKUKAN NPM RUN SAMA SEKALI
+
 This file provides guidance to Claude Code/Github Copilot (claude.ai/code) when working with code in this repository.
 
 ## Project Overview

@@ -1,0 +1,122 @@
+import { NextRequest, NextResponse } from "next/server";
+import { db } from "@/lib/db";
+import { requireAuth, requireRole } from "@/lib/jwt-middleware";
+
+// GET /api/beneficiaries - Get all beneficiaries (registrations with isBeneficiary = true)
+export async function GET(req: NextRequest) {
+  const authError = requireAuth(req);
+  if (authError) return authError;
+
+  const roleError = requireRole(req, ["superadmin", "editor", "analyst"]);
+  if (roleError) return roleError;
+
+  try {
+    const { searchParams } = new URL(req.url);
+    const page = parseInt(searchParams.get("page") || "1");
+    const limit = parseInt(searchParams.get("limit") || "10");
+    const programId = searchParams.get("programId");
+    const hasMember = searchParams.get("hasMember");
+    const search = searchParams.get("search");
+
+    const skip = (page - 1) * limit;
+
+    // Build where clause
+    const where: any = {
+      deletedAt: null,
+      isBeneficiary: true,
+    };
+
+    if (programId) {
+      where.beneficiaryProgramId = parseInt(programId);
+    }
+
+    if (hasMember === "true") {
+      where.memberId = { not: null };
+    } else if (hasMember === "false") {
+      where.memberId = null;
+    }
+
+    if (search) {
+      where.OR = [
+        { fullName: { contains: search, mode: "insensitive" } },
+        { email: { contains: search, mode: "insensitive" } },
+        { phone: { contains: search, mode: "insensitive" } },
+      ];
+    }
+
+    const [beneficiaries, total] = await Promise.all([
+      db.registration.findMany({
+        where,
+        skip,
+        take: limit,
+        orderBy: { registeredAt: "desc" },
+        include: {
+          beneficiaryProgram: {
+            select: {
+              id: true,
+              title: true,
+              description: true,
+              startDate: true,
+              endDate: true,
+            },
+          },
+          member: {
+            select: {
+              id: true,
+              fullName: true,
+              status: true,
+              email: true,
+              phone: true,
+            },
+          },
+        },
+      }),
+      db.registration.count({ where }),
+    ]);
+
+    // Get statistics
+    const stats = await db.registration.aggregate({
+      where: { deletedAt: null, isBeneficiary: true },
+      _count: {
+        id: true,
+      },
+    });
+
+    const withMemberCount = await db.registration.count({
+      where: {
+        deletedAt: null,
+        isBeneficiary: true,
+        memberId: { not: null },
+      },
+    });
+
+    const withoutMemberCount = await db.registration.count({
+      where: {
+        deletedAt: null,
+        isBeneficiary: true,
+        memberId: null,
+      },
+    });
+
+    return NextResponse.json({
+      beneficiaries,
+      pagination: {
+        total,
+        page,
+        limit,
+        totalPages: Math.ceil(total / limit),
+      },
+      statistics: {
+        total: stats._count.id,
+        withMember: withMemberCount,
+        withoutMember: withoutMemberCount,
+      },
+    });
+  } catch (error: any) {
+    console.error("Get beneficiaries error:", error);
+    return NextResponse.json(
+      { error: "Gagal mengambil data penerima manfaat" },
+      { status: 500 }
+    );
+  }
+}
