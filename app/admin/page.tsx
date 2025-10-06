@@ -18,6 +18,8 @@ import {
   DataTableSkeleton,
   DataTableColumn,
 } from "@/components/dashboard/data-table";
+import { StackedBarChart } from "@/components/dashboard/stacked-bar-chart";
+import { LineTrendChart } from "@/components/dashboard/line-trend-chart";
 
 // Sample data - replace with actual API calls
 const kpisData = {
@@ -26,6 +28,96 @@ const kpisData = {
   activeMembers: 156,
   totalGallery: 238,
 };
+
+const monthlyContentData = [
+  {
+    month: "Januari",
+    Berita: 12,
+    Galeri: 8,
+    Organisasi: 5,
+    Program: 10,
+  },
+  {
+    month: "Februari",
+    Berita: 15,
+    Galeri: 10,
+    Organisasi: 7,
+    Program: 12,
+  },
+  {
+    month: "Maret",
+    Berita: 18,
+    Galeri: 12,
+    Organisasi: 6,
+    Program: 15,
+  },
+  {
+    month: "April",
+    Berita: 20,
+    Galeri: 15,
+    Organisasi: 8,
+    Program: 18,
+  },
+  {
+    month: "Mei",
+    Berita: 22,
+    Galeri: 18,
+    Organisasi: 10,
+    Program: 20,
+  },
+  {
+    month: "Juni",
+    Berita: 25,
+    Galeri: 20,
+    Organisasi: 12,
+    Program: 22,
+  },
+];
+
+const trendData = [
+  {
+    month: "Januari",
+    "Total Views": 2400,
+    Berita: 1200,
+    Galeri: 800,
+    Program: 400,
+  },
+  {
+    month: "Februari",
+    "Total Views": 3200,
+    Berita: 1600,
+    Galeri: 1000,
+    Program: 600,
+  },
+  {
+    month: "Maret",
+    "Total Views": 4100,
+    Berita: 2000,
+    Galeri: 1300,
+    Program: 800,
+  },
+  {
+    month: "April",
+    "Total Views": 5300,
+    Berita: 2500,
+    Galeri: 1800,
+    Program: 1000,
+  },
+  {
+    month: "Mei",
+    "Total Views": 6200,
+    Berita: 3000,
+    Galeri: 2000,
+    Program: 1200,
+  },
+  {
+    month: "Juni",
+    "Total Views": 7500,
+    Berita: 3800,
+    Galeri: 2400,
+    Program: 1300,
+  },
+];
 
 const recentContentData = [
   {
@@ -173,30 +265,36 @@ export default function AdminDashboard() {
                 title="Konten per Kategori"
                 subtitle="Distribusi konten 6 bulan terakhir"
               >
-                <div className="h-64 flex items-center justify-center text-text-secondary">
-                  <div className="text-center">
-                    <BarChart3 className="w-12 h-12 mx-auto mb-2 opacity-50" />
-                    <p className="text-sm">Chart akan ditampilkan di sini</p>
-                    <p className="text-xs text-text-tertiary mt-1">
-                      Install recharts: npm install recharts
-                    </p>
-                  </div>
-                </div>
+                <StackedBarChart
+                  data={monthlyContentData}
+                  dataKeyX="month"
+                  stacks={[
+                    { key: "Berita", color: "#C3A46B" },
+                    { key: "Galeri", color: "#E7B7A5" },
+                    { key: "Organisasi", color: "#6EC4B3" },
+                    { key: "Program", color: "#B7B7F0" },
+                  ]}
+                  height={260}
+                  useNumber={true}
+                />
               </ChartCard>
 
               <ChartCard
                 title="Trend Aktivitas"
-                subtitle="Aktivitas penambahan konten per bulan"
+                subtitle="Views dan engagement per kategori"
               >
-                <div className="h-64 flex items-center justify-center text-text-secondary">
-                  <div className="text-center">
-                    <TrendingUp className="w-12 h-12 mx-auto mb-2 opacity-50" />
-                    <p className="text-sm">Chart akan ditampilkan di sini</p>
-                    <p className="text-xs text-text-tertiary mt-1">
-                      Install recharts: npm install recharts
-                    </p>
-                  </div>
-                </div>
+                <LineTrendChart
+                  data={trendData}
+                  dataKeyX="month"
+                  series={[
+                    { key: "Total Views", color: "#E7B7A5" },
+                    { key: "Berita", color: "#C3A46B" },
+                    { key: "Galeri", color: "#6EC4B3" },
+                    { key: "Program", color: "#B7B7F0" },
+                  ]}
+                  height={260}
+                  currency="IDR"
+                />
               </ChartCard>
             </>
           )}

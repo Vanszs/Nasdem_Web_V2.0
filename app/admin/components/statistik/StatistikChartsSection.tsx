@@ -57,10 +57,10 @@ function ChartTooltip(props: ChartTooltipProps) {
   }
 
   return (
-    <div className="rounded-xl border border-gray-100 bg-white px-3 py-2 sm:px-4 sm:py-3 shadow-lg max-w-xs">
+    <div className="rounded-xl border border-[#001B55]/20 bg-white px-3 py-2 sm:px-4 sm:py-3 shadow-sm max-w-xs">
       <div className="flex items-center gap-2 sm:gap-3">
         {datum.logo ? (
-          <div className="h-8 w-8 sm:h-10 sm:w-10 overflow-hidden rounded-lg border border-gray-100 bg-white flex-shrink-0">
+          <div className="h-8 w-8 sm:h-10 sm:w-10 overflow-hidden rounded-lg border border-[#001B55]/10 bg-white flex-shrink-0">
             <Image
               src={datum.logo}
               alt={datum.nama}
@@ -71,15 +71,15 @@ function ChartTooltip(props: ChartTooltipProps) {
           </div>
         ) : null}
         <div className="min-w-0 flex-1">
-          <p className="text-xs sm:text-sm font-semibold text-gray-900 truncate">
+          <p className="text-xs sm:text-sm font-semibold text-[#001B55] truncate">
             #{datum.ranking} {datum.nama}
           </p>
-          <p className="text-xs text-gray-500">{datum.suaraLabel} suara</p>
+          <p className="text-xs text-[#6B7280]">{datum.suaraLabel} suara</p>
         </div>
       </div>
-      <div className="mt-2 sm:mt-3 flex justify-between text-xs text-gray-500">
+      <div className="mt-2 sm:mt-3 flex justify-between text-xs text-[#6B7280]">
         <span>Persentase</span>
-        <span className="font-semibold text-gray-900">
+        <span className="font-semibold text-[#001B55]">
           {datum.percentageLabel}
         </span>
       </div>
@@ -102,19 +102,19 @@ export function StatistikChartsSection({
   }, []);
   if (loading) {
     return (
-      <div className="rounded-2xl border border-gray-100 bg-white p-4 sm:p-6 shadow-sm">
+      <div className="rounded-xl border border-[#001B55]/10 bg-white p-4 sm:p-6 shadow-sm">
         <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3">
           <div className="text-center sm:text-left">
-            <div className="h-4 w-32 mx-auto sm:mx-0 animate-pulse rounded bg-gray-200" />
-            <div className="mt-2 h-6 w-48 sm:w-64 mx-auto sm:mx-0 animate-pulse rounded bg-gray-200" />
+            <div className="h-4 w-32 mx-auto sm:mx-0 animate-pulse rounded bg-[#F0F0F0]" />
+            <div className="mt-2 h-6 w-48 sm:w-64 mx-auto sm:mx-0 animate-pulse rounded bg-[#F0F0F0]" />
           </div>
-          <div className="h-5 w-24 mx-auto sm:mx-0 animate-pulse rounded bg-gray-200" />
+          <div className="h-5 w-24 mx-auto sm:mx-0 animate-pulse rounded bg-[#F0F0F0]" />
         </div>
         <div className="mt-4 sm:mt-6 space-y-2 sm:space-y-3">
           {Array.from({ length: windowWidth < 768 ? 4 : 6 }).map((_, index) => (
             <div
               key={index}
-              className="h-8 sm:h-10 w-full animate-pulse rounded-xl bg-gray-100"
+              className="h-8 sm:h-10 w-full animate-pulse rounded-xl bg-[#F0F0F0]"
             />
           ))}
         </div>
@@ -153,7 +153,7 @@ export function StatistikChartsSection({
 
   if (chartData.length === 0) {
     return (
-      <div className="rounded-2xl border border-gray-100 bg-white p-4 sm:p-6 text-center text-sm text-gray-500 shadow-sm">
+      <div className="rounded-xl border border-[#001B55]/10 bg-white p-4 sm:p-6 text-center text-sm text-[#6B7280] shadow-sm">
         Data perolehan suara belum tersedia.
       </div>
     );
@@ -169,35 +169,35 @@ export function StatistikChartsSection({
   const isTablet = windowWidth < 1024;
   
   const chartMargin = { 
-    top: 4, 
+    top: 5, 
     right: isMobile ? 20 : 48, 
-    bottom: 4, 
+    bottom: 5, 
     left: 0 
   };
   
   const yAxisWidth = isMobile ? 120 : isTablet ? 180 : 220;
-  const fontSize = isMobile ? 10 : 12;
-  const barRadius = isMobile ? 8 : 12;
-  const maxBarSize = isMobile ? 24 : 32;
+  const fontSize = 12;
+  const barRadius = 8;
+  const maxBarSize = 40;
 
   return (
-    <div className="rounded-2xl border border-gray-100 bg-white shadow-sm">
+    <div className="rounded-xl border border-[#001B55]/10 bg-white shadow-sm">
       <div className="space-y-4 sm:space-y-6 p-4 sm:p-6">
         {/* Header - Stack on mobile, side by side on larger screens */}
         <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
           <div className="text-center sm:text-left">
-            <p className="text-xs font-semibold uppercase tracking-wide text-gray-500">
+            <p className="text-xs font-semibold uppercase tracking-wide text-[#6B7280]">
               Perolehan Suara per {view === "partai" ? "Partai" : "Caleg"}
             </p>
-            <h3 className="text-xl sm:text-2xl font-bold text-gray-900">
+            <h3 className="text-xl sm:text-2xl font-bold text-[#001B55]">
               Ranking Perolehan Suara
             </h3>
           </div>
           <div className="text-center sm:text-right">
-            <p className="text-xs font-semibold uppercase tracking-wide text-gray-500">
+            <p className="text-xs font-semibold uppercase tracking-wide text-[#6B7280]">
               Total Suara
             </p>
-            <p className="text-xl sm:text-2xl font-bold text-gray-900">
+            <p className="text-xl sm:text-2xl font-bold text-[#001B55]">
               {totalVotes.toLocaleString("id-ID")}
             </p>
           </div>
@@ -210,19 +210,20 @@ export function StatistikChartsSection({
               <BarChart
                 data={chartData}
                 layout="vertical"
-                barCategoryGap={12}
+                barCategoryGap="20%"
                 margin={chartMargin}
               >
                 <CartesianGrid 
                   horizontal={false} 
                   stroke="#E5E7EB" 
-                  strokeDasharray="4 4" 
+                  strokeDasharray="3 3" 
                 />
                 <XAxis
                   type="number"
+                  fontSize={12}
+                  stroke="#6B7280"
                   tickLine={false}
                   axisLine={false}
-                  tick={{ fontSize }}
                   tickFormatter={(value) => {
                     const num = Number(value);
                     if (isMobile && num >= 1000000) {
@@ -236,10 +237,11 @@ export function StatistikChartsSection({
                 <YAxis
                   dataKey="nama"
                   type="category"
+                  fontSize={12}
+                  stroke="#6B7280"
                   tickLine={false}
                   axisLine={false}
                   width={yAxisWidth}
-                  tick={{ fontSize }}
                   tickFormatter={(value: string) => {
                     const item = chartData.find((entry) => entry.nama === value);
                     const maxLength = isMobile ? 12 : isTablet ? 20 : 30;
@@ -248,12 +250,12 @@ export function StatistikChartsSection({
                   }}
                 />
                 <Tooltip
-                  cursor={{ fill: "rgba(59, 130, 246, 0.08)" }}
+                  cursor={{ fill: "#F9FAFB" }}
                   content={<ChartTooltip />}
                 />
                 <Bar 
                   dataKey="suara" 
-                  radius={[0, barRadius, barRadius, 0]} 
+                  radius={[0, barRadius, barRadius, 0]}
                   maxBarSize={maxBarSize}
                 >
                   {chartData.map((item) => (
@@ -264,8 +266,8 @@ export function StatistikChartsSection({
                       dataKey="suaraLabel"
                       position="right"
                       offset={8}
-                      fill="#111827"
-                      fontSize={isTablet ? 10 : 12}
+                      fill="#6B7280"
+                      fontSize={12}
                     />
                   )}
                 </Bar>
@@ -275,12 +277,12 @@ export function StatistikChartsSection({
         </div>
 
         {/* Footer - Responsive text and layout */}
-        <div className="flex flex-col gap-2 sm:flex-row sm:items-center sm:justify-between text-xs sm:text-sm text-gray-500">
+        <div className="flex flex-col gap-2 sm:flex-row sm:items-center sm:justify-between text-xs sm:text-sm text-[#6B7280]">
           <span className="text-center sm:text-left">
             Menampilkan {chartData.length} entri teratas berdasarkan jumlah suara.
           </span>
           {topPerformer ? (
-            <span className="font-semibold text-gray-700 text-center sm:text-right">
+            <span className="font-semibold text-[#001B55] text-center sm:text-right">
               <span className="hidden sm:inline">Pemimpin saat ini: </span>
               <span className="sm:hidden">Pemimpin: </span>
               #{topPerformer.ranking} {isMobile && topPerformer.nama.length > 15 

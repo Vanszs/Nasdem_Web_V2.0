@@ -168,10 +168,10 @@ export function ModernSidebar({
       onKeyDown={handleKeyDown}
       className={`relative h-screen flex flex-col transition-all duration-300 ease-in-out ${
         isCollapsed ? "w-20" : "w-72"
-      } bg-white border-r border-[#001B55]/10 shadow-sm`}
+      } bg-card border-r border-border shadow-lg`}
     >
       {/* Header with Logo */}
-      <div className="relative p-5 border-b border-[#001B55]/10">
+      <div className="relative p-5 border-b border-border bg-muted/30">
         <div
           className={`flex items-center gap-3 ${
             isCollapsed ? "justify-center" : "justify-between"
@@ -181,20 +181,24 @@ export function ModernSidebar({
             className={`flex items-center gap-3 ${isCollapsed ? "flex-col" : ""}`}
           >
             <div
-              className="relative w-11 h-11 rounded-xl flex items-center justify-center bg-white border-2 border-[#001B55]/20 shadow-sm"
+              className="relative w-10 h-10 rounded-lg flex items-center justify-center"
+              style={{
+                background:
+                  "linear-gradient(135deg, #001B55 0%, #002266 100%)",
+              }}
               role="img"
               aria-label="Logo NasDem Sidoarjo"
             >
-              <Sparkles className="text-[#001B55] w-5 h-5 z-10" />
+              <Sparkles className="text-brand-accent w-5 h-5 z-10" />
             </div>
             {!isCollapsed && (
               <div className="space-y-0.5">
-                <h2 className="font-bold text-[#001B55] text-base tracking-tight">
+                <h2 className="font-semibold text-text-primary text-base">
                   NasDem
                 </h2>
-                <p className="text-gray-600 text-xs font-medium flex items-center gap-1.5">
+                <p className="text-text-tertiary text-xs font-medium flex items-center gap-1.5">
                   <span
-                    className="w-2 h-2 bg-[#001B55]/40 rounded-full animate-pulse"
+                    className="w-1.5 h-1.5 bg-brand-success rounded-full animate-pulse"
                     role="status"
                     aria-label="Status online"
                   ></span>
@@ -207,11 +211,11 @@ export function ModernSidebar({
           {!isCollapsed && (
             <button
               onClick={onToggle}
-              className="p-2 rounded-lg hover:bg-gray-100 transition-all duration-200 focus:outline-none focus:ring-2 focus:ring-[#001B55]/30 focus:ring-offset-1"
+              className="p-2 rounded-lg hover:bg-muted transition-colors focus:outline-none focus:ring-2 focus:ring-brand-accent focus:ring-offset-1"
               aria-label="Tutup sidebar"
               aria-expanded={!isCollapsed}
             >
-              <ChevronRight className="w-4 h-4 text-gray-500" />
+              <ChevronRight className="w-4 h-4 text-text-tertiary" />
             </button>
           )}
         </div>
@@ -236,13 +240,13 @@ export function ModernSidebar({
 
         {!isCollapsed && (
           <div className="px-3 py-2 mb-2">
-            <span className="text-xs text-gray-500 uppercase tracking-wider font-semibold">
+            <span className="text-xs text-text-tertiary uppercase tracking-wider font-semibold">
               Menu Utama
             </span>
           </div>
         )}
 
-        <div className="space-y-1">
+        <div className="space-y-0.5">
           {menuItems.map((item) => (
             <div key={item.title} className="relative group/item" role="listitem">
               {item.isCollapsible ? (
@@ -250,43 +254,43 @@ export function ModernSidebar({
                   <button
                     onClick={() => !isCollapsed && toggleGroup(item.title)}
                     className={`w-full group relative flex items-center ${
-                      isCollapsed ? "justify-center px-0" : "gap-3 px-3"
-                    } py-2.5 rounded-lg font-medium transition-all duration-200 focus:outline-none focus:ring-2 focus:ring-[#001B55]/30 focus:ring-offset-1 ${
+                      isCollapsed ? "justify-center px-0" : "gap-2.5 px-3"
+                    } py-2.5 rounded-lg font-medium transition-all duration-200 focus:outline-none focus:ring-2 focus:ring-brand-accent focus:ring-offset-1 ${
                       isGroupActive(item.subItems)
-                        ? "bg-white text-[#001B55] border-l-3 border-[#001B55]/30 shadow-sm"
-                        : "text-gray-600 hover:bg-gray-50 hover:text-[#001B55]"
+                        ? "bg-brand-primary text-white"
+                        : "text-text-secondary hover:bg-muted hover:text-text-primary"
                     }`}
                     aria-label={item.ariaLabel}
                     aria-expanded={openGroups.includes(item.title)}
                   >
                     {isGroupActive(item.subItems) && !isCollapsed && (
                       <div
-                        className="absolute left-0 top-0 bottom-0 w-1 bg-[#001B55]/30 rounded-r"
+                        className="absolute left-0 top-1/2 -translate-y-1/2 w-1 h-6 bg-brand-accent rounded-r"
                         aria-hidden="true"
                       />
                     )}
 
                     <div
                       className={`relative z-10 flex items-center ${
-                        isCollapsed ? "" : "gap-3 w-full"
+                        isCollapsed ? "" : "gap-2.5 w-full"
                       }`}
                     >
                       <item.icon
-                        className={`h-5 w-5 flex-shrink-0 transition-colors ${
+                        className={`h-4.5 w-4.5 flex-shrink-0 transition-colors ${
                           isGroupActive(item.subItems)
-                            ? "text-[#001B55]"
+                            ? "text-brand-accent"
                             : ""
                         }`}
                         aria-hidden="true"
                       />
                       {!isCollapsed && (
                         <>
-                          <span className="flex-1 text-left text-sm font-semibold">
+                          <span className="flex-1 text-left text-sm font-medium">
                             {item.title}
                           </span>
                           <ChevronDown
                             className={`h-4 w-4 transition-transform duration-200 ${
-                              openGroups.includes(item.title) ? "rotate-180 text-[#001B55]" : ""
+                              openGroups.includes(item.title) ? "rotate-180" : ""
                             }`}
                             aria-hidden="true"
                           />
@@ -297,17 +301,17 @@ export function ModernSidebar({
 
                   {isCollapsed && (
                     <div
-                      className="absolute left-full ml-3 top-1/2 -translate-y-1/2 px-3 py-2 bg-white border-2 border-[#001B55] text-[#001B55] text-sm font-semibold rounded-lg shadow-xl opacity-0 invisible group-hover/item:opacity-100 group-hover/item:visible transition-all duration-200 whitespace-nowrap z-50 pointer-events-none"
+                      className="absolute left-full ml-2 top-1/2 -translate-y-1/2 px-3 py-2 bg-text-primary text-white text-sm font-medium rounded-lg shadow-xl opacity-0 invisible group-hover/item:opacity-100 group-hover/item:visible transition-all duration-200 whitespace-nowrap z-50 pointer-events-none"
                       role="tooltip"
                     >
                       {item.title}
-                      <div className="absolute right-full top-1/2 -translate-y-1/2 border-[5px] border-transparent border-r-white drop-shadow-lg"></div>
+                      <div className="absolute right-full top-1/2 -translate-y-1/2 border-4 border-transparent border-r-text-primary"></div>
                     </div>
                   )}
 
                   {!isCollapsed && openGroups.includes(item.title) && (
                     <div
-                      className="ml-8 mt-1 mb-1 space-y-1 pl-3 border-l border-[#001B55]/20"
+                      className="ml-6 mt-1 mb-1 space-y-0.5 pl-3 border-l-2 border-border"
                       role="list"
                     >
                       {item.subItems?.map((subItem) => {
@@ -317,18 +321,16 @@ export function ModernSidebar({
                           <SafeNavLink
                             key={subItem.url}
                             to={subItem.url}
-                            className={`group relative flex items-center gap-2.5 px-3 py-2 rounded-lg transition-all duration-200 focus:outline-none focus:ring-2 focus:ring-[#001B55]/30 focus:ring-offset-1 ${
+                            className={`group relative flex items-center gap-2.5 px-3 py-2 rounded-lg transition-all duration-200 focus:outline-none focus:ring-2 focus:ring-brand-accent focus:ring-offset-1 ${
                               subItemActive
-                                ? "bg-white text-[#001B55] font-semibold border-l-2 border-[#001B55]/40"
-                                : "text-gray-600 hover:bg-gray-50 hover:text-[#001B55]"
+                                ? "bg-brand-accent/10 text-brand-accent font-medium"
+                                : "text-text-secondary hover:bg-muted hover:text-text-primary"
                             }`}
                             aria-label={subItem.ariaLabel}
                             aria-current={subItemActive ? "page" : undefined}
                           >
                             <SubIcon
-                              className={`h-4 w-4 flex-shrink-0 ${
-                                subItemActive ? "text-[#001B55]" : ""
-                              }`}
+                              className="h-4 w-4 flex-shrink-0"
                               aria-hidden="true"
                             />
                             <span className="text-sm">{subItem.title}</span>
@@ -343,37 +345,37 @@ export function ModernSidebar({
                   <SafeNavLink
                     to={item.url ?? "#"}
                     className={`group relative flex items-center ${
-                      isCollapsed ? "justify-center px-0" : "gap-3 px-3"
-                    } py-2.5 rounded-lg font-medium transition-all duration-200 focus:outline-none focus:ring-2 focus:ring-[#001B55]/30 focus:ring-offset-1 ${
+                      isCollapsed ? "justify-center px-0" : "gap-2.5 px-3"
+                    } py-2.5 rounded-lg font-medium transition-all duration-200 focus:outline-none focus:ring-2 focus:ring-brand-accent focus:ring-offset-1 ${
                       isActive(item.url ?? "")
-                        ? "bg-white text-[#001B55] border-l-3 border-[#001B55]/30 shadow-sm"
-                        : "text-gray-600 hover:bg-gray-50 hover:text-[#001B55]"
+                        ? "bg-brand-primary text-white"
+                        : "text-text-secondary hover:bg-muted hover:text-text-primary"
                     }`}
                     aria-label={item.ariaLabel}
                     aria-current={isActive(item.url ?? "") ? "page" : undefined}
                   >
                     {isActive(item.url ?? "") && !isCollapsed && (
                       <div
-                        className="absolute left-0 top-0 bottom-0 w-1 bg-[#001B55]/30 rounded-r"
+                        className="absolute left-0 top-1/2 -translate-y-1/2 w-1 h-6 bg-brand-accent rounded-r"
                         aria-hidden="true"
                       />
                     )}
 
                     <div
                       className={`relative z-10 flex items-center ${
-                        isCollapsed ? "" : "gap-3 w-full"
+                        isCollapsed ? "" : "gap-2.5 w-full"
                       }`}
                     >
                       <item.icon
-                        className={`h-5 w-5 flex-shrink-0 ${
+                        className={`h-4.5 w-4.5 flex-shrink-0 ${
                           isActive(item.url ?? "")
-                            ? "text-[#001B55]"
+                            ? "text-brand-accent"
                             : ""
                         }`}
                         aria-hidden="true"
                       />
                       {!isCollapsed && (
-                        <span className="flex-1 text-left text-sm font-semibold">
+                        <span className="flex-1 text-left text-sm font-medium">
                           {item.title}
                         </span>
                       )}
@@ -382,11 +384,11 @@ export function ModernSidebar({
 
                   {isCollapsed && (
                     <div
-                      className="absolute left-full ml-3 top-1/2 -translate-y-1/2 px-3 py-2 bg-white border-2 border-[#001B55] text-[#001B55] text-sm font-semibold rounded-lg shadow-xl opacity-0 invisible group-hover/item:opacity-100 group-hover/item:visible transition-all duration-200 whitespace-nowrap z-50 pointer-events-none"
+                      className="absolute left-full ml-2 top-1/2 -translate-y-1/2 px-3 py-2 bg-text-primary text-white text-sm font-medium rounded-lg shadow-xl opacity-0 invisible group-hover/item:opacity-100 group-hover/item:visible transition-all duration-200 whitespace-nowrap z-50 pointer-events-none"
                       role="tooltip"
                     >
                       {item.title}
-                      <div className="absolute right-full top-1/2 -translate-y-1/2 border-[5px] border-transparent border-r-white drop-shadow-lg"></div>
+                      <div className="absolute right-full top-1/2 -translate-y-1/2 border-4 border-transparent border-r-text-primary"></div>
                     </div>
                   )}
                 </>
@@ -398,21 +400,20 @@ export function ModernSidebar({
 
       {/* Quick Actions */}
       {!isCollapsed && (
-        <div className="m-4 p-4 bg-white border-2 border-[#001B55]/20 rounded-xl shadow-sm">
+        <div className="m-4 p-4 bg-gradient-to-br from-brand-primary to-brand-primary/90 rounded-xl">
           <div className="space-y-3">
-            <div className="space-y-1 pb-3 border-b border-[#001B55]/20">
-              <h4 className="text-sm text-[#001B55] font-bold flex items-center gap-2">
-                <Sparkles className="w-4 h-4 text-[#001B55]/60" />
+            <div className="space-y-1">
+              <h4 className="text-sm text-white font-semibold">
                 Quick Actions
               </h4>
-              <p className="text-xs text-gray-600">
+              <p className="text-xs text-white/80">
                 Kelola konten dengan mudah
               </p>
             </div>
 
             <SafeNavLink to="/admin/news/create">
               <button
-                className="w-full flex items-center justify-center gap-2 px-4 py-2.5 bg-white border border-[#001B55]/30 text-[#001B55] hover:bg-[#001B55]/5 rounded-lg font-semibold text-sm transition-all hover:scale-[1.02] focus:outline-none focus:ring-2 focus:ring-[#001B55]/30 focus:ring-offset-2"
+                className="w-full flex items-center justify-center gap-2 px-4 py-2.5 bg-brand-accent hover:bg-brand-accent/90 text-white rounded-lg font-medium text-sm transition-all focus:outline-none focus:ring-2 focus:ring-white focus:ring-offset-2 focus:ring-offset-brand-primary"
                 aria-label="Buat konten baru"
               >
                 <Plus className="w-4 h-4" />
@@ -424,10 +425,10 @@ export function ModernSidebar({
       )}
 
       {isCollapsed && (
-        <div className="p-3 flex justify-center border-t border-[#001B55]/10">
+        <div className="p-3 flex justify-center border-t border-border">
           <SafeNavLink to="/admin/news/create">
             <button
-              className="w-12 h-12 rounded-lg flex items-center justify-center bg-white border border-[#001B55]/30 text-[#001B55] hover:bg-[#001B55]/5 transition-all hover:scale-110 focus:outline-none focus:ring-2 focus:ring-[#001B55]/30 focus:ring-offset-1"
+              className="w-12 h-12 rounded-lg flex items-center justify-center bg-brand-accent hover:bg-brand-accent/90 text-white transition-all focus:outline-none focus:ring-2 focus:ring-brand-accent focus:ring-offset-1"
               aria-label="Buat konten baru"
             >
               <Plus className="w-5 h-5" />
@@ -439,11 +440,11 @@ export function ModernSidebar({
       {isCollapsed && (
         <button
           onClick={onToggle}
-          className="absolute -right-3 top-20 w-7 h-7 rounded-full flex items-center justify-center bg-white border-2 border-[#001B55]/20 shadow-md hover:shadow-lg hover:border-[#001B55] hover:scale-110 transition-all focus:outline-none focus:ring-2 focus:ring-[#001B55]/30"
+          className="absolute -right-3 top-20 w-6 h-6 rounded-full flex items-center justify-center bg-card border border-border shadow-md hover:shadow-lg transition-all focus:outline-none focus:ring-2 focus:ring-brand-accent"
           aria-label="Buka sidebar"
           aria-expanded={!isCollapsed}
         >
-          <ChevronRight className="w-4 h-4 text-[#001B55]" />
+          <ChevronRight className="w-3.5 h-3.5 text-text-tertiary" />
         </button>
       )}
     </nav>

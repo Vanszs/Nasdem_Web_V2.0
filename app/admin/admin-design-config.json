@@ -1,0 +1,375 @@
+{
+  "version": "2.0",
+  "lastUpdated": "2025-10-06",
+  "status": "production-ready",
+  "branch": "redesign-admin",
+  
+  "designPhilosophy": {
+    "principles": [
+      "Clean & Minimal - No gradients, flat design only",
+      "Blue Palette Only - #001B55 with opacity variations",
+      "White Backgrounds - Pure white for all surfaces",
+      "Subtle Borders - Blue with low opacity (10-30%)",
+      "Consistent Spacing - 4px grid system"
+    ],
+    "keywords": [
+      "futuristic",
+      "clean",
+      "professional",
+      "minimal",
+      "corporate",
+      "data-driven",
+      "modern"
+    ]
+  },
+
+  "colors": {
+    "primary": {
+      "blue": "#001B55",
+      "white": "#FFFFFF",
+      "lightGray": "#F0F0F0",
+      "mediumGray": "#6B7280",
+      "nearBlack": "#111827"
+    },
+    "opacity": {
+      "verySubtle": "/10",
+      "subtle": "/20",
+      "medium": "/30",
+      "active": "/40",
+      "disabled": "/60"
+    },
+    "semantic": {
+      "success": "#16A34A",
+      "danger": "#C81E1E",
+      "info": "#3B82F6"
+    },
+    "deprecated": {
+      "orange": "#FF9C04",
+      "lightOrange": "#FFB04A",
+      "gradients": "ALL gradient utilities banned"
+    },
+    "chartColors": {
+      "primary": "#001B55",
+      "berita": "#C3A46B",
+      "galeri": "#E7B7A5",
+      "organisasi": "#6EC4B3",
+      "program": "#B7B7F0"
+    }
+  },
+
+  "typography": {
+    "fontFamily": "Inter, ui-sans-serif, system-ui, sans-serif",
+    "sizes": {
+      "xs": { "size": "0.75rem", "lineHeight": "1rem", "usage": "Small labels, badges" },
+      "sm": { "size": "0.875rem", "lineHeight": "1.25rem", "usage": "Body text, descriptions" },
+      "md": { "size": "1rem", "lineHeight": "1.5rem", "usage": "Default body" },
+      "lg": { "size": "1.125rem", "lineHeight": "1.75rem", "usage": "Subheadings" },
+      "xl": { "size": "1.5rem", "lineHeight": "2rem", "usage": "Page titles" },
+      "xxl": { "size": "2rem", "lineHeight": "2.5rem", "usage": "Hero headings" },
+      "num": { "size": "2.125rem", "lineHeight": "2.5rem", "usage": "Large numbers/stats" }
+    },
+    "weights": {
+      "regular": 400,
+      "medium": 500,
+      "semibold": 600,
+      "bold": 700
+    },
+    "colors": {
+      "primary": "text-[#001B55]",
+      "secondary": "text-[#6B7280]",
+      "tertiary": "text-[#9CA3AF]"
+    }
+  },
+
+  "spacing": {
+    "scale": {
+      "4": "0.25rem",
+      "8": "0.5rem",
+      "12": "0.75rem",
+      "16": "1rem",
+      "20": "1.25rem",
+      "24": "1.5rem",
+      "32": "2rem"
+    },
+    "gridSystem": "4px base unit"
+  },
+
+  "borderRadius": {
+    "sm": "0.5rem",
+    "md": "0.75rem",
+    "lg": "1rem",
+    "xl": "1.25rem",
+    "2xl": "1.5rem",
+    "default": "xl"
+  },
+
+  "shadows": {
+    "sm": "0 1px 2px rgba(0,0,0,0.06)",
+    "md": "0 4px 16px rgba(0,0,0,0.06)",
+    "lg": "0 8px 24px rgba(0,0,0,0.08)",
+    "xl": "0 12px 32px rgba(0,0,0,0.1)",
+    "default": "sm"
+  },
+
+  "components": {
+    "PageHeader": {
+      "location": "app/admin/components/ui/PageHeader.tsx",
+      "props": {
+        "icon": "ReactNode - Pass JSX element NOT component class",
+        "title": "string",
+        "description": "string (optional)",
+        "actions": "ReactNode (optional)"
+      },
+      "styling": {
+        "container": "bg-white rounded-xl border border-[#001B55]/20 p-6 shadow-sm",
+        "iconWrapper": "w-12 h-12 rounded-xl border border-[#001B55]/20 bg-white",
+        "title": "text-xl font-bold text-[#001B55]",
+        "description": "text-sm text-[#6B7280] mt-1"
+      }
+    },
+    "ContentCard": {
+      "location": "app/admin/components/ui/ContentCard.tsx",
+      "props": {
+        "title": "string (optional)",
+        "description": "string (optional)",
+        "icon": "ReactNode (optional)",
+        "children": "ReactNode",
+        "className": "string (optional)"
+      },
+      "styling": {
+        "container": "bg-white rounded-xl border border-[#001B55]/10 p-6 shadow-sm",
+        "header": "mb-4 pb-4 border-b border-[#001B55]/10",
+        "title": "text-lg font-semibold text-[#001B55]"
+      }
+    },
+    "ActionButton": {
+      "location": "app/admin/components/ui/ActionButton.tsx",
+      "props": {
+        "children": "ReactNode",
+        "onClick": "function (optional)",
+        "icon": "ReactNode - Pass JSX element NOT component class",
+        "variant": "primary | secondary | outline | ghost",
+        "disabled": "boolean (optional)"
+      },
+      "variants": {
+        "primary": "bg-[#001B55] text-white hover:bg-[#001B55]/90 border border-[#001B55] shadow-sm",
+        "secondary": "bg-[#F0F0F0] text-[#001B55] hover:bg-[#001B55]/10 border border-[#001B55]/20",
+        "outline": "bg-white text-[#001B55] hover:bg-[#001B55]/5 border border-[#001B55]/30",
+        "ghost": "bg-transparent text-[#001B55] hover:bg-[#001B55]/5"
+      }
+    },
+    "ModernSidebar": {
+      "location": "app/admin/components/layout/ModernSidebar.tsx",
+      "styling": {
+        "container": "h-screen w-64 bg-white border-r border-[#001B55]/20",
+        "navigationItemInactive": "flex items-center gap-3 px-4 py-3 text-[#6B7280] hover:bg-[#001B55]/5 hover:text-[#001B55] rounded-lg transition-all",
+        "navigationItemActive": "flex items-center gap-3 px-4 py-3 bg-[#001B55]/10 text-[#001B55] border-l-4 border-[#001B55] rounded-lg font-semibold",
+        "badge": "ml-auto px-2 py-1 text-xs font-semibold bg-[#001B55]/10 text-[#001B55] rounded-full"
+      }
+    }
+  },
+
+  "charts": {
+    "recharts": {
+      "barChart": {
+        "margin": { "top": 5, "right": 5, "left": 5, "bottom": 5 },
+        "barCategoryGap": "20%",
+        "maxBarSize": 40,
+        "cartesianGrid": {
+          "strokeDasharray": "3 3",
+          "vertical": false,
+          "stroke": "#E5E7EB"
+        },
+        "axis": {
+          "fontSize": 12,
+          "stroke": "#6B7280",
+          "tickLine": false,
+          "axisLine": false
+        },
+        "tooltip": {
+          "cursor": { "fill": "#F9FAFB" }
+        },
+        "bar": {
+          "radius": [8, 8, 0, 0],
+          "radiusHorizontal": [0, 8, 8, 0]
+        }
+      },
+      "tooltipStyle": {
+        "container": "rounded-xl border border-[#001B55]/20 bg-white px-4 py-3 shadow-sm",
+        "title": "text-sm font-semibold text-[#001B55] mb-2",
+        "item": "flex items-center gap-2 text-xs text-[#6B7280]",
+        "value": "font-semibold text-[#001B55]"
+      }
+    }
+  },
+
+  "uiPatterns": {
+    "table": {
+      "container": "overflow-x-auto rounded-xl border border-[#001B55]/10",
+      "header": "bg-[#F0F0F0] border-b border-[#001B55]/10",
+      "headerCell": "px-4 py-3 text-left text-xs font-semibold text-[#001B55] uppercase tracking-wide",
+      "row": "hover:bg-[#001B55]/5 transition-colors",
+      "cell": "px-4 py-3 text-sm text-[#6B7280]"
+    },
+    "form": {
+      "input": "w-full px-4 py-2 border border-[#001B55]/20 rounded-lg bg-white text-[#001B55] placeholder-[#6B7280] focus:border-[#001B55] focus:outline-none focus:ring-2 focus:ring-[#001B55]/20 transition-all",
+      "select": "h-10 bg-white border border-[#001B55]/20 text-[#001B55] hover:border-[#001B55]/30 focus:border-[#001B55] transition-colors",
+      "label": "text-sm font-medium text-[#001B55] mb-2"
+    },
+    "badge": {
+      "info": "px-3 py-1 bg-[#001B55] text-white text-xs font-semibold rounded-full",
+      "success": "px-3 py-1 bg-[#16A34A] text-white text-xs font-semibold rounded-full",
+      "neutral": "px-3 py-1 bg-[#F0F0F0] text-[#6B7280] text-xs font-semibold rounded-full border border-[#001B55]/20"
+    },
+    "modal": {
+      "content": "bg-white rounded-xl border border-[#001B55]/20 shadow-lg",
+      "header": "border-b border-[#001B55]/10 pb-4",
+      "footer": "border-t border-[#001B55]/10 pt-4"
+    }
+  },
+
+  "criticalRules": [
+    {
+      "rule": "Icon Passing",
+      "wrong": "icon={ComponentClass}",
+      "correct": "icon={<Icon className='...' />}",
+      "reason": "Client Components cannot receive non-serializable props"
+    },
+    {
+      "rule": "No Gradients",
+      "banned": ["bg-gradient-*", "from-*", "to-*", "via-*"],
+      "reason": "Flat design only, no gradient utilities allowed"
+    },
+    {
+      "rule": "Blue Only",
+      "use": "#001B55 with opacity variations",
+      "avoid": "#FF9C04 (orange), multiple bright colors",
+      "reason": "Consistent corporate blue palette"
+    },
+    {
+      "rule": "White Backgrounds",
+      "use": "bg-white for all cards, modals, surfaces",
+      "avoid": "Colored backgrounds, gradients",
+      "reason": "Clean minimal aesthetic"
+    },
+    {
+      "rule": "4px Grid",
+      "use": "4, 8, 12, 16, 20, 24, 32",
+      "avoid": "Arbitrary values like p-[13px]",
+      "reason": "Consistent spacing system"
+    }
+  ],
+
+  "migrationChecklist": {
+    "phase1": {
+      "name": "Color Cleanup",
+      "tasks": [
+        "Remove ALL #FF9C04 (orange) references",
+        "Remove ALL gradient utilities",
+        "Replace with #001B55 and opacity variations",
+        "Change text colors to approved palette",
+        "Update borders to border-[#001B55]/10 or /20"
+      ]
+    },
+    "phase2": {
+      "name": "Component Migration",
+      "tasks": [
+        "Replace custom headers with PageHeader",
+        "Wrap content sections in ContentCard",
+        "Replace buttons with ActionButton",
+        "Update icon passing to JSX elements"
+      ]
+    },
+    "phase3": {
+      "name": "Layout & Spacing",
+      "tasks": [
+        "Ensure 4px grid spacing",
+        "Update border radius to standard values",
+        "Apply shadow-sm consistently",
+        "Check responsive breakpoints"
+      ]
+    },
+    "phase4": {
+      "name": "Charts & Data",
+      "tasks": [
+        "Update chart colors to specification",
+        "Apply standard chart margins",
+        "Update tooltip styling",
+        "Ensure axis colors are #6B7280"
+      ]
+    },
+    "phase5": {
+      "name": "Testing",
+      "tasks": [
+        "Test on mobile 375px",
+        "Test on tablet 768px",
+        "Test on desktop 1440px",
+        "Check for hydration errors",
+        "Verify no console warnings"
+      ]
+    }
+  },
+
+  "fileStructure": {
+    "components": {
+      "ui": [
+        "PageHeader.tsx",
+        "ContentCard.tsx",
+        "ActionButton.tsx",
+        "index.ts"
+      ],
+      "layout": [
+        "ModernSidebar.tsx",
+        "TopNavbar.tsx",
+        "AdminLayout.tsx"
+      ],
+      "news": ["NewsTable.tsx"],
+      "statistik": [
+        "StatistikChartsSection.tsx",
+        "StatistikKPICards.tsx",
+        "StatistikDataTable.tsx"
+      ],
+      "dashboard": [
+        "kpi-stat.tsx",
+        "chart-card.tsx",
+        "stacked-bar-chart.tsx"
+      ]
+    },
+    "pages": {
+      "updated": [
+        "page.tsx (Dashboard)",
+        "news/page.tsx",
+        "user/page.tsx",
+        "statistik-pemilu/page.tsx"
+      ],
+      "pending": [
+        "gallery/page.tsx",
+        "organizations/page.tsx",
+        "programs/page.tsx",
+        "landing/page.tsx"
+      ]
+    }
+  },
+
+  "quickReference": {
+    "pageContainer": "max-w-7xl mx-auto space-y-6 p-6",
+    "card": "bg-white rounded-xl border border-[#001B55]/10 p-6 shadow-sm",
+    "primaryButton": "px-4 py-2 bg-[#001B55] text-white rounded-lg border border-[#001B55] hover:bg-[#001B55]/90 font-semibold shadow-sm transition-all",
+    "input": "w-full px-4 py-2 border border-[#001B55]/20 rounded-lg bg-white text-[#001B55] focus:border-[#001B55] focus:ring-2 focus:ring-[#001B55]/20",
+    "tableHeader": "bg-[#F0F0F0] border-b border-[#001B55]/10",
+    "tableRow": "hover:bg-[#001B55]/5 transition-colors"
+  },
+
+  "responsiveBreakpoints": {
+    "mobile": "375px - 640px",
+    "tablet": "640px - 1024px",
+    "desktop": "1024px+"
+  },
+
+  "commands": {
+    "dev": "pnpm run dev",
+    "lint": "pnpm run lint",
+    "build": "pnpm run build",
+    "start": "pnpm run start"
+  }
+}

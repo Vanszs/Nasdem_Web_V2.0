@@ -5,6 +5,7 @@ import {
   MoreVertical,
   Edit,
   Trash2,
+  Users,
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -24,6 +25,9 @@ import {
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
 import { AdminLayout } from "../components/layout/AdminLayout";
+import { PageHeader } from "../components/ui/PageHeader";
+import { ContentCard } from "../components/ui/ContentCard";
+import { ActionButton } from "../components/ui/ActionButton";
 
 export function UserPage() {
   const breadcrumbs = [
@@ -79,25 +83,19 @@ export function UserPage() {
     <AdminLayout breadcrumbs={breadcrumbs}>
       <div className="space-y-6">
         {/* Header Section */}
-        <div className="bg-white/70 backdrop-blur-sm border-2 border-gray-200/80 rounded-2xl p-6 shadow-sm hover:shadow-md transition-all duration-300">
-          <div className="flex items-center justify-between">
-            <div>
-              <h1 className="text-2xl font-bold text-[#001B55]">
-                User Management
-              </h1>
-              <p className="text-muted-foreground">
-                Kelola pengguna sistem admin panel NasDem Sidoarjo
-              </p>
-            </div>
-            <Button className="bg-[#FF9C04] hover:bg-[#FF9C04]/90 text-white font-semibold border-2 border-[#FF9C04]/20 hover:border-[#FF9C04]/40 focus-ring transition-all duration-300 shadow-lg hover:shadow-xl">
-              <UserPlus className="mr-2 h-4 w-4" />
+        <PageHeader
+          icon={<Users className="w-6 h-6 text-[#001B55]" />}
+          title="User Management"
+          description="Kelola pengguna sistem admin panel NasDem Sidoarjo"
+          action={
+            <ActionButton icon={<UserPlus className="w-4 h-4" />} variant="primary">
               Tambah User Baru
-            </Button>
-          </div>
-        </div>
+            </ActionButton>
+          }
+        />
 
         {/* Filter and Search Section */}
-        <div className="bg-white/80 backdrop-blur-sm border-2 border-gray-200/80 rounded-2xl p-4 shadow-lg">
+        <div className="bg-white border border-[#001B55]/10 rounded-xl p-4 shadow-sm">
           <div className="flex flex-col sm:flex-row gap-4 items-center justify-between">
             <div className="flex gap-2 w-full sm:w-auto">
               <div className="relative flex-1 sm:flex-initial">
@@ -113,10 +111,10 @@ export function UserPage() {
               </Button>
             </div>
             <div className="flex gap-3">
-              <Badge variant="outline" className="border-0 bg-gradient-to-r from-[#001B55] to-[#001B55]/90 text-white font-medium px-3 py-1.5 rounded-xl shadow-sm hover:shadow-md transition-all duration-200">
+              <Badge variant="outline" className="border border-[#001B55]/20 bg-white text-[#001B55] font-medium px-3 py-1.5 rounded-lg">
                 Total: {users.length} users
               </Badge>
-              <Badge variant="outline" className="border-0 bg-gradient-to-r from-emerald-500 to-emerald-400 text-white font-medium px-3 py-1.5 rounded-xl shadow-sm hover:shadow-md transition-all duration-200">
+              <Badge variant="outline" className="border border-emerald-500/20 bg-white text-emerald-600 font-medium px-3 py-1.5 rounded-lg">
                 Active: {users.filter((u) => u.status === "Active").length}
               </Badge>
             </div>
@@ -124,29 +122,27 @@ export function UserPage() {
         </div>
 
         {/* Users Table */}
-        <div className="bg-white border border-gray-100 rounded-2xl shadow-sm overflow-hidden transition-all duration-300 hover:shadow-lg">
-          <div className="px-8 py-6 border-b border-gray-50 bg-gradient-to-r from-[#001B55]/5 to-transparent">
-            <h3 className="text-lg font-semibold text-[#001B55] tracking-tight">
-              Daftar Pengguna
-            </h3>
-          </div>
+        <ContentCard
+          title="Daftar Pengguna"
+          icon={<Users className="w-5 h-5 text-[#001B55]" />}
+        >
           <div className="overflow-x-auto">
             <Table>
               <TableHeader>
-                <TableRow className="bg-[#F0F0F0]/30 border-b border-gray-100 hover:bg-[#F0F0F0]/50 transition-colors duration-200">
-                  <TableHead className="py-4 px-6 text-[#001B55] font-semibold text-sm tracking-wide">Nama</TableHead>
-                  <TableHead className="py-4 px-6 text-[#001B55] font-semibold text-sm tracking-wide">Email</TableHead>
-                  <TableHead className="py-4 px-6 text-[#001B55] font-semibold text-sm tracking-wide">Role</TableHead>
-                  <TableHead className="py-4 px-6 text-[#001B55] font-semibold text-sm tracking-wide">Status</TableHead>
-                  <TableHead className="py-4 px-6 text-[#001B55] font-semibold text-sm tracking-wide">Last Login</TableHead>
-                  <TableHead className="py-4 px-6 text-[#001B55] font-semibold text-sm tracking-wide">Aksi</TableHead>
+                <TableRow className="border-b border-[#001B55]/10">
+                  <TableHead className="py-4 px-6 text-[#001B55] font-semibold text-sm">Nama</TableHead>
+                  <TableHead className="py-4 px-6 text-[#001B55] font-semibold text-sm">Email</TableHead>
+                  <TableHead className="py-4 px-6 text-[#001B55] font-semibold text-sm">Role</TableHead>
+                  <TableHead className="py-4 px-6 text-[#001B55] font-semibold text-sm">Status</TableHead>
+                  <TableHead className="py-4 px-6 text-[#001B55] font-semibold text-sm">Last Login</TableHead>
+                  <TableHead className="py-4 px-6 text-[#001B55] font-semibold text-sm">Aksi</TableHead>
                 </TableRow>
               </TableHeader>
               <TableBody>
                 {users.map((user, index) => (
-                  <TableRow key={user.id} className="border-b border-gray-50 hover:bg-gradient-to-r hover:from-[#001B55]/3 hover:to-transparent transition-all duration-250 group">
-                    <TableCell className="py-5 px-6 font-medium text-[#001B55] group-hover:text-[#001B55]">{user.name}</TableCell>
-                    <TableCell className="py-5 px-6 text-gray-500 group-hover:text-gray-600 transition-colors duration-200">
+                  <TableRow key={user.id} className="border-b border-gray-100 hover:bg-gray-50 transition-all duration-200">
+                    <TableCell className="py-5 px-6 font-medium text-[#001B55]">{user.name}</TableCell>
+                    <TableCell className="py-5 px-6 text-gray-600">
                       {user.email}
                     </TableCell>
                     <TableCell className="py-5 px-6">
@@ -209,7 +205,7 @@ export function UserPage() {
               </TableBody>
             </Table>
           </div>
-        </div>
+        </ContentCard>
       </div>
     </AdminLayout>
   );
