@@ -62,10 +62,7 @@ export default function RootLayout({
 }) {
   return (
     <Providers>
-      <div
-        className={`${inter.className} scheme-light`}
-        suppressHydrationWarning
-      >
+      <div className={`${inter.className}`} suppressHydrationWarning>
         {children}
       </div>
     </Providers>
