@@ -53,6 +53,7 @@ const NasdemHero = () => {
                 size="lg"
                 variant="secondary"
                 className="hover-scale group font-semibold bg-secondary text-primary hover:bg-secondary/90"
+                onClick={() => window.location.href = '/bergabung'}
               >
                 <span>Bergabung dengan Kami</span>
                 <ArrowRight className="ml-2 h-4 w-4 group-hover:translate-x-1 transition-transform" />

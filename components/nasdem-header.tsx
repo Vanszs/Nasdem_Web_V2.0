@@ -161,6 +161,7 @@ const NasdemHeader = () => {
               variant="secondary"
               size="sm"
               className="hover-scale font-medium"
+              onClick={() => window.location.href = '/bergabung'}
             >
               Bergabung
             </Button>
@@ -275,7 +276,7 @@ const NasdemHeader = () => {
                 </li>
               </ul>
               <div className="flex flex-col gap-3 mt-6">
-                <Button variant="secondary" size="sm" className="w-full">
+                <Button variant="secondary" size="sm" className="w-full" onClick={() => window.location.href = '/bergabung'}>
                   Bergabung
                 </Button>
                 <Button

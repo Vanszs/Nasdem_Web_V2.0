@@ -1,0 +1,356 @@
+"use client";
+
+import { useState, useEffect } from "react";
+import { useRouter } from "next/navigation";
+import {
+  Users,
+  CheckCircle,
+  XCircle,
+  Search,
+  Filter,
+  Download,
+  UserCheck,
+  UserX,
+} from "lucide-react";
+import { Button } from "@/components/ui/button";
+import { Input } from "@/components/ui/input";
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select";
+import {
+  Table,
+  TableBody,
+  TableCell,
+  TableHead,
+  TableHeader,
+  TableRow,
+} from "@/components/ui/table";
+import { Badge } from "@/components/ui/badge";
+import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+
+interface Beneficiary {
+  id: number;
+  fullName: string;
+  email: string;
+  phone: string;
+  registeredAt: string;
+  status: string;
+  beneficiaryProgram?: {
+    id: number;
+    title: string;
+  };
+  member?: {
+    id: number;
+    fullName: string;
+    status: string;
+  } | null;
+}
+
+export default function BeneficiariesPage() {
+  const router = useRouter();
+  const [beneficiaries, setBeneficiaries] = useState<Beneficiary[]>([]);
+  const [loading, setLoading] = useState(true);
+  const [search, setSearch] = useState("");
+  const [programFilter, setProgramFilter] = useState("");
+  const [memberFilter, setMemberFilter] = useState("");
+  const [page, setPage] = useState(1);
+  const [totalPages, setTotalPages] = useState(1);
+  const [stats, setStats] = useState({
+    total: 0,
+    withMember: 0,
+    withoutMember: 0,
+  });
+  const [programs, setPrograms] = useState<any[]>([]);
+
+  useEffect(() => {
+    fetchBeneficiaries();
+    fetchPrograms();
+  }, [page, search, programFilter, memberFilter]);
+
+  const fetchBeneficiaries = async () => {
+    setLoading(true);
+    try {
+      const params = new URLSearchParams({
+        page: page.toString(),
+        limit: "10",
+      });
+
+      if (search) params.append("search", search);
+      if (programFilter) params.append("programId", programFilter);
+      if (memberFilter) params.append("hasMember", memberFilter);
+
+      const response = await fetch(`/api/beneficiaries?${params}`);
+      if (response.ok) {
+        const data = await response.json();
+        setBeneficiaries(data.beneficiaries || []);
+        setTotalPages(data.pagination?.totalPages || 1);
+        setStats(data.statistics || { total: 0, withMember: 0, withoutMember: 0 });
+      } else {
+        console.error("Failed to fetch beneficiaries");
+      }
+    } catch (error) {
+      console.error("Error fetching beneficiaries:", error);
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const fetchPrograms = async () => {
+    try {
+      const response = await fetch("/api/programs");
+      if (response.ok) {
+        const data = await response.json();
+        setPrograms(data.programs || []);
+      }
+    } catch (error) {
+      console.error("Error fetching programs:", error);
+    }
+  };
+
+  const handleSearch = (value: string) => {
+    setSearch(value);
+    setPage(1);
+  };
+
+  const formatDate = (dateString: string) => {
+    return new Date(dateString).toLocaleDateString("id-ID", {
+      year: "numeric",
+      month: "long",
+      day: "numeric",
+    });
+  };
+
+  const exportData = () => {
+    // TODO: Implement export functionality
+    alert("Fitur export akan segera tersedia");
+  };
+
+  return (
+    <div className="space-y-6">
+      {/* Header */}
+      <div className="flex items-center justify-between">
+        <div>
+          <h1 className="text-3xl font-bold text-[#001B55]">Penerima Manfaat</h1>
+          <p className="text-gray-500 mt-1">
+            Kelola data penerima manfaat program kerja
+          </p>
+        </div>
+        <Button onClick={exportData} variant="outline" className="gap-2">
+          <Download className="h-4 w-4" />
+          Export Data
+        </Button>
+      </div>
+
+      {/* Statistics Cards */}
+      <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+        <Card>
+          <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
+            <CardTitle className="text-sm font-medium">
+              Total Penerima Manfaat
+            </CardTitle>
+            <Users className="h-4 w-4 text-muted-foreground" />
+          </CardHeader>
+          <CardContent>
+            <div className="text-2xl font-bold text-[#001B55]">{stats.total}</div>
+            <p className="text-xs text-muted-foreground mt-1">
+              Semua penerima manfaat terdaftar
+            </p>
+          </CardContent>
+        </Card>
+
+        <Card>
+          <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
+            <CardTitle className="text-sm font-medium">
+              Sudah Jadi Anggota
+            </CardTitle>
+            <UserCheck className="h-4 w-4 text-green-600" />
+          </CardHeader>
+          <CardContent>
+            <div className="text-2xl font-bold text-green-600">
+              {stats.withMember}
+            </div>
+            <p className="text-xs text-muted-foreground mt-1">
+              Penerima manfaat yang sudah menjadi anggota
+            </p>
+          </CardContent>
+        </Card>
+
+        <Card>
+          <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
+            <CardTitle className="text-sm font-medium">
+              Belum Jadi Anggota
+            </CardTitle>
+            <UserX className="h-4 w-4 text-orange-600" />
+          </CardHeader>
+          <CardContent>
+            <div className="text-2xl font-bold text-orange-600">
+              {stats.withoutMember}
+            </div>
+            <p className="text-xs text-muted-foreground mt-1">
+              Penerima manfaat yang belum menjadi anggota
+            </p>
+          </CardContent>
+        </Card>
+      </div>
+
+      {/* Filters */}
+      <Card>
+        <CardContent className="pt-6">
+          <div className="flex flex-col md:flex-row gap-4">
+            <div className="flex-1">
+              <div className="relative">
+                <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400 h-4 w-4" />
+                <Input
+                  placeholder="Cari nama, email, atau telepon..."
+                  value={search}
+                  onChange={(e) => handleSearch(e.target.value)}
+                  className="pl-10"
+                />
+              </div>
+            </div>
+            <Select value={programFilter} onValueChange={setProgramFilter}>
+              <SelectTrigger className="w-full md:w-[250px]">
+                <SelectValue placeholder="Filter Program" />
+              </SelectTrigger>
+              <SelectContent>
+                <SelectItem value="">Semua Program</SelectItem>
+                {programs.map((program) => (
+                  <SelectItem key={program.id} value={program.id.toString()}>
+                    {program.title}
+                  </SelectItem>
+                ))}
+              </SelectContent>
+            </Select>
+            <Select value={memberFilter} onValueChange={setMemberFilter}>
+              <SelectTrigger className="w-full md:w-[200px]">
+                <SelectValue placeholder="Status Keanggotaan" />
+              </SelectTrigger>
+              <SelectContent>
+                <SelectItem value="">Semua Status</SelectItem>
+                <SelectItem value="true">Sudah Anggota</SelectItem>
+                <SelectItem value="false">Belum Anggota</SelectItem>
+              </SelectContent>
+            </Select>
+          </div>
+        </CardContent>
+      </Card>
+
+      {/* Table */}
+      <Card>
+        <CardContent className="pt-6">
+          {loading ? (
+            <div className="flex items-center justify-center py-12">
+              <div className="w-8 h-8 border-4 border-[#FF9C04] border-t-transparent rounded-full animate-spin"></div>
+            </div>
+          ) : beneficiaries.length === 0 ? (
+            <div className="text-center py-12">
+              <Users className="h-12 w-12 text-gray-300 mx-auto mb-4" />
+              <p className="text-gray-500">Tidak ada data penerima manfaat</p>
+            </div>
+          ) : (
+            <>
+              <div className="overflow-x-auto">
+                <Table>
+                  <TableHeader>
+                    <TableRow>
+                      <TableHead>Nama Lengkap</TableHead>
+                      <TableHead>Kontak</TableHead>
+                      <TableHead>Program</TableHead>
+                      <TableHead>Tanggal Daftar</TableHead>
+                      <TableHead>Status Anggota</TableHead>
+                      <TableHead className="text-right">Aksi</TableHead>
+                    </TableRow>
+                  </TableHeader>
+                  <TableBody>
+                    {beneficiaries.map((beneficiary) => (
+                      <TableRow key={beneficiary.id}>
+                        <TableCell className="font-medium">
+                          {beneficiary.fullName}
+                        </TableCell>
+                        <TableCell>
+                          <div className="text-sm">
+                            <div>{beneficiary.email}</div>
+                            <div className="text-gray-500">{beneficiary.phone}</div>
+                          </div>
+                        </TableCell>
+                        <TableCell>
+                          {beneficiary.beneficiaryProgram ? (
+                            <Badge variant="outline" className="bg-blue-50">
+                              {beneficiary.beneficiaryProgram.title}
+                            </Badge>
+                          ) : (
+                            <span className="text-gray-400">-</span>
+                          )}
+                        </TableCell>
+                        <TableCell className="text-sm text-gray-500">
+                          {formatDate(beneficiary.registeredAt)}
+                        </TableCell>
+                        <TableCell>
+                          {beneficiary.member ? (
+                            <Badge className="bg-green-100 text-green-700 hover:bg-green-100">
+                              <CheckCircle className="h-3 w-3 mr-1" />
+                              Sudah Anggota
+                            </Badge>
+                          ) : (
+                            <Badge className="bg-orange-100 text-orange-700 hover:bg-orange-100">
+                              <XCircle className="h-3 w-3 mr-1" />
+                              Belum Anggota
+                            </Badge>
+                          )}
+                        </TableCell>
+                        <TableCell className="text-right">
+                          <Button
+                            variant="ghost"
+                            size="sm"
+                            onClick={() =>
+                              router.push(
+                                `/admin/registrations/${beneficiary.id}`
+                              )
+                            }
+                          >
+                            Detail
+                          </Button>
+                        </TableCell>
+                      </TableRow>
+                    ))}
+                  </TableBody>
+                </Table>
+              </div>
+
+              {/* Pagination */}
+              {totalPages > 1 && (
+                <div className="flex items-center justify-between mt-6">
+                  <p className="text-sm text-gray-500">
+                    Halaman {page} dari {totalPages}
+                  </p>
+                  <div className="flex gap-2">
+                    <Button
+                      variant="outline"
+                      size="sm"
+                      onClick={() => setPage(Math.max(1, page - 1))}
+                      disabled={page === 1}
+                    >
+                      Sebelumnya
+                    </Button>
+                    <Button
+                      variant="outline"
+                      size="sm"
+                      onClick={() => setPage(Math.min(totalPages, page + 1))}
+                      disabled={page === totalPages}
+                    >
+                      Selanjutnya
+                    </Button>
+                  </div>
+                </div>
+              )}
+            </>
+          )}
+        </CardContent>
+      </Card>
+    </div>
+  );
+}

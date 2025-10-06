@@ -34,12 +34,6 @@ import {
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import { Progress } from "@/components/ui/progress";
-import {
-  Collapsible,
-  CollapsibleContent,
-  CollapsibleTrigger,
-} from "@/components/ui/collapsible";
 import {
   Plus,
   Edit,
@@ -49,8 +43,6 @@ import {
   Image,
   Target,
   Users,
-  TrendingUp,
-  ChevronDown,
   MapPin,
   Phone,
   Mail,
@@ -78,25 +70,6 @@ interface AboutSection {
   imageUrl: string;
   vision: string;
   mission: string;
-}
-
-interface Program {
-  id: string;
-  name: string;
-  description: string;
-  category: string;
-  status: "Berlangsung" | "Selesai" | "Tertunda" | "Perencanaan";
-  startDate: string;
-  endDate: string;
-  budget: number;
-  targetBeneficiaries: number;
-  currentBeneficiaries: number;
-  progress: number;
-  timeline: string;
-  target: string;
-  details: string[];
-  achievements: string[];
-  coordinator?: string;
 }
 
 interface ContactInfo {
@@ -155,64 +128,7 @@ export default function Landing() {
       "Membangun kaderitas yang kuat, melayani masyarakat dengan integritas, dan mengadvokasi kebijakan pro-rakyat.",
   });
 
-  const [programs, setPrograms] = useState<Program[]>([
-    {
-      id: "1",
-      name: "Pemberdayaan UMKM",
-      description:
-        "Program pelatihan dan pendampingan usaha mikro, kecil, dan menengah",
-      category: "Ekonomi",
-      status: "Berlangsung",
-      startDate: "2024-01-15",
-      endDate: "2024-12-31",
-      budget: 500000000,
-      targetBeneficiaries: 1000,
-      currentBeneficiaries: 750,
-      progress: 75,
-      timeline: "2024-2026",
-      target: "1000 UMKM binaan",
-      details: [
-        "Pelatihan manajemen keuangan untuk UMKM",
-        "Pendampingan pengembangan produk",
-        "Akses permodalan dengan bunga rendah",
-        "Pelatihan pemasaran digital",
-      ],
-      achievements: [
-        "750 UMKM telah mendapat pelatihan",
-        "200 UMKM mendapat akses permodalan",
-        "15 produk unggulan diluncurkan",
-      ],
-      coordinator: "Dr. Siti Aminah, M.E.",
-    },
-    {
-      id: "2",
-      name: "Beasiswa Prestasi",
-      description:
-        "Program beasiswa untuk siswa berprestasi dari keluarga kurang mampu",
-      category: "Pendidikan",
-      status: "Berlangsung",
-      startDate: "2024-02-01",
-      endDate: "2024-11-30",
-      budget: 300000000,
-      targetBeneficiaries: 200,
-      currentBeneficiaries: 150,
-      progress: 75,
-      timeline: "2024-2025",
-      target: "200 penerima beasiswa",
-      details: [
-        "Beasiswa pendidikan SMA sederajat",
-        "Beasiswa kuliah untuk mahasiswa berprestasi",
-        "Bantuan buku dan seragam sekolah",
-        "Program mentoring akademik",
-      ],
-      achievements: [
-        "150 siswa mendapat beasiswa",
-        "50 mahasiswa lulus cumlaude",
-        "25 siswa meraih prestasi olimpiade",
-      ],
-      coordinator: "Prof. Ahmad Mujahid, Ph.D.",
-    },
-  ]);
+
 
   const [contactInfo, setContactInfo] = useState<ContactInfo>({
     id: "1",
@@ -240,18 +156,15 @@ export default function Landing() {
   // Form states
   const [heroBannerForm, setHeroBannerForm] = useState<Partial<HeroBanner>>({});
   const [aboutForm, setAboutForm] = useState<Partial<AboutSection>>({});
-  const [programForm, setProgramForm] = useState<Partial<Program>>({});
   const [contactForm, setContactForm] = useState<Partial<ContactInfo>>({});
 
   // Dialog states
   const [isBannerDialogOpen, setIsBannerDialogOpen] = useState(false);
   const [isAboutDialogOpen, setIsAboutDialogOpen] = useState(false);
-  const [isProgramDialogOpen, setIsProgramDialogOpen] = useState(false);
   const [isContactDialogOpen, setIsContactDialogOpen] = useState(false);
 
   // Edit states
   const [editingBanner, setEditingBanner] = useState<HeroBanner | null>(null);
-  const [editingProgram, setEditingProgram] = useState<Program | null>(null);
 
   // Helper functions
   const formatCurrency = (amount: number) => {
@@ -259,21 +172,6 @@ export default function Landing() {
       style: "currency",
       currency: "IDR",
     }).format(amount);
-  };
-
-  const getStatusBadge = (status: Program["status"]) => {
-    const colors = {
-      Berlangsung:
-        "bg-[#001B55]/10 text-[#001B55] border border-[#001B55]/20 font-semibold",
-      Selesai:
-        "bg-[#FF9C04]/10 text-[#FF9C04] border border-[#FF9C04]/20 font-semibold",
-      Tertunda:
-        "bg-[#F59E0B]/10 text-[#F59E0B] border border-[#F59E0B]/20 font-semibold",
-      Perencanaan:
-        "bg-[#6B7280]/10 text-[#6B7280] border border-[#6B7280]/20 font-semibold",
-    };
-
-    return <Badge className={colors[status]}>{status}</Badge>;
   };
 
   // CRUD functions
@@ -352,65 +250,7 @@ export default function Landing() {
     });
   };
 
-  const handleSaveProgram = () => {
-    if (!programForm.name || !programForm.description) {
-      toast.error("Error", {
-        description: "Silakan lengkapi nama dan deskripsi program",
-      });
-      return;
-    }
 
-    const programData: Program = {
-      id: editingProgram?.id || Date.now().toString(),
-      name: programForm.name || "",
-      description: programForm.description || "",
-      category: programForm.category || "Umum",
-      status: programForm.status || "Berlangsung",
-      startDate:
-        programForm.startDate || new Date().toISOString().split("T")[0],
-      endDate: programForm.endDate || new Date().toISOString().split("T")[0],
-      budget: programForm.budget || 0,
-      targetBeneficiaries: programForm.targetBeneficiaries || 0,
-      currentBeneficiaries: programForm.currentBeneficiaries || 0,
-      progress: programForm.progress || 0,
-      timeline: programForm.timeline || "",
-      target: programForm.target || "",
-      details: programForm.details || [],
-      achievements: programForm.achievements || [],
-      coordinator: programForm.coordinator || "",
-    };
-
-    if (editingProgram) {
-      setPrograms((prev) =>
-        prev.map((program) =>
-          program.id === editingProgram.id ? programData : program
-        )
-      );
-    } else {
-      setPrograms((prev) => [...prev, programData]);
-    }
-
-    setProgramForm({});
-    setEditingProgram(null);
-    setIsProgramDialogOpen(false);
-
-    toast.success("Berhasil", {
-      description: `Program ${editingProgram ? "diupdate" : "ditambahkan"}`,
-    });
-  };
-
-  const handleDeleteProgram = (id: string) => {
-    setPrograms((prev) => prev.filter((program) => program.id !== id));
-    toast.success("Berhasil", {
-      description: "Program dihapus",
-    });
-  };
-
-  const handleEditProgram = (program: Program) => {
-    setEditingProgram(program);
-    setProgramForm(program);
-    setIsProgramDialogOpen(true);
-  };
 
   const handleSaveContact = () => {
     if (!contactForm.address || !contactForm.phone || !contactForm.email) {
@@ -467,7 +307,7 @@ export default function Landing() {
           {/* Modern Navigation Menu */}
           <div className="flex justify-center mb-10">
             <div className="bg-[#FFFFFF] rounded-3xl border border-gray-100 shadow-sm p-1.5 backdrop-blur-sm">
-              <TabsList className="inline-flex items-center justify-center rounded-3xl bg-gradient-to-r from-[#F0F0F0] to-[#F0F0F0] p-2 gap-2 min-w-[780px] h-16">
+              <TabsList className="inline-flex items-center justify-center rounded-3xl bg-gradient-to-r from-[#F0F0F0] to-[#F0F0F0] p-2 gap-2 min-w-[600px] h-16">
                 <TabsTrigger
                   value="hero"
                   className="relative inline-flex items-center justify-center whitespace-nowrap rounded-3xl px-8 py-4 text-sm font-medium transition-all duration-300 ease-out focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#001B55]/20 disabled:pointer-events-none disabled:opacity-50 text-[#6B7280] hover:text-[#001B55] hover:bg-[#FFFFFF] hover:shadow-sm data-[state=active]:bg-gradient-to-br data-[state=active]:from-[#001B55] data-[state=active]:to-[#001B55]/95 data-[state=active]:text-white data-[state=active]:shadow-lg data-[state=active]:shadow-[#001B55]/20 data-[state=active]:z-10 min-w-[180px] h-12 [&[data-state=active]>div>*]:!text-white [&[data-state=active]_*]:!text-white"
@@ -485,16 +325,6 @@ export default function Landing() {
                   <div className="flex items-center gap-2.5">
                     <Users className="w-4 h-4 text-inherit opacity-80" />
                     <span className="text-inherit font-medium">Tentang Kami</span>
-                  </div>
-                  <div className="absolute top-1 right-1 w-2 h-2 rounded-full bg-[#FF9C04] opacity-0 data-[state=active]:opacity-100 transition-all duration-300 shadow-sm scale-0 data-[state=active]:scale-100"></div>
-                </TabsTrigger>
-                <TabsTrigger
-                  value="programs"
-                  className="relative inline-flex items-center justify-center whitespace-nowrap rounded-3xl px-8 py-4 text-sm font-medium transition-all duration-300 ease-out focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#001B55]/20 disabled:pointer-events-none disabled:opacity-50 text-[#6B7280] hover:text-[#001B55] hover:bg-[#FFFFFF] hover:shadow-sm data-[state=active]:bg-gradient-to-br data-[state=active]:from-[#001B55] data-[state=active]:to-[#001B55]/95 data-[state=active]:text-white data-[state=active]:shadow-lg data-[state=active]:shadow-[#001B55]/20 data-[state=active]:z-10 min-w-[180px] h-12 [&[data-state=active]>div>*]:!text-white [&[data-state=active]_*]:!text-white"
-                >
-                  <div className="flex items-center gap-2.5">
-                    <TrendingUp className="w-4 h-4 text-inherit opacity-80" />
-                    <span className="text-inherit font-medium">Program Kerja</span>
                   </div>
                   <div className="absolute top-1 right-1 w-2 h-2 rounded-full bg-[#FF9C04] opacity-0 data-[state=active]:opacity-100 transition-all duration-300 shadow-sm scale-0 data-[state=active]:scale-100"></div>
                 </TabsTrigger>
@@ -847,443 +677,6 @@ export default function Landing() {
                 </div>
               </CardContent>
             </Card>
-          </TabsContent>
-
-          {/* Programs Tab */}
-          <TabsContent value="programs" className="space-y-6">
-            <div className="flex justify-between items-center mb-6 p-4 bg-gradient-to-r from-[#001B55]/5 to-[#FF9C04]/5 rounded-lg border border-gray-200">
-              <div className="flex items-center gap-3">
-                <div className="p-2 bg-[#FF9C04]/10 rounded-lg">
-                  <TrendingUp className="w-6 h-6 text-[#FF9C04]" />
-                </div>
-                <h2 className="text-2xl font-bold text-[#001B55]">
-                  Program Kerja
-                </h2>
-              </div>
-              <Dialog
-                open={isProgramDialogOpen}
-                onOpenChange={setIsProgramDialogOpen}
-              >
-                <DialogTrigger asChild>
-                  <Button className="bg-[#FF9C04] hover:bg-[#001B55] text-white font-semibold shadow-lg hover:shadow-xl transition-all duration-200">
-                    <Plus className="w-4 h-4 mr-2" />
-                    Tambah Program
-                  </Button>
-                </DialogTrigger>
-                <DialogContent className="sm:max-w-[700px]">
-                  <DialogHeader>
-                    <DialogTitle>
-                      {editingProgram ? "Edit Program" : "Tambah Program Baru"}
-                    </DialogTitle>
-                  </DialogHeader>
-                  <div className="grid gap-4 py-4 max-h-[70vh] overflow-y-auto">
-                    <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                      <div className="grid gap-2">
-                        <Label htmlFor="programName">Nama Program</Label>
-                        <Input
-                          id="programName"
-                          value={programForm.name || ""}
-                          onChange={(e) =>
-                            setProgramForm((prev) => ({
-                              ...prev,
-                              name: e.target.value,
-                            }))
-                          }
-                          placeholder="Masukkan nama program"
-                        />
-                      </div>
-                      <div className="grid gap-2">
-                        <Label htmlFor="category">Kategori</Label>
-                        <Select
-                          value={programForm.category || ""}
-                          onValueChange={(value) =>
-                            setProgramForm((prev) => ({
-                              ...prev,
-                              category: value,
-                            }))
-                          }
-                        >
-                          <SelectTrigger>
-                            <SelectValue placeholder="Pilih kategori" />
-                          </SelectTrigger>
-                          <SelectContent>
-                            <SelectItem value="Ekonomi">Ekonomi</SelectItem>
-                            <SelectItem value="Pendidikan">
-                              Pendidikan
-                            </SelectItem>
-                            <SelectItem value="Kesehatan">Kesehatan</SelectItem>
-                            <SelectItem value="Sosial">Sosial</SelectItem>
-                            <SelectItem value="Lingkungan">
-                              Lingkungan
-                            </SelectItem>
-                          </SelectContent>
-                        </Select>
-                      </div>
-                    </div>
-                    <div className="grid gap-2">
-                      <Label htmlFor="description">Deskripsi</Label>
-                      <Textarea
-                        id="description"
-                        value={programForm.description || ""}
-                        onChange={(e) =>
-                          setProgramForm((prev) => ({
-                            ...prev,
-                            description: e.target.value,
-                          }))
-                        }
-                        placeholder="Masukkan deskripsi program"
-                        rows={3}
-                      />
-                    </div>
-                    <div className="grid gap-2">
-                      <Label htmlFor="timeline">Timeline</Label>
-                      <Input
-                        id="timeline"
-                        value={programForm.timeline || ""}
-                        onChange={(e) =>
-                          setProgramForm((prev) => ({
-                            ...prev,
-                            timeline: e.target.value,
-                          }))
-                        }
-                        placeholder="2024-2026"
-                      />
-                    </div>
-                    <div className="grid gap-2">
-                      <Label htmlFor="target">Target</Label>
-                      <Input
-                        id="target"
-                        value={programForm.target || ""}
-                        onChange={(e) =>
-                          setProgramForm((prev) => ({
-                            ...prev,
-                            target: e.target.value,
-                          }))
-                        }
-                        placeholder="1000 penerima manfaat"
-                      />
-                    </div>
-                    <div className="grid gap-2">
-                      <Label htmlFor="coordinator">Koordinator</Label>
-                      <Input
-                        id="coordinator"
-                        value={programForm.coordinator || ""}
-                        onChange={(e) =>
-                          setProgramForm((prev) => ({
-                            ...prev,
-                            coordinator: e.target.value,
-                          }))
-                        }
-                        placeholder="Dr. Ahmad Mujahid"
-                      />
-                    </div>
-                    <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                      <div className="grid gap-2">
-                        <Label htmlFor="startDate">Tanggal Mulai</Label>
-                        <Input
-                          id="startDate"
-                          type="date"
-                          value={programForm.startDate || ""}
-                          onChange={(e) =>
-                            setProgramForm((prev) => ({
-                              ...prev,
-                              startDate: e.target.value,
-                            }))
-                          }
-                        />
-                      </div>
-                      <div className="grid gap-2">
-                        <Label htmlFor="endDate">Tanggal Selesai</Label>
-                        <Input
-                          id="endDate"
-                          type="date"
-                          value={programForm.endDate || ""}
-                          onChange={(e) =>
-                            setProgramForm((prev) => ({
-                              ...prev,
-                              endDate: e.target.value,
-                            }))
-                          }
-                        />
-                      </div>
-                    </div>
-                    <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                      <div className="grid gap-2">
-                        <Label htmlFor="budget">Anggaran (Rp)</Label>
-                        <Input
-                          id="budget"
-                          type="number"
-                          value={programForm.budget || ""}
-                          onChange={(e) =>
-                            setProgramForm((prev) => ({
-                              ...prev,
-                              budget: parseInt(e.target.value) || 0,
-                            }))
-                          }
-                          placeholder="500000000"
-                        />
-                      </div>
-                      <div className="grid gap-2">
-                        <Label htmlFor="status">Status</Label>
-                        <Select
-                          value={programForm.status || ""}
-                          onValueChange={(value: Program["status"]) =>
-                            setProgramForm((prev) => ({
-                              ...prev,
-                              status: value,
-                            }))
-                          }
-                        >
-                          <SelectTrigger>
-                            <SelectValue placeholder="Pilih status" />
-                          </SelectTrigger>
-                          <SelectContent>
-                            <SelectItem value="Berlangsung">
-                              Berlangsung
-                            </SelectItem>
-                            <SelectItem value="Selesai">Selesai</SelectItem>
-                            <SelectItem value="Tertunda">Tertunda</SelectItem>
-                            <SelectItem value="Perencanaan">
-                              Perencanaan
-                            </SelectItem>
-                          </SelectContent>
-                        </Select>
-                      </div>
-                    </div>
-                    <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-                      <div className="grid gap-2">
-                        <Label htmlFor="targetBeneficiaries">
-                          Target Penerima Manfaat
-                        </Label>
-                        <Input
-                          id="targetBeneficiaries"
-                          type="number"
-                          value={programForm.targetBeneficiaries || ""}
-                          onChange={(e) =>
-                            setProgramForm((prev) => ({
-                              ...prev,
-                              targetBeneficiaries:
-                                parseInt(e.target.value) || 0,
-                            }))
-                          }
-                          placeholder="1000"
-                        />
-                      </div>
-                      <div className="grid gap-2">
-                        <Label htmlFor="currentBeneficiaries">
-                          Penerima Manfaat Saat Ini
-                        </Label>
-                        <Input
-                          id="currentBeneficiaries"
-                          type="number"
-                          value={programForm.currentBeneficiaries || ""}
-                          onChange={(e) =>
-                            setProgramForm((prev) => ({
-                              ...prev,
-                              currentBeneficiaries:
-                                parseInt(e.target.value) || 0,
-                            }))
-                          }
-                          placeholder="750"
-                        />
-                      </div>
-                      <div className="grid gap-2">
-                        <Label htmlFor="progress">Progress (%)</Label>
-                        <Input
-                          id="progress"
-                          type="number"
-                          min="0"
-                          max="100"
-                          value={programForm.progress || ""}
-                          onChange={(e) =>
-                            setProgramForm((prev) => ({
-                              ...prev,
-                              progress: parseInt(e.target.value) || 0,
-                            }))
-                          }
-                          placeholder="75"
-                        />
-                      </div>
-                    </div>
-                  </div>
-                  <div className="flex justify-end gap-2">
-                    <Button
-                      variant="outline"
-                      onClick={() => {
-                        setProgramForm({});
-                        setEditingProgram(null);
-                        setIsProgramDialogOpen(false);
-                      }}
-                    >
-                      Batal
-                    </Button>
-                    <Button onClick={handleSaveProgram}>
-                      {editingProgram ? "Update" : "Simpan"}
-                    </Button>
-                  </div>
-                </DialogContent>
-              </Dialog>
-            </div>
-
-            <div className="grid gap-4">
-              {programs.map((program) => (
-                <Card
-                  key={program.id}
-                  className="border border-gray-200 shadow-md hover:shadow-lg transition-shadow duration-200 rounded-2xl"
-                >
-                  <Collapsible>
-                    <CollapsibleTrigger asChild>
-                      <CardHeader className="cursor-pointer hover:bg-gradient-to-r hover:from-[#001B55]/5 hover:to-[#FF9C04]/5 transition-all duration-200 border-b border-gray-100 rounded-t-2xl">
-                        <div className="flex justify-between items-start">
-                          <div className="flex-1">
-                            <div className="flex items-center justify-between mb-3">
-                              <CardTitle className="text-lg text-[#001B55] flex items-center gap-3">
-                                <div className="w-3 h-3 bg-[#FF9C04] rounded-full shadow-sm"></div>
-                                <span className="font-bold">{program.name}</span>
-                              </CardTitle>
-                              <div className="flex items-center gap-2">
-                                {getStatusBadge(program.status)}
-                                <ChevronDown className="w-4 h-4 transition-transform text-[#FF9C04]" />
-                              </div>
-                            </div>
-                            <p className="text-muted-foreground text-sm mb-3">
-                              {program.description}
-                            </p>
-                            <div className="flex items-center gap-4 text-sm">
-                              <span className="flex items-center gap-1 text-[#001B55]">
-                                <Target className="w-4 h-4 text-[#FF9C04]" />
-                                {program.target}
-                              </span>
-                              <span className="text-[#FF9C04] font-semibold">
-                                {program.progress}% tercapai
-                              </span>
-                              <span className="text-muted-foreground">
-                                Timeline: {program.timeline}
-                              </span>
-                            </div>
-                          </div>
-                        </div>
-                      </CardHeader>
-                    </CollapsibleTrigger>
-                    <CollapsibleContent>
-                      <CardContent className="pt-0">
-                        <div className="grid gap-4 border-t border-gray-200 pt-4">
-                          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                            <div>
-                              <h4 className="font-semibold mb-2 flex items-center gap-2 text-[#001B55]">
-                                <div className="p-1 bg-[#FF9C04]/10 rounded">
-                                  <TrendingUp className="w-4 h-4 text-[#FF9C04]" />
-                                </div>
-                                Status & Progress
-                              </h4>
-                              <div className="space-y-3 bg-gray-50 p-3 rounded-lg">
-                                <div className="flex justify-between items-center">
-                                  <span className="text-sm font-medium">
-                                    Status:
-                                  </span>
-                                  {getStatusBadge(program.status)}
-                                </div>
-                                <div>
-                                  <div className="flex justify-between text-sm mb-2">
-                                    <span className="font-medium">
-                                      Progress
-                                    </span>
-                                    <span className="text-[#FF9C04] font-bold">
-                                      {program.progress}%
-                                    </span>
-                                  </div>
-                                  <Progress
-                                    value={program.progress}
-                                    className="h-3 bg-gray-200"
-                                  />
-                                </div>
-                                <div className="flex justify-between text-sm">
-                                  <span className="font-medium">
-                                    Penerima Manfaat:
-                                  </span>
-                                  <span className="text-[#001B55]">
-                                    {program.currentBeneficiaries} /{" "}
-                                    {program.targetBeneficiaries}
-                                  </span>
-                                </div>
-                                <div className="flex justify-between text-sm">
-                                  <span className="font-medium">Anggaran:</span>
-                                  <span className="text-[#001B55] font-semibold">
-                                    {formatCurrency(program.budget)}
-                                  </span>
-                                </div>
-                                {program.coordinator && (
-                                  <div className="flex justify-between text-sm">
-                                    <span className="font-medium">
-                                      Koordinator:
-                                    </span>
-                                    <span className="text-[#001B55]">
-                                      {program.coordinator}
-                                    </span>
-                                  </div>
-                                )}
-                              </div>
-                            </div>
-                            <div>
-                              <h4 className="font-semibold mb-2 text-[#001B55]">
-                                Detail Program:
-                              </h4>
-                              <ul className="space-y-2 text-sm bg-gray-50 p-3 rounded-lg">
-                                {program.details.map((detail, index) => (
-                                  <li
-                                    key={index}
-                                    className="flex items-start gap-2"
-                                  >
-                                    <span className="w-2 h-2 bg-[#FF9C04] rounded-full mt-1.5 flex-shrink-0"></span>
-                                    {detail}
-                                  </li>
-                                ))}
-                              </ul>
-                            </div>
-                          </div>
-                          <div>
-                            <h4 className="font-semibold mb-2">
-                              Capaian Terkini:
-                            </h4>
-                            <ul className="space-y-1 text-sm text-muted-foreground">
-                              {program.achievements.map(
-                                (achievement, index) => (
-                                  <li
-                                    key={index}
-                                    className="flex items-start gap-2"
-                                  >
-                                    <span className="w-1.5 h-1.5 bg-[#FF9C04] rounded-full mt-2 flex-shrink-0"></span>
-                                    {achievement}
-                                  </li>
-                                )
-                              )}
-                            </ul>
-                          </div>
-                          <div className="flex justify-end gap-2 pt-4 border-t border-gray-200">
-                            <Button
-                              className="bg-[#001B55] hover:bg-[#FF9C04] text-white font-semibold shadow-md hover:shadow-lg transition-all duration-200"
-                              size="sm"
-                              onClick={() => handleEditProgram(program)}
-                            >
-                              <Edit className="w-4 h-4 mr-2" />
-                              Edit
-                            </Button>
-                            <Button
-                              className="bg-[#C81E1E] hover:bg-[#C81E1E]/90 text-white font-semibold shadow-md hover:shadow-lg transition-all duration-200"
-                              size="sm"
-                              onClick={() => handleDeleteProgram(program.id)}
-                            >
-                              <Trash2 className="w-4 h-4 mr-2" />
-                              Hapus
-                            </Button>
-                          </div>
-                        </div>
-                      </CardContent>
-                    </CollapsibleContent>
-                  </Collapsible>
-                </Card>
-              ))}
-            </div>
           </TabsContent>
 
           {/* Contact Tab */}

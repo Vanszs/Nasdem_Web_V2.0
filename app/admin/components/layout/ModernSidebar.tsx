@@ -17,6 +17,8 @@ import {
   FolderKanban,
   UserPlus,
   Sparkles,
+  ClipboardList,
+  HandHeart,
 } from "lucide-react";
 
 import { SafeNavLink } from "./SafeNavLink";
@@ -46,11 +48,31 @@ const menuItems = [
         icon: Image,
         ariaLabel: "Kelola galeri foto dan video",
       },
+    ],
+  },
+  {
+    title: "Landing Page",
+    url: "/admin/landing",
+    icon: Globe,
+    ariaLabel: "Edit halaman landing",
+  },
+  {
+    title: "Program Kerja",
+    icon: ClipboardList,
+    isCollapsible: true,
+    ariaLabel: "Menu Program Kerja",
+    subItems: [
       {
-        title: "Landing Page",
-        url: "/admin/landing",
-        icon: Globe,
-        ariaLabel: "Edit halaman landing",
+        title: "Daftar Program",
+        url: "/admin/programs",
+        icon: ClipboardList,
+        ariaLabel: "Kelola program kerja",
+      },
+      {
+        title: "Penerima Manfaat",
+        url: "/admin/beneficiaries",
+        icon: HandHeart,
+        ariaLabel: "Kelola penerima manfaat program",
       },
     ],
   },

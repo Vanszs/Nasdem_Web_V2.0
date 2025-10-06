@@ -54,6 +54,12 @@ enum ElectionType {
   dprd
 }
 
+enum RegistrationStatus {
+  pending
+  approved
+  rejected
+}
+
 // ---------------------------
 // Core CMS
 // ---------------------------
@@ -138,6 +144,8 @@ model Program {
 
   userId Int?
   user   User? @relation(fields: [userId], references: [id], onDelete: SetNull, onUpdate: Cascade)
+
+  beneficiaries Registration[]
 
   @@index([categoryId])
   @@index([userId])
@@ -240,6 +248,8 @@ model Member {
   parentDprtMemberId Int?
   parentDprtMember   Member?  @relation("MemberCadres", fields: [parentDprtMemberId], references: [id], onDelete: SetNull, onUpdate: Cascade)
   cadres             Member[] @relation("MemberCadres")
+
+  registration Registration?
 
   @@index([status])
   @@index([userId])
