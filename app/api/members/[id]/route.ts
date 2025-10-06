@@ -21,22 +21,26 @@ export async function GET(
   // Add authentication check - was missing before!
   const authError = requireAuth(req);
   if (authError) return authError;
-  
-  const roleError = requireRole(req, [UserRole.EDITOR, UserRole.SUPERADMIN, UserRole.ANALYST]);
+
+  const roleError = requireRole(req, [
+    UserRole.EDITOR,
+    UserRole.SUPERADMIN,
+    UserRole.ANALYST,
+  ]);
   if (roleError) return roleError;
 
   try {
     const memberId = validateId(params.id);
-    
+
     const member = await SoftDeleteHelper.findMemberById(memberId);
-    
+
     if (!member) {
       return NextResponse.json(
         { success: false, error: "Member not found" },
         { status: 404 }
       );
     }
-    
+
     // Include related data
     const memberWithRelations = await db.member.findUnique({
       where: { id: memberId },
@@ -45,11 +49,11 @@ export async function GET(
           include: {
             sayapType: true,
             region: true,
-          }
-        }
+          },
+        },
       },
     });
-    
+
     return NextResponse.json({ success: true, data: memberWithRelations });
   } catch (err: any) {
     console.error("Error fetching member:", err);
@@ -72,25 +76,29 @@ export async function PUT(
 ) {
   const authError = requireAuth(req);
   if (authError) return authError;
-  
+
   const roleError = requireRole(req, [UserRole.EDITOR, UserRole.SUPERADMIN]);
   if (roleError) return roleError;
-  
+
   try {
     const memberId = validateId(params.id);
     const body = await req.json();
-    
+
     // Validate input
     const validation = validateRequest(memberSchemas.update, body);
     if (!validation.success) {
       return NextResponse.json(
-        { success: false, error: validation.error, details: validation.details },
+        {
+          success: false,
+          error: validation.error,
+          details: validation.details,
+        },
         { status: 400 }
       );
     }
-    
+
     const data = validation.data;
-    
+
     // Check if member exists
     const existingMember = await SoftDeleteHelper.findMemberById(memberId);
     if (!existingMember) {
@@ -99,18 +107,15 @@ export async function PUT(
         { status: 404 }
       );
     }
-    
+
     // Check for duplicate email if provided
     if (data.email) {
       const duplicateMember = await db.member.findFirst({
         where: {
-          AND: [
-            { email: data.email },
-            { id: { not: memberId } }
-          ]
-        }
+          AND: [{ email: data.email }, { id: { not: memberId } }],
+        },
       });
-      
+
       if (duplicateMember) {
         return NextResponse.json(
           { success: false, error: "Member with this email already exists" },
@@ -118,7 +123,7 @@ export async function PUT(
         );
       }
     }
-    
+
     const updated = await db.member.update({
       where: { id: memberId },
       data: {
@@ -137,7 +142,7 @@ export async function PUT(
       },
       include: { struktur: true },
     });
-    
+
     return NextResponse.json({ success: true, data: updated });
   } catch (err: any) {
     console.error("Error updating member:", err);
@@ -160,13 +165,13 @@ export async function DELETE(
 ) {
   const authError = requireAuth(req);
   if (authError) return authError;
-  
+
   const roleError = requireRole(req, [UserRole.EDITOR, UserRole.SUPERADMIN]);
   if (roleError) return roleError;
-  
+
   try {
     const memberId = validateId(params.id);
-    
+
     // Check if member exists
     const existingMember = await SoftDeleteHelper.findMemberById(memberId);
     if (!existingMember) {
@@ -175,13 +180,13 @@ export async function DELETE(
         { status: 404 }
       );
     }
-    
+
     // Delete the member (hard delete for now)
     await SoftDeleteHelper.softDeleteMember(memberId);
-    
+
     return NextResponse.json({
       success: true,
-      message: "Member deleted successfully"
+      message: "Member deleted successfully",
     });
   } catch (err: any) {
     console.error("Error deleting member:", err);
