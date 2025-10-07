@@ -244,97 +244,93 @@ export default function BeneficiariesPage() {
     >
       <div className="space-y-8">
         {/* Statistics Cards */}
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
-          <Card className="rounded-3xl border-2 border-gray-100 shadow-xl hover:shadow-2xl transition-all duration-300">
-            <CardHeader className="pb-3">
-              <div className="flex items-center justify-between">
-                <CardDescription className="text-gray-600 font-medium">
-                  Total Penerima
-                </CardDescription>
-                <div className="p-3 bg-gradient-to-br from-[#001B55]/10 to-[#001B55]/5 rounded-2xl">
-                  <Users className="w-6 h-6 text-[#001B55]" />
-                </div>
+        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
+          <div
+            role="status"
+            aria-label="KPI Total Penerima"
+            className="rounded-xl bg-card shadow-sm p-5 border border-border hover:shadow-md transition-all duration-200 flex flex-col gap-3"
+          >
+            <div className="flex items-center justify-between">
+              <span className="text-sm text-text-secondary font-medium">
+                Total Penerima
+              </span>
+              <div className="w-10 h-10 rounded-lg bg-muted flex items-center justify-center">
+                <Users className="w-5 h-5 text-brand-primary" />
               </div>
-            </CardHeader>
-            <CardContent>
-              <CardTitle className="text-4xl font-bold text-[#001B55] mb-2">
-                {stats.total}
-              </CardTitle>
-              <p className="text-sm text-gray-500">Penerima manfaat terdaftar</p>
-            </CardContent>
-          </Card>
+            </div>
+            <div className="text-num font-semibold text-text-primary">
+              {stats.total}
+            </div>
+          </div>
 
-          <Card className="rounded-3xl border-2 border-gray-100 shadow-xl hover:shadow-2xl transition-all duration-300">
-            <CardHeader className="pb-3">
-              <div className="flex items-center justify-between">
-                <CardDescription className="text-gray-600 font-medium">
-                  Status Aktif
-                </CardDescription>
-                <div className="p-3 bg-gradient-to-br from-[#001B55]/10 to-[#001B55]/5 rounded-2xl">
-                  <CheckCircle className="w-6 h-6 text-[#001B55]" />
-                </div>
+          <div
+            role="status"
+            aria-label="KPI Status Aktif"
+            className="rounded-xl bg-card shadow-sm p-5 border border-border hover:shadow-md transition-all duration-200 flex flex-col gap-3"
+          >
+            <div className="flex items-center justify-between">
+              <span className="text-sm text-text-secondary font-medium">
+                Status Aktif
+              </span>
+              <div className="w-10 h-10 rounded-lg bg-muted flex items-center justify-center">
+                <CheckCircle className="w-5 h-5 text-brand-primary" />
               </div>
-            </CardHeader>
-            <CardContent>
-              <CardTitle className="text-4xl font-bold text-[#001B55] mb-2">
-                {stats.active}
-              </CardTitle>
-              <p className="text-sm text-gray-500">Sedang menerima manfaat</p>
-            </CardContent>
-          </Card>
+            </div>
+            <div className="text-num font-semibold text-text-primary">
+              {stats.active}
+            </div>
+          </div>
 
-          <Card className="rounded-3xl border-2 border-gray-100 shadow-xl hover:shadow-2xl transition-all duration-300">
-            <CardHeader className="pb-3">
-              <div className="flex items-center justify-between">
-                <CardDescription className="text-gray-600 font-medium">
-                  Menunggu
-                </CardDescription>
-                <div className="p-3 bg-gradient-to-br from-[#FF9C04]/10 to-[#FF9C04]/5 rounded-2xl">
-                  <Clock className="w-6 h-6 text-[#FF9C04]" />
-                </div>
+          <div
+            role="status"
+            aria-label="KPI Menunggu"
+            className="rounded-xl bg-card shadow-sm p-5 border border-border hover:shadow-md transition-all duration-200 flex flex-col gap-3"
+          >
+            <div className="flex items-center justify-between">
+              <span className="text-sm text-text-secondary font-medium">
+                Menunggu
+              </span>
+              <div className="w-10 h-10 rounded-lg bg-[#FF9C04]/10 flex items-center justify-center">
+                <Clock className="w-5 h-5 text-[#FF9C04]" />
               </div>
-            </CardHeader>
-            <CardContent>
-              <CardTitle className="text-4xl font-bold text-[#FF9C04] mb-2">
-                {stats.waiting}
-              </CardTitle>
-              <p className="text-sm text-gray-500">Proses verifikasi</p>
-            </CardContent>
-          </Card>
+            </div>
+            <div className="text-num font-semibold text-[#FF9C04]">
+              {stats.waiting}
+            </div>
+          </div>
 
-          <Card className="rounded-3xl border-2 border-gray-100 shadow-xl hover:shadow-2xl transition-all duration-300">
-            <CardHeader className="pb-3">
-              <div className="flex items-center justify-between">
-                <CardDescription className="text-gray-600 font-medium">
-                  Selesai
-                </CardDescription>
-                <div className="p-3 bg-gradient-to-br from-green-500/10 to-green-500/5 rounded-2xl">
-                  <TrendingUp className="w-6 h-6 text-green-600" />
-                </div>
+          <div
+            role="status"
+            aria-label="KPI Selesai"
+            className="rounded-xl bg-card shadow-sm p-5 border border-border hover:shadow-md transition-all duration-200 flex flex-col gap-3"
+          >
+            <div className="flex items-center justify-between">
+              <span className="text-sm text-text-secondary font-medium">
+                Selesai
+              </span>
+              <div className="w-10 h-10 rounded-lg bg-brand-success/10 flex items-center justify-center">
+                <TrendingUp className="w-5 h-5 text-brand-success" />
               </div>
-            </CardHeader>
-            <CardContent>
-              <CardTitle className="text-4xl font-bold text-green-600 mb-2">
-                {stats.completed}
-              </CardTitle>
-              <p className="text-sm text-gray-500">Program selesai diikuti</p>
-            </CardContent>
-          </Card>
+            </div>
+            <div className="text-num font-semibold text-brand-success">
+              {stats.completed}
+            </div>
+          </div>
         </div>
 
         {/* Filters and Actions */}
-        <Card className="rounded-3xl border-2 border-gray-100 shadow-xl">
+        <Card className="rounded-xl border border-[#E8F9FF] shadow-sm">
           <CardHeader>
             <div className="flex flex-col lg:flex-row lg:items-center lg:justify-between gap-4">
               <div className="flex items-center gap-3">
-                <div className="p-3 bg-gradient-to-br from-[#001B55]/10 to-[#001B55]/5 rounded-2xl">
-                  <HandHeart className="w-6 h-6 text-[#001B55]" />
+                <div className="w-10 h-10 rounded-lg bg-[#E8F9FF] flex items-center justify-center">
+                  <HandHeart className="w-5 h-5 text-[#001B55]" />
                 </div>
                 <div>
-                  <CardTitle className="text-2xl font-bold text-[#001B55]">
+                  <CardTitle className="text-xl font-semibold text-[#001B55]">
                     Daftar Penerima Manfaat
                   </CardTitle>
-                  <CardDescription className="text-gray-600">
+                  <CardDescription className="text-sm text-[#475569]">
                     {filteredBeneficiaries.length} penerima manfaat ditemukan
                   </CardDescription>
                 </div>
@@ -344,7 +340,7 @@ export default function BeneficiariesPage() {
                 <Button
                   onClick={handleExport}
                   variant="outline"
-                  className="rounded-full border-2 border-[#001B55]/20 hover:bg-[#001B55]/5 text-[#001B55] font-semibold"
+                  className="rounded-lg border border-[#C4D9FF] hover:bg-[#E8F9FF] text-[#001B55] font-medium"
                 >
                   <Download className="w-4 h-4 mr-2" />
                   Export Data
@@ -354,7 +350,7 @@ export default function BeneficiariesPage() {
                     setSelectedBeneficiary(null);
                     setIsDialogOpen(true);
                   }}
-                  className="rounded-full bg-gradient-to-r from-[#001B55] to-[#001B55]/90 hover:from-[#FF9C04] hover:to-[#FF9C04]/90 text-white font-semibold shadow-lg hover:shadow-xl transition-all duration-300"
+                  className="rounded-lg bg-[#001B55] hover:bg-[#001B55]/90 text-white font-medium shadow-sm"
                 >
                   <Plus className="w-4 h-4 mr-2" />
                   Tambah Penerima Manfaat
@@ -367,17 +363,17 @@ export default function BeneficiariesPage() {
             {/* Search and Filters */}
             <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
               <div className="relative">
-                <Search className="absolute left-4 top-1/2 -translate-y-1/2 w-5 h-5 text-gray-400" />
+                <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-400" />
                 <Input
                   placeholder="Cari nama, NIK, email, atau telepon..."
                   value={searchTerm}
                   onChange={(e) => setSearchTerm(e.target.value)}
-                  className="pl-12 h-14 rounded-xl border-2 focus:border-[#FF9C04] transition-all"
+                  className="pl-10 h-10 rounded-lg border border-[#C4D9FF] focus:border-[#C5BAFF] transition-all"
                 />
               </div>
 
               <Select value={filterStatus} onValueChange={setFilterStatus}>
-                <SelectTrigger className="h-14 rounded-xl border-2 focus:border-[#FF9C04]">
+                <SelectTrigger className="h-10 rounded-lg border border-[#C4D9FF] focus:border-[#C5BAFF]">
                   <div className="flex items-center gap-2">
                     <Filter className="w-4 h-4" />
                     <SelectValue placeholder="Filter Status" />
@@ -393,7 +389,7 @@ export default function BeneficiariesPage() {
               </Select>
 
               <Select value={filterProgram} onValueChange={setFilterProgram}>
-                <SelectTrigger className="h-14 rounded-xl border-2 focus:border-[#FF9C04]">
+                <SelectTrigger className="h-10 rounded-lg border border-[#C4D9FF] focus:border-[#C5BAFF]">
                   <div className="flex items-center gap-2">
                     <Filter className="w-4 h-4" />
                     <SelectValue placeholder="Filter Program" />
@@ -411,29 +407,29 @@ export default function BeneficiariesPage() {
             </div>
 
             {/* Table */}
-            <div className="rounded-2xl border-2 border-gray-100 overflow-hidden">
+            <div className="rounded-lg border border-[#E8F9FF] overflow-hidden">
               <Table>
-                <TableHeader className="bg-gray-200">
-                  <TableRow className="hover:bg-gray-200">
-                    <TableHead className="font-bold text-[#001B55]">
+                <TableHeader className="bg-[#E8F9FF]">
+                  <TableRow className="hover:bg-[#E8F9FF]">
+                    <TableHead className="font-semibold text-[#001B55]">
                       Nama Lengkap
                     </TableHead>
-                    <TableHead className="font-bold text-[#001B55]">
+                    <TableHead className="font-semibold text-[#001B55]">
                       NIK
                     </TableHead>
-                    <TableHead className="font-bold text-[#001B55]">
+                    <TableHead className="font-semibold text-[#001B55]">
                       Kontak
                     </TableHead>
-                    <TableHead className="font-bold text-[#001B55]">
+                    <TableHead className="font-semibold text-[#001B55]">
                       Program
                     </TableHead>
-                    <TableHead className="font-bold text-[#001B55]">
+                    <TableHead className="font-semibold text-[#001B55]">
                       Status
                     </TableHead>
-                    <TableHead className="font-bold text-[#001B55]">
+                    <TableHead className="font-semibold text-[#001B55]">
                       Terdaftar
                     </TableHead>
-                    <TableHead className="font-bold text-[#001B55] text-right">
+                    <TableHead className="font-semibold text-[#001B55] text-right">
                       Aksi
                     </TableHead>
                   </TableRow>
@@ -452,8 +448,8 @@ export default function BeneficiariesPage() {
                     filteredBeneficiaries.map((beneficiary, index) => (
                       <TableRow
                         key={beneficiary.id}
-                        className={`hover:bg-gray-100 transition-colors ${
-                          index % 2 === 0 ? "bg-white" : "bg-gray-50"
+                        className={`hover:bg-[#F0F6FF] transition-colors ${
+                          index % 2 === 0 ? "bg-white" : "bg-[#E8F9FF]/30"
                         }`}
                       >
                         <TableCell className="font-semibold text-[#001B55]">
@@ -495,7 +491,7 @@ export default function BeneficiariesPage() {
                               size="sm"
                               variant="outline"
                               onClick={() => handleView(beneficiary)}
-                              className="rounded-full border-[#001B55]/20 hover:bg-[#001B55]/5 text-[#001B55]"
+                              className="rounded-lg border-[#C4D9FF] hover:bg-[#E8F9FF] text-[#001B55]"
                             >
                               <Eye className="w-4 h-4" />
                             </Button>
@@ -503,7 +499,7 @@ export default function BeneficiariesPage() {
                               size="sm"
                               variant="outline"
                               onClick={() => handleEdit(beneficiary)}
-                              className="rounded-full border-[#001B55]/20 hover:bg-[#001B55]/5 text-[#001B55]"
+                              className="rounded-lg border-[#C4D9FF] hover:bg-[#E8F9FF] text-[#001B55]"
                             >
                               <Edit className="w-4 h-4" />
                             </Button>
@@ -511,7 +507,7 @@ export default function BeneficiariesPage() {
                               size="sm"
                               variant="outline"
                               onClick={() => handleDelete(beneficiary.id)}
-                              className="rounded-full border-[#C81E1E]/20 hover:bg-[#C81E1E]/5 text-[#C81E1E]"
+                              className="rounded-lg border-[#F87171]/20 hover:bg-[#F87171]/5 text-[#F87171]"
                             >
                               <Trash2 className="w-4 h-4" />
                             </Button>
@@ -528,11 +524,11 @@ export default function BeneficiariesPage() {
 
         {/* View Detail Dialog */}
         <Dialog open={isViewDialogOpen} onOpenChange={setIsViewDialogOpen}>
-          <DialogContent className="max-w-2xl rounded-3xl">
+          <DialogContent className="max-w-2xl rounded-xl">
             <DialogHeader>
-              <DialogTitle className="text-2xl font-bold text-[#001B55] flex items-center gap-3">
-                <div className="p-2 bg-[#001B55]/10 rounded-xl">
-                  <Eye className="w-6 h-6 text-[#001B55]" />
+              <DialogTitle className="text-xl font-semibold text-[#001B55] flex items-center gap-3">
+                <div className="w-10 h-10 bg-[#E8F9FF] rounded-lg flex items-center justify-center">
+                  <Eye className="w-5 h-5 text-[#001B55]" />
                 </div>
                 Detail Penerima Manfaat
               </DialogTitle>
@@ -677,11 +673,11 @@ export default function BeneficiariesPage() {
 
         {/* Add/Edit Dialog */}
         <Dialog open={isDialogOpen} onOpenChange={setIsDialogOpen}>
-          <DialogContent className="max-w-3xl rounded-3xl max-h-[90vh] overflow-y-auto">
+          <DialogContent className="max-w-3xl rounded-xl max-h-[90vh] overflow-y-auto">
             <DialogHeader>
-              <DialogTitle className="text-2xl font-bold text-[#001B55] flex items-center gap-3">
-                <div className="p-2 bg-[#001B55]/10 rounded-xl">
-                  <Plus className="w-6 h-6 text-[#001B55]" />
+              <DialogTitle className="text-xl font-semibold text-[#001B55] flex items-center gap-3">
+                <div className="w-10 h-10 bg-[#E8F9FF] rounded-lg flex items-center justify-center">
+                  <Plus className="w-5 h-5 text-[#001B55]" />
                 </div>
                 {selectedBeneficiary
                   ? "Edit Penerima Manfaat"
@@ -690,11 +686,11 @@ export default function BeneficiariesPage() {
             </DialogHeader>
 
             <div className="py-6">
-              <div className="p-6 bg-gradient-to-r from-[#FF9C04]/10 to-[#FF9C04]/5 rounded-2xl border-2 border-[#FF9C04]/20">
+              <div className="p-6 bg-[#FF9C04]/10 rounded-lg border border-[#FF9C04]/20">
                 <p className="text-[#001B55] font-semibold text-center">
                   🚧 Fitur ini akan segera tersedia
                 </p>
-                <p className="text-gray-600 text-sm text-center mt-2">
+                <p className="text-[#475569] text-sm text-center mt-2">
                   Saat ini masih menggunakan mock data untuk testing UI
                 </p>
               </div>

@@ -2,10 +2,11 @@
 
 import { useState, useEffect, useRef, KeyboardEvent } from "react";
 import { usePathname } from "next/navigation";
+import Image from "next/image";
 import {
   LayoutDashboard,
   FileText,
-  Image,
+  Image as ImageIcon,
   Users,
   Plus,
   BarChart3,
@@ -45,7 +46,7 @@ const menuItems = [
       {
         title: "Galeri",
         url: "/admin/gallery",
-        icon: Image,
+        icon: ImageIcon,
         ariaLabel: "Kelola galeri foto dan video",
       },
     ],
@@ -203,11 +204,18 @@ export function ModernSidebar({
             className={`flex items-center gap-3 ${isCollapsed ? "flex-col" : ""}`}
           >
             <div
-              className="relative w-11 h-11 rounded-xl flex items-center justify-center bg-white border-2 border-[#001B55]/20 shadow-sm"
+              className="relative w-11 h-11 rounded-xl flex items-center justify-center bg-white border-2 border-[#001B55]/20 shadow-sm overflow-hidden"
               role="img"
               aria-label="Logo NasDem Sidoarjo"
             >
-              <Sparkles className="text-[#001B55] w-5 h-5 z-10" />
+              <Image
+                src="/logo-nasdem.png"
+                alt="Logo NasDem"
+                width={36}
+                height={36}
+                className="object-contain"
+                priority
+              />
             </div>
             {!isCollapsed && (
               <div className="space-y-0.5">
@@ -275,19 +283,12 @@ export function ModernSidebar({
                       isCollapsed ? "justify-center px-0" : "gap-3 px-3"
                     } py-2.5 rounded-lg font-medium transition-all duration-200 focus:outline-none focus:ring-2 focus:ring-[#001B55]/30 focus:ring-offset-1 ${
                       isGroupActive(item.subItems)
-                        ? "bg-white text-[#001B55] border-l-3 border-[#001B55]/30 shadow-sm"
+                        ? "bg-gray-200 text-[#001B55] shadow-sm"
                         : "text-gray-600 hover:bg-gray-50 hover:text-[#001B55]"
                     }`}
                     aria-label={item.ariaLabel}
                     aria-expanded={openGroups.includes(item.title)}
                   >
-                    {isGroupActive(item.subItems) && !isCollapsed && (
-                      <div
-                        className="absolute left-0 top-0 bottom-0 w-1 bg-[#001B55]/30 rounded-r"
-                        aria-hidden="true"
-                      />
-                    )}
-
                     <div
                       className={`relative z-10 flex items-center ${
                         isCollapsed ? "" : "gap-3 w-full"
@@ -368,19 +369,12 @@ export function ModernSidebar({
                       isCollapsed ? "justify-center px-0" : "gap-3 px-3"
                     } py-2.5 rounded-lg font-medium transition-all duration-200 focus:outline-none focus:ring-2 focus:ring-[#001B55]/30 focus:ring-offset-1 ${
                       isActive(item.url ?? "")
-                        ? "bg-white text-[#001B55] border-l-3 border-[#001B55]/30 shadow-sm"
+                        ? "bg-gray-200 text-[#001B55] shadow-sm"
                         : "text-gray-600 hover:bg-gray-50 hover:text-[#001B55]"
                     }`}
                     aria-label={item.ariaLabel}
                     aria-current={isActive(item.url ?? "") ? "page" : undefined}
                   >
-                    {isActive(item.url ?? "") && !isCollapsed && (
-                      <div
-                        className="absolute left-0 top-0 bottom-0 w-1 bg-[#001B55]/30 rounded-r"
-                        aria-hidden="true"
-                      />
-                    )}
-
                     <div
                       className={`relative z-10 flex items-center ${
                         isCollapsed ? "" : "gap-3 w-full"
