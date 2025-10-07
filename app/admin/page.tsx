@@ -74,48 +74,48 @@ const monthlyContentData = [
   },
 ];
 
-const trendData = [
+const memberGrowthData = [
   {
     month: "Januari",
-    "Total Views": 2400,
-    Berita: 1200,
-    Galeri: 800,
-    Program: 400,
+    "Total Anggota": 120,
+    "DPC": 35,
+    "DPRT": 45,
+    "Kader": 40,
   },
   {
     month: "Februari",
-    "Total Views": 3200,
-    Berita: 1600,
-    Galeri: 1000,
-    Program: 600,
+    "Total Anggota": 135,
+    "DPC": 38,
+    "DPRT": 52,
+    "Kader": 45,
   },
   {
     month: "Maret",
-    "Total Views": 4100,
-    Berita: 2000,
-    Galeri: 1300,
-    Program: 800,
+    "Total Anggota": 148,
+    "DPC": 42,
+    "DPRT": 58,
+    "Kader": 48,
   },
   {
     month: "April",
-    "Total Views": 5300,
-    Berita: 2500,
-    Galeri: 1800,
-    Program: 1000,
+    "Total Anggota": 162,
+    "DPC": 45,
+    "DPRT": 65,
+    "Kader": 52,
   },
   {
     month: "Mei",
-    "Total Views": 6200,
-    Berita: 3000,
-    Galeri: 2000,
-    Program: 1200,
+    "Total Anggota": 178,
+    "DPC": 48,
+    "DPRT": 72,
+    "Kader": 58,
   },
   {
     month: "Juni",
-    "Total Views": 7500,
-    Berita: 3800,
-    Galeri: 2400,
-    Program: 1300,
+    "Total Anggota": 195,
+    "DPC": 52,
+    "DPRT": 80,
+    "Kader": 63,
   },
 ];
 
@@ -280,20 +280,20 @@ export default function AdminDashboard() {
               </ChartCard>
 
               <ChartCard
-                title="Trend Aktivitas"
-                subtitle="Views dan engagement per kategori"
+                title="Pertumbuhan Anggota"
+                subtitle="Perkembangan keanggotaan per level organisasi"
               >
                 <LineTrendChart
-                  data={trendData}
+                  data={memberGrowthData}
                   dataKeyX="month"
                   series={[
-                    { key: "Total Views", color: "#E7B7A5" },
-                    { key: "Berita", color: "#C3A46B" },
-                    { key: "Galeri", color: "#6EC4B3" },
-                    { key: "Program", color: "#B7B7F0" },
+                    { key: "Total Anggota", color: "#C5BAFF" },
+                    { key: "DPC", color: "#C4D9FF" },
+                    { key: "DPRT", color: "#E8F9FF" },
+                    { key: "Kader", color: "#FF9C04" },
                   ]}
                   height={260}
-                  currency="IDR"
+                  useNumber={true}
                 />
               </ChartCard>
             </>
