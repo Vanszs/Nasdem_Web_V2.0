@@ -14,6 +14,7 @@ import {
   RefreshCw,
   Calendar,
   Clock,
+  ImageIcon,
 } from "lucide-react";
 import {
   Table,
@@ -64,22 +65,22 @@ const statusConfig = {
   DRAFT: {
     label: "Draft",
     className:
-      "bg-gradient-to-r from-gray-50 to-gray-100 text-gray-700 border-2 border-gray-200 hover:border-gray-300 font-semibold px-4 py-1.5 rounded-full shadow-sm text-xs",
+      "inline-flex items-center gap-1.5 bg-gray-100 text-gray-700 border border-gray-300 font-medium px-3 py-1 rounded-md text-xs",
   },
   SCHEDULED: {
     label: "Terjadwal",
     className:
-      "bg-gradient-to-r from-[#FF9C04]/10 to-[#FFB04A]/10 text-[#FF9C04] border-2 border-[#FF9C04]/30 hover:border-[#FF9C04]/50 font-semibold px-4 py-1.5 rounded-full shadow-sm text-xs",
+      "inline-flex items-center gap-1.5 bg-[#FF9C04]/10 text-[#FF9C04] border border-[#FF9C04]/30 font-medium px-3 py-1 rounded-md text-xs",
   },
   PUBLISHED: {
     label: "Published",
     className:
-      "bg-gradient-to-r from-[#001B55]/10 to-[#002266]/10 text-[#001B55] border-2 border-[#001B55]/30 hover:border-[#001B55]/50 font-semibold px-4 py-1.5 rounded-full shadow-sm text-xs",
+      "inline-flex items-center gap-1.5 bg-[#34D399]/10 text-[#059669] border border-[#34D399]/30 font-medium px-3 py-1 rounded-md text-xs",
   },
   ARCHIVED: {
     label: "Diarsip",
     className:
-      "bg-gradient-to-r from-orange-50 to-orange-100 text-orange-700 border-2 border-orange-200 hover:border-orange-300 font-semibold px-4 py-1.5 rounded-full shadow-sm text-xs",
+      "inline-flex items-center gap-1.5 bg-red-50 text-red-700 border border-red-300 font-medium px-3 py-1 rounded-md text-xs",
   },
 } as const;
 
@@ -376,11 +377,12 @@ export function NewsTable() {
                       <img
                         src={row.thumbnailUrl}
                         alt={row.title}
-                        className="h-16 w-24 rounded-md object-cover border"
+                        className="h-16 w-24 rounded-lg object-cover border-2 border-gray-200 shadow-sm"
                       />
                     ) : (
-                      <div className="h-16 w-24 rounded-md border bg-muted/40 flex items-center justify-center text-xs text-muted-foreground">
-                        Tidak ada gambar
+                      <div className="h-16 w-24 rounded-lg border-2 border-dashed border-gray-300 bg-gradient-to-br from-gray-50 to-gray-100 flex flex-col items-center justify-center gap-1 shadow-sm">
+                        <ImageIcon className="h-5 w-5 text-gray-400" />
+                        <span className="text-[10px] font-medium text-gray-500">No Image</span>
                       </div>
                     )}
                   </TableCell>
@@ -389,10 +391,7 @@ export function NewsTable() {
                       <p className="font-semibold text-sm text-foreground">
                         {row.title}
                       </p>
-                      <p className="text-xs text-muted-foreground flex items-center gap-2">
-                        <FileText className="h-3.5 w-3.5" />
-                        ID #{row.id}
-                      </p>
+
                     </div>
                   </TableCell>
                   <TableCell>
