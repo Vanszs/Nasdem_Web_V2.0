@@ -162,14 +162,14 @@ export default function Members() {
   const { data: regionsData } = useRegions();
 
   // Bentuk opsi kecamatan untuk TabsFilters
-  const kecamatanOptions = useMemo(
-    () =>
-      (regionsData || [])
-        .filter((r: any) => r.type === "kecamatan")
-        .sort((a: any, b: any) => a.name.localeCompare(b.name))
-        .map((r: any) => ({ value: String(r.id), label: r.name })),
-    [regionsData]
-  );
+  const kecamatanOptions = useMemo(() => {
+    // regionsData is already the array from useRegions hook
+    if (!Array.isArray(regionsData)) return [];
+    return regionsData
+      .filter((r: any) => r.type === "kecamatan")
+      .sort((a: any, b: any) => a.name.localeCompare(b.name))
+      .map((r: any) => ({ value: String(r.id), label: r.name }));
+  }, [regionsData]);
 
   const openDetail = (m: any) => {
     setSelectedMember(m);
@@ -271,18 +271,61 @@ export default function Members() {
         {/* LIST DATA */}
         <div className="bg-white rounded-2xl border border-[#E5E7EB] p-4 space-y-4">
           {isLoading && (
-            <div className="py-10 text-center text-sm text-[#6B7280]">
-              Memuat data...
+            <div className="py-16 flex flex-col items-center justify-center">
+              <div className="w-12 h-12 border-4 border-[#C5BAFF] border-t-[#001B55] rounded-full animate-spin mb-4"></div>
+              <p className="text-sm font-medium text-[#475569]">
+                Memuat data...
+              </p>
             </div>
           )}
           {isError && (
-            <div className="py-10 text-center text-sm text-red-600">
-              Gagal memuat: {(error as any)?.message}
+            <div className="py-16 flex flex-col items-center justify-center">
+              <div className="w-16 h-16 rounded-full bg-red-50 flex items-center justify-center mb-4">
+                <svg
+                  className="w-8 h-8 text-red-500"
+                  fill="none"
+                  stroke="currentColor"
+                  viewBox="0 0 24 24"
+                >
+                  <path
+                    strokeLinecap="round"
+                    strokeLinejoin="round"
+                    strokeWidth={2}
+                    d="M12 8v4m0 4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"
+                  />
+                </svg>
+              </div>
+              <p className="text-sm font-semibold text-red-600 mb-1">
+                Gagal memuat data
+              </p>
+              <p className="text-xs text-[#475569]">
+                {(error as any)?.message}
+              </p>
             </div>
           )}
           {!isLoading && !isError && members.length === 0 && (
-            <div className="py-10 text-center text-sm text-[#6B7280]">
-              Tidak ada data.
+            <div className="py-16 flex flex-col items-center justify-center">
+              <div className="w-16 h-16 rounded-full bg-[#E8F9FF] flex items-center justify-center mb-4">
+                <svg
+                  className="w-8 h-8 text-[#475569]"
+                  fill="none"
+                  stroke="currentColor"
+                  viewBox="0 0 24 24"
+                >
+                  <path
+                    strokeLinecap="round"
+                    strokeLinejoin="round"
+                    strokeWidth={2}
+                    d="M17 20h5v-2a3 3 0 00-5.356-1.857M17 20H7m10 0v-2c0-.656-.126-1.283-.356-1.857M7 20H2v-2a3 3 0 015.356-1.857M7 20v-2c0-.656.126-1.283.356-1.857m0 0a5.002 5.002 0 019.288 0M15 7a3 3 0 11-6 0 3 3 0 016 0zm6 3a2 2 0 11-4 0 2 2 0 014 0zM7 10a2 2 0 11-4 0 2 2 0 014 0z"
+                  />
+                </svg>
+              </div>
+              <p className="text-sm font-semibold text-[#001B55] mb-1">
+                Tidak Ada Data
+              </p>
+              <p className="text-xs text-[#475569]">
+                Belum ada anggota yang terdaftar pada filter ini
+              </p>
             </div>
           )}
 

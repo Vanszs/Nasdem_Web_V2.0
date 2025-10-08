@@ -61,7 +61,7 @@ export function TabsFilters(props: Props) {
     ];
 
   return (
-    <div className="bg-white/80 backdrop-blur-sm border-2 border-gray-200/80 rounded-2xl p-4 shadow-lg">
+    <div className="bg-white/80 backdrop-blur-sm border-2 border-gray-200/80 rounded-2xl p-4 shadow-sm">
       <Tabs
         value={activeTab}
         onValueChange={(value: any) => {
@@ -69,31 +69,31 @@ export function TabsFilters(props: Props) {
           onTabChange();
         }}
       >
-        <TabsList className="grid w-full grid-cols-4 bg-transparent border-0 p-1">
+        <TabsList className="grid w-full grid-cols-4 bg-transparent border-0 p-1 gap-3">
           <TabsTrigger
             value="dpd"
-            className="px-4 py-2 rounded-xl font-medium text-sm transition-all duration-300 data-[state=active]:!bg-[#001B55] data-[state=active]:!text-white data-[state=active]:shadow-lg text-[#6B7280] hover:text-[#001B55] hover:bg-[#001B55]/5"
+            className="px-4 py-3 rounded-xl font-medium text-sm transition-all duration-300 border-2 data-[state=active]:!bg-[#001B55] data-[state=active]:!text-white data-[state=active]:!border-[#001B55] data-[state=active]:shadow-lg data-[state=inactive]:border-gray-200/80 data-[state=inactive]:bg-white/50 text-[#6B7280] hover:text-[#001B55] hover:bg-white hover:border-[#001B55]/40"
           >
             <Users className="h-4 w-4 mr-1.5" />
             DPD
           </TabsTrigger>
           <TabsTrigger
             value="sayap"
-            className="px-4 py-2 rounded-xl font-medium text-sm transition-all duration-300 data-[state=active]:!bg-[#001B55] data-[state=active]:!text-white data-[state=active]:shadow-lg text-[#6B7280] hover:text-[#001B55] hover:bg-[#001B55]/5"
+            className="px-4 py-3 rounded-xl font-medium text-sm transition-all duration-300 border-2 data-[state=active]:!bg-[#001B55] data-[state=active]:!text-white data-[state=active]:!border-[#001B55] data-[state=active]:shadow-lg data-[state=inactive]:border-gray-200/80 data-[state=inactive]:bg-white/50 text-[#6B7280] hover:text-[#001B55] hover:bg-white hover:border-[#001B55]/40"
           >
             <Target className="h-4 w-4 mr-1.5" />
             Sayap
           </TabsTrigger>
           <TabsTrigger
             value="dpc"
-            className="px-4 py-2 rounded-xl font-medium text-sm transition-all duration-300 data-[state=active]:!bg-[#16A34A] data-[state=active]:!text-white data-[state=active]:shadow-lg text-[#6B7280] hover:text-[#16A34A] hover:bg-[#16A34A]/5"
+            className="px-4 py-3 rounded-xl font-medium text-sm transition-all duration-300 border-2 data-[state=active]:!bg-[#16A34A] data-[state=active]:!text-white data-[state=active]:!border-[#16A34A] data-[state=active]:shadow-lg data-[state=inactive]:border-gray-200/80 data-[state=inactive]:bg-white/50 text-[#6B7280] hover:text-[#16A34A] hover:bg-white hover:border-[#16A34A]/40"
           >
             <Building className="h-4 w-4 mr-1.5" />
             DPC
           </TabsTrigger>
           <TabsTrigger
             value="dprt"
-            className="px-4 py-2 rounded-xl font-medium text-sm transition-all duration-300 data-[state=active]:!bg-[#F59E0B] data-[state=active]:!text-white data-[state=active]:shadow-lg text-[#6B7280] hover:text-[#F59E0B] hover:bg-[#F59E0B]/5"
+            className="px-4 py-3 rounded-xl font-medium text-sm transition-all duration-300 border-2 data-[state=active]:!bg-[#F59E0B] data-[state=active]:!text-white data-[state=active]:!border-[#F59E0B] data-[state=active]:shadow-lg data-[state=inactive]:border-gray-200/80 data-[state=inactive]:bg-white/50 text-[#6B7280] hover:text-[#F59E0B] hover:bg-white hover:border-[#F59E0B]/40"
           >
             <Map className="h-4 w-4 mr-1.5" />
             DPRT

@@ -412,12 +412,20 @@ export function AddMemberDialog({
   }) => {
     const list = membersList || [];
     return (
-      <div className="max-h-64 overflow-y-auto rounded-xl border-2 border-gray-200 bg-gray-50 divide-y">
+      <div
+        className="max-h-72 overflow-y-auto border border-[#D8E2F0] bg-white divide-y divide-[#E8F9FF]"
+        style={{
+          borderRadius: "10px",
+          boxShadow: "0 1px 3px rgba(0, 0, 0, 0.05)",
+        }}
+      >
         {isLoading ? (
-          <div className="p-6 text-center text-sm text-gray-500">Memuat...</div>
+          <div className="p-8 text-center text-sm text-[#475569]">
+            Memuat data...
+          </div>
         ) : list.length === 0 ? (
-          <div className="p-6 text-center text-sm text-gray-500">
-            Tidak ada data
+          <div className="p-8 text-center text-sm text-[#475569]">
+            Tidak ada anggota tersedia
           </div>
         ) : (
           list.map((m) => {
@@ -425,21 +433,21 @@ export function AddMemberDialog({
             return (
               <label
                 key={m.id}
-                className={`flex items-center gap-3 p-3 cursor-pointer hover:bg-white ${
-                  checked ? "bg-white" : ""
+                className={`flex items-center gap-3 p-3 cursor-pointer transition-all duration-300 ${
+                  checked ? "bg-[#F0F6FF]" : "hover:bg-[#FBFBFB]"
                 }`}
               >
                 <input
                   type="checkbox"
                   checked={checked}
                   onChange={() => onToggle(m.id)}
-                  className="h-4 w-4"
+                  className="h-4 w-4 rounded border-[#C4D9FF] text-[#C5BAFF] focus:ring-2 focus:ring-[#C5BAFF]/20 transition-colors"
                 />
-                <div className="flex-1">
-                  <div className="text-sm font-medium text-gray-900">
+                <div className="flex-1 min-w-0">
+                  <div className="text-sm font-semibold text-[#001B55] truncate">
                     {m.fullName}
                   </div>
-                  <div className="text-xs text-gray-500">
+                  <div className="text-xs text-[#475569] mt-0.5">
                     {m.status || "active"}
                   </div>
                 </div>
@@ -454,40 +462,57 @@ export function AddMemberDialog({
   return (
     <Dialog open={controlledOpen} onOpenChange={setOpen}>
       <DialogTrigger asChild>
-        <Button className="h-11 px-6 bg-gradient-to-r from-[#FF9C04] via-[#FFB84D] to-[#FF9C04] hover:from-[#001B55] hover:via-[#003875] hover:to-[#001B55] text-white font-bold border-2 border-white/20 hover:border-white/40 transition-all duration-500 shadow-xl hover:shadow-2xl rounded-xl">
-          <Plus className="mr-2 h-5 w-5" /> Tambahkan
+        <Button
+          className="h-11 px-6 bg-[#C5BAFF] hover:bg-[#C4D9FF] text-[#001B55] font-semibold transition-all duration-300 shadow-[0_1px_3px_rgba(0,0,0,0.05)] hover:shadow-[0_4px_6px_rgba(0,0,0,0.08)] hover:scale-[1.02]"
+          style={{ borderRadius: "10px" }}
+        >
+          <Plus className="mr-2 h-5 w-5" /> Tambahkan Anggota
         </Button>
       </DialogTrigger>
-      <DialogContent className="max-w-6xl w-[95vw] h-[90vh] bg-white/95 backdrop-blur-xl border-2 border-gray-200/80 rounded-3xl shadow-2xl p-0 overflow-hidden flex flex-col">
-        <DialogHeader className="relative px-6 pt-6 pb-5 border-b-2 border-gray-100">
-          <div className="absolute top-0 left-0 right-0 h-1 bg-gradient-to-r from-[#001B55] via-[#FF9C04] to-[#001B55]" />
-          <div className="flex items-center gap-4">
-            <div className="flex h-14 w-14 items-center justify-center rounded-2xl bg-gradient-to-br from-[#001B55] to-[#003875] shadow-lg">
-              <UserPlus className="h-7 w-7 text-white" />
+      <DialogContent
+        className="max-w-4xl w-[90vw] max-h-[85vh] bg-white border border-[#D8E2F0] p-0 overflow-hidden flex flex-col"
+        style={{
+          borderRadius: "16px",
+          boxShadow: "0 8px 32px rgba(0, 27, 85, 0.12)",
+        }}
+      >
+        <DialogHeader className="relative px-6 pt-5 pb-4 border-b border-[#E8F9FF]">
+          <div className="flex items-center gap-3">
+            <div
+              className="flex h-10 w-10 items-center justify-center bg-[#E8F9FF]"
+              style={{ borderRadius: "10px" }}
+            >
+              <UserPlus className="h-5 w-5 text-[#001B55]" />
             </div>
             <div>
-              <DialogTitle className="text-2xl font-bold bg-gradient-to-r from-[#001B55] to-[#FF9C04] bg-clip-text text-transparent">
+              <DialogTitle className="text-xl font-bold text-[#001B55]">
                 Tambah Keanggotaan
               </DialogTitle>
-              <p className="text-sm text-gray-500 mt-1">
+              <p className="text-sm text-[#475569] mt-0.5">
                 Kelola penautan anggota dan kader
               </p>
             </div>
           </div>
         </DialogHeader>
 
-        <div className="px-6 py-6 space-y-6 flex-1 overflow-y-auto">
-          <Tabs value={tab} onValueChange={setTab}>
-            <TabsList>
-              <TabsTrigger value="org">
-                <Link2 className="mr-1" /> Anggota {">"} Organisasi
+        <div className="px-6 py-5 space-y-5 flex-1 overflow-y-auto">
+          <Tabs value={tab} onValueChange={setTab} className="w-full">
+            <TabsList className="w-full inline-flex h-auto p-0 bg-transparent gap-3 border-b-2 border-gray-200/80">
+              <TabsTrigger
+                value="org"
+                className="data-[state=active]:bg-[#C5BAFF] data-[state=active]:text-[#001B55] data-[state=active]:font-bold data-[state=active]:border-2 data-[state=active]:border-[#001B55] data-[state=active]:border-b-0 data-[state=inactive]:bg-white/50 data-[state=inactive]:text-[#475569] data-[state=inactive]:border-2 data-[state=inactive]:border-gray-200/80 data-[state=inactive]:border-b-0 data-[state=inactive]:hover:text-[#001B55] data-[state=inactive]:hover:border-[#001B55]/40 data-[state=inactive]:hover:bg-white font-medium transition-all duration-300 py-3 px-5 rounded-t-lg mb-[-2px]"
+              >
+                <Link2 className="mr-2 h-4 w-4" /> Anggota → Organisasi
               </TabsTrigger>
-              <TabsTrigger value="kader">
-                <Users className="mr-1" /> Kader {">"} Member DPRT
+              <TabsTrigger
+                value="kader"
+                className="data-[state=active]:bg-[#C5BAFF] data-[state=active]:text-[#001B55] data-[state=active]:font-bold data-[state=active]:border-2 data-[state=active]:border-[#001B55] data-[state=active]:border-b-0 data-[state=inactive]:bg-white/50 data-[state=inactive]:text-[#475569] data-[state=inactive]:border-2 data-[state=inactive]:border-gray-200/80 data-[state=inactive]:border-b-0 data-[state=inactive]:hover:text-[#001B55] data-[state=inactive]:hover:border-[#001B55]/40 data-[state=inactive]:hover:bg-white font-medium transition-all duration-300 py-3 px-5 rounded-t-lg mb-[-2px]"
+              >
+                <Users className="mr-2 h-4 w-4" /> Kader → DPRT
               </TabsTrigger>
             </TabsList>
 
-            <TabsContent value="org" className="mt-4">
+            <TabsContent value="org" className="mt-5 space-y-4">
               <Form {...orgForm}>
                 <form
                   onSubmit={orgForm.handleSubmit(onSubmitOrg)}
@@ -499,7 +524,9 @@ export function AddMemberDialog({
                       name="level"
                       render={({ field }) => (
                         <FormItem>
-                          <FormLabel>Tipe Organisasi</FormLabel>
+                          <FormLabel className="text-[#001B55] font-semibold">
+                            Tipe Organisasi
+                          </FormLabel>
                           <FormControl>
                             <Select
                               value={field.value}
@@ -511,19 +538,29 @@ export function AddMemberDialog({
                                 orgForm.setValue("sayapName", "");
                               }}
                             >
-                              <SelectTrigger>
-                                <SelectValue placeholder="Pilih tipe" />
+                              <SelectTrigger
+                                className="h-11 bg-[#E8F9FF] border border-[#C4D9FF] hover:border-[#C5BAFF] focus:border-[#C5BAFF] focus:ring-2 focus:ring-[#C5BAFF]/20 text-[#001B55] transition-all duration-300"
+                                style={{ borderRadius: "10px" }}
+                              >
+                                <SelectValue placeholder="Pilih tipe organisasi" />
                               </SelectTrigger>
-                              <SelectContent>
+                              <SelectContent
+                                className="bg-white border border-[#D8E2F0]"
+                                style={{ borderRadius: "10px" }}
+                              >
                                 {levels.map((l) => (
-                                  <SelectItem key={l} value={l}>
+                                  <SelectItem
+                                    key={l}
+                                    value={l}
+                                    className="hover:bg-[#F0F6FF] transition-colors"
+                                  >
                                     {l.toUpperCase()}
                                   </SelectItem>
                                 ))}
                               </SelectContent>
                             </Select>
                           </FormControl>
-                          <FormMessage />
+                          <FormMessage className="text-xs" />
                         </FormItem>
                       )}
                     />
@@ -532,7 +569,9 @@ export function AddMemberDialog({
                       name="position"
                       render={({ field }) => (
                         <FormItem>
-                          <FormLabel>Posisi</FormLabel>
+                          <FormLabel className="text-[#001B55] font-semibold">
+                            Posisi
+                          </FormLabel>
                           <FormControl>
                             <Select
                               value={field.value}
@@ -542,19 +581,29 @@ export function AddMemberDialog({
                               }}
                               disabled={!watchLevel}
                             >
-                              <SelectTrigger>
+                              <SelectTrigger
+                                className="h-11 bg-[#E8F9FF] border border-[#C4D9FF] hover:border-[#C5BAFF] focus:border-[#C5BAFF] focus:ring-2 focus:ring-[#C5BAFF]/20 text-[#001B55] transition-all duration-300 disabled:opacity-50"
+                                style={{ borderRadius: "10px" }}
+                              >
                                 <SelectValue placeholder="Pilih posisi" />
                               </SelectTrigger>
-                              <SelectContent>
+                              <SelectContent
+                                className="bg-white border border-[#D8E2F0]"
+                                style={{ borderRadius: "10px" }}
+                              >
                                 {positions.map((p) => (
-                                  <SelectItem key={p} value={p}>
-                                    {p.toUpperCase()}
+                                  <SelectItem
+                                    key={p}
+                                    value={p}
+                                    className="hover:bg-[#F0F6FF] transition-colors"
+                                  >
+                                    {p.charAt(0).toUpperCase() + p.slice(1)}
                                   </SelectItem>
                                 ))}
                               </SelectContent>
                             </Select>
                           </FormControl>
-                          <FormMessage />
+                          <FormMessage className="text-xs" />
                         </FormItem>
                       )}
                     />
@@ -566,7 +615,9 @@ export function AddMemberDialog({
                       name="regionId"
                       render={({ field }) => (
                         <FormItem className="flex flex-col">
-                          <FormLabel>Wilayah</FormLabel>
+                          <FormLabel className="text-[#001B55] font-semibold">
+                            Wilayah
+                          </FormLabel>
                           <Popover
                             open={openRegion}
                             onOpenChange={setOpenRegion}
@@ -578,9 +629,10 @@ export function AddMemberDialog({
                                   role="combobox"
                                   aria-expanded={openRegion}
                                   className={cn(
-                                    "w-full justify-between h-12 rounded-xl bg-gray-50 border-2 border-gray-200 hover:border-[#001B55]/50",
-                                    !field.value && "text-muted-foreground"
+                                    "w-full justify-between h-11 bg-[#E8F9FF] border border-[#C4D9FF] hover:border-[#C5BAFF] focus:border-[#C5BAFF] focus:ring-2 focus:ring-[#C5BAFF]/20 text-[#001B55] transition-all duration-300",
+                                    !field.value && "text-[#475569]"
                                   )}
+                                  style={{ borderRadius: "10px" }}
                                 >
                                   {field.value
                                     ? filteredRegions.find(
@@ -592,17 +644,19 @@ export function AddMemberDialog({
                               </FormControl>
                             </PopoverTrigger>
                             <PopoverContent
-                              className="w-full p-0"
+                              className="w-full p-0 bg-white border border-[#D8E2F0]"
                               align="start"
+                              style={{ borderRadius: "10px" }}
                             >
-                              <Command>
+                              <Command className="bg-white">
                                 <CommandInput
                                   placeholder="Cari wilayah..."
                                   value={regionSearch}
                                   onValueChange={setRegionSearch}
+                                  className="h-10 border-b border-[#E8F9FF]"
                                 />
                                 <CommandList>
-                                  <CommandEmpty>
+                                  <CommandEmpty className="py-6 text-center text-sm text-[#475569]">
                                     Tidak ada wilayah ditemukan.
                                   </CommandEmpty>
                                   <CommandGroup>
@@ -616,10 +670,11 @@ export function AddMemberDialog({
                                           setOpenRegion(false);
                                           setRegionSearch("");
                                         }}
+                                        className="hover:bg-[#F0F6FF] transition-colors"
                                       >
                                         <Check
                                           className={cn(
-                                            "mr-2 h-4 w-4",
+                                            "mr-2 h-4 w-4 text-[#C5BAFF]",
                                             String(r.id) === field.value
                                               ? "opacity-100"
                                               : "opacity-0"
@@ -633,7 +688,7 @@ export function AddMemberDialog({
                               </Command>
                             </PopoverContent>
                           </Popover>
-                          <FormMessage />
+                          <FormMessage className="text-xs" />
                         </FormItem>
                       )}
                     />
@@ -645,25 +700,37 @@ export function AddMemberDialog({
                       name="sayapName"
                       render={({ field }) => (
                         <FormItem>
-                          <FormLabel>Unit Struktur (Sayap)</FormLabel>
+                          <FormLabel className="text-[#001B55] font-semibold">
+                            Unit Struktur (Sayap)
+                          </FormLabel>
                           <FormControl>
                             <Select
                               value={field.value}
                               onValueChange={field.onChange}
                             >
-                              <SelectTrigger>
+                              <SelectTrigger
+                                className="h-11 bg-[#E8F9FF] border border-[#C4D9FF] hover:border-[#C5BAFF] focus:border-[#C5BAFF] focus:ring-2 focus:ring-[#C5BAFF]/20 text-[#001B55] transition-all duration-300"
+                                style={{ borderRadius: "10px" }}
+                              >
                                 <SelectValue placeholder="Pilih sayap" />
                               </SelectTrigger>
-                              <SelectContent>
+                              <SelectContent
+                                className="bg-white border border-[#D8E2F0]"
+                                style={{ borderRadius: "10px" }}
+                              >
                                 {sayapNames.map((n) => (
-                                  <SelectItem key={n} value={n}>
+                                  <SelectItem
+                                    key={n}
+                                    value={n}
+                                    className="hover:bg-[#F0F6FF] transition-colors"
+                                  >
                                     {n}
                                   </SelectItem>
                                 ))}
                               </SelectContent>
                             </Select>
                           </FormControl>
-                          <FormMessage />
+                          <FormMessage className="text-xs" />
                         </FormItem>
                       )}
                     />
@@ -674,15 +741,18 @@ export function AddMemberDialog({
                     name="memberIds"
                     render={() => (
                       <FormItem>
-                        <FormLabel>Pilih Anggota</FormLabel>
+                        <FormLabel className="text-[#001B55] font-semibold">
+                          Pilih Anggota
+                        </FormLabel>
                         <div className="space-y-3">
                           <div className="relative">
-                            <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-gray-400" />
+                            <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-[#475569]" />
                             <Input
-                              placeholder="Cari anggota..."
+                              placeholder="Cari nama anggota..."
                               value={memberSearch}
                               onChange={(e) => setMemberSearch(e.target.value)}
-                              className="pl-9 h-11 rounded-xl bg-gray-50 border-2 border-gray-200 focus:border-[#001B55]"
+                              className="pl-10 h-11 bg-[#E8F9FF] border border-[#C4D9FF] hover:border-[#C5BAFF] focus:border-[#C5BAFF] focus:ring-2 focus:ring-[#C5BAFF]/20 text-[#001B55] placeholder:text-[#475569] transition-all duration-300"
+                              style={{ borderRadius: "10px" }}
                             />
                           </div>
                           <MemberList
@@ -700,12 +770,12 @@ export function AddMemberDialog({
                             isLoading={membersUnassignedQuery.isLoading}
                           />
                         </div>
-                        <FormMessage />
+                        <FormMessage className="text-xs" />
                       </FormItem>
                     )}
                   />
 
-                  <div className="flex justify-end gap-3 pt-2">
+                  <div className="flex justify-end gap-3 pt-4 border-t border-[#E8F9FF]">
                     <Button
                       type="button"
                       variant="outline"
@@ -713,18 +783,25 @@ export function AddMemberDialog({
                         setOpen(false);
                         orgForm.reset();
                       }}
+                      className="h-10 px-6 bg-white border border-[#D8E2F0] hover:bg-[#F0F6FF] hover:border-[#C4D9FF] text-[#475569] hover:text-[#001B55] transition-all duration-300"
+                      style={{ borderRadius: "8px" }}
                     >
                       Batal
                     </Button>
-                    <Button type="submit" className="bg-[#001B55] text-white">
-                      Simpan
+                    <Button
+                      type="submit"
+                      className="h-10 px-6 bg-[#C5BAFF] hover:bg-[#C4D9FF] text-[#001B55] font-semibold shadow-[0_1px_3px_rgba(0,0,0,0.05)] hover:shadow-[0_4px_6px_rgba(0,0,0,0.08)] transition-all duration-300"
+                      style={{ borderRadius: "8px" }}
+                      disabled={addMembersMutation.isPending}
+                    >
+                      {addMembersMutation.isPending ? "Menyimpan..." : "Simpan"}
                     </Button>
                   </div>
                 </form>
               </Form>
             </TabsContent>
 
-            <TabsContent value="kader" className="mt-4">
+            <TabsContent value="kader" className="mt-5 space-y-4">
               <Form {...kaderForm}>
                 <form
                   onSubmit={kaderForm.handleSubmit(onSubmitKader)}
@@ -736,7 +813,9 @@ export function AddMemberDialog({
                     name="dprtMemberId"
                     render={({ field }) => (
                       <FormItem>
-                        <FormLabel>Member (DPRT)</FormLabel>
+                        <FormLabel className="text-[#001B55] font-semibold">
+                          Member (DPRT)
+                        </FormLabel>
                         <FormControl>
                           <Popover
                             open={openDprtMember}
@@ -747,7 +826,11 @@ export function AddMemberDialog({
                                 variant="outline"
                                 role="combobox"
                                 aria-expanded={openDprtMember}
-                                className="w-full justify-between h-11 rounded-xl bg-gray-50 border-2 border-gray-200 hover:border-[#001B55] focus:border-[#001B55]"
+                                className={cn(
+                                  "w-full justify-between h-11 bg-[#E8F9FF] border border-[#C4D9FF] hover:border-[#C5BAFF] focus:border-[#C5BAFF] focus:ring-2 focus:ring-[#C5BAFF]/20 text-[#001B55] transition-all duration-300",
+                                  !field.value && "text-[#475569]"
+                                )}
+                                style={{ borderRadius: "10px" }}
                               >
                                 {field.value
                                   ? dprtMembers.find(
@@ -757,15 +840,19 @@ export function AddMemberDialog({
                                 <ChevronsUpDown className="ml-2 h-4 w-4 shrink-0 opacity-50" />
                               </Button>
                             </PopoverTrigger>
-                            <PopoverContent className="w-full p-0">
-                              <Command>
+                            <PopoverContent
+                              className="w-full p-0 bg-white border border-[#D8E2F0]"
+                              style={{ borderRadius: "10px" }}
+                            >
+                              <Command className="bg-white">
                                 <CommandInput
                                   placeholder="Cari member DPRT..."
                                   value={dprtMemberSearch}
                                   onValueChange={setDprtMemberSearch}
+                                  className="h-10 border-b border-[#E8F9FF]"
                                 />
                                 <CommandList>
-                                  <CommandEmpty>
+                                  <CommandEmpty className="py-6 text-center text-sm text-[#475569]">
                                     Member DPRT tidak ditemukan.
                                   </CommandEmpty>
                                   <CommandGroup>
@@ -777,9 +864,10 @@ export function AddMemberDialog({
                                           field.onChange(m.id);
                                           setOpenDprtMember(false);
                                         }}
+                                        className="hover:bg-[#F0F6FF] transition-colors"
                                       >
                                         <Check
-                                          className={`mr-2 h-4 w-4 ${
+                                          className={`mr-2 h-4 w-4 text-[#C5BAFF] ${
                                             field.value === m.id
                                               ? "opacity-100"
                                               : "opacity-0"
@@ -794,14 +882,18 @@ export function AddMemberDialog({
                             </PopoverContent>
                           </Popover>
                         </FormControl>
-                        <FormMessage />
+                        <FormMessage className="text-xs" />
                       </FormItem>
                     )}
                   />
 
                   {/* Auto-derived Desa from selected DPRT member */}
-                  <div className="text-sm text-gray-600">
-                    Desa otomatis: {selectedDprt?.region?.name || "-"}
+                  <div
+                    className="px-4 py-3 bg-[#E8F9FF] border border-[#C4D9FF] text-sm text-[#001B55]"
+                    style={{ borderRadius: "10px" }}
+                  >
+                    <span className="font-semibold">Desa otomatis:</span>{" "}
+                    <span>{selectedDprt?.region?.name || "-"}</span>
                   </div>
 
                   {/* Choose cadres */}
@@ -810,7 +902,9 @@ export function AddMemberDialog({
                     name="kaderIds"
                     render={() => (
                       <FormItem>
-                        <FormLabel>Pilih Kader</FormLabel>
+                        <FormLabel className="text-[#001B55] font-semibold">
+                          Pilih Kader
+                        </FormLabel>
                         <MemberList
                           selectedIds={kaderForm.getValues("kaderIds") || []}
                           onToggle={(id) => {
@@ -825,12 +919,12 @@ export function AddMemberDialog({
                           membersList={filteredMembersForOrg}
                           isLoading={membersUnassignedQuery.isLoading}
                         />
-                        <FormMessage />
+                        <FormMessage className="text-xs" />
                       </FormItem>
                     )}
                   />
 
-                  <div className="flex justify-end gap-3 pt-2">
+                  <div className="flex justify-end gap-3 pt-4 border-t border-[#E8F9FF]">
                     <Button
                       type="button"
                       variant="outline"
@@ -838,12 +932,15 @@ export function AddMemberDialog({
                         setOpen(false);
                         kaderForm.reset();
                       }}
+                      className="h-10 px-6 bg-white border border-[#D8E2F0] hover:bg-[#F0F6FF] hover:border-[#C4D9FF] text-[#475569] hover:text-[#001B55] transition-all duration-300"
+                      style={{ borderRadius: "8px" }}
                     >
                       Batal
                     </Button>
                     <Button
                       type="submit"
-                      className="bg-[#001B55] text-white"
+                      className="h-10 px-6 bg-[#C5BAFF] hover:bg-[#C4D9FF] text-[#001B55] font-semibold shadow-[0_1px_3px_rgba(0,0,0,0.05)] hover:shadow-[0_4px_6px_rgba(0,0,0,0.08)] transition-all duration-300"
+                      style={{ borderRadius: "8px" }}
                       disabled={addKadersMutation.isPending}
                     >
                       {addKadersMutation.isPending ? "Menyimpan..." : "Simpan"}
