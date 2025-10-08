@@ -3,8 +3,9 @@
 import { useState } from "react";
 import { usePathname } from "next/navigation";
 import Image from "next/image";
-import { Button } from "@/components/ui/button";
+import { Button, buttonVariants } from "@/components/ui/button";
 import { Menu, X, Users, Phone, MapPin } from "lucide-react";
+import Link from "next/link";
 
 const NasdemHeader = () => {
   const [isMenuOpen, setIsMenuOpen] = useState(false);
@@ -161,17 +162,21 @@ const NasdemHeader = () => {
               variant="secondary"
               size="sm"
               className="hover-scale font-medium"
-              onClick={() => window.location.href = '/bergabung'}
+              onClick={() => (window.location.href = "/bergabung")}
             >
               Bergabung
             </Button>
-            <Button
-              variant="outline"
-              size="sm"
-              className="border-primary-foreground bg-primary-foreground/10 text-primary-foreground hover:bg-secondary hover:text-primary font-medium backdrop-blur-sm"
+            <Link
+              className={buttonVariants({
+                variant: "outline",
+                size: "sm",
+                className:
+                  "border-primary-foreground bg-primary-foreground/10 text-primary-foreground hover:bg-secondary hover:text-primary font-medium backdrop-blur-sm",
+              })}
+              href="/auth"
             >
               Login
-            </Button>
+            </Link>
           </div>
 
           {/* Mobile menu button */}
@@ -276,7 +281,12 @@ const NasdemHeader = () => {
                 </li>
               </ul>
               <div className="flex flex-col gap-3 mt-6">
-                <Button variant="secondary" size="sm" className="w-full" onClick={() => window.location.href = '/bergabung'}>
+                <Button
+                  variant="secondary"
+                  size="sm"
+                  className="w-full"
+                  onClick={() => (window.location.href = "/bergabung")}
+                >
                   Bergabung
                 </Button>
                 <Button
