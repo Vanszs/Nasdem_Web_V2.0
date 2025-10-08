@@ -231,7 +231,7 @@ export function MembersTable({
                 skip: 0,
               }))
             }
-            className="h-9"
+            className="h-9 border-2 border-gray-300 focus:border-[#001B55] focus:ring-2 focus:ring-[#001B55]/20"
           />
           <Input
             placeholder="Cari email"
@@ -243,7 +243,7 @@ export function MembersTable({
                 skip: 0,
               }))
             }
-            className="h-9"
+            className="h-9 border-2 border-gray-300 focus:border-[#001B55] focus:ring-2 focus:ring-[#001B55]/20"
           />
           <Select
             value={filters.status || "__all__"}
@@ -255,7 +255,7 @@ export function MembersTable({
               }))
             }
           >
-            <SelectTrigger className="h-9">
+            <SelectTrigger className="h-9 border-2 border-gray-300 focus:border-[#001B55] focus:ring-2 focus:ring-[#001B55]/20">
               <SelectValue placeholder="Status" />
             </SelectTrigger>
             <SelectContent>
@@ -275,7 +275,7 @@ export function MembersTable({
               }))
             }
           >
-            <SelectTrigger className="h-9">
+            <SelectTrigger className="h-9 border-2 border-gray-300 focus:border-[#001B55] focus:ring-2 focus:ring-[#001B55]/20">
               <SelectValue placeholder="Gender" />
             </SelectTrigger>
             <SelectContent>
@@ -294,7 +294,7 @@ export function MembersTable({
                 skip: 0,
               }))
             }
-            className="h-9"
+            className="h-9 border-2 border-gray-300 focus:border-[#001B55] focus:ring-2 focus:ring-[#001B55]/20"
           />
         </div>
 
