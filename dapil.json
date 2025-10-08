@@ -1,0 +1,198 @@
+{
+  "ringkasan": {
+    "kabupaten": "Sidoarjo",
+    "jumlah_dapil_dprd_kabupaten": 6,
+    "jumlah_kecamatan": 18,
+    "jumlah_kelurahan": 28,
+    "jumlah_desa": 318
+  },
+  "dapil_dprd_kabupaten_2024": [
+    {
+      "nama_dapil": "Dapil 1",
+      "wilayah": ["Buduran", "Sedati", "Sidoarjo"],
+      "alokasi_kursi": 10
+    },
+    {
+      "nama_dapil": "Dapil 2",
+      "wilayah": ["Candi", "Jabon", "Porong", "Tanggulangin"],
+      "alokasi_kursi": 9
+    },
+    {
+      "nama_dapil": "Dapil 3",
+      "wilayah": ["Krembung", "Prambon", "Tulangan", "Wonoayu"],
+      "alokasi_kursi": 8
+    },
+    {
+      "nama_dapil": "Dapil 4",
+      "wilayah": ["Balongbendo", "Krian", "Tarik"],
+      "alokasi_kursi": 7
+    },
+    {
+      "nama_dapil": "Dapil 5",
+      "wilayah": ["Sukodono", "Taman"],
+      "alokasi_kursi": 8
+    },
+    {
+      "nama_dapil": "Dapil 6",
+      "wilayah": ["Gedangan", "Waru"],
+      "alokasi_kursi": 8
+    }
+  ],
+  "kecamatan": [
+    {
+      "nama": "Balongbendo",
+      "kode_kemendagri": "35.15.12",
+      "kodepos": "61263",
+      "jumlah_desa": 20,
+      "jumlah_kelurahan": 0,
+      "daftar_desa": ["Balongbendo", "Bakalan Wringinpitu", "Bakungpringgodani", "Bakungtemenggungan", "Bogempinggir", "Gadungkepuhsari", "Jabaran", "Jeruklegi", "Kedungsukodani", "Kemangsen", "Penambangan", "Seduri", "Seketi", "Singkalang", "Sumokebangsri", "Suwaluh", "Waruberon", "Watesari", "Wonokarang", "Wonokupang"]
+    },
+    {
+      "nama": "Buduran",
+      "kode_kemendagri": "35.15.15",
+      "kodepos": "61252",
+      "jumlah_desa": 15,
+      "jumlah_kelurahan": 0,
+      "daftar_desa": ["Banjarkemantren", "Banjarsari", "Buduran", "Damarsi", "Dukuhtengah", "Entalsewu", "Pagerwojo", "Prasung", "Sawohan", "Sidokerto", "Sidomulyo", "Sidokepung", "Siwalanpanji", "Sukorejo", "Wadungasin"]
+    },
+    {
+      "nama": "Candi",
+      "kode_kemendagri": "35.15.07",
+      "kodepos": "61271",
+      "jumlah_desa": 24,
+      "jumlah_kelurahan": 0,
+      "daftar_desa": ["Balongdowo", "Balonggabus", "Bligo", "Candi", "Durungbanjar", "Durungbedug", "Gelam", "Jambangan", "Kalipecabean", "Karangtanjung", "Kebonsari", "Kedungkendo", "Kedungpeluk", "Kendalpecabean", "Klurak", "Larangan", "Ngampelsari", "Sepande", "Sidodadi", "Sugihwaras", "Sumokali", "Sumorame", "Tenggulunan", "Wedoroklurak"]
+    },
+    {
+      "nama": "Gedangan",
+      "kode_kemendagri": "35.15.16",
+      "kodepos": "61254",
+      "jumlah_desa": 15,
+      "jumlah_kelurahan": 0,
+      "daftar_desa": ["Bangah", "Ganting", "Gedangan", "Gemurung", "Karangbong", "Keboansikep", "Keboan Anom", "Ketajen", "Kragan", "Punggul", "Sawotratap", "Semambung", "Seruni", "Tebel", "Wedi"]
+    },
+    {
+      "nama": "Jabon",
+      "kode_kemendagri": "35.15.05",
+      "kodepos": "61276",
+      "jumlah_desa": 13,
+      "jumlah_kelurahan": 0,
+      "daftar_desa": ["Balongtani", "Dukuhsari", "Jemirahan", "Keboguyang", "Kedungcangkring", "Kedungpandan", "Kedungrejo", "Kupang", "Panggreh", "Permisan", "Semambung", "Tambakkalisogo", "Trompoasri"]
+    },
+    {
+      "nama": "Krembung",
+      "kode_kemendagri": "35.15.03",
+      "kodepos": "61275",
+      "jumlah_desa": 19,
+      "jumlah_kelurahan": 0,
+      "daftar_desa": ["Balanggarut", "Cankring", "Gading", "Jenggot", "Kandangan", "Kedungrawan", "Kedungsumur", "Keper", "Keret", "Krembung", "Lemujut", "Mojoruntut", "Ploso", "Rejeni", "Tambakrejo", "Tanjegwagir", "Wangkal", "Wonomlati", "Waung"]
+    },
+    {
+      "nama": "Krian",
+      "kode_kemendagri": "35.15.11",
+      "kodepos": "61262",
+      "jumlah_desa": 19,
+      "jumlah_kelurahan": 3,
+      "daftar_desa": ["Barengkrajan", "Gamping", "Jatikalang", "Jerukgamping", "Junwangi", "Katerungan", "Keboharan", "Kraton", "Ponokawan", "Sedenganmijen", "Sidomojo", "Sidomulyo", "Sidorejo", "Tempel", "Terik", "Terungkulon", "Terungwetan", "Tropodo", "Watugolong"],
+      "daftar_kelurahan": ["Kemasan", "Krian", "Tambak Kemerakan"]
+    },
+    {
+      "nama": "Prambon",
+      "kode_kemendagri": "35.15.02",
+      "kodepos": "61264",
+      "jumlah_desa": 20,
+      "jumlah_kelurahan": 0,
+      "daftar_desa": ["Bendotretek", "Bulang", "Cangkringturi", "Gampang", "Gedangrowo", "Jatialunalun", "Jatikalang", "Jedongcangkring", "Kajartrengguli", "Kedungkembar", "Kedungsugo", "Kedungwonokerto", "Pejangkungan", "Prambon", "Simogirang", "Simpang", "Temu", "Watutulis", "Wirobiting", "Wonoplintahan"]
+    },
+    {
+      "nama": "Porong",
+      "kode_kemendagri": "35.15.04",
+      "kodepos": "61274",
+      "jumlah_desa": 12,
+      "jumlah_kelurahan": 3,
+      "daftar_desa": ["Candipari", "Glagaharum", "Kebakalan", "Kebonagung", "Kedungboto", "Kedungsolo", "Kesambi", "Lajuk", "Pamotan", "Pesawahan", "Plumbon", "Wunut"],
+      "daftar_kelurahan": ["Gedang", "Juwetkenongo", "Porong"]
+    },
+    {
+      "nama": "Sedati",
+      "kode_kemendagri": "35.15.17",
+      "kodepos": "61253",
+      "jumlah_desa": 16,
+      "jumlah_kelurahan": 0,
+      "daftar_desa": ["Banjarkemuningtambak", "Betro", "Buncitan", "Cemandi", "Gisikcemandi", "Kalanganyar", "Kwangsan", "Pabean", "Pepe", "Pranti", "Pulungan", "Sedatiagung", "Sedatigede", "Segorotambak", "Semampir", "Tambakcemandi"]
+    },
+    {
+      "nama": "Sidoarjo",
+      "kode_kemendagri": "35.15.08",
+      "kodepos": "61211-61219",
+      "jumlah_desa": 10,
+      "jumlah_kelurahan": 14,
+      "daftar_desa": ["Banjarbendo", "Bluru Kidul", "Cemengbakalan", "Jati", "Kemiri", "Lebo", "Rangka Kidul", "Sarirogo", "Suko", "Sumput"],
+      "daftar_kelurahan": ["Bulusidokare", "Celep", "Cemengkalang", "Gebang", "Lemahputro", "Magersari", "Pekauman", "Pucang", "Pucanganom", "Sekardangan", "Sidokare", "Sidoklumpuk", "Sidokumpul", "Urangagung"]
+    },
+    {
+      "nama": "Sukodono",
+      "kode_kemendagri": "35.15.14",
+      "kodepos": "61258",
+      "jumlah_desa": 19,
+      "jumlah_kelurahan": 0,
+      "daftar_desa": ["Anggaswangi", "Bangsri", "Cangkringsari", "Jumputrejo", "Kebonagung", "Keloposepuluh", "Jogosatru", "Masangankulon", "Masanganwetan", "Ngaresrejo", "Pademonegoro", "Panjunan", "Pekarungan", "Plumbungan", "Sambungrejo", "Sukodono", "Suko", "Suruh", "Wilayut"]
+    },
+    {
+      "nama": "Taman",
+      "kode_kemendagri": "35.15.13",
+      "kodepos": "61257",
+      "jumlah_desa": 16,
+      "jumlah_kelurahan": 8,
+      "daftar_desa": ["Bohar", "Bringinbendo", "Gilang", "Jemundo", "Kedungturi", "Tanjungsari", "Kletek", "Kramatjegu", "Krembangan", "Pertapan Maduretno", "Sadang", "Sambibulu", "Sidodadi", "Tawangsari", "Trosobo", "Wage"],
+      "daftar_kelurahan": ["Bebekan", "Geluran", "Kalijaten", "Ketegan", "Ngelom", "Sepanjang", "Taman", "Wonocolo"]
+    },
+    {
+      "nama": "Tanggulangin",
+      "kode_kemendagri": "35.15.06",
+      "kodepos": "61272",
+      "jumlah_desa": 18,
+      "jumlah_kelurahan": 0,
+      "daftar_desa": ["Kalitengah", "Kludan", "Boro", "Ngaban", "Putat", "Kedungbanteng", "Banjarpanji", "Banjarsari", "Penatarsewu", "Sentul", "Kalidawir", "Gempolsari", "Ketapang", "Kalisampurno", "Kedensari", "Ketegan", "Ganggang Panjang", "Randegan"]
+    },
+    {
+      "nama": "Tarik",
+      "kode_kemendagri": "35.15.01",
+      "kodepos": "61265",
+      "jumlah_desa": 20,
+      "jumlah_kelurahan": 0,
+      "daftar_desa": ["Banjarwungu", "Balongmacekan", "Gampingrowo", "Gedangklutuk", "Janti", "Kalimati", "Kedungbocok", "Kedinding", "Kemuning", "Kendalsewu", "Klantingsari", "Kramattemanggung", "Mergobener", "Mergosari", "Mindugading", "Miriprowo", "Sebani", "Segodobancang", "Singgogalih", "Tarik"]
+    },
+    {
+      "nama": "Tulangan",
+      "kode_kemendagri": "35.15.09",
+      "kodepos": "61273",
+      "jumlah_desa": 22,
+      "jumlah_kelurahan": 0,
+      "daftar_desa": ["Gelang", "Grabangan", "Grinting", "Grogol", "Janti", "Jiken", "Kajeksan", "Kebaran", "Kedondong", "Kemantren", "Kenongo", "Kepatihan", "Kepadangan", "Kepuhkemiri", "Kepunten", "Medalem", "Modong", "Pangkemiri", "Singopadu", "Sudimoro", "Tlasih", "Tulangan"]
+    },
+    {
+      "nama": "Waru",
+      "kode_kemendagri": "35.15.18",
+      "kodepos": "61256",
+      "jumlah_desa": 17,
+      "jumlah_kelurahan": 0,
+      "daftar_desa": ["Berbek", "Bungurasih", "Janti", "Kedungrejo", "Kepuhkiriman", "Kureksari", "Medaeng", "Ngingas", "Pepelegi", "Tambakoso", "Tambarejo", "Tambaksawah", "Tambaksumur", "Tropodo", "Wadungasri", "Waru", "Wedoro"]
+    },
+    {
+      "nama": "Wonoayu",
+      "kode_kemendagri": "35.15.10",
+      "kodepos": "61261",
+      "jumlah_desa": 23,
+      "jumlah_kelurahan": 0,
+      "daftar_desa": ["Becirongengor", "Candinegoro", "Jimbarankulon", "Jimbaranwetan", "Karangpuri", "Ketimang", "Lambangan", "Mojorangagung", "Mulyodadi", "Pagerngumbuk", "Pilang", "Plaosan", "Ploso", "Popoh", "Sawocangkring", "Semambung", "Simoanginangin", "Simoketawang", "Sumberejo", "Tanggul", "Wonoayu", "Wonokalang", "Wonokasihan"]
+    }
+  ],
+  "catatan": {
+    "keterangan": "Data desa/kelurahan per kecamatan dan total 18/28/318 bersumber dari daftar resmi kecamatan dan desa/kelurahan Kabupaten Sidoarjo. Pembagian 6 dapil dan alokasi kursi adalah konfigurasi Pemilu 2024 untuk DPRD Kabupaten Sidoarjo.",
+    "sumber": {
+      "daftar_kecamatan_desa": "",
+      "pembagian_dapil_2024": ""
+    }
+  }
+}

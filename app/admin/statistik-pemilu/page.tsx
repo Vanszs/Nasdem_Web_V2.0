@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useState } from "react";
+import React, { useState, useMemo } from "react";
 import {
   Select,
   SelectContent,
@@ -64,30 +64,54 @@ function StatistikPemiluPage() {
     partai: "ALL_PARTAI",
   });
 
+  // State untuk filter tabel (terpisah dari filter chart)
+  const [tableFilters, setTableFilters] = useState<FilterState>({
+    tahun: "2024",
+    dapil: "", // Default kosong untuk placeholder "Pilih Dapil"
+    kecamatan: "ALL_KECAMATAN",
+    desa: "ALL_DESA",
+    tps: "ALL_TPS",
+    jenisPemilu: "partai",
+    partai: "ALL_PARTAI",
+  });
+
+  // Auto-show table when Dapil is selected (including "Semua Dapil")
+  const showTable = useMemo(() => {
+    return tableFilters.dapil !== ""; // Muncul selama dapil sudah dipilih (termasuk ALL_DAPIL)
+  }, [tableFilters.dapil]);
+
   React.useEffect(() => {
-    setFilters((prev) => {
-      if (
-        prev.dapil === "ALL_DAPIL" &&
-        (prev.kecamatan !== "ALL_KECAMATAN" ||
-          prev.desa !== "ALL_DESA" ||
-          prev.tps !== "ALL_TPS")
-      ) {
-        return {
-          ...prev,
-          kecamatan: "ALL_KECAMATAN",
-          desa: "ALL_DESA",
-          tps: "ALL_TPS",
-        };
-      }
-      if (prev.kecamatan === "ALL_KECAMATAN" && prev.desa !== "ALL_DESA") {
-        return { ...prev, desa: "ALL_DESA", tps: "ALL_TPS" };
-      }
-      if (prev.desa === "ALL_DESA" && prev.tps !== "ALL_TPS") {
-        return { ...prev, tps: "ALL_TPS" };
-      }
-      return prev;
-    });
-  }, [filters.dapil, filters.kecamatan, filters.desa]);
+    // Auto-reset hierarchy when parent changes
+    if (filters.dapil === "ALL_DAPIL") {
+      setFilters((prev) => ({
+        ...prev,
+        kecamatan: "ALL_KECAMATAN",
+        desa: "ALL_DESA",
+        tps: "ALL_TPS",
+      }));
+    }
+  }, [filters.dapil]);
+
+  React.useEffect(() => {
+    // Auto-reset desa & tps when kecamatan changes to ALL
+    if (filters.kecamatan === "ALL_KECAMATAN") {
+      setFilters((prev) => ({
+        ...prev,
+        desa: "ALL_DESA",
+        tps: "ALL_TPS",
+      }));
+    }
+  }, [filters.kecamatan]);
+
+  React.useEffect(() => {
+    // Auto-reset tps when desa changes to ALL
+    if (filters.desa === "ALL_DESA") {
+      setFilters((prev) => ({
+        ...prev,
+        tps: "ALL_TPS",
+      }));
+    }
+  }, [filters.desa]);
 
   // Filter options
   const filterOptions = {
@@ -98,19 +122,39 @@ function StatistikPemiluPage() {
     ],
     dapil: [
       { value: "ALL_DAPIL", label: "Semua Dapil" },
-      { value: "Dapil 1", label: "Dapil 1" },
-      { value: "Dapil 2", label: "Dapil 2" },
-      { value: "Dapil 3", label: "Dapil 3" },
+      { value: "Dapil 1", label: "Dapil 1 (10 kursi)" },
+      { value: "Dapil 2", label: "Dapil 2 (9 kursi)" },
+      { value: "Dapil 3", label: "Dapil 3 (8 kursi)" },
+      { value: "Dapil 4", label: "Dapil 4 (7 kursi)" },
+      { value: "Dapil 5", label: "Dapil 5 (8 kursi)" },
+      { value: "Dapil 6", label: "Dapil 6 (8 kursi)" },
     ],
-    // Mapping kecamatan ke dapil baru
+    // Mapping kecamatan ke dapil sesuai data resmi Pemilu 2024
     kecamatan: [
-      { value: "ALL_KECAMATAN", label: "Semua Kecamatan", dapil: "*" },
-      { value: "balongbendo", label: "Balongbendo", dapil: "Dapil 1" },
-      { value: "wonoayu", label: "Wonoayu", dapil: "Dapil 1" },
-      { value: "waru", label: "Waru", dapil: "Dapil 2" },
-      { value: "gedangan", label: "Gedangan", dapil: "Dapil 2" },
-      { value: "buduran", label: "Buduran", dapil: "Dapil 3" },
-      { value: "sidoarjo", label: "Sidoarjo", dapil: "Dapil 3" },
+      // Dapil 1: Buduran, Sedati, Sidoarjo (10 kursi)
+      { value: "buduran", label: "Buduran", dapil: "Dapil 1" },
+      { value: "sedati", label: "Sedati", dapil: "Dapil 1" },
+      { value: "sidoarjo", label: "Sidoarjo", dapil: "Dapil 1" },
+      // Dapil 2: Candi, Jabon, Porong, Tanggulangin (9 kursi)
+      { value: "candi", label: "Candi", dapil: "Dapil 2" },
+      { value: "jabon", label: "Jabon", dapil: "Dapil 2" },
+      { value: "porong", label: "Porong", dapil: "Dapil 2" },
+      { value: "tanggulangin", label: "Tanggulangin", dapil: "Dapil 2" },
+      // Dapil 3: Krembung, Prambon, Tulangan, Wonoayu (8 kursi)
+      { value: "krembung", label: "Krembung", dapil: "Dapil 3" },
+      { value: "prambon", label: "Prambon", dapil: "Dapil 3" },
+      { value: "tulangan", label: "Tulangan", dapil: "Dapil 3" },
+      { value: "wonoayu", label: "Wonoayu", dapil: "Dapil 3" },
+      // Dapil 4: Balongbendo, Krian, Tarik (7 kursi)
+      { value: "balongbendo", label: "Balongbendo", dapil: "Dapil 4" },
+      { value: "krian", label: "Krian", dapil: "Dapil 4" },
+      { value: "tarik", label: "Tarik", dapil: "Dapil 4" },
+      // Dapil 5: Sukodono, Taman (8 kursi)
+      { value: "sukodono", label: "Sukodono", dapil: "Dapil 5" },
+      { value: "taman", label: "Taman", dapil: "Dapil 5" },
+      // Dapil 6: Gedangan, Waru (8 kursi)
+      { value: "gedangan", label: "Gedangan", dapil: "Dapil 6" },
+      { value: "waru", label: "Waru", dapil: "Dapil 6" },
     ],
     jenisPemilu: [
       { value: "partai", label: "Partai Politik" },
@@ -126,6 +170,17 @@ function StatistikPemiluPage() {
     ],
   } as const;
 
+  // Dynamic options based on selection
+  const getKecamatanOptions = (): Array<{ value: string; label: string; disabled?: boolean }> => {
+    if (filters.dapil === "ALL_DAPIL") {
+      return [{ value: "ALL_KECAMATAN", label: "Mohon pilih Dapil terlebih dahulu", disabled: true }];
+    }
+    return [
+      { value: "ALL_KECAMATAN", label: "Semua Kecamatan" },
+      ...filterOptions.kecamatan.filter((k) => k.dapil === filters.dapil)
+    ];
+  };
+
   // Basis data granular: tiap TPS (mock)
   interface BaseRecord {
     dapil: string;
@@ -138,418 +193,516 @@ function StatistikPemiluPage() {
   }
 
   const baseRecords: BaseRecord[] = [
-    // ==================== EXISTING (tetap) ====================
-    // Dapil 1 - Balongbendo, Wonoayu
+    // ==================== DAPIL 1: Buduran, Sedati, Sidoarjo (10 kursi) ====================
+    // Buduran
     {
       dapil: "Dapil 1",
-      kecamatan: "balongbendo",
-      desa: "Klurak",
-      tps: "001",
-      partai: "NasDem",
-      caleg: "Ahmad Muhaimin",
-      suara: 132,
-    },
-    {
-      dapil: "Dapil 1",
-      kecamatan: "balongbendo",
-      desa: "Klurak",
-      tps: "002",
-      partai: "NasDem",
-      caleg: "Ahmad Muhaimin",
-      suara: 118,
-    },
-    {
-      dapil: "Dapil 1",
-      kecamatan: "balongbendo",
-      desa: "Seduri",
-      tps: "001",
-      partai: "PDI-P",
-      caleg: "Siti Nurhaliza",
-      suara: 95,
-    },
-    {
-      dapil: "Dapil 1",
-      kecamatan: "wonoayu",
-      desa: "Panjunan",
-      tps: "003",
-      partai: "Golkar",
-      caleg: "Budi Santoso",
-      suara: 87,
-    },
-    {
-      dapil: "Dapil 1",
-      kecamatan: "wonoayu",
-      desa: "Siwalanpanji",
-      tps: "001",
-      partai: "PKB",
-      caleg: "Maria Kusuma",
-      suara: 76,
-    },
-    {
-      dapil: "Dapil 1",
-      kecamatan: "wonoayu",
-      desa: "Siwalanpanji",
-      tps: "002",
-      partai: "Gerindra",
-      caleg: "Andi Prasetyo",
-      suara: 64,
-    },
-
-    // Dapil 2 - Waru, Gedangan
-    {
-      dapil: "Dapil 2",
-      kecamatan: "waru",
-      desa: "Jemirahan",
-      tps: "001",
-      partai: "NasDem",
-      caleg: "Ahmad Muhaimin",
-      suara: 210,
-    },
-    {
-      dapil: "Dapil 2",
-      kecamatan: "waru",
-      desa: "Kepuhkiriman",
-      tps: "002",
-      partai: "PDI-P",
-      caleg: "Siti Nurhaliza",
-      suara: 168,
-    },
-    {
-      dapil: "Dapil 2",
-      kecamatan: "gedangan",
-      desa: "Ketajen",
-      tps: "001",
-      partai: "Golkar",
-      caleg: "Budi Santoso",
-      suara: 142,
-    },
-    {
-      dapil: "Dapil 2",
-      kecamatan: "gedangan",
-      desa: "Sawotratap",
-      tps: "001",
-      partai: "PKB",
-      caleg: "Maria Kusuma",
-      suara: 121,
-    },
-    {
-      dapil: "Dapil 2",
-      kecamatan: "gedangan",
-      desa: "Sawotratap",
-      tps: "002",
-      partai: "Gerindra",
-      caleg: "Andi Prasetyo",
-      suara: 97,
-    },
-
-    // Dapil 3 - Buduran, Sidoarjo
-    {
-      dapil: "Dapil 3",
       kecamatan: "buduran",
       desa: "Siwalanpanji",
       tps: "001",
       partai: "NasDem",
       caleg: "Ahmad Muhaimin",
-      suara: 254,
+      suara: 142,
     },
     {
-      dapil: "Dapil 3",
+      dapil: "Dapil 1",
+      kecamatan: "buduran",
+      desa: "Siwalanpanji",
+      tps: "002",
+      partai: "NasDem",
+      caleg: "Ahmad Muhaimin",
+      suara: 128,
+    },
+    {
+      dapil: "Dapil 1",
       kecamatan: "buduran",
       desa: "Buduran",
       tps: "001",
       partai: "PDI-P",
       caleg: "Siti Nurhaliza",
-      suara: 201,
+      suara: 115,
     },
     {
-      dapil: "Dapil 3",
+      dapil: "Dapil 1",
       kecamatan: "buduran",
-      desa: "Siwalan",
+      desa: "Banjarkemantren",
       tps: "001",
       partai: "Golkar",
       caleg: "Budi Santoso",
-      suara: 176,
+      suara: 98,
+    },
+    // Sedati
+    {
+      dapil: "Dapil 1",
+      kecamatan: "sedati",
+      desa: "Sedatiagung",
+      tps: "001",
+      partai: "NasDem",
+      caleg: "Ahmad Muhaimin",
+      suara: 156,
     },
     {
-      dapil: "Dapil 3",
-      kecamatan: "sidoarjo",
-      desa: "Sidokare",
+      dapil: "Dapil 1",
+      kecamatan: "sedati",
+      desa: "Sedatigede",
       tps: "001",
       partai: "PKB",
       caleg: "Maria Kusuma",
-      suara: 164,
+      suara: 134,
     },
     {
-      dapil: "Dapil 3",
-      kecamatan: "sidoarjo",
-      desa: "Gebang",
-      tps: "004",
+      dapil: "Dapil 1",
+      kecamatan: "sedati",
+      desa: "Pabean",
+      tps: "001",
       partai: "Gerindra",
       caleg: "Andi Prasetyo",
-      suara: 148,
+      suara: 121,
     },
+    // Sidoarjo
     {
-      dapil: "Dapil 3",
+      dapil: "Dapil 1",
       kecamatan: "sidoarjo",
-      desa: "Urangagung",
-      tps: "002",
+      desa: "Celep",
+      tps: "001",
       partai: "NasDem",
       caleg: "Ahmad Muhaimin",
       suara: 188,
     },
     {
-      dapil: "Dapil 3",
+      dapil: "Dapil 1",
       kecamatan: "sidoarjo",
-      desa: "Celep",
+      desa: "Sidokare",
       tps: "001",
-      partai: "NasDem",
-      caleg: "Ahmad Muhaimin",
-      suara: 130,
+      partai: "PDI-P",
+      caleg: "Siti Nurhaliza",
+      suara: 167,
+    },
+    {
+      dapil: "Dapil 1",
+      kecamatan: "sidoarjo",
+      desa: "Urangagung",
+      tps: "001",
+      partai: "Golkar",
+      caleg: "Budi Santoso",
+      suara: 145,
     },
 
-    // ==================== PENAMBAHAN MULTI-CALEG ====================
-    // NasDem (tambah caleg lain per dapil)
+    // ==================== DAPIL 2: Candi, Jabon, Porong, Tanggulangin (9 kursi) ====================
+    // Candi
     {
-      dapil: "Dapil 1",
-      kecamatan: "balongbendo",
-      desa: "Klurak",
-      tps: "003",
-      partai: "NasDem",
-      caleg: "Dr. Rizky Pratama",
-      suara: 105,
-    },
-    {
-      dapil: "Dapil 1",
-      kecamatan: "wonoayu",
-      desa: "Panjunan",
+      dapil: "Dapil 2",
+      kecamatan: "candi",
+      desa: "Candi",
       tps: "001",
       partai: "NasDem",
-      caleg: "Hj. Fatma Saifullah",
-      suara: 89,
+      caleg: "Dr. Rizky Pratama",
+      suara: 132,
     },
     {
       dapil: "Dapil 2",
-      kecamatan: "waru",
-      desa: "Jemirahan",
-      tps: "002",
+      kecamatan: "candi",
+      desa: "Sepande",
+      tps: "001",
+      partai: "PDI-P",
+      caleg: "Siti Nurhaliza",
+      suara: 118,
+    },
+    {
+      dapil: "Dapil 2",
+      kecamatan: "candi",
+      desa: "Larangan",
+      tps: "001",
+      partai: "Golkar",
+      caleg: "Budi Santoso",
+      suara: 105,
+    },
+    // Jabon
+    {
+      dapil: "Dapil 2",
+      kecamatan: "jabon",
+      desa: "Permisan",
+      tps: "001",
+      partai: "NasDem",
+      caleg: "Dr. Rizky Pratama",
+      suara: 124,
+    },
+    {
+      dapil: "Dapil 2",
+      kecamatan: "jabon",
+      desa: "Kedungcangkring",
+      tps: "001",
+      partai: "PKB",
+      caleg: "Maria Kusuma",
+      suara: 112,
+    },
+    // Porong
+    {
+      dapil: "Dapil 2",
+      kecamatan: "porong",
+      desa: "Porong",
+      tps: "001",
+      partai: "NasDem",
+      caleg: "Dr. Rizky Pratama",
+      suara: 145,
+    },
+    {
+      dapil: "Dapil 2",
+      kecamatan: "porong",
+      desa: "Gedang",
+      tps: "001",
+      partai: "Gerindra",
+      caleg: "Andi Prasetyo",
+      suara: 128,
+    },
+    // Tanggulangin
+    {
+      dapil: "Dapil 2",
+      kecamatan: "tanggulangin",
+      desa: "Penatarsewu",
+      tps: "001",
+      partai: "NasDem",
+      caleg: "Dr. Rizky Pratama",
+      suara: 156,
+    },
+    {
+      dapil: "Dapil 2",
+      kecamatan: "tanggulangin",
+      desa: "Ketegan",
+      tps: "001",
+      partai: "PDI-P",
+      caleg: "Siti Nurhaliza",
+      suara: 141,
+    },
+
+    // ==================== DAPIL 3: Krembung, Prambon, Tulangan, Wonoayu (8 kursi) ====================
+    // Krembung
+    {
+      dapil: "Dapil 3",
+      kecamatan: "krembung",
+      desa: "Krembung",
+      tps: "001",
+      partai: "NasDem",
+      caleg: "Hj. Fatma Saifullah",
+      suara: 138,
+    },
+    {
+      dapil: "Dapil 3",
+      kecamatan: "krembung",
+      desa: "Wangkal",
+      tps: "001",
+      partai: "Golkar",
+      caleg: "Budi Santoso",
+      suara: 122,
+    },
+    // Prambon
+    {
+      dapil: "Dapil 3",
+      kecamatan: "prambon",
+      desa: "Prambon",
+      tps: "001",
+      partai: "NasDem",
+      caleg: "Hj. Fatma Saifullah",
+      suara: 145,
+    },
+    {
+      dapil: "Dapil 3",
+      kecamatan: "prambon",
+      desa: "Kedungsugo",
+      tps: "001",
+      partai: "PKB",
+      caleg: "Maria Kusuma",
+      suara: 131,
+    },
+    // Tulangan
+    {
+      dapil: "Dapil 3",
+      kecamatan: "tulangan",
+      desa: "Tulangan",
+      tps: "001",
+      partai: "NasDem",
+      caleg: "Hj. Fatma Saifullah",
+      suara: 152,
+    },
+    {
+      dapil: "Dapil 3",
+      kecamatan: "tulangan",
+      desa: "Modong",
+      tps: "001",
+      partai: "PDI-P",
+      caleg: "Siti Nurhaliza",
+      suara: 136,
+    },
+    // Wonoayu
+    {
+      dapil: "Dapil 3",
+      kecamatan: "wonoayu",
+      desa: "Wonoayu",
+      tps: "001",
+      partai: "NasDem",
+      caleg: "Hj. Fatma Saifullah",
+      suara: 164,
+    },
+    {
+      dapil: "Dapil 3",
+      kecamatan: "wonoayu",
+      desa: "Panjunan",
+      tps: "001",
+      partai: "Gerindra",
+      caleg: "Andi Prasetyo",
+      suara: 148,
+    },
+
+    // ==================== DAPIL 4: Balongbendo, Krian, Tarik (7 kursi) ====================
+    // Balongbendo
+    {
+      dapil: "Dapil 4",
+      kecamatan: "balongbendo",
+      desa: "Balongbendo",
+      tps: "001",
+      partai: "NasDem",
+      caleg: "Ir. Bambang Wibowo",
+      suara: 129,
+    },
+    {
+      dapil: "Dapil 4",
+      kecamatan: "balongbendo",
+      desa: "Seduri",
+      tps: "001",
+      partai: "PDI-P",
+      caleg: "Siti Nurhaliza",
+      suara: 115,
+    },
+    // Krian
+    {
+      dapil: "Dapil 4",
+      kecamatan: "krian",
+      desa: "Krian",
+      tps: "001",
       partai: "NasDem",
       caleg: "Ir. Bambang Wibowo",
       suara: 142,
     },
     {
-      dapil: "Dapil 2",
-      kecamatan: "gedangan",
-      desa: "Ketajen",
-      tps: "002",
+      dapil: "Dapil 4",
+      kecamatan: "krian",
+      desa: "Tropodo",
+      tps: "001",
+      partai: "Golkar",
+      caleg: "Budi Santoso",
+      suara: 128,
+    },
+    // Tarik
+    {
+      dapil: "Dapil 4",
+      kecamatan: "tarik",
+      desa: "Tarik",
+      tps: "001",
       partai: "NasDem",
-      caleg: "Dra. Sari Indrawati",
-      suara: 127,
+      caleg: "Ir. Bambang Wibowo",
+      suara: 135,
     },
     {
-      dapil: "Dapil 3",
-      kecamatan: "sidoarjo",
-      desa: "Sidokare",
-      tps: "002",
-      partai: "NasDem",
-      caleg: "H. Dewi Lestari",
-      suara: 173,
-    },
-    {
-      dapil: "Dapil 3",
-      kecamatan: "buduran",
-      desa: "Buduran",
-      tps: "002",
-      partai: "NasDem",
-      caleg: "Prof. Ahmad Solichin",
-      suara: 119,
+      dapil: "Dapil 4",
+      kecamatan: "tarik",
+      desa: "Kedinding",
+      tps: "001",
+      partai: "PKB",
+      caleg: "Maria Kusuma",
+      suara: 121,
     },
 
-    // PDI-P (tambahan dengan caleg berbeda per dapil)
+    // ==================== DAPIL 5: Sukodono, Taman (8 kursi) ====================
+    // Sukodono
     {
-      dapil: "Dapil 1",
-      kecamatan: "wonoayu",
+      dapil: "Dapil 5",
+      kecamatan: "sukodono",
+      desa: "Sukodono",
+      tps: "001",
+      partai: "NasDem",
+      caleg: "H. Abdul Malik",
+      suara: 148,
+    },
+    {
+      dapil: "Dapil 5",
+      kecamatan: "sukodono",
       desa: "Panjunan",
-      tps: "004",
+      tps: "001",
       partai: "PDI-P",
-      caleg: "Drs. Arif Wibowo",
-      suara: 88,
+      caleg: "Siti Nurhaliza",
+      suara: 132,
     },
+    // Taman
     {
-      dapil: "Dapil 1",
-      kecamatan: "balongbendo",
-      desa: "Seduri",
-      tps: "003",
-      partai: "PDI-P",
-      caleg: "Hj. Nurul Hidayati",
-      suara: 94,
-    },
-    {
-      dapil: "Dapil 2",
-      kecamatan: "gedangan",
-      desa: "Ketajen",
-      tps: "002",
-      partai: "PDI-P",
-      caleg: "Dr. Lina Marlina",
-      suara: 131,
-    },
-    {
-      dapil: "Dapil 2",
-      kecamatan: "waru",
-      desa: "Kepuhkiriman",
-      tps: "003",
-      partai: "PDI-P",
-      caleg: "Ir. Suryadi Hartono",
-      suara: 124,
-    },
-    {
-      dapil: "Dapil 3",
-      kecamatan: "sidoarjo",
-      desa: "Urangagung",
-      tps: "003",
-      partai: "PDI-P",
-      caleg: "Hj. Ratna Sari Dewi",
+      dapil: "Dapil 5",
+      kecamatan: "taman",
+      desa: "Taman",
+      tps: "001",
+      partai: "NasDem",
+      caleg: "H. Abdul Malik",
       suara: 156,
     },
     {
-      dapil: "Dapil 3",
-      kecamatan: "buduran",
-      desa: "Siwalan",
-      tps: "003",
-      partai: "PDI-P",
-      caleg: "Dr. Bambang Kusuma",
-      suara: 139,
+      dapil: "Dapil 5",
+      kecamatan: "taman",
+      desa: "Sepanjang",
+      tps: "001",
+      partai: "Golkar",
+      caleg: "Budi Santoso",
+      suara: 141,
     },
 
-    // Golkar (tambahan dengan caleg berbeda per dapil)
+    // ==================== DAPIL 6: Gedangan, Waru (8 kursi) ====================
+    // Gedangan
     {
-      dapil: "Dapil 1",
-      kecamatan: "wonoayu",
-      desa: "Siwalanpanji",
-      tps: "003",
-      partai: "Golkar",
-      caleg: "H. Yusuf Hakim",
-      suara: 69,
-    },
-    {
-      dapil: "Dapil 1",
-      kecamatan: "balongbendo",
-      desa: "Klurak",
-      tps: "005",
-      partai: "Golkar",
-      caleg: "Dra. Endang Sulistyo",
-      suara: 74,
-    },
-    {
-      dapil: "Dapil 2",
-      kecamatan: "waru",
-      desa: "Jemirahan",
-      tps: "003",
-      partai: "Golkar",
-      caleg: "Dr. Agus Salim",
-      suara: 101,
-    },
-    {
-      dapil: "Dapil 2",
+      dapil: "Dapil 6",
       kecamatan: "gedangan",
-      desa: "Sawotratap",
-      tps: "004",
+      desa: "Gedangan",
+      tps: "001",
+      partai: "NasDem",
+      caleg: "Dra. Yuliana Sari",
+      suara: 152,
+    },
+    {
+      dapil: "Dapil 6",
+      kecamatan: "gedangan",
+      desa: "Ketajen",
+      tps: "001",
+      partai: "PDI-P",
+      caleg: "Siti Nurhaliza",
+      suara: 138,
+    },
+    // Waru
+    {
+      dapil: "Dapil 6",
+      kecamatan: "waru",
+      desa: "Waru",
+      tps: "001",
+      partai: "NasDem",
+      caleg: "Dra. Yuliana Sari",
+      suara: 165,
+    },
+    {
+      dapil: "Dapil 6",
+      kecamatan: "waru",
+      desa: "Janti",
+      tps: "001",
       partai: "Golkar",
-      caleg: "Ir. Widodo Pranoto",
-      suara: 93,
+      caleg: "Budi Santoso",
+      suara: 149,
+    },
+
+    // ==================== DATA TAMBAHAN MULTI-CALEG PER PARTAI ====================
+    // Tambahan caleg NasDem untuk variasi data
+    {
+      dapil: "Dapil 1",
+      kecamatan: "buduran",
+      desa: "Wadungasin",
+      tps: "001",
+      partai: "NasDem",
+      caleg: "Dr. Rizky Pratama",
+      suara: 105,
+    },
+    {
+      dapil: "Dapil 2",
+      kecamatan: "candi",
+      desa: "Bligo",
+      tps: "001",
+      partai: "NasDem",
+      caleg: "Hj. Fatma Saifullah",
+      suara: 98,
     },
     {
       dapil: "Dapil 3",
-      kecamatan: "buduran",
-      desa: "Siwalan",
-      tps: "002",
-      partai: "Golkar",
-      caleg: "Hj. Siti Maryam",
+      kecamatan: "wonoayu",
+      desa: "Pilang",
+      tps: "001",
+      partai: "NasDem",
+      caleg: "Ir. Bambang Wibowo",
       suara: 112,
     },
     {
-      dapil: "Dapil 3",
-      kecamatan: "sidoarjo",
-      desa: "Gebang",
-      tps: "005",
-      partai: "Golkar",
-      caleg: "Prof. Budi Santoso",
-      suara: 134,
+      dapil: "Dapil 4",
+      kecamatan: "krian",
+      desa: "Kemasan",
+      tps: "001",
+      partai: "NasDem",
+      caleg: "H. Abdul Malik",
+      suara: 108,
+    },
+    {
+      dapil: "Dapil 5",
+      kecamatan: "taman",
+      desa: "Trosobo",
+      tps: "001",
+      partai: "NasDem",
+      caleg: "Dra. Yuliana Sari",
+      suara: 115,
+    },
+    {
+      dapil: "Dapil 6",
+      kecamatan: "waru",
+      desa: "Bungurasih",
+      tps: "001",
+      partai: "NasDem",
+      caleg: "Ahmad Muhaimin",
+      suara: 125,
     },
 
-    // PKB (tambahan)
+    // Tambahan caleg partai lain untuk variasi data
     {
       dapil: "Dapil 1",
-      kecamatan: "balongbendo",
-      desa: "Seduri",
-      tps: "002",
-      partai: "PKB",
-      caleg: "H. Saiful Anam",
-      suara: 82,
+      kecamatan: "sedati",
+      desa: "Betro",
+      tps: "001",
+      partai: "PDI-P",
+      caleg: "Drs. Arif Wibowo",
+      suara: 122,
     },
     {
       dapil: "Dapil 2",
-      kecamatan: "gedangan",
-      desa: "Sawotratap",
-      tps: "003",
-      partai: "PKB",
-      caleg: "H. Saiful Anam",
+      kecamatan: "jabon",
+      desa: "Kupang",
+      tps: "001",
+      partai: "Golkar",
+      caleg: "H. Yusuf Hakim",
       suara: 109,
     },
     {
       dapil: "Dapil 3",
-      kecamatan: "sidoarjo",
-      desa: "Celep",
-      tps: "002",
+      kecamatan: "prambon",
+      desa: "Temu",
+      tps: "001",
       partai: "PKB",
       caleg: "H. Saiful Anam",
-      suara: 126,
+      suara: 118,
     },
     {
-      dapil: "Dapil 2",
-      kecamatan: "waru",
-      desa: "Kepuhkiriman",
-      tps: "004",
-      partai: "PKB",
-      caleg: "Maria Kusuma",
-      suara: 115,
-    },
-
-    // Gerindra (tambahan)
-    {
-      dapil: "Dapil 1",
-      kecamatan: "balongbendo",
-      desa: "Klurak",
-      tps: "004",
+      dapil: "Dapil 4",
+      kecamatan: "tarik",
+      desa: "Singgogalih",
+      tps: "001",
       partai: "Gerindra",
       caleg: "Nur Cahyo",
-      suara: 71,
+      suara: 103,
     },
     {
-      dapil: "Dapil 2",
+      dapil: "Dapil 5",
+      kecamatan: "sukodono",
+      desa: "Suruh",
+      tps: "001",
+      partai: "PDI-P",
+      caleg: "Hj. Nurul Hidayati",
+      suara: 125,
+    },
+    {
+      dapil: "Dapil 6",
       kecamatan: "gedangan",
-      desa: "Ketajen",
-      tps: "003",
-      partai: "Gerindra",
-      caleg: "Nur Cahyo",
-      suara: 108,
-    },
-    {
-      dapil: "Dapil 3",
-      kecamatan: "sidoarjo",
-      desa: "Urangagung",
-      tps: "004",
-      partai: "Gerindra",
-      caleg: "Nur Cahyo",
-      suara: 122,
-    },
-    {
-      dapil: "Dapil 3",
-      kecamatan: "buduran",
-      desa: "Siwalanpanji",
-      tps: "002",
-      partai: "Gerindra",
-      caleg: "Andi Prasetyo",
-      suara: 133,
+      desa: "Sawotratap",
+      tps: "001",
+      partai: "Golkar",
+      caleg: "Dr. Agus Salim",
+      suara: 131,
     },
   ];
 
@@ -655,9 +808,10 @@ function StatistikPemiluPage() {
   ];
 
   // Remove old static getDesaOptions/getTpsOptions (if any) and ensure dynamic versions are defined here
-  const getDesaOptions = (): Array<{ value: string; label: string }> => {
-    if (!filters.kecamatan || filters.kecamatan === "ALL_KECAMATAN")
-      return [{ value: "ALL_DESA", label: "Semua Desa" }];
+  const getDesaOptions = (): Array<{ value: string; label: string; disabled?: boolean }> => {
+    if (filters.kecamatan === "ALL_KECAMATAN") {
+      return [{ value: "ALL_DESA", label: "Mohon pilih Kecamatan terlebih dahulu", disabled: true }];
+    }
     const desaSet = new Set<string>();
     baseRecords
       .filter((r) => r.kecamatan === filters.kecamatan)
@@ -670,13 +824,59 @@ function StatistikPemiluPage() {
     ];
   };
 
-  const getTpsOptions = (): Array<{ value: string; label: string }> => {
-    if (!filters.desa || filters.desa === "ALL_DESA")
-      return [{ value: "ALL_TPS", label: "Semua TPS" }];
+  const getTpsOptions = (): Array<{ value: string; label: string; disabled?: boolean }> => {
+    if (filters.desa === "ALL_DESA") {
+      return [{ value: "ALL_TPS", label: "Mohon pilih Desa terlebih dahulu", disabled: true }];
+    }
     const tpsSet = new Set<string>();
     baseRecords
       .filter(
         (r) => r.kecamatan === filters.kecamatan && r.desa === filters.desa
+      )
+      .forEach((r) => tpsSet.add(r.tps));
+    return [
+      { value: "ALL_TPS", label: "Semua TPS" },
+      ...Array.from(tpsSet)
+        .sort()
+        .map((t) => ({ value: t, label: `TPS ${t}` })),
+    ];
+  };
+
+  // Dynamic options for TABLE filters
+  const getTableKecamatanOptions = (): Array<{ value: string; label: string; disabled?: boolean }> => {
+    if (!tableFilters.dapil || tableFilters.dapil === "ALL_DAPIL") {
+      return [{ value: "ALL_KECAMATAN", label: "Mohon pilih Dapil terlebih dahulu", disabled: true }];
+    }
+    return [
+      { value: "ALL_KECAMATAN", label: "Semua Kecamatan" },
+      ...filterOptions.kecamatan.filter((k) => k.dapil === tableFilters.dapil)
+    ];
+  };
+
+  const getTableDesaOptions = (): Array<{ value: string; label: string; disabled?: boolean }> => {
+    if (tableFilters.kecamatan === "ALL_KECAMATAN") {
+      return [{ value: "ALL_DESA", label: "Mohon pilih Kecamatan terlebih dahulu", disabled: true }];
+    }
+    const desaSet = new Set<string>();
+    baseRecords
+      .filter((r) => r.kecamatan === tableFilters.kecamatan)
+      .forEach((r) => desaSet.add(r.desa));
+    return [
+      { value: "ALL_DESA", label: "Semua Desa" },
+      ...Array.from(desaSet)
+        .sort()
+        .map((d) => ({ value: d, label: d })),
+    ];
+  };
+
+  const getTableTpsOptions = (): Array<{ value: string; label: string; disabled?: boolean }> => {
+    if (tableFilters.desa === "ALL_DESA") {
+      return [{ value: "ALL_TPS", label: "Mohon pilih Desa terlebih dahulu", disabled: true }];
+    }
+    const tpsSet = new Set<string>();
+    baseRecords
+      .filter(
+        (r) => r.kecamatan === tableFilters.kecamatan && r.desa === tableFilters.desa
       )
       .forEach((r) => tpsSet.add(r.tps));
     return [
@@ -770,6 +970,46 @@ function StatistikPemiluPage() {
     };
   });
 
+  // Filtered records untuk TABLE (berdasarkan tableFilters)
+  const tableFilteredRecords = showTable ? baseRecords.filter((r) => {
+    if (
+      tableFilters.dapil !== "ALL_DAPIL" &&
+      tableFilters.dapil &&
+      r.dapil !== tableFilters.dapil
+    )
+      return false;
+    if (
+      tableFilters.kecamatan !== "ALL_KECAMATAN" &&
+      tableFilters.kecamatan &&
+      r.kecamatan !== tableFilters.kecamatan
+    )
+      return false;
+    if (tableFilters.desa !== "ALL_DESA" && r.desa !== tableFilters.desa) return false;
+    if (tableFilters.tps !== "ALL_TPS" && r.tps !== tableFilters.tps) return false;
+    return true;
+  }) : [];
+
+  // Table data untuk tampilan tabel
+  const finalTableData: TableData[] = tableFilteredRecords.map((r) => {
+    const totalArea = tableFilteredRecords.reduce((s, rr) => s + rr.suara, 0) || 1;
+    return {
+      dapil: r.dapil,
+      kecamatan:
+        filterOptions.kecamatan.find((k) => k.value === r.kecamatan)?.label ||
+        r.kecamatan,
+      kelurahan: r.desa,
+      tps: r.tps,
+      partai: r.partai,
+      caleg: r.caleg,
+      suara: r.suara,
+      persentase: (r.suara / totalArea) * 100,
+      updatedAt: new Date().toISOString(),
+      bukti: true,
+      logo: PARTAI_META[r.partai]?.logo,
+      partaiColor: PARTAI_META[r.partai]?.color,
+    };
+  });
+
   const handleRefreshData = () => {
     setLoading(true);
     // Simulate API call
@@ -821,7 +1061,7 @@ function StatistikPemiluPage() {
           </div>
 
           {/* Filters */}
-          <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-6 gap-3">
+          <div className="flex flex-wrap items-center gap-3">
             {/* Tahun */}
             <Select
               value={filters.tahun}
@@ -829,7 +1069,7 @@ function StatistikPemiluPage() {
                 setFilters({ ...filters, tahun: value })
               }
             >
-              <SelectTrigger className="h-10 bg-white border border-[#F0F0F0] text-[#001B55] hover:border-[#001B55]/30 focus:border-[#001B55] transition-colors">
+              <SelectTrigger className="h-10 w-[140px] bg-white border-2 border-gray-300 text-[#001B55] hover:border-[#001B55] focus:border-[#001B55] focus:ring-2 focus:ring-[#001B55]/20 transition-colors">
                 <SelectValue placeholder="Tahun" />
               </SelectTrigger>
               <SelectContent className="bg-white border border-[#F0F0F0] text-[#001B55]">
@@ -848,7 +1088,7 @@ function StatistikPemiluPage() {
                 setFilters({ ...filters, jenisPemilu: value })
               }
             >
-              <SelectTrigger className="h-10 bg-white border border-[#F0F0F0] text-[#001B55] hover:border-[#001B55]/30 focus:border-[#001B55] transition-colors">
+              <SelectTrigger className="h-10 w-[180px] bg-white border-2 border-gray-300 text-[#001B55] hover:border-[#001B55] focus:border-[#001B55] focus:ring-2 focus:ring-[#001B55]/20 transition-colors">
                 <SelectValue placeholder="Jenis Pemilu" />
               </SelectTrigger>
               <SelectContent className="bg-white border border-[#F0F0F0] text-[#001B55]">
@@ -874,7 +1114,7 @@ function StatistikPemiluPage() {
                 })
               }
             >
-              <SelectTrigger className="h-10 bg-white border border-[#F0F0F0] text-[#001B55] hover:border-[#001B55]/30 focus:border-[#001B55] transition-colors">
+              <SelectTrigger className="h-10 w-[160px] bg-white border-2 border-gray-300 text-[#001B55] hover:border-[#001B55] focus:border-[#001B55] focus:ring-2 focus:ring-[#001B55]/20 transition-colors">
                 <SelectValue placeholder="Dapil" />
               </SelectTrigger>
               <SelectContent className="bg-white border border-[#F0F0F0] text-[#001B55]">
@@ -887,140 +1127,107 @@ function StatistikPemiluPage() {
             </Select>
 
             {/* Kecamatan (level 2) */}
-            <div
-              className={
-                filters.dapil === "ALL_DAPIL"
-                  ? "opacity-50 cursor-not-allowed"
-                  : ""
-              }
-              title={
-                filters.dapil === "ALL_DAPIL"
-                  ? "Pilih Dapil terlebih dahulu"
-                  : ""
-              }
-            >
-              <Select
-                value={filters.kecamatan}
-                onValueChange={(value) =>
+            <Select
+              value={filters.kecamatan}
+              onValueChange={(value) => {
+                // Hanya update jika bukan opsi disabled
+                if (filters.dapil !== "ALL_DAPIL") {
                   setFilters({
                     ...filters,
                     kecamatan: value,
                     desa: "ALL_DESA",
                     tps: "ALL_TPS",
-                  })
+                  });
                 }
-                disabled={filters.dapil === "ALL_DAPIL"}
-              >
-                <SelectTrigger className={`h-10 bg-white border transition-colors ${
-                  filters.dapil === "ALL_DAPIL" 
-                    ? "border-[#F0F0F0] text-[#6B7280]" 
-                    : "border-[#F0F0F0] text-[#001B55] hover:border-[#001B55]/30 focus:border-[#001B55]"
-                }`}>
-                  <SelectValue placeholder="Kecamatan" />
-                </SelectTrigger>
-                <SelectContent className="bg-white border border-[#F0F0F0] text-[#001B55]">
-                  {filterOptions.kecamatan
-                    .filter((k) =>
-                      filters.dapil === "ALL_DAPIL"
-                        ? false
-                        : k.dapil === filters.dapil ||
-                          k.value === "ALL_KECAMATAN"
-                    )
-                    .map((option) => (
-                      <SelectItem key={option.value} value={option.value} className="hover:bg-[#F0F0F0]">
-                        {option.label}
-                      </SelectItem>
-                    ))}
-                </SelectContent>
-              </Select>
-            </div>
+              }}
+            >
+              <SelectTrigger className="h-10 w-[180px] bg-white border-2 border-gray-300 text-[#001B55] hover:border-[#001B55] focus:border-[#001B55] focus:ring-2 focus:ring-[#001B55]/20 transition-colors">
+                <SelectValue>
+                  {filters.dapil === "ALL_DAPIL" 
+                    ? "Pilih Kecamatan" 
+                    : filters.kecamatan === "ALL_KECAMATAN"
+                    ? "Semua Kecamatan"
+                    : getKecamatanOptions().find(k => k.value === filters.kecamatan)?.label || "Pilih Kecamatan"
+                  }
+                </SelectValue>
+              </SelectTrigger>
+              <SelectContent className="bg-white border border-[#F0F0F0] text-[#001B55]">
+                {getKecamatanOptions().map((option) => (
+                  <SelectItem 
+                    key={option.value} 
+                    value={option.value} 
+                    disabled={option.disabled}
+                    className={option.disabled ? "text-gray-400 cursor-not-allowed" : "hover:bg-[#F0F0F0]"}
+                  >
+                    {option.label}
+                  </SelectItem>
+                ))}
+              </SelectContent>
+            </Select>
 
             {/* Desa (level 3) */}
-            <div
-              className={
-                filters.kecamatan === "ALL_KECAMATAN" ||
-                filters.dapil === "ALL_DAPIL"
-                  ? "opacity-50 cursor-not-allowed"
-                  : ""
-              }
-              title={
-                filters.kecamatan === "ALL_KECAMATAN" ||
-                filters.dapil === "ALL_DAPIL"
-                  ? "Pilih Kecamatan terlebih dahulu"
-                  : ""
-              }
+            <Select
+              value={filters.desa}
+              onValueChange={(value) => {
+                // Hanya update jika parent sudah dipilih
+                if (filters.kecamatan !== "ALL_KECAMATAN") {
+                  setFilters({ ...filters, desa: value, tps: "ALL_TPS" });
+                }
+              }}
             >
-              <Select
-                value={filters.desa}
-                onValueChange={(value) =>
-                  setFilters({ ...filters, desa: value, tps: "ALL_TPS" })
-                }
-                disabled={
-                  filters.dapil === "ALL_DAPIL" ||
-                  filters.kecamatan === "ALL_KECAMATAN"
-                }
-              >
-                <SelectTrigger className={`h-10 bg-white border transition-colors ${
-                  filters.dapil === "ALL_DAPIL" || filters.kecamatan === "ALL_KECAMATAN"
-                    ? "border-[#F0F0F0] text-[#6B7280]" 
-                    : "border-[#F0F0F0] text-[#001B55] hover:border-[#001B55]/30 focus:border-[#001B55]"
-                }`}>
-                  <SelectValue placeholder="Desa" />
-                </SelectTrigger>
-                <SelectContent className="bg-white border border-[#F0F0F0] text-[#001B55]">
-                  {getDesaOptions().map((option) => (
-                    <SelectItem key={option.value} value={option.value} className="hover:bg-[#F0F0F0]">
-                      {option.label}
-                    </SelectItem>
-                  ))}
-                </SelectContent>
-              </Select>
-            </div>
+              <SelectTrigger className="h-10 w-[160px] bg-white border-2 border-gray-300 text-[#001B55] hover:border-[#001B55] focus:border-[#001B55] focus:ring-2 focus:ring-[#001B55]/20 transition-colors">
+                <SelectValue>
+                  {filters.kecamatan === "ALL_KECAMATAN"
+                    ? "Pilih Desa"
+                    : filters.desa === "ALL_DESA"
+                    ? "Semua Desa"
+                    : getDesaOptions().find(d => d.value === filters.desa)?.label || "Pilih Desa"
+                  }
+                </SelectValue>
+              </SelectTrigger>
+              <SelectContent className="bg-white border border-[#F0F0F0] text-[#001B55]">
+                {getDesaOptions().map((option) => (
+                  <SelectItem 
+                    key={option.value} 
+                    value={option.value}
+                    disabled={option.disabled}
+                    className={option.disabled ? "text-gray-400 cursor-not-allowed" : "hover:bg-[#F0F0F0]"}
+                  >
+                    {option.label}
+                  </SelectItem>
+                ))}
+              </SelectContent>
+            </Select>
 
-            {/* TPS (level 4) */}
-            <div
-              className={
-                filters.desa === "ALL_DESA" ||
-                filters.kecamatan === "ALL_KECAMATAN" ||
-                filters.dapil === "ALL_DAPIL"
-                  ? "opacity-50 cursor-not-allowed"
-                  : ""
-              }
-              title={
-                filters.desa === "ALL_DESA" ||
-                filters.kecamatan === "ALL_KECAMATAN" ||
-                filters.dapil === "ALL_DAPIL"
-                  ? "Pilih Desa terlebih dahulu"
-                  : ""
-              }
+            {/* TPS (level 4) - DISABLED sementara */}
+            <Select
+              value={filters.tps}
+              onValueChange={(value) => {
+                // Hanya update jika parent sudah dipilih
+                if (filters.desa !== "ALL_DESA") {
+                  setFilters({ ...filters, tps: value });
+                }
+              }}
+              disabled={true}
             >
-              <Select
-                value={filters.tps}
-                onValueChange={(value) =>
-                  setFilters({ ...filters, tps: value })
-                }
-                disabled={
-                  filters.dapil === "ALL_DAPIL" ||
-                  filters.kecamatan === "ALL_KECAMATAN" ||
-                  filters.desa === "ALL_DESA"
-                }
-              >
-                <SelectTrigger className={`h-10 bg-white border transition-colors ${
-                  filters.dapil === "ALL_DAPIL" || filters.kecamatan === "ALL_KECAMATAN" || filters.desa === "ALL_DESA"
-                    ? "border-[#F0F0F0] text-[#6B7280]" 
-                    : "border-[#F0F0F0] text-[#001B55] hover:border-[#001B55]/30 focus:border-[#001B55]"
-                }`}>
-                  <SelectValue placeholder="TPS" />
-                </SelectTrigger>
-                <SelectContent className="bg-white border border-[#F0F0F0] text-[#001B55]">
-                  {getTpsOptions().map((option) => (
-                    <SelectItem key={option.value} value={option.value} className="hover:bg-[#F0F0F0]">
-                      {option.label}
-                    </SelectItem>
-                  ))}
-                </SelectContent>
-              </Select>
-            </div>
+              <SelectTrigger className="h-10 w-[150px] bg-gray-100 border-2 border-gray-200 text-gray-400 cursor-not-allowed transition-colors">
+                <SelectValue>
+                  Pilih TPS
+                </SelectValue>
+              </SelectTrigger>
+              <SelectContent className="bg-white border border-[#F0F0F0] text-[#001B55]">
+                {getTpsOptions().map((option) => (
+                  <SelectItem 
+                    key={option.value} 
+                    value={option.value}
+                    disabled={option.disabled}
+                    className={option.disabled ? "text-gray-400 cursor-not-allowed" : "hover:bg-[#F0F0F0]"}
+                  >
+                    {option.label}
+                  </SelectItem>
+                ))}
+              </SelectContent>
+            </Select>
           </div>
 
           {/* Active filters */}
@@ -1095,7 +1302,206 @@ function StatistikPemiluPage() {
         </div>
 
         {/* Data Table - Full Width */}
-        <StatistikDataTable data={tableData} loading={loading} />
+        <div className="bg-white rounded-2xl shadow-sm border border-[#F0F0F0] p-6">
+          <div className="mb-6">
+            <h2 className="text-xl font-bold text-[#001B55] mb-2">
+              Tabel Data Hasil Pemilu (Pivot Dapil)
+            </h2>
+            <p className="text-sm text-[#6B7280]">
+              Terapkan filter untuk menampilkan data tabel
+            </p>
+          </div>
+
+          {/* Table Filters */}
+          <div className="flex flex-wrap items-center gap-3 mb-6">
+            {/* Tahun */}
+            <Select
+              value={tableFilters.tahun}
+              onValueChange={(value) =>
+                setTableFilters({ ...tableFilters, tahun: value })
+              }
+            >
+              <SelectTrigger className="h-10 w-[140px] bg-white border-2 border-gray-300 text-[#001B55] hover:border-[#001B55] focus:border-[#001B55] focus:ring-2 focus:ring-[#001B55]/20 transition-colors">
+                <SelectValue placeholder="Tahun" />
+              </SelectTrigger>
+              <SelectContent className="bg-white border border-[#F0F0F0] text-[#001B55]">
+                {filterOptions.tahun.map((option) => (
+                  <SelectItem key={option.value} value={option.value} className="hover:bg-[#F0F0F0]">
+                    {option.label}
+                  </SelectItem>
+                ))}
+              </SelectContent>
+            </Select>
+
+            {/* Jenis Pemilu */}
+            <Select
+              value={tableFilters.jenisPemilu}
+              onValueChange={(value) =>
+                setTableFilters({ ...tableFilters, jenisPemilu: value })
+              }
+            >
+              <SelectTrigger className="h-10 w-[180px] bg-white border-2 border-gray-300 text-[#001B55] hover:border-[#001B55] focus:border-[#001B55] focus:ring-2 focus:ring-[#001B55]/20 transition-colors">
+                <SelectValue placeholder="Jenis Pemilu" />
+              </SelectTrigger>
+              <SelectContent className="bg-white border border-[#F0F0F0] text-[#001B55]">
+                {filterOptions.jenisPemilu.map((option) => (
+                  <SelectItem key={option.value} value={option.value} className="hover:bg-[#F0F0F0]">
+                    {option.label}
+                  </SelectItem>
+                ))}
+              </SelectContent>
+            </Select>
+
+            {/* Dapil */}
+            <Select
+              value={tableFilters.dapil}
+              onValueChange={(value) =>
+                setTableFilters({
+                  ...tableFilters,
+                  dapil: value,
+                  kecamatan: "ALL_KECAMATAN",
+                  desa: "ALL_DESA",
+                  tps: "ALL_TPS",
+                })
+              }
+            >
+              <SelectTrigger className="h-10 w-[160px] bg-white border-2 border-gray-300 text-[#001B55] hover:border-[#001B55] focus:border-[#001B55] focus:ring-2 focus:ring-[#001B55]/20 transition-colors">
+                <SelectValue placeholder="Pilih Dapil">
+                  {tableFilters.dapil 
+                    ? filterOptions.dapil.find(d => d.value === tableFilters.dapil)?.label || "Pilih Dapil"
+                    : "Pilih Dapil"
+                  }
+                </SelectValue>
+              </SelectTrigger>
+              <SelectContent className="bg-white border border-[#F0F0F0] text-[#001B55]">
+                {filterOptions.dapil.map((option) => (
+                  <SelectItem key={option.value} value={option.value} className="hover:bg-[#F0F0F0]">
+                    {option.label}
+                  </SelectItem>
+                ))}
+              </SelectContent>
+            </Select>
+
+            {/* Kecamatan */}
+            <Select
+              value={tableFilters.kecamatan}
+              onValueChange={(value) => {
+                if (tableFilters.dapil && tableFilters.dapil !== "ALL_DAPIL") {
+                  setTableFilters({
+                    ...tableFilters,
+                    kecamatan: value,
+                    desa: "ALL_DESA",
+                    tps: "ALL_TPS",
+                  });
+                }
+              }}
+            >
+              <SelectTrigger className="h-10 w-[180px] bg-white border-2 border-gray-300 text-[#001B55] hover:border-[#001B55] focus:border-[#001B55] focus:ring-2 focus:ring-[#001B55]/20 transition-colors">
+                <SelectValue>
+                  {!tableFilters.dapil || tableFilters.dapil === "ALL_DAPIL"
+                    ? "Pilih Kecamatan" 
+                    : tableFilters.kecamatan === "ALL_KECAMATAN"
+                    ? "Semua Kecamatan"
+                    : getTableKecamatanOptions().find(k => k.value === tableFilters.kecamatan)?.label || "Pilih Kecamatan"
+                  }
+                </SelectValue>
+              </SelectTrigger>
+              <SelectContent className="bg-white border border-[#F0F0F0] text-[#001B55]">
+                {getTableKecamatanOptions().map((option) => (
+                  <SelectItem 
+                    key={option.value} 
+                    value={option.value} 
+                    disabled={option.disabled}
+                    className={option.disabled ? "text-gray-400 cursor-not-allowed" : "hover:bg-[#F0F0F0]"}
+                  >
+                    {option.label}
+                  </SelectItem>
+                ))}
+              </SelectContent>
+            </Select>
+
+            {/* Desa */}
+            <Select
+              value={tableFilters.desa}
+              onValueChange={(value) => {
+                if (tableFilters.kecamatan !== "ALL_KECAMATAN") {
+                  setTableFilters({ ...tableFilters, desa: value, tps: "ALL_TPS" });
+                }
+              }}
+            >
+              <SelectTrigger className="h-10 w-[160px] bg-white border-2 border-gray-300 text-[#001B55] hover:border-[#001B55] focus:border-[#001B55] focus:ring-2 focus:ring-[#001B55]/20 transition-colors">
+                <SelectValue>
+                  {tableFilters.kecamatan === "ALL_KECAMATAN"
+                    ? "Pilih Desa"
+                    : tableFilters.desa === "ALL_DESA"
+                    ? "Semua Desa"
+                    : getTableDesaOptions().find(d => d.value === tableFilters.desa)?.label || "Pilih Desa"
+                  }
+                </SelectValue>
+              </SelectTrigger>
+              <SelectContent className="bg-white border border-[#F0F0F0] text-[#001B55]">
+                {getTableDesaOptions().map((option) => (
+                  <SelectItem 
+                    key={option.value} 
+                    value={option.value}
+                    disabled={option.disabled}
+                    className={option.disabled ? "text-gray-400 cursor-not-allowed" : "hover:bg-[#F0F0F0]"}
+                  >
+                    {option.label}
+                  </SelectItem>
+                ))}
+              </SelectContent>
+            </Select>
+
+            {/* TPS - Disabled */}
+            <Select
+              value={tableFilters.tps}
+              onValueChange={(value) => {
+                if (tableFilters.desa !== "ALL_DESA") {
+                  setTableFilters({ ...tableFilters, tps: value });
+                }
+              }}
+              disabled={true}
+            >
+              <SelectTrigger className="h-10 w-[150px] bg-gray-100 border-2 border-gray-200 text-gray-400 cursor-not-allowed transition-colors">
+                <SelectValue>
+                  Pilih TPS
+                </SelectValue>
+              </SelectTrigger>
+              <SelectContent className="bg-white border border-[#F0F0F0] text-[#001B55]">
+                {getTableTpsOptions().map((option) => (
+                  <SelectItem 
+                    key={option.value} 
+                    value={option.value}
+                    disabled={option.disabled}
+                    className={option.disabled ? "text-gray-400 cursor-not-allowed" : "hover:bg-[#F0F0F0]"}
+                  >
+                    {option.label}
+                  </SelectItem>
+                ))}
+              </SelectContent>
+            </Select>
+          </div>
+
+          {/* Table or Empty State */}
+          {showTable ? (
+            <StatistikDataTable data={finalTableData} loading={loading} />
+          ) : (
+            <div className="text-center py-12 bg-[#F0F0F0]/30 rounded-xl border-2 border-dashed border-gray-300">
+              <div className="flex flex-col items-center gap-3">
+                <div className="w-16 h-16 bg-[#001B55]/10 rounded-full flex items-center justify-center">
+                  <BarChart3 className="w-8 h-8 text-[#001B55]" />
+                </div>
+                <h3 className="text-lg font-semibold text-[#001B55]">
+                  Pilih Dapil untuk Menampilkan Data
+                </h3>
+                <p className="text-sm text-[#6B7280] max-w-md">
+                  Tabel akan otomatis muncul setelah Anda memilih Dapil atau filter lainnya
+                </p>
+              </div>
+            </div>
+          )}
+        </div>
       </div>
     </AdminLayout>
   );
