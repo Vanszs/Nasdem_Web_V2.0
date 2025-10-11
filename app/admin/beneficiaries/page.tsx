@@ -827,44 +827,45 @@ export default function BeneficiariesPage() {
 
             {/* Table */}
             <div className="rounded-lg border border-[#E8F9FF] overflow-hidden">
-              <Table>
-                <TableHeader className="bg-[#E8F9FF]">
-                  <TableRow className="hover:bg-[#E8F9FF]">
-                    <TableHead className="font-semibold text-[#001B55]">
-                      Nama Lengkap
-                    </TableHead>
-                    <TableHead className="font-semibold text-[#001B55]">
-                      NIK
-                    </TableHead>
-                    <TableHead className="font-semibold text-[#001B55]">
-                      Kontak
-                    </TableHead>
-                    <TableHead className="font-semibold text-[#001B55]">
-                      Alamat Lengkap
-                    </TableHead>
-                    <TableHead className="font-semibold text-[#001B55]">
-                      Program
-                    </TableHead>
-                    <TableHead className="font-semibold text-[#001B55]">
-                      Kategori
-                    </TableHead>
-                    <TableHead className="font-semibold text-[#001B55] text-center">
-                      Jml. Keluarga
-                    </TableHead>
-                    <TableHead className="font-semibold text-[#001B55]">
-                      Pengusul
-                    </TableHead>
-                    <TableHead className="font-semibold text-[#001B55]">
-                      Status
-                    </TableHead>
-                    <TableHead className="font-semibold text-[#001B55]">
-                      Terdaftar
-                    </TableHead>
-                    <TableHead className="font-semibold text-[#001B55] text-right">
-                      Aksi
-                    </TableHead>
-                  </TableRow>
-                </TableHeader>
+              <div className="overflow-x-auto">
+                <Table>
+                  <TableHeader className="bg-[#E8F9FF]">
+                    <TableRow className="hover:bg-[#E8F9FF]">
+                      <TableHead className="font-semibold text-[#001B55]">
+                        Nama Lengkap
+                      </TableHead>
+                      <TableHead className="font-semibold text-[#001B55]">
+                        NIK
+                      </TableHead>
+                      <TableHead className="font-semibold text-[#001B55]">
+                        Kontak
+                      </TableHead>
+                      <TableHead className="font-semibold text-[#001B55]">
+                        Alamat Lengkap
+                      </TableHead>
+                      <TableHead className="font-semibold text-[#001B55]">
+                        Program
+                      </TableHead>
+                      <TableHead className="font-semibold text-[#001B55]">
+                        Kategori
+                      </TableHead>
+                      <TableHead className="font-semibold text-[#001B55] text-center">
+                        Jml. Keluarga
+                      </TableHead>
+                      <TableHead className="font-semibold text-[#001B55]">
+                        Pengusul
+                      </TableHead>
+                      <TableHead className="font-semibold text-[#001B55]">
+                        Status
+                      </TableHead>
+                      <TableHead className="font-semibold text-[#001B55]">
+                        Terdaftar
+                      </TableHead>
+                      <TableHead className="font-semibold text-[#001B55] text-right sticky right-0 bg-[#E8F9FF] z-10 min-w-[200px]">
+                        Aksi
+                      </TableHead>
+                    </TableRow>
+                  </TableHeader>
                 <TableBody>
                   {filteredBeneficiaries.length === 0 ? (
                     <TableRow>
@@ -940,7 +941,7 @@ export default function BeneficiariesPage() {
                             year: "numeric",
                           })}
                         </TableCell>
-                        <TableCell className="text-right">
+                        <TableCell className="text-right sticky right-0 bg-white z-10 min-w-[200px] shadow-[ -5px 0 5px -5px rgba(0,0,0,0.1)]">
                           <div className="flex items-center justify-end gap-2">
                             <Button
                               size="sm"
@@ -974,6 +975,7 @@ export default function BeneficiariesPage() {
                 </TableBody>
               </Table>
             </div>
+          </div>
           </CardContent>
         </Card>
 

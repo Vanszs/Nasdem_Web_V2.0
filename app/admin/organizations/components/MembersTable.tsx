@@ -211,7 +211,9 @@ export function MembersTable({
         id: "actions",
         header: "",
         cell: ({ row }) => (
-          <MembersActions member={row.original} onChanged={onRefresh} />
+          <div className="sticky right-0 bg-white z-10 min-w-[100px] shadow-[ -5px 0 5px -5px rgba(0,0,0,0.1)]">
+            <MembersActions member={row.original} onChanged={onRefresh} />
+          </div>
         ),
       },
     ],
@@ -462,7 +464,10 @@ export function MembersTable({
                   {headerGroup.headers.map((header) => (
                     <th
                       key={header.id}
-                      className="text-left font-semibold px-4 py-3 border-b border-[#E5E7EB] text-xs uppercase tracking-wide"
+                      className={cn(
+                        "text-left font-semibold px-4 py-3 border-b border-[#E5E7EB] text-xs uppercase tracking-wide",
+                        header.id === "actions" ? "sticky right-0 bg-[#001B55]/5 z-10 min-w-[100px]" : ""
+                      )}
                     >
                       {header.isPlaceholder
                         ? null
@@ -517,7 +522,10 @@ export function MembersTable({
                     .map((cell) => (
                       <td
                         key={cell.id}
-                        className="px-4 py-3 border-b border-[#F1F2F4] align-middle"
+                        className={cn(
+                          "px-4 py-3 border-b border-[#F1F2F4] align-middle",
+                          cell.column.id === "actions" ? "sticky right-0 bg-white z-10 min-w-[100px] shadow-[ -5px 0 5px -5px rgba(0,0,0,0.1)]" : ""
+                        )}
                       >
                         {flexRender(
                           cell.column.columnDef.cell,

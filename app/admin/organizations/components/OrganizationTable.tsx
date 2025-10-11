@@ -183,7 +183,7 @@ function MembersDialog({ open, onOpenChange, members, orgTitle }: MembersDialogP
                     <th className="text-left font-semibold px-4 py-3 border-b border-gray-200 text-xs uppercase tracking-wide text-[#16A34A]">
                       Nama Lengkap
                     </th>
-                    <th className="text-left font-semibold px-4 py-3 border-b border-gray-200 text-xs uppercase tracking-wide text-[#16A34A]">
+                    <th className="text-left font-semibold px-4 py-3 border-b border-gray-200 text-xs uppercase tracking-wide text-[#16A34A] sticky right-0 bg-[#16A34A]/5 z-10 min-w-[100px]">
                       Status
                     </th>
                   </tr>
@@ -221,7 +221,7 @@ function MembersDialog({ open, onOpenChange, members, orgTitle }: MembersDialogP
                         <td className="px-4 py-3 border-b border-gray-100 font-medium text-gray-900">
                           {member.fullName}
                         </td>
-                        <td className="px-4 py-3 border-b border-gray-100">
+                        <td className="px-4 py-3 border-b border-gray-100 sticky right-0 bg-white z-10 min-w-[100px] shadow-[ -5px 0 5px -5px rgba(0,0,0,0.1)]">
                           {member.status ? (
                             <Badge variant="secondary" className="text-xs">
                               {member.status}
@@ -436,11 +436,13 @@ export function OrganizationTable({
         id: "actions",
         header: "",
         cell: ({ row }) => (
-          <OrganizationActions
-            item={row.original}
-            regions={regions}
-            sayapTypes={sayapTypes}
-          />
+          <div className="sticky right-0 bg-white z-10 min-w-[100px] shadow-[ -5px 0 5px -5px rgba(0,0,0,0.1)]">
+            <OrganizationActions
+              item={row.original}
+              regions={regions}
+              sayapTypes={sayapTypes}
+            />
+          </div>
         ),
       },
     ],
@@ -650,7 +652,10 @@ export function OrganizationTable({
                   {hg.headers.map((h) => (
                     <th
                       key={h.id}
-                      className="text-left font-semibold px-4 py-3 border-b border-[#E5E7EB] text-xs uppercase tracking-wide"
+                      className={cn(
+                        "text-left font-semibold px-4 py-3 border-b border-[#E5E7EB] text-xs uppercase tracking-wide",
+                        h.id === "actions" ? "sticky right-0 bg-[#001B55]/5 z-10 min-w-[100px]" : ""
+                      )}
                     >
                       {h.isPlaceholder
                         ? null
@@ -702,7 +707,10 @@ export function OrganizationTable({
                   {table.getRowModel().rows[idx]?.getVisibleCells().map((cell) => (
                     <td
                       key={cell.id}
-                      className="px-4 py-3 border-b border-[#F1F2F4] align-middle"
+                      className={cn(
+                        "px-4 py-3 border-b border-[#F1F2F4] align-middle",
+                        cell.column.id === "actions" ? "sticky right-0 bg-white z-10 min-w-[100px] shadow-[ -5px 0 5px -5px rgba(0,0,0,0.1)]" : ""
+                      )}
                     >
                       {flexRender(
                         cell.column.columnDef.cell,

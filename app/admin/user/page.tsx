@@ -137,7 +137,7 @@ export function UserPage() {
                   <TableHead className="py-4 px-6 text-[#001B55] font-bold text-sm">Role</TableHead>
                   <TableHead className="py-4 px-6 text-[#001B55] font-bold text-sm">Status</TableHead>
                   <TableHead className="py-4 px-6 text-[#001B55] font-bold text-sm">Last Login</TableHead>
-                  <TableHead className="py-4 px-6 text-[#001B55] font-bold text-sm">Aksi</TableHead>
+                  <TableHead className="py-4 px-6 text-[#001B55] font-bold text-sm sticky right-0 bg-gray-200 z-10 min-w-[100px]">Aksi</TableHead>
                 </TableRow>
               </TableHeader>
               <TableBody>
@@ -180,19 +180,19 @@ export function UserPage() {
                     <TableCell className="py-5 px-6 text-gray-500 group-hover:text-gray-600 transition-colors duration-200">
                       {user.lastLogin}
                     </TableCell>
-                    <TableCell className="py-5 px-6">
+                    <TableCell className="py-5 px-6 sticky right-0 bg-white z-10 min-w-[100px] shadow-[ -5px 0 5px -5px rgba(0,0,0,0.1)]">
                       <DropdownMenu>
                         <DropdownMenuTrigger asChild>
-                          <Button 
-                            variant="ghost" 
-                            size="sm" 
+                          <Button
+                            variant="ghost"
+                            size="sm"
                             className="h-8 w-8 p-0 hover:bg-[#001B55]/10 hover:text-[#001B55] transition-all duration-200 rounded-xl border border-transparent hover:border-[#001B55]/20"
                           >
                             <MoreVertical className="h-4 w-4" />
                           </Button>
                         </DropdownMenuTrigger>
-                        <DropdownMenuContent 
-                          align="end" 
+                        <DropdownMenuContent
+                          align="end"
                           className="border border-gray-100 shadow-lg rounded-2xl bg-white/95 backdrop-blur-sm"
                         >
                           <DropdownMenuItem className="hover:bg-[#001B55]/5 hover:text-[#001B55] transition-colors duration-200 rounded-xl mx-1 my-1">

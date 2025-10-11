@@ -323,19 +323,20 @@ export function NewsTable() {
       </div>
 
       <div className="rounded-xl border border-gray-200 shadow-sm overflow-hidden">
-        <Table>
-          <TableHeader className="bg-muted/30">
-            <TableRow>
-              <TableHead className="w-[12%]">Sampul</TableHead>
-              <TableHead className="w-[32%]">Judul Berita</TableHead>
-              <TableHead>Status</TableHead>
-              <TableHead>Penulis</TableHead>
-              <TableHead>Tanggal Publikasi</TableHead>
-              <TableHead>Dibuat</TableHead>
-              <TableHead className="text-right">Actions</TableHead>
-            </TableRow>
-          </TableHeader>
-          <TableBody>
+        <div className="overflow-x-auto">
+          <Table>
+            <TableHeader className="bg-muted/30">
+              <TableRow>
+                <TableHead className="w-[12%]">Sampul</TableHead>
+                <TableHead className="w-[32%]">Judul Berita</TableHead>
+                <TableHead>Status</TableHead>
+                <TableHead>Penulis</TableHead>
+                <TableHead>Tanggal Publikasi</TableHead>
+                <TableHead>Dibuat</TableHead>
+                <TableHead className="text-right sticky right-0 bg-muted/30 z-10 min-w-[100px]">Actions</TableHead>
+              </TableRow>
+            </TableHeader>
+            <TableBody>
             {query.isLoading && (
               <TableRow>
                 <TableCell colSpan={5} className="py-10 text-center text-sm">
@@ -402,7 +403,7 @@ export function NewsTable() {
                   <TableCell className="text-sm">{row.author}</TableCell>
                   <TableCell className="text-sm">{row.publishDate}</TableCell>
                   <TableCell className="text-sm">{row.createdAt}</TableCell>
-                  <TableCell className="text-right">
+                  <TableCell className="text-right sticky right-0 bg-white z-10 min-w-[100px] shadow-[ -5px 0 5px -5px rgba(0,0,0,0.1)]">
                     <DropdownMenu>
                       <DropdownMenuTrigger asChild>
                         <Button variant="ghost" size="icon">
@@ -457,9 +458,11 @@ export function NewsTable() {
                     </DropdownMenu>
                   </TableCell>
                 </TableRow>
-              ))}
+              ))
+            }
           </TableBody>
-        </Table>
+          </Table>
+        </div>
       </div>
 
       <div className="flex flex-col gap-3 md:flex-row md:items-center md:justify-between">

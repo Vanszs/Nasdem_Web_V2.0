@@ -415,7 +415,7 @@ export function StatistikDataTable({ data, loading }: StatistikDataTableProps) {
                   <SortIcon active={sortField === "_total"} />
                 </div>
               </th>
-              <th className="px-5 py-3.5 text-left text-xs font-bold uppercase tracking-wide text-[#001B55] whitespace-nowrap">
+              <th className="px-5 py-3.5 text-left text-xs font-bold uppercase tracking-wide text-[#001B55] whitespace-nowrap sticky right-0 bg-[#E8F9FF] z-10 min-w-[80px]">
                 %
               </th>
             </tr>
@@ -486,7 +486,7 @@ export function StatistikDataTable({ data, loading }: StatistikDataTableProps) {
                     <td className="px-5 py-4 text-sm font-bold text-[#111827]">
                       {g.total.toLocaleString("id-ID")}
                     </td>
-                    <td className="px-5 py-4 text-sm font-bold text-[#111827]">
+                    <td className="px-5 py-4 text-sm font-bold text-[#111827] sticky right-0 bg-white z-10 min-w-[80px] shadow-[ -5px 0 5px -5px rgba(0,0,0,0.1)]">
                       {g.percent.toFixed(1)}%
                     </td>
                   </tr>
@@ -518,7 +518,7 @@ export function StatistikDataTable({ data, loading }: StatistikDataTableProps) {
                   <td className="px-5 py-3 text-sm font-semibold text-[#001B55]">
                     {c.total.toLocaleString("id-ID")}
                   </td>
-                  <td className="px-5 py-3 text-sm font-semibold text-[#001B55]">
+                  <td className="px-5 py-3 text-sm font-semibold text-[#001B55] sticky right-0 bg-[#E8F9FF]/20 z-10 min-w-[80px] shadow-[ -5px 0 5px -5px rgba(0,0,0,0.1)]">
                     {c.percent.toFixed(1)}%
                   </td>
                 </tr>
