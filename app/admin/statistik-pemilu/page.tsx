@@ -1010,13 +1010,13 @@ function StatistikPemiluPage() {
     };
   });
 
-  const handleRefreshData = () => {
+  const handleRefreshData = React.useCallback(() => {
     setLoading(true);
     // Simulate API call
     setTimeout(() => {
       setLoading(false);
     }, 1000);
-  };
+  }, []);
 
   const chartData = aggregatedForChart; // sebelumnya static
 

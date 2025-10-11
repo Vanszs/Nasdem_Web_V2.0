@@ -33,6 +33,10 @@ export type MemberListItem = {
   joinDate?: string | Date | null;
   photoUrl?: string | null;
   bio?: string | null;
+  nik?: string | null;
+  ktaNumber?: string | null;
+  familyCount?: number | null;
+  maritalStatus?: string | null;
 };
 
 export interface MemberTableFilters {

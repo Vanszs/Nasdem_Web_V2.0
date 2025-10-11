@@ -10,6 +10,13 @@ import { SimplePagination } from "@/components/ui/pagination";
 import { useRegions } from "./hooks/useRegions";
 import { TabsFilters } from "./components/TabsFilters";
 import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select";
+import {
   ActiveTab,
   DpdFilters,
   SayapFilters,
@@ -41,6 +48,7 @@ export default function Members() {
   // Tambahan global (opsional)
   const [statusFilter, setStatusFilter] = useState("all");
   const [genderFilter, setGenderFilter] = useState("all");
+  const [universalSearch, setUniversalSearch] = useState("");
 
   // DEBOUNCE SEARCH PER TAB (ambil value aktif)
   const currentSearch =
@@ -53,6 +61,7 @@ export default function Members() {
       : dprtFilters.searchTerm;
 
   const debouncedSearch = useDebounce(currentSearch, 400);
+  const debouncedUniversalSearch = useDebounce(universalSearch, 400);
 
   const desaByKecamatan: Record<string, { value: string; label: string }[]> =
     {};
@@ -97,30 +106,33 @@ export default function Members() {
 
   // PAGINATION
   const [page, setPage] = useState(1);
-  const pageSize = 20;
+  const [pageSize, setPageSize] = useState(20);
 
   // RESET PAGE saat filter utama berubah
   useEffect(() => {
     setPage(1);
   }, [
     debouncedSearch,
+    debouncedUniversalSearch,
     activeTab,
     statusFilter,
     genderFilter,
     levelParam,
     regionIdParam,
     dprtFilters.departmentFilter,
+    pageSize,
   ]);
 
   // QUERY MEMBERS
+  // If universal search is active, ignore tab-specific filters and search across all members
   const { data, isLoading, isError, error } = useMembers({
     page,
     pageSize,
-    search: debouncedSearch || undefined,
+    search: debouncedUniversalSearch || debouncedSearch || undefined,
     status: statusFilter !== "all" ? statusFilter : undefined,
     gender: genderFilter !== "all" ? genderFilter : undefined,
-    level: levelParam,
-    regionId: regionIdParam,
+    level: debouncedUniversalSearch ? undefined : levelParam,
+    regionId: debouncedUniversalSearch ? undefined : regionIdParam,
     struktur: true,
   });
 
@@ -221,6 +233,47 @@ export default function Members() {
             </div>
             <AddMemberDialog onOpenChange={setAddOpen} />
           </div>
+        </div>
+
+        {/* Universal Search Bar */}
+        <div className="bg-white/70 backdrop-blur-sm border-2 border-gray-200/80 rounded-2xl p-4">
+          <div className="flex items-center gap-3">
+            <div className="relative flex-1">
+              <input
+                type="text"
+                placeholder="Cari anggota di semua departemen (nama, email, telepon, alamat)..."
+                value={universalSearch}
+                onChange={(e) => setUniversalSearch(e.target.value)}
+                className="w-full pl-10 pr-4 py-3 rounded-xl border border-gray-300 focus:border-[#001B55] focus:ring-2 focus:ring-[#001B55]/20 transition-all"
+              />
+              <svg
+                className="absolute left-3 top-1/2 transform -translate-y-1/2 w-5 h-5 text-gray-400"
+                fill="none"
+                stroke="currentColor"
+                viewBox="0 0 24 24"
+              >
+                <path
+                  strokeLinecap="round"
+                  strokeLinejoin="round"
+                  strokeWidth={2}
+                  d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"
+                />
+              </svg>
+            </div>
+            {universalSearch && (
+              <button
+                onClick={() => setUniversalSearch("")}
+                className="px-4 py-2 text-sm bg-gray-100 hover:bg-gray-200 rounded-lg transition-colors"
+              >
+                Hapus Pencarian
+              </button>
+            )}
+          </div>
+          {universalSearch && (
+            <div className="mt-2 text-sm text-gray-600">
+              Sedang mencari di semua departemen: "{universalSearch}"
+            </div>
+          )}
         </div>
 
         {/* TABS FILTERS (style lama) */}
@@ -343,7 +396,31 @@ export default function Members() {
             ))}
           </div>
 
-          <div className="mt-8">
+          <div className="mt-8 flex flex-col sm:flex-row gap-4 items-center justify-between">
+            <div className="flex items-center gap-2 text-sm text-gray-600">
+              <span>
+                Menampilkan {data?.data?.length === 0 ? 0 : (page - 1) * pageSize + 1}-
+                {Math.min(page * pageSize, data?.meta.total || 0)} dari{" "}
+                {data?.meta.total || 0} anggota
+              </span>
+              <Select
+                value={pageSize.toString()}
+                onValueChange={(value) => {
+                  setPageSize(Number(value));
+                  setPage(1);
+                }}
+              >
+                <SelectTrigger className="w-16 h-8 text-xs">
+                  <SelectValue />
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="10">10</SelectItem>
+                  <SelectItem value="20">20</SelectItem>
+                  <SelectItem value="50">50</SelectItem>
+                  <SelectItem value="100">100</SelectItem>
+                </SelectContent>
+              </Select>
+            </div>
             <SimplePagination
               page={page}
               totalPages={data?.meta.totalPages || 1}

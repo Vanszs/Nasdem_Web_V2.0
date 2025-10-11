@@ -16,6 +16,8 @@ import {
 import {
   Dialog,
   DialogContent,
+  DialogDescription,
+  DialogFooter,
   DialogHeader,
   DialogTitle,
 } from "@/components/ui/dialog";
@@ -56,6 +58,7 @@ import {
   FileSpreadsheet,
   Vote,
   Info,
+  AlertTriangle,
 } from "lucide-react";
 import { toast } from "sonner";
 
@@ -195,6 +198,8 @@ export default function BeneficiariesPage() {
   const [selectedBeneficiary, setSelectedBeneficiary] =
     useState<Beneficiary | null>(null);
   const [isViewDialogOpen, setIsViewDialogOpen] = useState(false);
+  const [isDeleteDialogOpen, setIsDeleteDialogOpen] = useState(false);
+  const [beneficiaryToDelete, setBeneficiaryToDelete] = useState<Beneficiary | null>(null);
 
   // Form state
   const [formData, setFormData] = useState({
@@ -306,11 +311,20 @@ export default function BeneficiariesPage() {
     setIsDialogOpen(true);
   };
 
-  const handleDelete = (id: string) => {
-    setBeneficiaries((prev) => prev.filter((b) => b.id !== id));
+  const handleDelete = () => {
+    if (!beneficiaryToDelete) return;
+    
+    setBeneficiaries((prev) => prev.filter((b) => b.id !== beneficiaryToDelete.id));
     toast.success("Berhasil", {
-      description: "Penerima manfaat berhasil dihapus",
+      description: `Penerima manfaat "${beneficiaryToDelete.fullName}" berhasil dihapus`,
     });
+    setIsDeleteDialogOpen(false);
+    setBeneficiaryToDelete(null);
+  };
+
+  const openDeleteDialog = (beneficiary: Beneficiary) => {
+    setBeneficiaryToDelete(beneficiary);
+    setIsDeleteDialogOpen(true);
   };
 
   const handleSubmit = (e: React.FormEvent) => {
@@ -749,7 +763,7 @@ export default function BeneficiariesPage() {
 
           <CardContent className="space-y-6">
             {/* Search and Filters */}
-            <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
+            <div className="grid grid-cols-1 md:grid-cols-4 gap-3">
               <div className="relative">
                 <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-400" />
                 <Input
@@ -947,7 +961,7 @@ export default function BeneficiariesPage() {
                             <Button
                               size="sm"
                               variant="outline"
-                              onClick={() => handleDelete(beneficiary.id)}
+                              onClick={() => openDeleteDialog(beneficiary)}
                               className="rounded-lg border-[#F87171]/20 hover:bg-[#F87171]/5 text-[#F87171]"
                             >
                               <Trash2 className="w-4 h-4" />
@@ -965,7 +979,7 @@ export default function BeneficiariesPage() {
 
         {/* View Detail Dialog */}
         <Dialog open={isViewDialogOpen} onOpenChange={setIsViewDialogOpen}>
-          <DialogContent className="max-w-2xl rounded-xl">
+          <DialogContent className="max-w-4xl rounded-xl">
             <DialogHeader>
               <DialogTitle className="text-xl font-semibold text-[#001B55] flex items-center gap-3">
                 <div className="w-10 h-10 bg-[#E8F9FF] rounded-lg flex items-center justify-center">
@@ -1144,7 +1158,7 @@ export default function BeneficiariesPage() {
 
         {/* Add/Edit Dialog */}
         <Dialog open={isDialogOpen} onOpenChange={setIsDialogOpen}>
-          <DialogContent className="max-w-4xl rounded-xl max-h-[90vh] overflow-y-auto">
+          <DialogContent className="max-w-5xl rounded-xl max-h-[90vh] overflow-y-auto">
             <DialogHeader>
               <DialogTitle className="text-xl font-semibold text-[#001B55] flex items-center gap-3">
                 <div className="w-10 h-10 bg-[#E8F9FF] rounded-lg flex items-center justify-center">
@@ -1402,7 +1416,7 @@ export default function BeneficiariesPage() {
 
         {/* CSV Import Dialog */}
         <Dialog open={isCsvDialogOpen} onOpenChange={setIsCsvDialogOpen}>
-          <DialogContent className="max-w-2xl rounded-xl">
+          <DialogContent className="max-w-3xl rounded-xl">
             <DialogHeader>
               <DialogTitle className="text-xl font-semibold text-[#001B55] flex items-center gap-3">
                 <div className="w-10 h-10 bg-[#C5BAFF]/20 rounded-lg flex items-center justify-center">
@@ -1464,6 +1478,50 @@ export default function BeneficiariesPage() {
           </DialogContent>
         </Dialog>
       </div>
+
+      {/* Delete Confirmation Dialog */}
+      <Dialog open={isDeleteDialogOpen} onOpenChange={setIsDeleteDialogOpen}>
+        <DialogContent className="sm:max-w-[425px]">
+          <DialogHeader>
+            <DialogTitle className="flex items-center gap-2 text-[#C81E1E]">
+              <AlertTriangle className="h-5 w-5" />
+              Konfirmasi Hapus
+            </DialogTitle>
+            <DialogDescription>
+              Apakah Anda yakin ingin menghapus penerima manfaat ini? Tindakan ini tidak dapat dibatalkan.
+            </DialogDescription>
+          </DialogHeader>
+          {beneficiaryToDelete && (
+            <div className="py-4">
+              <div className="bg-gray-50 rounded-lg p-4 border border-gray-200">
+                <h4 className="font-semibold text-[#001B55] mb-2">{beneficiaryToDelete.fullName}</h4>
+                <p className="text-sm text-gray-600 mb-2">NIK: {beneficiaryToDelete.nik}</p>
+                <p className="text-sm text-gray-600 mb-2">Program: {beneficiaryToDelete.program}</p>
+                <div className="mt-3 flex items-center gap-2">
+                  <span className="text-xs font-medium text-gray-500">Status:</span>
+                  {getStatusBadge(beneficiaryToDelete.status)}
+                </div>
+              </div>
+            </div>
+          )}
+          <DialogFooter className="gap-2">
+            <Button
+              variant="outline"
+              onClick={() => setIsDeleteDialogOpen(false)}
+              className="rounded-lg"
+            >
+              Batal
+            </Button>
+            <Button
+              onClick={handleDelete}
+              className="bg-[#C81E1E] hover:bg-[#A01818] rounded-lg"
+            >
+              <Trash2 className="w-4 h-4 mr-2" />
+              Hapus
+            </Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
     </AdminLayout>
   );
 }

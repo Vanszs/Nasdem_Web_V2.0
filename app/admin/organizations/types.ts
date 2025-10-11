@@ -14,4 +14,9 @@ export interface Member {
   description: string;
   achievements?: string[];
   lastActivity?: string;
+  nik?: string;
+  ktaNumber?: string;
+  familyCount?: number;
+  maritalStatus?: string;
+  benefits?: string[];
 }

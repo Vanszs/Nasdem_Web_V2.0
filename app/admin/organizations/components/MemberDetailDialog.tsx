@@ -20,6 +20,7 @@ import {
   MapPin,
 } from "lucide-react";
 import { Member } from "../types";
+import { useRouter } from "next/navigation";
 
 interface Props {
   open: boolean;
@@ -40,6 +41,7 @@ export function MemberDetailDialog({
   getDPRTLeader,
   getKaderCount,
 }: Props) {
+  const router = useRouter();
   if (!member) return null;
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
@@ -281,11 +283,65 @@ export function MemberDetailDialog({
               </div>
               <div className="bg-slate-50/50 p-4 rounded-xl">
                 <p className="text-sm font-medium text-slate-600 mb-2">
-                  Deskripsi
+                  Bio
                 </p>
                 <p className="text-slate-800 leading-relaxed">
                   {member.description}
                 </p>
+              </div>
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                <div className="bg-slate-50/50 p-4 rounded-xl">
+                  <p className="text-sm font-medium text-slate-600 mb-1">
+                    NIK
+                  </p>
+                  <p className="text-slate-800 font-semibold">
+                    {member.nik || "Tidak tersedia"}
+                  </p>
+                </div>
+                <div className="bg-slate-50/50 p-4 rounded-xl">
+                  <p className="text-sm font-medium text-slate-600 mb-1">
+                    No. KTA
+                  </p>
+                  <p className="text-slate-800 font-semibold">
+                    {member.ktaNumber || "Tidak tersedia"}
+                  </p>
+                </div>
+                <div className="bg-slate-50/50 p-4 rounded-xl">
+                  <p className="text-sm font-medium text-slate-600 mb-1">
+                    Jumlah Keluarga
+                  </p>
+                  <p className="text-slate-800 font-semibold">
+                    {member.familyCount || "Tidak tersedia"} orang
+                  </p>
+                </div>
+                <div className="bg-slate-50/50 p-4 rounded-xl">
+                  <p className="text-sm font-medium text-slate-600 mb-1">
+                    Status Perkawinan
+                  </p>
+                  <p className="text-slate-800 font-semibold">
+                    {member.maritalStatus || "Tidak tersedia"}
+                  </p>
+                </div>
+              </div>
+              <div className="bg-slate-50/50 p-4 rounded-xl">
+                <p className="text-sm font-medium text-slate-600 mb-2">
+                  Daftar Manfaat/Bantuan
+                </p>
+                <ul className="space-y-2">
+                  {member.benefits && member.benefits.length > 0 ? (
+                    member.benefits.map((benefit, i) => (
+                      <li
+                        key={i}
+                        className="flex items-center gap-2 text-slate-700"
+                      >
+                        <div className="w-2 h-2 bg-blue-500 rounded-full" />
+                        {benefit}
+                      </li>
+                    ))
+                  ) : (
+                    <li className="text-slate-500 italic">Belum ada data manfaat/bantuan</li>
+                  )}
+                </ul>
               </div>
               {member.achievements?.length ? (
                 <div className="bg-gradient-to-br from-blue-50/50 to-orange-50/50 p-4 rounded-xl">
@@ -456,7 +512,10 @@ export function MemberDetailDialog({
           >
             Tutup
           </Button>
-          <Button className="px-6 bg-gradient-to-r from-[#001B55] to-[#003875] text-white">
+          <Button
+            className="px-6 bg-gradient-to-r from-[#001B55] to-[#003875] text-white"
+            onClick={() => router.push(`/admin/organizations/edit/${member.id}`)}
+          >
             Edit Profile
           </Button>
         </div>

@@ -15,6 +15,8 @@ import { Badge } from "@/components/ui/badge";
 import {
   Dialog,
   DialogContent,
+  DialogDescription,
+  DialogFooter,
   DialogHeader,
   DialogTitle,
   DialogTrigger,
@@ -33,6 +35,7 @@ import {
   TrendingUp,
   ChevronDown,
   ClipboardList,
+  AlertTriangle,
 } from "lucide-react";
 import { useState } from "react";
 import { AdminLayout } from "../components/layout/AdminLayout";
@@ -123,6 +126,8 @@ export default function ProgramsPage() {
   const [programForm, setProgramForm] = useState<Partial<Program>>({});
   const [isProgramDialogOpen, setIsProgramDialogOpen] = useState(false);
   const [editingProgram, setEditingProgram] = useState<Program | null>(null);
+  const [isDeleteDialogOpen, setIsDeleteDialogOpen] = useState(false);
+  const [programToDelete, setProgramToDelete] = useState<Program | null>(null);
 
   // Helper functions
   const formatCurrency = (amount: number) => {
@@ -195,11 +200,20 @@ export default function ProgramsPage() {
     });
   };
 
-  const handleDeleteProgram = (id: string) => {
-    setPrograms((prev) => prev.filter((program) => program.id !== id));
+  const handleDeleteProgram = () => {
+    if (!programToDelete) return;
+    
+    setPrograms((prev) => prev.filter((program) => program.id !== programToDelete.id));
     toast.success("Berhasil", {
-      description: "Program dihapus",
+      description: `Program "${programToDelete.name}" berhasil dihapus`,
     });
+    setIsDeleteDialogOpen(false);
+    setProgramToDelete(null);
+  };
+
+  const openDeleteDialog = (program: Program) => {
+    setProgramToDelete(program);
+    setIsDeleteDialogOpen(true);
   };
 
   const handleEditProgram = (program: Program) => {
@@ -737,7 +751,7 @@ export default function ProgramsPage() {
                         </Button>
                         <Button
                           className="h-12 px-8 rounded-full bg-[#C81E1E] hover:bg-[#A01818] text-white font-bold shadow-lg hover:shadow-xl transition-all duration-300 hover:scale-105"
-                          onClick={() => handleDeleteProgram(program.id)}
+                          onClick={() => openDeleteDialog(program)}
                         >
                           <Trash2 className="w-4 h-4 mr-2" />
                           Hapus
@@ -774,6 +788,51 @@ export default function ProgramsPage() {
           </Card>
         )}
       </div>
+
+      {/* Delete Confirmation Dialog */}
+      <Dialog open={isDeleteDialogOpen} onOpenChange={setIsDeleteDialogOpen}>
+        <DialogContent className="sm:max-w-[425px]">
+          <DialogHeader>
+            <DialogTitle className="flex items-center gap-2 text-[#C81E1E]">
+              <AlertTriangle className="h-5 w-5" />
+              Konfirmasi Hapus
+            </DialogTitle>
+            <DialogDescription>
+              Apakah Anda yakin ingin menghapus program ini? Tindakan ini tidak dapat dibatalkan.
+            </DialogDescription>
+          </DialogHeader>
+          {programToDelete && (
+            <div className="py-4">
+              <div className="bg-gray-50 rounded-lg p-4 border border-gray-200">
+                <h4 className="font-semibold text-[#001B55] mb-2">{programToDelete.name}</h4>
+                <p className="text-sm text-gray-600">{programToDelete.description}</p>
+                <div className="mt-3 flex items-center gap-2">
+                  <span className="text-xs font-medium text-gray-500">Kategori:</span>
+                  <Badge variant="outline" className="text-xs">
+                    {programToDelete.category}
+                  </Badge>
+                </div>
+              </div>
+            </div>
+          )}
+          <DialogFooter className="gap-2">
+            <Button
+              variant="outline"
+              onClick={() => setIsDeleteDialogOpen(false)}
+              className="rounded-full"
+            >
+              Batal
+            </Button>
+            <Button
+              onClick={handleDeleteProgram}
+              className="bg-[#C81E1E] hover:bg-[#A01818] rounded-full"
+            >
+              <Trash2 className="w-4 h-4 mr-2" />
+              Hapus
+            </Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
     </AdminLayout>
   );
 }

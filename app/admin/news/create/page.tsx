@@ -23,6 +23,41 @@ import {
 } from "lucide-react";
 import { useCreateNews } from "@/app/admin/news/hooks";
 
+// Novel AI Editor - Simple implementation for rich text editing
+const NovelEditor = ({ value, onChange, placeholder, disabled }: {
+  value: string;
+  onChange: (value: string) => void;
+  placeholder?: string;
+  disabled?: boolean;
+}) => {
+  const editorRef = useRef<HTMLDivElement>(null);
+  
+  const handleInput = () => {
+    if (editorRef.current) {
+      onChange(editorRef.current.innerHTML || '');
+    }
+  };
+
+  const handlePaste = (e: React.ClipboardEvent) => {
+    e.preventDefault();
+    const text = e.clipboardData.getData('text/plain');
+    document.execCommand('insertText', false, text);
+  };
+
+  return (
+    <div
+      ref={editorRef}
+      contentEditable={!disabled}
+      onInput={handleInput}
+      onPaste={handlePaste}
+      className="border-2 border-gray-200 hover:border-gray-300 focus:border-brand-primary min-h-[280px] p-3 rounded-md outline-none transition-all duration-300"
+      style={{ minHeight: '280px' }}
+      dangerouslySetInnerHTML={{ __html: value }}
+      data-placeholder={placeholder}
+    />
+  );
+};
+
 const formSchema = z.object({
   title: z.string().min(3, "Judul minimal 3 karakter"),
   content: z
@@ -126,6 +161,28 @@ export default function CreateNewsPage() {
     });
   };
 
+  const handlePreview = () => {
+    const formValues = form.getValues();
+    if (!formValues.title || !formValues.content) {
+      toast.error("Data tidak lengkap", {
+        description: "Judul dan konten berita harus diisi terlebih dahulu.",
+      });
+      return;
+    }
+
+    // Store preview data in sessionStorage
+    const previewData = {
+      title: formValues.title,
+      content: formValues.content,
+      thumbnailUrl: formValues.thumbnailUrl,
+      publishDate: formValues.publishDate,
+    };
+    sessionStorage.setItem('newsPreview', JSON.stringify(previewData));
+    
+    // Open preview in new tab
+    window.open('/admin/news/preview', '_blank');
+  };
+
   const onSubmit = handleSubmit(async (values) => {
     try {
       const payload = {
@@ -184,11 +241,7 @@ export default function CreateNewsPage() {
                 type="button"
                 variant="outline"
                 disabled={isBusy}
-                onClick={() =>
-                  toast.info("Pratinjau belum tersedia", {
-                    description: "Fitur pratinjau akan hadir segera.",
-                  })
-                }
+                onClick={handlePreview}
                 className="border-2 border-gray-200 hover:border-gray-300"
               >
                 <Eye className="mr-2 h-4 w-4" />
@@ -237,11 +290,11 @@ export default function CreateNewsPage() {
                   <label className="block text-sm font-medium mb-2">
                     Konten Berita *
                   </label>
-                  <Textarea
-                    {...register("content")}
+                  <NovelEditor
+                    value={watch("content")}
+                    onChange={(value) => setValue("content", value, { shouldValidate: true })}
                     placeholder="Tulis konten berita di sini..."
                     disabled={isBusy}
-                    className="border-2 border-gray-200 hover:border-gray-300 focus:border-brand-primary min-h-[280px]"
                   />
                   {errors.content && (
                     <p className="mt-2 text-xs text-red-600">

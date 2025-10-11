@@ -51,6 +51,10 @@ const editMemberSchema = z.object({
   bio: optionalString,
   photoUrl: z.union([z.string().url("URL tidak valid"), z.literal("")]),
   joinDate: optionalString,
+  nik: optionalString,
+  ktaNumber: optionalString,
+  familyCount: z.union([z.string(), z.number(), z.literal("")]),
+  maritalStatus: optionalString,
   useFileUpload: z.boolean().default(false),
 });
 
@@ -67,6 +71,10 @@ const defaultEditValues: EditMemberFormValues = {
   bio: "",
   photoUrl: "",
   joinDate: "",
+  nik: "",
+  ktaNumber: "",
+  familyCount: "",
+  maritalStatus: "",
   useFileUpload: false,
 };
 
@@ -138,6 +146,10 @@ export function EditMemberDialog({
         bio: member.bio || "",
         photoUrl: member.photoUrl || "",
         joinDate: toISODate(member.joinDate),
+        nik: member.nik || "",
+        ktaNumber: member.ktaNumber || "",
+        familyCount: member.familyCount?.toString() || "",
+        maritalStatus: member.maritalStatus || "",
         useFileUpload: false,
       });
       setPhotoFile(null);
@@ -215,6 +227,10 @@ export function EditMemberDialog({
       bio: values.bio ? values.bio : undefined,
       photoUrl: finalPhotoUrl ? finalPhotoUrl : undefined,
       joinDate: values.joinDate ? values.joinDate : undefined,
+      nik: values.nik ? values.nik : undefined,
+      ktaNumber: values.ktaNumber ? values.ktaNumber : undefined,
+      familyCount: values.familyCount ? parseInt(values.familyCount.toString()) : undefined,
+      maritalStatus: values.maritalStatus ? values.maritalStatus : undefined,
     };
 
     try {
@@ -484,6 +500,23 @@ export function EditMemberDialog({
                   )}
                 </div>
                 <div className="space-y-1.5">
+                  <Label className="text-[11px] text-gray-600">NIK</Label>
+                  <Input
+                    placeholder="16 digit NIK"
+                    maxLength={16}
+                    className="h-9 text-sm"
+                    {...register("nik")}
+                  />
+                </div>
+                <div className="space-y-1.5">
+                  <Label className="text-[11px] text-gray-600">No. KTA</Label>
+                  <Input
+                    placeholder="Nomor KTA"
+                    className="h-9 text-sm"
+                    {...register("ktaNumber")}
+                  />
+                </div>
+                <div className="space-y-1.5">
                   <Label className="text-[11px] text-gray-600">
                     Tanggal Lahir
                   </Label>
@@ -491,6 +524,33 @@ export function EditMemberDialog({
                     type="date"
                     className="h-9 text-sm"
                     {...register("dateOfBirth")}
+                  />
+                </div>
+                <div className="space-y-1.5">
+                  <Label className="text-[11px] text-gray-600">Status Perkawinan</Label>
+                  <Select
+                    defaultValue=""
+                    onValueChange={(value) => setValue("maritalStatus", value)}
+                  >
+                    <SelectTrigger className="h-9 text-sm w-full">
+                      <SelectValue placeholder="Pilih status" />
+                    </SelectTrigger>
+                    <SelectContent>
+                      <SelectItem value="Belum Kawin">Belum Kawin</SelectItem>
+                      <SelectItem value="Kawin">Kawin</SelectItem>
+                      <SelectItem value="Cerai Mati">Cerai Mati</SelectItem>
+                      <SelectItem value="Cerai Hidup">Cerai Hidup</SelectItem>
+                    </SelectContent>
+                  </Select>
+                </div>
+                <div className="space-y-1.5">
+                  <Label className="text-[11px] text-gray-600">Jumlah Keluarga</Label>
+                  <Input
+                    type="number"
+                    placeholder="1"
+                    min="1"
+                    className="h-9 text-sm"
+                    {...register("familyCount")}
                   />
                 </div>
                 <div className="space-y-1.5 md:col-span-2">

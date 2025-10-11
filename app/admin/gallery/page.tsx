@@ -4,6 +4,8 @@ import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
 import { Badge } from "@/components/ui/badge";
+import { Label } from "@/components/ui/label";
+import { Textarea } from "@/components/ui/textarea";
 import {
   Select,
   SelectContent,
@@ -17,6 +19,14 @@ import {
   DropdownMenuItem,
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
+import {
+  Dialog,
+  DialogContent,
+  DialogDescription,
+  DialogFooter,
+  DialogHeader,
+  DialogTitle,
+} from "@/components/ui/dialog";
 import {
   Image as ImageIcon,
   Upload,
@@ -35,8 +45,12 @@ import {
   Share2,
   Download,
   Edit,
+  X,
+  Loader2,
+  Save,
 } from "lucide-react";
 import { useRouter } from "next/navigation";
+import { toast } from "sonner";
 import { AdminLayout } from "../components/layout/AdminLayout";
 import { PageHeader } from "../components/ui/PageHeader";
 import { ContentCard } from "../components/ui/ContentCard";
@@ -118,8 +132,24 @@ export default function Gallery() {
   const [currentPage, setCurrentPage] = useState(1);
   const [viewMode, setViewMode] = useState<"grid" | "list">("grid");
   const [isLoading, setIsLoading] = useState(false);
+  const [isUploadModalOpen, setIsUploadModalOpen] = useState(false);
+  const [selectedItem, setSelectedItem] = useState<GalleryItem | null>(null);
+  const [isDetailModalOpen, setIsDetailModalOpen] = useState(false);
+  const [isEditModalOpen, setIsEditModalOpen] = useState(false);
   const itemsPerPage = 12;
   const router = useRouter();
+
+  // Upload form state
+  const [uploadFormData, setUploadFormData] = useState({
+    title: "",
+    description: "",
+    category: "kegiatan" as GalleryItem["category"],
+    photographer: "",
+    location: "",
+    tags: "",
+    selectedFiles: [] as File[],
+  });
+  const [isUploading, setIsUploading] = useState(false);
 
   const filteredItems = galleryItems.filter((item) => {
     const matchesSearch =
@@ -143,6 +173,89 @@ export default function Gallery() {
 
   const handlePageChange = (page: number) => {
     setCurrentPage(page);
+  };
+
+  const handleFileSelect = (event: React.ChangeEvent<HTMLInputElement>) => {
+    const files = Array.from(event.target.files || []);
+    const imageFiles = files.filter((file) => file.type.startsWith("image/"));
+
+    if (imageFiles.length !== files.length) {
+      toast.warning("Peringatan", {
+        description: "Hanya file gambar yang diizinkan",
+      });
+    }
+
+    setUploadFormData((prev) => ({ ...prev, selectedFiles: imageFiles }));
+  };
+
+  const handleUpload = async () => {
+    if (!uploadFormData.title || uploadFormData.selectedFiles.length === 0) {
+      toast.error("Error", {
+        description: "Judul dan minimal 1 gambar wajib diisi",
+      });
+      return;
+    }
+
+    setIsUploading(true);
+    try {
+      // Simulate upload process
+      await new Promise(resolve => setTimeout(resolve, 1500));
+
+      const newItems: GalleryItem[] = uploadFormData.selectedFiles.map(
+        (file, index) => ({
+          id: `${Date.now()}-${index}`,
+          title:
+            uploadFormData.selectedFiles.length > 1
+              ? `${uploadFormData.title} ${index + 1}`
+              : uploadFormData.title,
+          description: uploadFormData.description,
+          category: uploadFormData.category,
+          image: URL.createObjectURL(file),
+          uploadDate: new Date().toISOString().split("T")[0],
+          photographer: uploadFormData.photographer,
+          location: uploadFormData.location,
+          tags: uploadFormData.tags
+            .split(",")
+            .map((tag) => tag.trim())
+            .filter(Boolean),
+          views: 0,
+        })
+      );
+
+      setGalleryItems((prev) => [...newItems, ...prev]);
+
+      toast.success("Berhasil", {
+        description: `${uploadFormData.selectedFiles.length} gambar berhasil diupload`,
+      });
+
+      // Reset form
+      setUploadFormData({
+        title: "",
+        description: "",
+        category: "kegiatan",
+        photographer: "",
+        location: "",
+        tags: "",
+        selectedFiles: [],
+      });
+      setIsUploadModalOpen(false);
+    } catch (error) {
+      toast.error("Gagal", {
+        description: "Terjadi kesalahan saat mengupload gambar",
+      });
+    } finally {
+      setIsUploading(false);
+    }
+  };
+
+  const handleDetailModal = (item: GalleryItem) => {
+    setSelectedItem(item);
+    setIsDetailModalOpen(true);
+  };
+
+  const handleEditModal = (item: GalleryItem) => {
+    setSelectedItem(item);
+    setIsEditModalOpen(true);
   };
 
   const categoryConfig = {
@@ -225,7 +338,7 @@ export default function Gallery() {
               </Button>
               <Button
                 className="bg-[#001B55] hover:bg-[#001B55]/90 text-white shadow-lg hover:shadow-xl transition-all duration-300 font-semibold"
-                onClick={() => router.push("/admin/gallery/upload")}
+                onClick={() => setIsUploadModalOpen(true)}
               >
                 <Upload className="w-4 h-4 mr-2" />
                 Upload Media
@@ -334,7 +447,7 @@ export default function Gallery() {
                   className={`bg-white border border-gray-200/50 shadow-sm hover:shadow-xl hover:border-[#001B55]/30 transition-all duration-300 overflow-hidden group cursor-pointer ${
                     viewMode === "list" ? "flex flex-row h-auto min-h-[280px]" : ""
                   } rounded-3xl`}
-                  onClick={() => router.push(`/admin/gallery/${item.id}`)}
+                  onClick={() => handleDetailModal(item)}
                 >
                   <div
                     className={`relative bg-gray-100 flex items-center justify-center overflow-hidden transition-all duration-300 ${
@@ -356,7 +469,7 @@ export default function Gallery() {
                           className="bg-white/20 hover:bg-white/30 text-white border border-white/30 backdrop-blur-sm rounded-full w-10 h-10 p-0"
                           onClick={(e) => {
                             e.stopPropagation();
-                            // Handle view action
+                            handleDetailModal(item);
                           }}
                         >
                           <Eye className="h-4 w-4" />
@@ -366,20 +479,10 @@ export default function Gallery() {
                           className="bg-white/20 hover:bg-white/30 text-white border border-white/30 backdrop-blur-sm rounded-full w-10 h-10 p-0"
                           onClick={(e) => {
                             e.stopPropagation();
-                            // Handle edit action
+                            handleEditModal(item);
                           }}
                         >
                           <Edit className="h-4 w-4" />
-                        </Button>
-                        <Button
-                          size="sm"
-                          className="bg-white/20 hover:bg-white/30 text-white border border-white/30 backdrop-blur-sm rounded-full w-10 h-10 p-0"
-                          onClick={(e) => {
-                            e.stopPropagation();
-                            // Handle download action
-                          }}
-                        >
-                          <Download className="h-4 w-4" />
                         </Button>
                       </div>
                     </div>
@@ -429,29 +532,19 @@ export default function Gallery() {
                                 </Button>
                               </DropdownMenuTrigger>
                               <DropdownMenuContent align="end" className="w-48 rounded-2xl shadow-xl border-gray-200/60">
-                                <DropdownMenuItem 
+                                <DropdownMenuItem
                                   className="flex items-center gap-3 rounded-xl hover:bg-gray-50 cursor-pointer"
-                                  onClick={() => router.push(`/admin/gallery/${item.id}`)}
+                                  onClick={() => handleDetailModal(item)}
                                 >
                                   <Eye className="h-4 w-4 text-[#001B55]" />
                                   <span>Lihat Detail</span>
                                 </DropdownMenuItem>
-                                <DropdownMenuItem 
+                                <DropdownMenuItem
                                   className="flex items-center gap-3 rounded-xl hover:bg-gray-50 cursor-pointer"
-                                  onClick={() => router.push(`/admin/gallery/edit/${item.id}`)}
+                                  onClick={() => handleEditModal(item)}
                                 >
                                   <Edit className="h-4 w-4 text-[#001B55]" />
                                   <span>Edit Media</span>
-                                </DropdownMenuItem>
-                                <DropdownMenuItem 
-                                  className="flex items-center gap-3 rounded-xl hover:bg-gray-50 cursor-pointer"
-                                  onClick={() => {
-                                    // Handle download
-                                    console.log('Download:', item.id);
-                                  }}
-                                >
-                                  <Download className="h-4 w-4 text-[#16A34A]" />
-                                  <span>Download</span>
                                 </DropdownMenuItem>
                               </DropdownMenuContent>
                             </DropdownMenu>
@@ -530,29 +623,19 @@ export default function Gallery() {
                               </Button>
                             </DropdownMenuTrigger>
                             <DropdownMenuContent align="end" className="w-48 rounded-2xl shadow-xl border-gray-200/60">
-                              <DropdownMenuItem 
+                              <DropdownMenuItem
                                 className="flex items-center gap-3 rounded-xl hover:bg-gray-50 cursor-pointer"
-                                onClick={() => router.push(`/admin/gallery/${item.id}`)}
+                                onClick={() => handleDetailModal(item)}
                               >
                                 <Eye className="h-4 w-4 text-[#001B55]" />
                                 <span>Lihat Detail</span>
                               </DropdownMenuItem>
-                              <DropdownMenuItem 
+                              <DropdownMenuItem
                                 className="flex items-center gap-3 rounded-xl hover:bg-gray-50 cursor-pointer"
-                                onClick={() => router.push(`/admin/gallery/edit/${item.id}`)}
+                                onClick={() => handleEditModal(item)}
                               >
                                 <Edit className="h-4 w-4 text-[#001B55]" />
                                 <span>Edit Media</span>
-                              </DropdownMenuItem>
-                              <DropdownMenuItem 
-                                className="flex items-center gap-3 rounded-xl hover:bg-gray-50 cursor-pointer"
-                                onClick={() => {
-                                  // Handle download
-                                  console.log('Download:', item.id);
-                                }}
-                              >
-                                <Download className="h-4 w-4 text-[#16A34A]" />
-                                <span>Download</span>
                               </DropdownMenuItem>
                             </DropdownMenuContent>
                           </DropdownMenu>
@@ -696,7 +779,7 @@ export default function Gallery() {
                   <Button
                     size="lg"
                     className="bg-[#001B55] hover:bg-[#001B55]/90 text-white shadow-lg hover:shadow-xl transition-all duration-300 font-semibold px-8 py-3 rounded-2xl"
-                    onClick={() => router.push("/admin/gallery/upload")}
+                    onClick={() => setIsUploadModalOpen(true)}
                   >
                     <Upload className="w-5 h-5 mr-3" />
                     Upload Media Pertama
@@ -718,6 +801,370 @@ export default function Gallery() {
             </CardContent>
           </Card>
         )}
+
+        {/* Upload Modal */}
+        <Dialog open={isUploadModalOpen} onOpenChange={setIsUploadModalOpen}>
+          <DialogContent className="max-w-2xl max-h-[90vh] overflow-y-auto">
+            <DialogHeader>
+              <DialogTitle className="flex items-center gap-2">
+                <Upload className="h-5 w-5 text-[#001B55]" />
+                Upload Media Baru
+              </DialogTitle>
+              <DialogDescription>
+                Upload foto atau video untuk kegiatan partai
+              </DialogDescription>
+            </DialogHeader>
+
+            <div className="space-y-4 py-4">
+              {/* File Upload */}
+              <div>
+                <Label htmlFor="files">Pilih Media *</Label>
+                <div className="mt-2">
+                  <input
+                    id="files"
+                    type="file"
+                    multiple
+                    accept="image/*,video/*"
+                    onChange={handleFileSelect}
+                    className="hidden"
+                  />
+                  <label
+                    htmlFor="files"
+                    className="flex flex-col items-center justify-center w-full h-32 border-2 border-gray-300 border-dashed rounded-lg cursor-pointer bg-gray-50 hover:bg-gray-100 hover:border-gray-400 transition-all"
+                  >
+                    <div className="flex flex-col items-center justify-center pt-5 pb-6">
+                      <Upload className="w-8 h-8 mb-4 text-gray-500" />
+                      <p className="mb-2 text-sm text-gray-500">
+                        <span className="font-semibold">
+                          Klik untuk upload
+                        </span>{" "}
+                        atau drag & drop
+                      </p>
+                      <p className="text-xs text-gray-500">
+                        PNG, JPG, JPEG, MP4 (MAX. 10MB per file)
+                      </p>
+                    </div>
+                  </label>
+                </div>
+
+                {uploadFormData.selectedFiles.length > 0 && (
+                  <div className="mt-2">
+                    <p className="text-sm text-muted-foreground">
+                      {uploadFormData.selectedFiles.length} file terpilih:
+                    </p>
+                    <div className="text-sm text-gray-600 max-h-20 overflow-y-auto">
+                      {uploadFormData.selectedFiles.map((file, index) => (
+                        <div key={index} className="truncate">
+                          {file.name}
+                        </div>
+                      ))}
+                    </div>
+                  </div>
+                )}
+              </div>
+
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                <div>
+                  <Label htmlFor="title">Judul Kegiatan *</Label>
+                  <Input
+                    id="title"
+                    value={uploadFormData.title}
+                    onChange={(e) =>
+                      setUploadFormData((prev) => ({
+                        ...prev,
+                        title: e.target.value,
+                      }))
+                    }
+                    placeholder="Masukkan judul kegiatan"
+                    className="border-2 border-gray-200 hover:border-gray-300"
+                  />
+                </div>
+
+                <div>
+                  <Label htmlFor="category">Kategori</Label>
+                  <Select
+                    value={uploadFormData.category}
+                    onValueChange={(value) =>
+                      setUploadFormData((prev) => ({
+                        ...prev,
+                        category: value as any,
+                      }))
+                    }
+                  >
+                    <SelectTrigger className="border-2 border-gray-200 hover:border-gray-300">
+                      <SelectValue />
+                    </SelectTrigger>
+                    <SelectContent>
+                      <SelectItem value="kegiatan">Kegiatan</SelectItem>
+                      <SelectItem value="dokumentasi">Dokumentasi</SelectItem>
+                      <SelectItem value="event">Event</SelectItem>
+                      <SelectItem value="lainnya">Lainnya</SelectItem>
+                    </SelectContent>
+                  </Select>
+                </div>
+
+                <div>
+                  <Label htmlFor="photographer">Fotografer</Label>
+                  <Input
+                    id="photographer"
+                    value={uploadFormData.photographer}
+                    onChange={(e) =>
+                      setUploadFormData((prev) => ({
+                        ...prev,
+                        photographer: e.target.value,
+                      }))
+                    }
+                    placeholder="Nama fotografer"
+                    className="border-2 border-gray-200 hover:border-gray-300"
+                  />
+                </div>
+
+                <div>
+                  <Label htmlFor="location">Lokasi</Label>
+                  <Input
+                    id="location"
+                    value={uploadFormData.location}
+                    onChange={(e) =>
+                      setUploadFormData((prev) => ({
+                        ...prev,
+                        location: e.target.value,
+                      }))
+                    }
+                    placeholder="Lokasi pengambilan foto"
+                    className="border-2 border-gray-200 hover:border-gray-300"
+                  />
+                </div>
+
+                <div className="md:col-span-2">
+                  <Label htmlFor="description">Deskripsi Singkat</Label>
+                  <Textarea
+                    id="description"
+                    value={uploadFormData.description}
+                    onChange={(e) =>
+                      setUploadFormData((prev) => ({
+                        ...prev,
+                        description: e.target.value,
+                      }))
+                    }
+                    placeholder="Deskripsi singkat kegiatan"
+                    className="border-2 border-gray-200 hover:border-gray-300"
+                  />
+                </div>
+
+                <div className="md:col-span-2">
+                  <Label htmlFor="tags">Tags</Label>
+                  <Input
+                    id="tags"
+                    value={uploadFormData.tags}
+                    onChange={(e) =>
+                      setUploadFormData((prev) => ({
+                        ...prev,
+                        tags: e.target.value,
+                      }))
+                    }
+                    placeholder="Pisahkan dengan koma, contoh: rapat, dpd, 2024"
+                    className="border-2 border-gray-200 hover:border-gray-300"
+                  />
+                </div>
+              </div>
+            </div>
+
+            <DialogFooter className="gap-2">
+              <Button
+                variant="outline"
+                onClick={() => setIsUploadModalOpen(false)}
+                disabled={isUploading}
+              >
+                Batal
+              </Button>
+              <Button onClick={handleUpload} disabled={isUploading}>
+                {isUploading ? (
+                  <>
+                    <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                    Mengupload...
+                  </>
+                ) : (
+                  <>
+                    <Upload className="mr-2 h-4 w-4" />
+                    Upload
+                  </>
+                )}
+              </Button>
+            </DialogFooter>
+          </DialogContent>
+        </Dialog>
+
+        {/* Detail Modal */}
+        <Dialog open={isDetailModalOpen} onOpenChange={setIsDetailModalOpen}>
+          <DialogContent className="max-w-4xl max-h-[90vh] overflow-y-auto">
+            <DialogHeader>
+              <DialogTitle className="flex items-center gap-2">
+                <Eye className="h-5 w-5 text-[#001B55]" />
+                Detail Media
+              </DialogTitle>
+            </DialogHeader>
+
+            {selectedItem && (
+              <div className="space-y-4 py-4">
+                <div className="aspect-video bg-gray-100 rounded-lg overflow-hidden">
+                  <Camera className="h-12 w-12 text-gray-400 m-auto" />
+                </div>
+                
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                  <div>
+                    <Label className="text-sm font-medium">Judul</Label>
+                    <p className="mt-1 text-sm">{selectedItem.title}</p>
+                  </div>
+                  <div>
+                    <Label className="text-sm font-medium">Kategori</Label>
+                    <p className="mt-1 text-sm">{categoryConfig[selectedItem.category].label}</p>
+                  </div>
+                  <div>
+                    <Label className="text-sm font-medium">Tanggal Upload</Label>
+                    <p className="mt-1 text-sm">{selectedItem.uploadDate}</p>
+                  </div>
+                  <div>
+                    <Label className="text-sm font-medium">Fotografer</Label>
+                    <p className="mt-1 text-sm">{selectedItem.photographer || "-"}</p>
+                  </div>
+                  <div>
+                    <Label className="text-sm font-medium">Lokasi</Label>
+                    <p className="mt-1 text-sm">{selectedItem.location || "-"}</p>
+                  </div>
+                  <div>
+                    <Label className="text-sm font-medium">Views</Label>
+                    <p className="mt-1 text-sm">{selectedItem.views.toLocaleString()}</p>
+                  </div>
+                </div>
+                
+                <div>
+                  <Label className="text-sm font-medium">Deskripsi</Label>
+                  <p className="mt-1 text-sm">{selectedItem.description}</p>
+                </div>
+                
+                <div>
+                  <Label className="text-sm font-medium">Tags</Label>
+                  <div className="mt-1 flex flex-wrap gap-2">
+                    {selectedItem.tags.map((tag) => (
+                      <Badge key={tag} variant="secondary">
+                        #{tag}
+                      </Badge>
+                    ))}
+                  </div>
+                </div>
+              </div>
+            )}
+
+            <DialogFooter>
+              <Button variant="outline" onClick={() => setIsDetailModalOpen(false)}>
+                Tutup
+              </Button>
+              <Button onClick={() => {
+                setIsDetailModalOpen(false);
+                handleEditModal(selectedItem!);
+              }}>
+                <Edit className="mr-2 h-4 w-4" />
+                Edit
+              </Button>
+            </DialogFooter>
+          </DialogContent>
+        </Dialog>
+
+        {/* Edit Modal */}
+        <Dialog open={isEditModalOpen} onOpenChange={setIsEditModalOpen}>
+          <DialogContent className="max-w-2xl max-h-[90vh] overflow-y-auto">
+            <DialogHeader>
+              <DialogTitle className="flex items-center gap-2">
+                <Edit className="h-5 w-5 text-[#001B55]" />
+                Edit Media
+              </DialogTitle>
+            </DialogHeader>
+
+            {selectedItem && (
+              <div className="space-y-4 py-4">
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                  <div>
+                    <Label htmlFor="edit-title">Judul</Label>
+                    <Input
+                      id="edit-title"
+                      defaultValue={selectedItem.title}
+                      className="border-2 border-gray-200 hover:border-gray-300"
+                    />
+                  </div>
+
+                  <div>
+                    <Label htmlFor="edit-category">Kategori</Label>
+                    <Select defaultValue={selectedItem.category}>
+                      <SelectTrigger className="border-2 border-gray-200 hover:border-gray-300">
+                        <SelectValue />
+                      </SelectTrigger>
+                      <SelectContent>
+                        <SelectItem value="kegiatan">Kegiatan</SelectItem>
+                        <SelectItem value="dokumentasi">Dokumentasi</SelectItem>
+                        <SelectItem value="event">Event</SelectItem>
+                        <SelectItem value="lainnya">Lainnya</SelectItem>
+                      </SelectContent>
+                    </Select>
+                  </div>
+
+                  <div>
+                    <Label htmlFor="edit-photographer">Fotografer</Label>
+                    <Input
+                      id="edit-photographer"
+                      defaultValue={selectedItem.photographer || ""}
+                      className="border-2 border-gray-200 hover:border-gray-300"
+                    />
+                  </div>
+
+                  <div>
+                    <Label htmlFor="edit-location">Lokasi</Label>
+                    <Input
+                      id="edit-location"
+                      defaultValue={selectedItem.location || ""}
+                      className="border-2 border-gray-200 hover:border-gray-300"
+                    />
+                  </div>
+
+                  <div className="md:col-span-2">
+                    <Label htmlFor="edit-description">Deskripsi</Label>
+                    <Textarea
+                      id="edit-description"
+                      defaultValue={selectedItem.description}
+                      className="border-2 border-gray-200 hover:border-gray-300"
+                    />
+                  </div>
+
+                  <div className="md:col-span-2">
+                    <Label htmlFor="edit-tags">Tags</Label>
+                    <Input
+                      id="edit-tags"
+                      defaultValue={selectedItem.tags.join(", ")}
+                      className="border-2 border-gray-200 hover:border-gray-300"
+                    />
+                  </div>
+                </div>
+              </div>
+            )}
+
+            <DialogFooter className="gap-2">
+              <Button
+                variant="outline"
+                onClick={() => setIsEditModalOpen(false)}
+              >
+                Batal
+              </Button>
+              <Button onClick={() => {
+                toast.success("Berhasil", {
+                  description: "Media berhasil diperbarui",
+                });
+                setIsEditModalOpen(false);
+              }}>
+                <Save className="mr-2 h-4 w-4" />
+                Simpan Perubahan
+              </Button>
+            </DialogFooter>
+          </DialogContent>
+        </Dialog>
       </div>
     </AdminLayout>
   );

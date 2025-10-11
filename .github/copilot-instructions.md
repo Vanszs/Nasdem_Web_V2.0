@@ -104,35 +104,149 @@ if (roleError) return roleError;
 
 ## UI/UX Conventions
 
-### Current Design System (Updated Oct 2025)
-**Modern Futuristic Color Palette:**
+### Design System - Two Distinct Palettes (Updated Oct 2025)
+
+#### 🌐 **PUBLIC LANDING PAGE Color Palette** 
+**Use for:** `app/page.tsx`, `components/nasdem-*`, `components/*-section.tsx`, all public routes
+
+**Primary Colors:**
+- Brand Primary: `#001B55` (deep navy - NasDem signature color)
+- Brand Accent: `#FF9C04` (vibrant orange - CTAs, highlights, active states)
+- White: `#FFFFFF` (clean backgrounds, cards)
+
+**Background & Surface:**
+- Main Background: `#FFFFFF` / `#F9FAFB` (pure white / very light gray)
+- Section Alt: `#F0F0F0` (subtle gray for alternating sections)
+- Gradient Surface: `from-[#FFFFFF] to-[#F0F0F0]/30`
+
+**Text Colors:**
+- Heading: `#001B55` (navy for titles)
+- Body: `#6B7280` (gray for paragraphs)
+- Muted: `#9CA3AF` (lighter gray for subtle text)
+
+**Interactive States:**
+- Active: `text-[#FF9C04]` with `bg-[#FF9C04]` accent bars
+- Hover: `hover:text-[#FF9C04]` or `hover:bg-[#001B55]`
+- Button Primary: `bg-gradient-to-r from-[#FF9C04] to-[#FF9C04]/90`
+- Button Hover: `hover:from-[#001B55] hover:to-[#001B55]`
+
+**Borders & Shadows:**
+- Border: `border-gray-100` / `border-gray-200`
+- Shadow: `shadow-lg`, `shadow-xl` for depth
+- Accent Shadow: `shadow-[#FF9C04]/30` for glow effects
+
+---
+
+#### 🔐 **ADMIN AREA Color Palette**
+**Use for:** `app/admin/**`, admin components, protected routes
+
+**Modern Futuristic Colors:**
 - Primary: `#001B55` (deep navy - headers, text, icons)
 - Accent: `#C5BAFF` (soft purple - active states, highlights)
 - Background: `#FBFBFB` (ultra light gray - main background)
 - Surface: `#E8F9FF` (light blue tint - cards, sidebar)
 - Surface Alt: `#C4D9FF` (light blue - hover states)
-- Border: `#D8E2F0` (soft gray-blue - borders)
+- Border: `#D8E2F0` / `#C4D9FF` (soft gray-blue borders)
 - Hover: `#F0F6FF` (very light blue - table hover)
+
+**Text Colors:**
 - Text Primary: `#001B55` (deep navy)
 - Text Secondary: `#475569` (slate gray)
+- Text Muted: `#6B7280` (gray)
+
+**Status Colors:**
 - Success: `#34D399` (green - positive trends)
 - Error: `#F87171` (red - negative trends)
+- Warning: `#FBBF24` (yellow - alerts)
 
-**Legacy Colors (Being phased out):**
-- ~~Accent Orange: `#FF9C04`~~ (only use for specific brand elements)
-- ~~Background: `#F0F0F0`~~ (replaced by `#FBFBFB`)
-- ~~Surface: `#FFFFFF`~~ (replaced by `#E8F9FF` for cards)
+**Interactive States:**
+- Active: `bg-[#C5BAFF] text-[#001B55]`
+- Hover: `hover:bg-[#C4D9FF]`
+- Focus: `border-[#C5BAFF] ring-2 ring-[#C5BAFF]/20`
+
+---
+
+### ⚠️ **CRITICAL RULES:**
+1. **NEVER mix palettes** - Landing uses Orange (#FF9C04), Admin uses Purple (#C5BAFF)
+2. **Landing page = Vibrant & Bold** - High contrast, strong CTAs, traditional web feel
+3. **Admin area = Soft & Modern** - Futuristic, flat design, data-focused
+4. Check file path before applying colors:
+   - `app/page.tsx` or `components/` → Use **Landing Palette**
+   - `app/admin/` → Use **Admin Palette**
 
 ### Design Principles
-- Clean, flat, and futuristic design
-- Creative geometry with rounded corners (16px cards, 8-10px buttons)
+
+**Landing Page Design:**
+- Bold and vibrant with strong visual hierarchy
+- Traditional web aesthetics with modern touches
+- High contrast for readability
+- Large hero sections with dramatic CTAs
+- Shadow-heavy for depth (`shadow-lg`, `shadow-xl`)
+- Rounded corners (12-16px for cards, 8-12px for buttons)
+- Gradient buttons for maximum attention
+- Mobile-first responsive design
+
+**Admin Design:**
+- Clean, flat, and futuristic
+- Data-focused with minimal distractions
+- Soft colors for reduced eye strain during long sessions
+- Creative geometry with subtle rounded corners (16px cards, 8-10px buttons)
 - Micro-interactions with gentle hover states (`scale-[1.02]`, `duration-300`)
 - Generous white space for premium feel
-- Mobile-first responsive design
 - Minimal shadows: `shadow-[0_1px_3px_rgba(0,0,0,0.05)]`
+- Mobile-first responsive design
+
+---
 
 ### Component Styling Standards
-**Cards:**
+
+#### 🌐 **LANDING PAGE Components**
+
+**Hero Section:**
+```typescript
+className="relative overflow-hidden bg-gradient-to-br from-[#001B55] via-[#001B55] to-[#001845]"
+// Overlay: bg-gradient-to-t from-black/60 via-black/30 to-transparent
+```
+
+**Section Headers:**
+```typescript
+className="text-3xl md:text-4xl lg:text-5xl font-bold text-[#001B55] mb-4 leading-tight"
+// Body: text-base md:text-lg text-[#6B7280]
+```
+
+**Primary CTA Button:**
+```typescript
+className="bg-gradient-to-r from-[#FF9C04] to-[#FF9C04]/90 hover:from-[#001B55] hover:to-[#001B55] text-white shadow-lg hover:shadow-xl transition-all duration-300 rounded-xl px-8 py-4 font-semibold"
+```
+
+**Secondary Button:**
+```typescript
+className="text-[#6B7280] hover:bg-[#001B55]/5 hover:text-[#001B55] border border-transparent hover:border-[#001B55]/20 transition-all duration-300 rounded-xl px-8 py-4"
+```
+
+**Cards (Landing):**
+```typescript
+className="bg-white rounded-2xl shadow-lg hover:shadow-xl transition-all duration-300 p-6 border border-gray-100"
+```
+
+**Active States (Landing):**
+```typescript
+// Navigation active
+className="text-[#FF9C04] font-bold relative"
+// With animated underline
+<span className="absolute -bottom-1 left-0 right-0 h-0.5 bg-[#FF9C04] rounded-full animate-pulse"></span>
+
+// Button/Tab active
+className="bg-gradient-to-r from-[#001B55] to-[#001B55]/95 text-white shadow-lg"
+// Indicator dot
+<div className="w-2 h-2 rounded-full bg-[#FF9C04] animate-pulse shadow-lg shadow-[#FF9C04]/30"></div>
+```
+
+---
+
+#### 🔐 **ADMIN AREA Components**
+
+**Cards (Admin):**
 ```typescript
 className="bg-white border border-[#E8F9FF] shadow-[0_1px_3px_rgba(0,0,0,0.05)] hover:shadow-[0_4px_6px_rgba(0,0,0,0.08)] transition-all duration-300"
 style={{ borderRadius: "16px" }}
@@ -140,29 +254,34 @@ style={{ borderRadius: "16px" }}
 
 **Buttons (Active/Selected):**
 ```typescript
-className="bg-[#C5BAFF] text-[#001B55] hover:bg-[#C4D9FF]"
+className="bg-[#C5BAFF] text-[#001B55] hover:bg-[#C4D9FF] transition-all duration-300"
 ```
 
 **Buttons (Hover):**
 ```typescript
-className="hover:bg-[#C4D9FF] hover:text-[#001B55]"
+className="hover:bg-[#C4D9FF] hover:text-[#001B55] transition-all duration-300"
 ```
 
 **Tables:**
 - Header: `bg-[#E8F9FF] border-b border-[#C4D9FF]`
 - Striped rows: `bg-white` / `bg-[#E8F9FF]/30`
-- Hover: `hover:bg-[#F0F6FF]`
+- Hover: `hover:bg-[#F0F6FF] transition-all duration-200`
 
 **Sidebar:**
 - Background: `bg-[#E8F9FF]`
 - Border: `border-[#C4D9FF]`
 - Active menu: `bg-[#C5BAFF] text-[#001B55]`
-- Hover: `bg-[#C4D9FF]`
+- Hover: `bg-[#C4D9FF] transition-colors duration-200`
 
-**Search Box:**
+**Search Box (Admin):**
 - Background: `bg-[#E8F9FF]`
 - Border: `border-[#C4D9FF]`
 - Focus: `border-[#C5BAFF] ring-2 ring-[#C5BAFF]/20`
+
+**Form Inputs (Admin):**
+```typescript
+className="bg-white border border-[#C4D9FF] focus:border-[#C5BAFF] focus:ring-2 focus:ring-[#C5BAFF]/20 rounded-lg transition-all duration-300"
+```
 
 ### Component Guidelines
 - Use Shadcn/ui components from `components/ui/`
