@@ -117,6 +117,24 @@ export function MembersTable({
         ),
       },
       {
+        accessorKey: "nik",
+        header: "NIK",
+        cell: ({ row }) => (
+          <span className="text-sm text-[#374151]">
+            {row.original.nik || "-"}
+          </span>
+        ),
+      },
+      {
+        accessorKey: "ktaNumber",
+        header: "No. KTA",
+        cell: ({ row }) => (
+          <span className="text-sm text-[#374151]">
+            {row.original.ktaNumber || "-"}
+          </span>
+        ),
+      },
+      {
         accessorKey: "email",
         header: "Email",
         cell: ({ row }) => (
@@ -135,11 +153,20 @@ export function MembersTable({
         ),
       },
       {
-        accessorKey: "address",
-        header: "Alamat",
+        accessorKey: "familyCount",
+        header: "Jml. Keluarga",
         cell: ({ row }) => (
-          <span className="text-sm text-[#374151] block max-w-[240px] truncate">
-            {row.original.address || "-"}
+          <span className="text-sm text-[#374151]">
+            {row.original.familyCount || "-"}
+          </span>
+        ),
+      },
+      {
+        accessorKey: "maritalStatus",
+        header: "Status",
+        cell: ({ row }) => (
+          <span className="text-sm text-[#374151]">
+            {row.original.maritalStatus || "-"}
           </span>
         ),
       },
