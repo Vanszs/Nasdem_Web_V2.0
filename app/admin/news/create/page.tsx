@@ -62,11 +62,15 @@ const formSchema = z.object({
   title: z.string().min(3, "Judul minimal 3 karakter"),
   content: z
     .string()
-    .min(20, "Konten minimal 20 karakter agar layak publikasi"),
+    .min(20, "Konten minimal 20 karakter agar layak publikasi")
+    .refine((val) => val.replace(/<[^>]*>/g, '').trim().length >= 20, {
+      message: "Konten minimal 20 karakter (tidak termasuk tag HTML)",
+    }),
   publishDate: z.string().min(1, "Tanggal publikasi wajib diisi"),
   thumbnailUrl: z
     .string()
-    .url("Unggah gambar sampul terlebih dahulu"),
+    .min(1, "Unggah gambar sampul terlebih dahulu")
+    .url("URL gambar tidak valid"),
 });
 
 type FormValues = z.infer<typeof formSchema>;
@@ -185,9 +189,18 @@ export default function CreateNewsPage() {
 
   const onSubmit = handleSubmit(async (values) => {
     try {
+      // Validate content is not empty after removing HTML tags
+      const cleanContent = values.content.replace(/<[^>]*>/g, '').trim();
+      if (cleanContent.length < 20) {
+        toast.error("Konten terlalu pendek", {
+          description: "Konten minimal 20 karakter (tidak termasuk tag HTML)",
+        });
+        return;
+      }
+
       const payload = {
-        title: values.title,
-        content: values.content,
+        title: values.title.trim(),
+        content: values.content.trim(),
         publishDate: values.publishDate
           ? new Date(values.publishDate).toISOString()
           : undefined,
@@ -200,8 +213,9 @@ export default function CreateNewsPage() {
       });
       router.push("/admin/news");
     } catch (error) {
+      console.error("Error saving news:", error);
       toast.error("Gagal menyimpan berita", {
-        description: (error as Error).message,
+        description: (error as Error).message || "Terjadi kesalahan saat menyimpan",
       });
     }
   });

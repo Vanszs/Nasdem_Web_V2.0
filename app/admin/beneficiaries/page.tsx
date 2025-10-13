@@ -1160,8 +1160,8 @@ export default function BeneficiariesPage() {
 
         {/* Add/Edit Dialog */}
         <Dialog open={isDialogOpen} onOpenChange={setIsDialogOpen}>
-          <DialogContent className="max-w-5xl rounded-xl max-h-[90vh] overflow-y-auto">
-            <DialogHeader>
+          <DialogContent className="max-w-5xl rounded-2xl max-h-[90vh] flex flex-col">
+            <DialogHeader className="pb-2">
               <DialogTitle className="text-xl font-semibold text-[#001B55] flex items-center gap-3">
                 <div className="w-10 h-10 bg-[#E8F9FF] rounded-lg flex items-center justify-center">
                   <Plus className="w-5 h-5 text-[#001B55]" />
@@ -1172,244 +1172,272 @@ export default function BeneficiariesPage() {
               </DialogTitle>
             </DialogHeader>
 
-            <form onSubmit={handleSubmit} className="space-y-6 py-4">
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                {/* Nama Lengkap */}
+            <form onSubmit={handleSubmit} className="flex-1 overflow-y-auto px-1">
+              <div className="space-y-5 py-4">
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-5">
+                  {/* Nama Lengkap */}
+                  <div className="space-y-2">
+                    <Label htmlFor="fullName" className="text-sm font-semibold text-[#001B55]">
+                      Nama Lengkap <span className="text-red-500">*</span>
+                    </Label>
+                    <Input
+                      id="fullName"
+                      value={formData.fullName}
+                      onChange={(e) =>
+                        setFormData({ ...formData, fullName: e.target.value })
+                      }
+                      placeholder="Masukkan nama lengkap"
+                      required
+                      className="h-11 rounded-lg border-[#C4D9FF] focus:border-[#C5BAFF] transition-all"
+                    />
+                  </div>
+
+                  {/* NIK */}
+                  <div className="space-y-2">
+                    <Label htmlFor="nik" className="text-sm font-semibold text-[#001B55]">
+                      NIK <span className="text-red-500">*</span>
+                    </Label>
+                    <Input
+                      id="nik"
+                      value={formData.nik}
+                      onChange={(e) =>
+                        setFormData({ ...formData, nik: e.target.value })
+                      }
+                      placeholder="16 digit NIK"
+                      required
+                      maxLength={16}
+                      className="h-11 rounded-lg border-[#C4D9FF] focus:border-[#C5BAFF] transition-all"
+                    />
+                  </div>
+
+                  {/* Email */}
+                  <div className="space-y-2">
+                    <Label htmlFor="email" className="text-sm font-semibold text-[#001B55]">
+                      Email <span className="text-red-500">*</span>
+                    </Label>
+                    <Input
+                      id="email"
+                      type="email"
+                      value={formData.email}
+                      onChange={(e) =>
+                        setFormData({ ...formData, email: e.target.value })
+                      }
+                      placeholder="email@example.com"
+                      required
+                      className="h-11 rounded-lg border-[#C4D9FF] focus:border-[#C5BAFF] transition-all"
+                    />
+                  </div>
+
+                  {/* Phone */}
+                  <div className="space-y-2">
+                    <Label htmlFor="phone" className="text-sm font-semibold text-[#001B55]">
+                      Telepon <span className="text-red-500">*</span>
+                    </Label>
+                    <Input
+                      id="phone"
+                      value={formData.phone}
+                      onChange={(e) =>
+                        setFormData({ ...formData, phone: e.target.value })
+                      }
+                      placeholder="08xxxxxxxxxx"
+                      required
+                      className="h-11 rounded-lg border-[#C4D9FF] focus:border-[#C5BAFF] transition-all"
+                    />
+                  </div>
+
+                  {/* Tanggal Lahir */}
+                  <div className="space-y-2">
+                    <Label htmlFor="dateOfBirth" className="text-sm font-semibold text-[#001B55]">
+                      Tanggal Lahir <span className="text-red-500">*</span>
+                    </Label>
+                    <Input
+                      id="dateOfBirth"
+                      type="date"
+                      value={formData.dateOfBirth}
+                      onChange={(e) =>
+                        setFormData({ ...formData, dateOfBirth: e.target.value })
+                      }
+                      required
+                      className="h-11 rounded-lg border-[#C4D9FF] focus:border-[#C5BAFF] transition-all"
+                    />
+                  </div>
+
+                  {/* Jenis Kelamin */}
+                  <div className="space-y-2">
+                    <Label htmlFor="gender" className="text-sm font-semibold text-[#001B55]">
+                      Jenis Kelamin <span className="text-red-500">*</span>
+                    </Label>
+                    <Select
+                      value={formData.gender}
+                      onValueChange={(value) =>
+                        setFormData({ ...formData, gender: value })
+                      }
+                      required
+                    >
+                      <SelectTrigger className="h-11 rounded-lg border-[#C4D9FF] focus:border-[#C5BAFF] transition-all">
+                        <SelectValue placeholder="Pilih jenis kelamin" />
+                      </SelectTrigger>
+                      <SelectContent>
+                        <SelectItem value="Laki-laki">Laki-laki</SelectItem>
+                        <SelectItem value="Perempuan">Perempuan</SelectItem>
+                      </SelectContent>
+                    </Select>
+                  </div>
+
+                  {/* Pekerjaan */}
+                  <div className="space-y-2">
+                    <Label htmlFor="occupation" className="text-sm font-semibold text-[#001B55]">
+                      Pekerjaan <span className="text-red-500">*</span>
+                    </Label>
+                    <Input
+                      id="occupation"
+                      value={formData.occupation}
+                      onChange={(e) =>
+                        setFormData({ ...formData, occupation: e.target.value })
+                      }
+                      placeholder="Masukkan pekerjaan"
+                      required
+                      className="h-11 rounded-lg border-[#C4D9FF] focus:border-[#C5BAFF] transition-all"
+                    />
+                  </div>
+
+                  {/* Program */}
+                  <div className="space-y-2">
+                    <Label htmlFor="programId" className="text-sm font-semibold text-[#001B55]">
+                      Program <span className="text-red-500">*</span>
+                    </Label>
+                    <Select
+                      value={formData.programId}
+                      onValueChange={(value) =>
+                        setFormData({ ...formData, programId: value })
+                      }
+                      required
+                    >
+                      <SelectTrigger className="h-11 rounded-lg border-[#C4D9FF] focus:border-[#C5BAFF] transition-all">
+                        <SelectValue placeholder="Pilih program" />
+                      </SelectTrigger>
+                      <SelectContent>
+                        {programs.map((program) => (
+                          <SelectItem key={program.id} value={program.id}>
+                            {program.name}
+                          </SelectItem>
+                        ))}
+                      </SelectContent>
+                    </Select>
+                  </div>
+
+                  {/* Kategori */}
+                  <div className="space-y-2">
+                    <Label htmlFor="category" className="text-sm font-semibold text-[#001B55]">
+                      Kategori Manfaat <span className="text-red-500">*</span>
+                    </Label>
+                    <Select
+                      value={formData.category}
+                      onValueChange={(value) =>
+                        setFormData({ ...formData, category: value })
+                      }
+                      required
+                    >
+                      <SelectTrigger className="h-11 rounded-lg border-[#C4D9FF] focus:border-[#C5BAFF] transition-all">
+                        <SelectValue placeholder="Pilih kategori" />
+                      </SelectTrigger>
+                      <SelectContent>
+                        {categories.map((category) => (
+                          <SelectItem key={category} value={category}>
+                            {category}
+                          </SelectItem>
+                        ))}
+                      </SelectContent>
+                    </Select>
+                  </div>
+
+                  {/* Jumlah Keluarga */}
+                  <div className="space-y-2">
+                    <Label htmlFor="familyCount" className="text-sm font-semibold text-[#001B55]">
+                      Jumlah Keluarga <span className="text-red-500">*</span>
+                    </Label>
+                    <Input
+                      id="familyCount"
+                      type="number"
+                      min="1"
+                      value={formData.familyCount}
+                      onChange={(e) =>
+                        setFormData({ ...formData, familyCount: e.target.value })
+                      }
+                      placeholder="1"
+                      required
+                      className="h-11 rounded-lg border-[#C4D9FF] focus:border-[#C5BAFF] transition-all"
+                    />
+                  </div>
+
+                  {/* Nama Pengusul */}
+                  <div className="space-y-2">
+                    <Label htmlFor="proposerName" className="text-sm font-semibold text-[#001B55]">
+                      Nama Pengusul <span className="text-red-500">*</span>
+                    </Label>
+                    <Input
+                      id="proposerName"
+                      value={formData.proposerName}
+                      onChange={(e) =>
+                        setFormData({ ...formData, proposerName: e.target.value })
+                      }
+                      placeholder="Nama yang mengusulkan"
+                      required
+                      className="h-11 rounded-lg border-[#C4D9FF] focus:border-[#C5BAFF] transition-all"
+                    />
+                  </div>
+                </div>
+
+                {/* Alamat Lengkap */}
                 <div className="space-y-2">
-                  <Label htmlFor="fullName">Nama Lengkap *</Label>
-                  <Input
-                    id="fullName"
-                    value={formData.fullName}
+                  <Label htmlFor="address" className="text-sm font-semibold text-[#001B55]">
+                    Alamat Lengkap (dengan RT/RW) <span className="text-red-500">*</span>
+                  </Label>
+                  <Textarea
+                    id="address"
+                    value={formData.address}
                     onChange={(e) =>
-                      setFormData({ ...formData, fullName: e.target.value })
+                      setFormData({ ...formData, address: e.target.value })
                     }
-                    placeholder="Masukkan nama lengkap"
+                    placeholder="Jl. Nama Jalan No. XX, RT XX RW XX, Kel. XXX, Kec. XXX"
                     required
-                    className="rounded-lg border-[#C4D9FF] focus:border-[#C5BAFF]"
+                    rows={3}
+                    className="rounded-lg border-[#C4D9FF] focus:border-[#C5BAFF] resize-none transition-all"
                   />
                 </div>
 
-                {/* NIK */}
+                {/* Catatan */}
                 <div className="space-y-2">
-                  <Label htmlFor="nik">NIK *</Label>
-                  <Input
-                    id="nik"
-                    value={formData.nik}
+                  <Label htmlFor="notes" className="text-sm font-semibold text-[#001B55]">
+                    Catatan
+                  </Label>
+                  <Textarea
+                    id="notes"
+                    value={formData.notes}
                     onChange={(e) =>
-                      setFormData({ ...formData, nik: e.target.value })
+                      setFormData({ ...formData, notes: e.target.value })
                     }
-                    placeholder="16 digit NIK"
-                    required
-                    maxLength={16}
-                    className="rounded-lg border-[#C4D9FF] focus:border-[#C5BAFF]"
-                  />
-                </div>
-
-                {/* Email */}
-                <div className="space-y-2">
-                  <Label htmlFor="email">Email *</Label>
-                  <Input
-                    id="email"
-                    type="email"
-                    value={formData.email}
-                    onChange={(e) =>
-                      setFormData({ ...formData, email: e.target.value })
-                    }
-                    placeholder="email@example.com"
-                    required
-                    className="rounded-lg border-[#C4D9FF] focus:border-[#C5BAFF]"
-                  />
-                </div>
-
-                {/* Phone */}
-                <div className="space-y-2">
-                  <Label htmlFor="phone">Telepon *</Label>
-                  <Input
-                    id="phone"
-                    value={formData.phone}
-                    onChange={(e) =>
-                      setFormData({ ...formData, phone: e.target.value })
-                    }
-                    placeholder="08xxxxxxxxxx"
-                    required
-                    className="rounded-lg border-[#C4D9FF] focus:border-[#C5BAFF]"
-                  />
-                </div>
-
-                {/* Tanggal Lahir */}
-                <div className="space-y-2">
-                  <Label htmlFor="dateOfBirth">Tanggal Lahir *</Label>
-                  <Input
-                    id="dateOfBirth"
-                    type="date"
-                    value={formData.dateOfBirth}
-                    onChange={(e) =>
-                      setFormData({ ...formData, dateOfBirth: e.target.value })
-                    }
-                    required
-                    className="rounded-lg border-[#C4D9FF] focus:border-[#C5BAFF]"
-                  />
-                </div>
-
-                {/* Jenis Kelamin */}
-                <div className="space-y-2">
-                  <Label htmlFor="gender">Jenis Kelamin *</Label>
-                  <Select
-                    value={formData.gender}
-                    onValueChange={(value) =>
-                      setFormData({ ...formData, gender: value })
-                    }
-                    required
-                  >
-                    <SelectTrigger className="rounded-lg border-[#C4D9FF] focus:border-[#C5BAFF]">
-                      <SelectValue placeholder="Pilih jenis kelamin" />
-                    </SelectTrigger>
-                    <SelectContent>
-                      <SelectItem value="Laki-laki">Laki-laki</SelectItem>
-                      <SelectItem value="Perempuan">Perempuan</SelectItem>
-                    </SelectContent>
-                  </Select>
-                </div>
-
-                {/* Pekerjaan */}
-                <div className="space-y-2">
-                  <Label htmlFor="occupation">Pekerjaan *</Label>
-                  <Input
-                    id="occupation"
-                    value={formData.occupation}
-                    onChange={(e) =>
-                      setFormData({ ...formData, occupation: e.target.value })
-                    }
-                    placeholder="Masukkan pekerjaan"
-                    required
-                    className="rounded-lg border-[#C4D9FF] focus:border-[#C5BAFF]"
-                  />
-                </div>
-
-                {/* Program */}
-                <div className="space-y-2">
-                  <Label htmlFor="programId">Program *</Label>
-                  <Select
-                    value={formData.programId}
-                    onValueChange={(value) =>
-                      setFormData({ ...formData, programId: value })
-                    }
-                    required
-                  >
-                    <SelectTrigger className="rounded-lg border-[#C4D9FF] focus:border-[#C5BAFF]">
-                      <SelectValue placeholder="Pilih program" />
-                    </SelectTrigger>
-                    <SelectContent>
-                      {programs.map((program) => (
-                        <SelectItem key={program.id} value={program.id}>
-                          {program.name}
-                        </SelectItem>
-                      ))}
-                    </SelectContent>
-                  </Select>
-                </div>
-
-                {/* Kategori */}
-                <div className="space-y-2">
-                  <Label htmlFor="category">Kategori Manfaat *</Label>
-                  <Select
-                    value={formData.category}
-                    onValueChange={(value) =>
-                      setFormData({ ...formData, category: value })
-                    }
-                    required
-                  >
-                    <SelectTrigger className="rounded-lg border-[#C4D9FF] focus:border-[#C5BAFF]">
-                      <SelectValue placeholder="Pilih kategori" />
-                    </SelectTrigger>
-                    <SelectContent>
-                      {categories.map((category) => (
-                        <SelectItem key={category} value={category}>
-                          {category}
-                        </SelectItem>
-                      ))}
-                    </SelectContent>
-                  </Select>
-                </div>
-
-                {/* Jumlah Keluarga */}
-                <div className="space-y-2">
-                  <Label htmlFor="familyCount">Jumlah Keluarga *</Label>
-                  <Input
-                    id="familyCount"
-                    type="number"
-                    min="1"
-                    value={formData.familyCount}
-                    onChange={(e) =>
-                      setFormData({ ...formData, familyCount: e.target.value })
-                    }
-                    placeholder="1"
-                    required
-                    className="rounded-lg border-[#C4D9FF] focus:border-[#C5BAFF]"
-                  />
-                </div>
-
-                {/* Nama Pengusul */}
-                <div className="space-y-2">
-                  <Label htmlFor="proposerName">Nama Pengusul *</Label>
-                  <Input
-                    id="proposerName"
-                    value={formData.proposerName}
-                    onChange={(e) =>
-                      setFormData({ ...formData, proposerName: e.target.value })
-                    }
-                    placeholder="Nama yang mengusulkan"
-                    required
-                    className="rounded-lg border-[#C4D9FF] focus:border-[#C5BAFF]"
+                    placeholder="Catatan tambahan (opsional)"
+                    rows={3}
+                    className="rounded-lg border-[#C4D9FF] focus:border-[#C5BAFF] resize-none transition-all"
                   />
                 </div>
               </div>
 
-              {/* Alamat Lengkap */}
-              <div className="space-y-2">
-                <Label htmlFor="address">Alamat Lengkap (dengan RT/RW) *</Label>
-                <Textarea
-                  id="address"
-                  value={formData.address}
-                  onChange={(e) =>
-                    setFormData({ ...formData, address: e.target.value })
-                  }
-                  placeholder="Jl. Nama Jalan No. XX, RT XX RW XX, Kel. XXX, Kec. XXX"
-                  required
-                  rows={3}
-                  className="rounded-lg border-[#C4D9FF] focus:border-[#C5BAFF]"
-                />
-              </div>
-
-              {/* Catatan */}
-              <div className="space-y-2">
-                <Label htmlFor="notes">Catatan</Label>
-                <Textarea
-                  id="notes"
-                  value={formData.notes}
-                  onChange={(e) =>
-                    setFormData({ ...formData, notes: e.target.value })
-                  }
-                  placeholder="Catatan tambahan (opsional)"
-                  rows={3}
-                  className="rounded-lg border-[#C4D9FF] focus:border-[#C5BAFF]"
-                />
-              </div>
-
-              <div className="flex items-center justify-end gap-3 pt-4 border-t border-[#E8F9FF]">
+              <div className="flex items-center justify-end gap-3 pt-4 pb-2 border-t border-[#E8F9FF] sticky bottom-0 bg-white">
                 <Button
                   type="button"
                   variant="outline"
                   onClick={() => setIsDialogOpen(false)}
-                  className="rounded-lg border-[#C4D9FF] hover:bg-[#E8F9FF] text-[#001B55]"
+                  className="h-11 px-6 rounded-lg border-[#C4D9FF] hover:bg-[#E8F9FF] text-[#001B55] font-medium transition-all"
                 >
                   Batal
                 </Button>
                 <Button
                   type="submit"
-                  className="rounded-lg bg-[#001B55] hover:bg-[#001B55]/90 text-white"
+                  className="h-11 px-8 rounded-lg bg-[#001B55] hover:bg-[#001B55]/90 text-white font-semibold shadow-sm transition-all"
                 >
-                  {selectedBeneficiary ? "Update" : "Simpan"}
+                  {selectedBeneficiary ? "Update Data" : "Simpan Data"}
                 </Button>
               </div>
             </form>

@@ -37,16 +37,35 @@ import {
   ClipboardList,
   AlertTriangle,
 } from "lucide-react";
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { AdminLayout } from "../components/layout/AdminLayout";
 import { toast } from "sonner";
 
 // Types
+interface Category {
+  id: number;
+  name: string;
+  subtitle?: string;
+  description?: string;
+}
+
+interface ApiProgram {
+  id: number;
+  title: string;
+  description?: string;
+  startDate?: string;
+  endDate?: string;
+  photoUrl?: string;
+  categoryId?: number;
+  category?: Category;
+}
+
 interface Program {
   id: string;
   name: string;
   description: string;
   category: string;
+  categoryId?: number;
   status: "Berlangsung" | "Selesai" | "Tertunda" | "Perencanaan";
   startDate: string;
   endDate: string;
@@ -70,6 +89,7 @@ export default function ProgramsPage() {
       description:
         "Program pelatihan dan pendampingan usaha mikro, kecil, dan menengah",
       category: "Ekonomi",
+      categoryId: 1,
       status: "Berlangsung",
       startDate: "2024-01-15",
       endDate: "2024-12-31",
@@ -98,6 +118,7 @@ export default function ProgramsPage() {
       description:
         "Program beasiswa untuk siswa berprestasi dari keluarga kurang mampu",
       category: "Pendidikan",
+      categoryId: 2,
       status: "Berlangsung",
       startDate: "2024-02-01",
       endDate: "2024-11-30",
@@ -121,6 +142,47 @@ export default function ProgramsPage() {
       coordinator: "Prof. Ahmad Mujahid, Ph.D.",
     },
   ]);
+
+  // Categories state
+  const [categories, setCategories] = useState<Category[]>([]);
+  const [apiPrograms, setApiPrograms] = useState<ApiProgram[]>([]);
+  const [selectedCategoryForForm, setSelectedCategoryForForm] = useState<string>("");
+
+  // Fetch categories on mount
+  useEffect(() => {
+    fetchCategories();
+    fetchApiPrograms();
+  }, []);
+
+  const fetchCategories = async () => {
+    try {
+      const res = await fetch("/api/categories");
+      const json = await res.json();
+      if (json.success && json.data) {
+        setCategories(json.data);
+      }
+    } catch (error) {
+      console.error("Error fetching categories:", error);
+    }
+  };
+
+  const fetchApiPrograms = async () => {
+    try {
+      const res = await fetch("/api/programs");
+      const json = await res.json();
+      if (json.success && json.data) {
+        setApiPrograms(json.data);
+      }
+    } catch (error) {
+      console.error("Error fetching programs:", error);
+    }
+  };
+
+  // Get programs filtered by selected category
+  const getProgramsByCategory = (categoryId: string) => {
+    if (!categoryId || categoryId === "") return [];
+    return apiPrograms.filter(p => p.categoryId === Number(categoryId));
+  };
 
   // Form states
   const [programForm, setProgramForm] = useState<Partial<Program>>({});
@@ -161,11 +223,21 @@ export default function ProgramsPage() {
       return;
     }
 
+    if (!selectedCategoryForForm) {
+      toast.error("Error", {
+        description: "Silakan pilih kategori program",
+      });
+      return;
+    }
+
+    const categoryName = categories.find(c => String(c.id) === selectedCategoryForForm)?.name || "";
+
     const programData: Program = {
       id: editingProgram?.id || Date.now().toString(),
       name: programForm.name || "",
       description: programForm.description || "",
-      category: programForm.category || "Umum",
+      category: categoryName,
+      categoryId: Number(selectedCategoryForForm),
       status: programForm.status || "Berlangsung",
       startDate:
         programForm.startDate || new Date().toISOString().split("T")[0],
@@ -192,6 +264,7 @@ export default function ProgramsPage() {
     }
 
     setProgramForm({});
+    setSelectedCategoryForForm("");
     setEditingProgram(null);
     setIsProgramDialogOpen(false);
 
@@ -219,6 +292,17 @@ export default function ProgramsPage() {
   const handleEditProgram = (program: Program) => {
     setEditingProgram(program);
     setProgramForm(program);
+    // Set the selected category for the form
+    if (program.categoryId) {
+      setSelectedCategoryForForm(String(program.categoryId));
+    }
+    setIsProgramDialogOpen(true);
+  };
+
+  const handleAddNew = () => {
+    setEditingProgram(null);
+    setProgramForm({});
+    setSelectedCategoryForForm("");
     setIsProgramDialogOpen(true);
   };
 
@@ -248,10 +332,21 @@ export default function ProgramsPage() {
             </div>
             <Dialog
               open={isProgramDialogOpen}
-              onOpenChange={setIsProgramDialogOpen}
+              onOpenChange={(open) => {
+                setIsProgramDialogOpen(open);
+                if (!open) {
+                  // Reset form when closing
+                  setProgramForm({});
+                  setSelectedCategoryForForm("");
+                  setEditingProgram(null);
+                }
+              }}
             >
               <DialogTrigger asChild>
-                <Button className="h-14 px-8 rounded-full bg-[#FF9C04] hover:bg-[#E08A00] text-white font-bold shadow-xl hover:shadow-2xl transition-all duration-300 hover:scale-105">
+                <Button 
+                  onClick={handleAddNew}
+                  className="h-14 px-8 rounded-full bg-[#FF9C04] hover:bg-[#E08A00] text-white font-bold shadow-xl hover:shadow-2xl transition-all duration-300 hover:scale-105"
+                >
                   <Plus className="w-5 h-5 mr-2" />
                   Tambah Program
                 </Button>
@@ -265,46 +360,72 @@ export default function ProgramsPage() {
                 <div className="grid gap-4 py-4 overflow-y-auto pr-2">
                   <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                     <div className="grid gap-2">
-                      <Label htmlFor="programName" className="font-bold text-[#001B55]">
-                        Nama Program <span className="text-[#C81E1E]">*</span>
-                      </Label>
-                      <Input
-                        id="programName"
-                        value={programForm.name || ""}
-                        onChange={(e) =>
-                          setProgramForm((prev) => ({
-                            ...prev,
-                            name: e.target.value,
-                          }))
-                        }
-                        placeholder="Masukkan nama program"
-                        className="h-12 rounded-xl border-2"
-                      />
-                    </div>
-                    <div className="grid gap-2">
                       <Label htmlFor="category" className="font-bold text-[#001B55]">
                         Kategori <span className="text-[#C81E1E]">*</span>
                       </Label>
                       <Select
-                        value={programForm.category || ""}
-                        onValueChange={(value) =>
+                        value={selectedCategoryForForm}
+                        onValueChange={(value) => {
+                          setSelectedCategoryForForm(value);
+                          // Reset program name when category changes
                           setProgramForm((prev) => ({
                             ...prev,
-                            category: value,
-                          }))
-                        }
+                            category: categories.find(c => String(c.id) === value)?.name || "",
+                            categoryId: Number(value),
+                            name: "",
+                          }));
+                        }}
                       >
                         <SelectTrigger className="h-12 rounded-xl border-2">
                           <SelectValue placeholder="Pilih kategori" />
                         </SelectTrigger>
                         <SelectContent>
-                          <SelectItem value="Ekonomi">Ekonomi</SelectItem>
-                          <SelectItem value="Pendidikan">Pendidikan</SelectItem>
-                          <SelectItem value="Kesehatan">Kesehatan</SelectItem>
-                          <SelectItem value="Sosial">Sosial</SelectItem>
-                          <SelectItem value="Lingkungan">Lingkungan</SelectItem>
+                          {categories.map((cat) => (
+                            <SelectItem key={cat.id} value={String(cat.id)}>
+                              {cat.name}
+                            </SelectItem>
+                          ))}
                         </SelectContent>
                       </Select>
+                    </div>
+                    <div className="grid gap-2">
+                      <Label htmlFor="programName" className="font-bold text-[#001B55]">
+                        Nama Program <span className="text-[#C81E1E]">*</span>
+                      </Label>
+                      <Select
+                        value={programForm.name || ""}
+                        onValueChange={(value) => {
+                          const selectedProgram = apiPrograms.find(p => p.title === value);
+                          setProgramForm((prev) => ({
+                            ...prev,
+                            name: value,
+                            description: selectedProgram?.description || prev.description,
+                          }));
+                        }}
+                        disabled={!selectedCategoryForForm}
+                      >
+                        <SelectTrigger className="h-12 rounded-xl border-2">
+                          <SelectValue placeholder={selectedCategoryForForm ? "Pilih program" : "Pilih kategori terlebih dahulu"} />
+                        </SelectTrigger>
+                        <SelectContent>
+                          {getProgramsByCategory(selectedCategoryForForm).length === 0 ? (
+                            <SelectItem value="__no_programs__" disabled>
+                              Tidak ada program untuk kategori ini
+                            </SelectItem>
+                          ) : (
+                            getProgramsByCategory(selectedCategoryForForm).map((prog) => (
+                              <SelectItem key={prog.id} value={prog.title}>
+                                {prog.title}
+                              </SelectItem>
+                            ))
+                          )}
+                        </SelectContent>
+                      </Select>
+                      {selectedCategoryForForm && getProgramsByCategory(selectedCategoryForForm).length === 0 && (
+                        <p className="text-xs text-amber-600 mt-1">
+                          Belum ada program untuk kategori ini. Silakan input manual atau tambahkan program di database.
+                        </p>
+                      )}
                     </div>
                   </div>
                   <div className="grid gap-2">
@@ -520,6 +641,7 @@ export default function ProgramsPage() {
                     variant="outline"
                     onClick={() => {
                       setProgramForm({});
+                      setSelectedCategoryForForm("");
                       setEditingProgram(null);
                       setIsProgramDialogOpen(false);
                     }}

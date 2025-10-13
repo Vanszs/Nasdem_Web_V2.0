@@ -125,7 +125,7 @@ export default function Members() {
 
   // QUERY MEMBERS
   // If universal search is active, ignore tab-specific filters and search across all members
-  const { data, isLoading, isError, error } = useMembers({
+  const { data, isLoading, isError, error, refetch } = useMembers({
     page,
     pageSize,
     search: debouncedUniversalSearch || debouncedSearch || undefined,
