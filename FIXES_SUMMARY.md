@@ -34,19 +34,18 @@ if (cleanContent.length < 20) {
 
 ---
 
-### 2. 📝 Berita (News) - Novel Editor Integration
-**Note:** The current implementation uses a custom simple editor component. To integrate the actual Novel editor package, follow these steps:
+### 2. 📝 Berita (News) - Rich Text Editor Integration
+**Note:** The legacy implementation relied on the Novel editor. The project now uses BlockNote as the preferred rich text editor for the news module.
 
-**Recommended Next Steps:**
-1. Install Novel editor: `npm install novel`
-2. Import and use the Novel editor component
-3. Replace the custom `NovelEditor` component with the official one
-4. Configure editor plugins and features as needed
+**Recommended Enhancements:**
+1. Extend the BlockNote configuration with custom toolbars or slash menu items tailored to editorial needs.
+2. Add serialization helpers if additional export formats (Markdown, plain text) are required.
+3. Review styling overrides to keep the editor consistent with the admin design system.
 
 **Current Implementation:**
-- Custom `NovelEditor` component with contentEditable
-- Basic rich text editing functionality
-- HTML content storage
+- BlockNote-based editor component with HTML serialization
+- Minimum content length validation retained
+- Seamless integration with existing form logic and preview flow
 
 ---
 

@@ -13,6 +13,10 @@
     "seed": "ts-node -P tsconfig.seed.json prisma/seed.ts"
   },
   "dependencies": {
+    "@blocknote/core": "^0.41.1",
+    "@blocknote/mantine": "^0.41.1",
+    "@blocknote/react": "^0.41.1",
+    "@bprogress/next": "^3.2.12",
     "@hookform/resolvers": "^3.10.0",
     "@prisma/client": "^6.16.2",
     "@radix-ui/react-accordion": "1.2.2",

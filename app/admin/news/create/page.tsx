@@ -16,61 +16,29 @@ import {
   Calendar,
   Eye,
   FileText,
-  Image,
+  Image as ImageIcon,
   Save,
   Loader2,
   X,
 } from "lucide-react";
 import { useCreateNews } from "@/app/admin/news/hooks";
-
-// Novel AI Editor - Simple implementation for rich text editing
-const NovelEditor = ({ value, onChange, placeholder, disabled }: {
-  value: string;
-  onChange: (value: string) => void;
-  placeholder?: string;
-  disabled?: boolean;
-}) => {
-  const editorRef = useRef<HTMLDivElement>(null);
-  
-  const handleInput = () => {
-    if (editorRef.current) {
-      onChange(editorRef.current.innerHTML || '');
-    }
-  };
-
-  const handlePaste = (e: React.ClipboardEvent) => {
-    e.preventDefault();
-    const text = e.clipboardData.getData('text/plain');
-    document.execCommand('insertText', false, text);
-  };
-
-  return (
-    <div
-      ref={editorRef}
-      contentEditable={!disabled}
-      onInput={handleInput}
-      onPaste={handlePaste}
-      className="border-2 border-gray-200 hover:border-gray-300 focus:border-brand-primary min-h-[280px] p-3 rounded-md outline-none transition-all duration-300"
-      style={{ minHeight: '280px' }}
-      dangerouslySetInnerHTML={{ __html: value }}
-      data-placeholder={placeholder}
-    />
-  );
-};
+import dynamic from "next/dynamic";
+import Image from "next/image";
+export const BlockNoteEditor = dynamic(
+  () => import("../components/blocknote-editor"),
+  { ssr: false }
+);
 
 const formSchema = z.object({
   title: z.string().min(3, "Judul minimal 3 karakter"),
   content: z
     .string()
     .min(20, "Konten minimal 20 karakter agar layak publikasi")
-    .refine((val) => val.replace(/<[^>]*>/g, '').trim().length >= 20, {
-      message: "Konten minimal 20 karakter (tidak termasuk tag HTML)",
+    .refine((val) => val.replace(/<[^>]*>/g, "").trim().length >= 20, {
+      message: "Konten minimal 20 karakter",
     }),
   publishDate: z.string().min(1, "Tanggal publikasi wajib diisi"),
-  thumbnailUrl: z
-    .string()
-    .min(1, "Unggah gambar sampul terlebih dahulu")
-    .url("URL gambar tidak valid"),
+  thumbnailUrl: z.string().min(1, "Unggah gambar sampul terlebih dahulu"),
 });
 
 type FormValues = z.infer<typeof formSchema>;
@@ -181,19 +149,19 @@ export default function CreateNewsPage() {
       thumbnailUrl: formValues.thumbnailUrl,
       publishDate: formValues.publishDate,
     };
-    sessionStorage.setItem('newsPreview', JSON.stringify(previewData));
-    
+    sessionStorage.setItem("newsPreview", JSON.stringify(previewData));
+
     // Open preview in new tab
-    window.open('/admin/news/preview', '_blank');
+    window.open("/admin/news/preview", "_blank");
   };
 
   const onSubmit = handleSubmit(async (values) => {
     try {
       // Validate content is not empty after removing HTML tags
-      const cleanContent = values.content.replace(/<[^>]*>/g, '').trim();
+      const cleanContent = values.content.replace(/<[^>]*>/g, "").trim();
       if (cleanContent.length < 20) {
         toast.error("Konten terlalu pendek", {
-          description: "Konten minimal 20 karakter (tidak termasuk tag HTML)",
+          description: "Konten minimal 20 karakter",
         });
         return;
       }
@@ -215,7 +183,8 @@ export default function CreateNewsPage() {
     } catch (error) {
       console.error("Error saving news:", error);
       toast.error("Gagal menyimpan berita", {
-        description: (error as Error).message || "Terjadi kesalahan saat menyimpan",
+        description:
+          (error as Error).message || "Terjadi kesalahan saat menyimpan",
       });
     }
   });
@@ -300,18 +269,21 @@ export default function CreateNewsPage() {
                   )}
                 </div>
 
-                <div>
-                  <label className="block text-sm font-medium mb-2">
+                <div className="mb-6">
+                  <label className="block text-sm font-semibold mb-2 text-gray-700">
                     Konten Berita *
                   </label>
-                  <NovelEditor
+                  <BlockNoteEditor
                     value={watch("content")}
-                    onChange={(value) => setValue("content", value, { shouldValidate: true })}
+                    onChange={(html) =>
+                      setValue("content", html, { shouldValidate: true })
+                    }
                     placeholder="Tulis konten berita di sini..."
                     disabled={isBusy}
+                    className="bg-white shadow-sm focus-within:shadow-md transition-shadow duration-200"
                   />
                   {errors.content && (
-                    <p className="mt-2 text-xs text-red-600">
+                    <p className="mt-1 text-xs text-red-600">
                       {errors.content.message}
                     </p>
                   )}
@@ -345,7 +317,8 @@ export default function CreateNewsPage() {
                     </p>
                   )}
                   <p className="mt-1 text-xs text-muted-foreground">
-                    Waktu publikasi akan dikonversi otomatis ke zona waktu server.
+                    Waktu publikasi akan dikonversi otomatis ke zona waktu
+                    server.
                   </p>
                 </div>
               </CardContent>
@@ -354,7 +327,7 @@ export default function CreateNewsPage() {
             <Card className="border-2 border-gray-300/80 shadow-lg">
               <CardHeader className="pb-3">
                 <CardTitle className="flex items-center gap-2 text-lg">
-                  <Image className="h-5 w-5" />
+                  <ImageIcon className="h-5 w-5" />
                   Sampul Berita
                 </CardTitle>
               </CardHeader>
@@ -395,11 +368,13 @@ export default function CreateNewsPage() {
                       Pratinjau gambar sampul:
                     </p>
                     <div className="relative aspect-video overflow-hidden rounded-md bg-white">
-                      {/* eslint-disable-next-line @next/next/no-img-element */}
-                      <img
+                      <Image
                         src={thumbnailUrl}
                         alt="Pratinjau gambar sampul"
-                        className="h-full w-full object-cover"
+                        fill
+                        sizes="(max-width: 768px) 100vw, (max-width: 1200px) 66vw, 50vw"
+                        className="object-cover"
+                        unoptimized
                       />
                     </div>
                     <Button

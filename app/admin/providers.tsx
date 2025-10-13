@@ -3,8 +3,8 @@
 import { Toaster } from "@/components/ui/sonner";
 import { TooltipProvider } from "@/components/ui/tooltip";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
-import { ThemeProvider } from "next-themes";
 import { useState } from "react";
+import { AppProgressProvider as ProgressProvider } from "@bprogress/next";
 
 export function Providers({ children }: { children: React.ReactNode }) {
   const [queryClient] = useState(
@@ -26,18 +26,18 @@ export function Providers({ children }: { children: React.ReactNode }) {
   );
 
   return (
-    <QueryClientProvider client={queryClient}>
-      <ThemeProvider
-        attribute="class"
-        defaultTheme="light"
-        enableSystem={false}
-        disableTransitionOnChange
-      >
+    <ProgressProvider
+      height="4px"
+      color="#001b55"
+      options={{ showSpinner: false }}
+      shallowRouting
+    >
+      <QueryClientProvider client={queryClient}>
         <TooltipProvider>
           {children}
           <Toaster richColors closeButton />
         </TooltipProvider>
-      </ThemeProvider>
-    </QueryClientProvider>
+      </QueryClientProvider>
+    </ProgressProvider>
   );
 }

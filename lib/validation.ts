@@ -2,7 +2,8 @@ import { z } from "zod";
 
 // Common validation patterns
 const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
-const passwordRegex = /^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)(?=.*[@$!%*?&])[A-Za-z\d@$!%*?&]/;
+const passwordRegex =
+  /^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)(?=.*[@$!%*?&])[A-Za-z\d@$!%*?&]/;
 const usernameRegex = /^[a-zA-Z0-9_]{3,20}$/;
 const phoneRegex = /^\+?[\d\s\-\(\)]+$/;
 
@@ -10,21 +11,38 @@ const phoneRegex = /^\+?[\d\s\-\(\)]+$/;
 export const baseSchemas = {
   id: z.coerce.number().int().positive("ID must be a positive integer"),
   email: z.string().email("Invalid email format"),
-  password: z.string()
+  password: z
+    .string()
     .min(8, "Password must be at least 8 characters")
-    .regex(passwordRegex, "Password must contain at least one uppercase letter, one lowercase letter, one number, and one special character"),
-  username: z.string()
+    .regex(
+      passwordRegex,
+      "Password must contain at least one uppercase letter, one lowercase letter, one number, and one special character"
+    ),
+  username: z
+    .string()
     .min(3, "Username must be at least 3 characters")
     .max(50, "Username too long")
-    .regex(usernameRegex, "Username can only contain letters, numbers, and underscores"),
-  phone: z.string().regex(phoneRegex, "Invalid phone number format").optional().nullable(),
+    .regex(
+      usernameRegex,
+      "Username can only contain letters, numbers, and underscores"
+    ),
+  phone: z
+    .string()
+    .regex(phoneRegex, "Invalid phone number format")
+    .optional()
+    .nullable(),
   name: z.string().min(1, "Name is required").max(150, "Name too long"),
   url: z.string().url("Invalid URL format").optional().nullable(),
   date: z.string().datetime("Invalid date format").optional().nullable(),
   boolean: z.coerce.boolean(),
   pagination: z.object({
     page: z.coerce.number().int().min(1, "Page must be at least 1").default(1),
-    pageSize: z.coerce.number().int().min(1, "Page size must be at least 1").max(100, "Page size cannot exceed 100").default(20),
+    pageSize: z.coerce
+      .number()
+      .int()
+      .min(1, "Page size must be at least 1")
+      .max(100, "Page size cannot exceed 100")
+      .default(20),
   }),
 };
 
@@ -35,7 +53,7 @@ export const userSchemas = {
     email: baseSchemas.email,
     password: baseSchemas.password,
     role: z.enum(["superadmin", "editor", "analyst"], {
-      errorMap: () => ({ message: "Invalid role" })
+      errorMap: () => ({ message: "Invalid role" }),
     }),
   }),
   update: z.object({
@@ -90,7 +108,9 @@ export const memberSchemas = {
     status: z.enum(["active", "inactive", "suspended"]).optional(),
     gender: z.enum(["male", "female"]).optional(),
     level: z.enum(["dpd", "sayap", "dpc", "dprt", "kader"]).optional(),
-    position: z.enum(["ketua", "sekretaris", "bendahara", "wakil", "anggota"]).optional(),
+    position: z
+      .enum(["ketua", "sekretaris", "bendahara", "wakil", "anggota"])
+      .optional(),
     sayapTypeId: baseSchemas.id.optional(),
     regionId: baseSchemas.id.optional(),
     struktur: baseSchemas.boolean.optional(),
@@ -104,13 +124,17 @@ export const newsSchemas = {
     title: z.string().min(1, "Title is required").max(255, "Title too long"),
     content: z.string().optional(),
     publishDate: baseSchemas.date,
-    thumbnailUrl: z.string().url("Thumbnail URL is required"),
+    thumbnailUrl: z.string().min(1, "Unggah gambar sampul terlebih dahulu"),
   }),
   update: z.object({
-    title: z.string().min(1, "Title is required").max(255, "Title too long").optional(),
+    title: z
+      .string()
+      .min(1, "Title is required")
+      .max(255, "Title too long")
+      .optional(),
     content: z.string().optional(),
     publishDate: baseSchemas.date.optional(),
-    thumbnailUrl: baseSchemas.url.optional(),
+    thumbnailUrl: z.string().optional(),
   }),
   list: z.object({
     search: z.string().optional(),
@@ -132,7 +156,11 @@ export const programSchemas = {
     categoryId: baseSchemas.id.optional(),
   }),
   update: z.object({
-    title: z.string().min(1, "Title is required").max(255, "Title too long").optional(),
+    title: z
+      .string()
+      .min(1, "Title is required")
+      .max(255, "Title too long")
+      .optional(),
     description: z.string().max(2000, "Description too long").optional(),
     startDate: baseSchemas.date.optional(),
     endDate: baseSchemas.date.optional(),
@@ -174,16 +202,21 @@ export const uploadSchemas = {
 };
 
 // Helper function to validate and transform request data
-export function validateRequest<T>(schema: z.ZodSchema<T>, data: unknown): {
-  success: true;
-  data: T;
-} | {
-  success: false;
-  error: string;
-  details?: any;
-} {
+export function validateRequest<T>(
+  schema: z.ZodSchema<T>,
+  data: unknown
+):
+  | {
+      success: true;
+      data: T;
+    }
+  | {
+      success: false;
+      error: string;
+      details?: any;
+    } {
   const result = schema.safeParse(data);
-  
+
   if (!result.success) {
     return {
       success: false,
@@ -191,7 +224,7 @@ export function validateRequest<T>(schema: z.ZodSchema<T>, data: unknown): {
       details: result.error.errors,
     };
   }
-  
+
   return {
     success: true,
     data: result.data,
@@ -199,12 +232,15 @@ export function validateRequest<T>(schema: z.ZodSchema<T>, data: unknown): {
 }
 
 // Helper function to extract query parameters safely
-export function extractQueryParams<T>(schema: z.ZodSchema<T>, searchParams: URLSearchParams): T {
+export function extractQueryParams<T>(
+  schema: z.ZodSchema<T>,
+  searchParams: URLSearchParams
+): T {
   const params: Record<string, any> = {};
-  
+
   for (const [key, value] of searchParams.entries()) {
     params[key] = value;
   }
-  
+
   return schema.parse(params);
 }
