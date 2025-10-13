@@ -102,7 +102,7 @@ export function BlockNoteEditorField({
       editor={editor}
       editable={!disabled}
       className={cn(
-        "rounded-xl bg-white placeholder:text-gray-400 shadow-sm border border-gray-200 p-4 transition-shadow focus-within:ring-2 focus-within:ring-brand-primary focus-within:ring-offset-2",
+        "rounded-xl bg-white placeholder:text-gray-400 shadow-sm p-4 transition-shadow focus-within:ring-2 focus-within:ring-brand-primary focus-within:ring-offset-2",
         className
       )}
     />

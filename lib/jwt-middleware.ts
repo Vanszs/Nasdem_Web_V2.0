@@ -1,7 +1,17 @@
 import { NextRequest, NextResponse } from "next/server";
 import jwt from "jsonwebtoken";
-import { UserRole, Permission, hasPermission, hasAnyPermission, hasAllPermissions } from "@/lib/rbac";
-import { AuthenticationError, AuthorizationError, formatErrorResponse } from "@/lib/error-handler";
+import {
+  UserRole,
+  Permission,
+  hasPermission,
+  hasAnyPermission,
+  hasAllPermissions,
+} from "@/lib/rbac";
+import {
+  AuthenticationError,
+  AuthorizationError,
+  formatErrorResponse,
+} from "@/lib/error-handler";
 
 // Enforce JWT_SECRET - throw error if not set
 const JWT_SECRET = process.env.JWT_SECRET;
@@ -52,13 +62,13 @@ export function requireAuth(req: NextRequest) {
     return null; // request diteruskan
   } catch (err: any) {
     // Different error messages for different scenarios
-    if (err.name === 'TokenExpiredError') {
+    if (err.name === "TokenExpiredError") {
       return NextResponse.json(
         { success: false, error: "Token expired" },
         { status: 401 }
       );
     }
-    if (err.name === 'JsonWebTokenError') {
+    if (err.name === "JsonWebTokenError") {
       return NextResponse.json(
         { success: false, error: "Invalid token" },
         { status: 401 }
@@ -161,7 +171,10 @@ export const ROLE_HIERARCHY = {
   [UserRole.ANALYST]: 1,
 };
 
-export function hasMinimumRole(userRole: UserRole, minimumRole: UserRole): boolean {
+export function hasMinimumRole(
+  userRole: UserRole,
+  minimumRole: UserRole
+): boolean {
   return ROLE_HIERARCHY[userRole] >= ROLE_HIERARCHY[minimumRole];
 }
 
@@ -198,7 +211,7 @@ export function requireResourceAccess(resourceType: string, action: string) {
     // This would need to be implemented based on your specific requirements
     // For now, just check role-based permissions
     const permission = `${resourceType}:${action}` as Permission;
-    
+
     if (!hasPermission(user.role, permission)) {
       return NextResponse.json(
         { success: false, error: "Insufficient permissions" },
@@ -208,4 +221,33 @@ export function requireResourceAccess(resourceType: string, action: string) {
 
     return null;
   };
+}
+
+// Optional auth: return user if a valid token exists, otherwise null (no errors thrown)
+export function getUserIfAuthenticated(
+  req: NextRequest
+): { userId: number; role: UserRole } | null {
+  try {
+    const token = req.cookies.get("token")?.value;
+    if (!token) return null;
+
+    if (isTokenBlacklisted(token)) return null;
+
+    const decoded = jwt.verify(token, JWT_SECRET!) as {
+      userId: number;
+      role: string;
+      iat?: number;
+      exp?: number;
+    };
+
+    if (decoded?.exp && decoded.exp * 1000 < Date.now()) return null;
+
+    return {
+      userId: decoded.userId,
+      role: decoded.role as UserRole,
+    };
+  } catch {
+    // Any verification error -> treat as unauthenticated
+    return null;
+  }
 }

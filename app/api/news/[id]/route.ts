@@ -1,6 +1,6 @@
 import { NextRequest, NextResponse } from "next/server";
 import { db } from "@/lib/db";
-import { requireAuth, requireRole } from "@/lib/jwt-middleware";
+import { getUserIfAuthenticated, requireAuth, requireRole } from "@/lib/jwt-middleware";
 import { SoftDeleteHelper } from "@/lib/soft-delete";
 import { newsSchemas, validateRequest } from "@/lib/validation";
 import { UserRole } from "@/lib/rbac";
@@ -19,32 +19,28 @@ export async function GET(
   req: NextRequest,
   { params }: { params: { id: string } }
 ) {
-  // Add authentication check - was missing before!
-  const authError = requireAuth(req);
-  if (authError) return authError;
-  
-  const roleError = requireRole(req, [UserRole.EDITOR, UserRole.SUPERADMIN, UserRole.ANALYST]);
-  if (roleError) return roleError;
-
   try {
     const newsId = validateId(params.id);
-    
-    const news = await SoftDeleteHelper.findNewsById(newsId);
-    
-    if (!news) {
+    const now = new Date();
+
+    const user = getUserIfAuthenticated(req);
+    const isPrivileged = user && [UserRole.EDITOR, UserRole.SUPERADMIN, UserRole.ANALYST].includes(user.role);
+
+    const wherePublic = { id: newsId, deletedAt: null as any, publishDate: { lte: now } as any };
+
+    const newsWithRelations = await db.news.findFirst({
+      where: isPrivileged ? { id: newsId } : (wherePublic as any),
+      include: {
+        user: { select: { id: true, username: true, email: true } },
+      },
+    });
+
+    if (!newsWithRelations) {
       return NextResponse.json(
         { success: false, error: "News not found" },
         { status: 404 }
       );
     }
-    
-    // Include related data
-    const newsWithRelations = await db.news.findUnique({
-      where: { id: newsId },
-      include: {
-        user: { select: { id: true, username: true, email: true } },
-      },
-    });
 
     return NextResponse.json({ success: true, data: newsWithRelations });
   } catch (err: any) {
@@ -73,7 +69,6 @@ export async function PUT(
   const roleError = requireRole(req, [UserRole.EDITOR, UserRole.SUPERADMIN]);
   if (roleError) return roleError;
   try {
-    const userId = (req as any).user.userId;
     const { title, content, publishDate, thumbnailUrl } = await req.json();
 
     const updated = await db.news.update({
@@ -88,7 +83,6 @@ export async function PUT(
             ? new Date(publishDate)
             : undefined,
         thumbnailUrl,
-        userId,
       },
       include: { user: { select: { id: true, username: true, email: true } } },
     });

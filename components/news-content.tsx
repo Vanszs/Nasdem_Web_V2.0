@@ -1,49 +1,62 @@
-"use client"
+"use client";
 
-import { Button } from "@/components/ui/button"
-import { Card, CardContent } from "@/components/ui/card"
-import { Calendar, User, ArrowRight, ChevronLeft, ChevronRight, Clock, Eye } from "lucide-react"
-import { useRouter } from "next/navigation"
-import Image from "next/image"
+import { Button } from "@/components/ui/button";
+import { Card, CardContent } from "@/components/ui/card";
+import {
+  Calendar,
+  User,
+  ArrowRight,
+  ChevronLeft,
+  ChevronRight,
+  Clock,
+  Eye,
+} from "lucide-react";
+import { useRouter } from "next/navigation";
+import Image from "next/image";
 
 interface NewsItem {
-  id: string
-  title: string
-  content: string
-  excerpt: string
-  image_url: string
-  created_at: string
+  id: string;
+  title: string;
+  content: string;
+  excerpt: string;
+  image_url: string;
+  created_at: string;
   author: {
-    full_name: string
-  }
+    full_name: string;
+  };
 }
 
 interface NewsContentProps {
-  news: NewsItem[]
-  recentNews: NewsItem[]
-  categories: { name: string; value: string }[]
-  currentPage: number
-  totalPages: number
-  totalCount: number
+  news: NewsItem[];
+  recentNews: NewsItem[];
+  currentPage: number;
+  totalPages: number;
+  totalCount: number;
 }
 
-export default function NewsContent({ news, recentNews, categories, currentPage, totalPages, totalCount }: NewsContentProps) {
-  const router = useRouter()
+export default function NewsContent({
+  news,
+  recentNews,
+  currentPage,
+  totalPages,
+  totalCount,
+}: NewsContentProps) {
+  const router = useRouter();
 
   const formatDate = (dateString: string) => {
     return new Date(dateString).toLocaleDateString("id-ID", {
       day: "numeric",
       month: "long",
       year: "numeric",
-    })
-  }
+    });
+  };
 
   const handlePageChange = (page: number) => {
-    router.push(`/berita?page=${page}`)
-  }
+    router.push(`/berita?page=${page}`);
+  };
 
-  const featuredNews = news[0]
-  const regularNews = news.slice(1)
+  const featuredNews = news[0];
+  const regularNews = news.slice(1);
 
   return (
     <section className="py-16">
@@ -55,7 +68,10 @@ export default function NewsContent({ news, recentNews, categories, currentPage,
               <div className="grid lg:grid-cols-2 gap-0">
                 <div className="relative">
                   <Image
-                    src={featuredNews.image_url || "/placeholder.svg?height=400&width=600&query=NasDem featured news"}
+                    src={
+                      featuredNews.image_url ||
+                      "/placeholder.svg?height=400&width=600&query=NasDem featured news"
+                    }
                     alt={featuredNews.title}
                     width={600}
                     height={400}
@@ -80,13 +96,18 @@ export default function NewsContent({ news, recentNews, categories, currentPage,
                   <h3 className="text-2xl md:text-3xl font-bold text-nasdem-blue mb-4 leading-tight">
                     {featuredNews.title}
                   </h3>
-                  <p className="text-gray-600 mb-6 leading-relaxed">{featuredNews.excerpt}</p>
+                  <p className="text-gray-600 mb-6 leading-relaxed">
+                    {featuredNews.excerpt}
+                  </p>
                   <div className="flex items-center justify-between">
                     <div className="flex items-center gap-2 text-gray-500 text-sm">
                       <User size={14} />
                       <span>{featuredNews.author?.full_name || "Admin"}</span>
                     </div>
-                    <Button className="hover-fade-up bg-nasdem-orange hover:bg-nasdem-blue group">
+                    <Button
+                      className="hover-fade-up bg-nasdem-orange hover:bg-nasdem-blue group"
+                      onClick={() => router.push(`/berita/${featuredNews.id}`)}
+                    >
                       <span>Baca Selengkapnya</span>
                       <ArrowRight className="ml-2 h-4 w-4 group-hover:translate-x-1 transition-transform" />
                     </Button>
@@ -106,10 +127,14 @@ export default function NewsContent({ news, recentNews, categories, currentPage,
                 <Card
                   key={newsItem.id}
                   className="overflow-hidden border-2 border-nasdem-blue/20 hover:border-nasdem-blue/40 hover:shadow-2xl transition-all duration-300 hover:-translate-y-1 group cursor-pointer shadow-lg"
+                  onClick={() => router.push(`/berita/${newsItem.id}`)}
                 >
                   <div className="relative">
                     <Image
-                      src={newsItem.image_url || "/placeholder.svg?height=200&width=400&query=NasDem news"}
+                      src={
+                        newsItem.image_url ||
+                        "/placeholder.svg?height=200&width=400&query=NasDem news"
+                      }
                       alt={newsItem.title}
                       width={400}
                       height={200}
@@ -133,7 +158,9 @@ export default function NewsContent({ news, recentNews, categories, currentPage,
                       {newsItem.title}
                     </h4>
 
-                    <p className="text-gray-600 text-sm mb-4 line-clamp-3 leading-relaxed">{newsItem.excerpt}</p>
+                    <p className="text-gray-600 text-sm mb-4 line-clamp-3 leading-relaxed">
+                      {newsItem.excerpt}
+                    </p>
 
                     <div className="flex items-center justify-between pt-4 border-t border-gray-100">
                       <div className="flex items-center gap-2 text-gray-500 text-xs">
@@ -143,7 +170,11 @@ export default function NewsContent({ news, recentNews, categories, currentPage,
                       <Button
                         variant="ghost"
                         size="sm"
-                        className="hover-fade-up text-nasdem-orange hover:text-white hover:bg-nasdem-blue p-0 h-auto font-medium"
+                        className="hover-fade-up text-nasdem-orange hover:text-white hover:bg-nasdem-blue p-2 h-auto font-medium"
+                        onClick={(e) => {
+                          e.stopPropagation();
+                          router.push(`/berita/${newsItem.id}`);
+                        }}
                       >
                         Baca →
                       </Button>
@@ -167,7 +198,7 @@ export default function NewsContent({ news, recentNews, categories, currentPage,
                 </Button>
 
                 {Array.from({ length: Math.min(5, totalPages) }, (_, i) => {
-                  const page = i + 1
+                  const page = i + 1;
                   return (
                     <Button
                       key={page}
@@ -182,14 +213,16 @@ export default function NewsContent({ news, recentNews, categories, currentPage,
                     >
                       {page}
                     </Button>
-                  )
+                  );
                 })}
 
                 <Button
                   variant="outline"
                   size="sm"
                   className="border-nasdem-orange text-nasdem-orange bg-transparent hover:bg-nasdem-orange hover:text-white"
-                  onClick={() => handlePageChange(Math.min(totalPages, currentPage + 1))}
+                  onClick={() =>
+                    handlePageChange(Math.min(totalPages, currentPage + 1))
+                  }
                   disabled={currentPage === totalPages}
                 >
                   <ChevronRight className="h-4 w-4" />
@@ -213,9 +246,16 @@ export default function NewsContent({ news, recentNews, categories, currentPage,
               </h3>
               <div className="space-y-5">
                 {recentNews.map((item) => (
-                  <div key={item.id} className="flex gap-3 group cursor-pointer pb-5 border-b border-gray-200 last:border-b-0 last:pb-0 hover:bg-gray-50/80 p-2 rounded-lg transition-all duration-200 hover:shadow-md hover:-translate-y-0.5">
+                  <div
+                    key={item.id}
+                    className="flex gap-3 group cursor-pointer pb-5 border-b border-gray-200 last:border-b-0 last:pb-0 hover:bg-gray-50/80 p-2 rounded-lg transition-all duration-200 hover:shadow-md hover:-translate-y-0.5"
+                    onClick={() => router.push(`/berita/${item.id}`)}
+                  >
                     <Image
-                      src={item.image_url || "/placeholder.svg?height=60&width=80&query=NasDem news thumbnail"}
+                      src={
+                        item.image_url ||
+                        "/placeholder.svg?height=60&width=80&query=NasDem news thumbnail"
+                      }
                       alt={item.title}
                       width={80}
                       height={60}
@@ -234,35 +274,9 @@ export default function NewsContent({ news, recentNews, categories, currentPage,
                 ))}
               </div>
             </Card>
-
-            {/* Categories */}
-            <Card className="p-6 border-2 border-nasdem-blue/20 shadow-lg hover:shadow-xl hover:border-nasdem-blue/40 transition-all duration-300">
-              <h3 className="text-xl font-bold text-nasdem-blue mb-6">Kategori</h3>
-              <div className="space-y-3">
-                {categories.map((category) => (
-                  <button
-                    key={category.value}
-                    className="w-full text-left px-4 py-3 rounded-lg bg-white border-2 border-gray-200 hover:border-nasdem-orange hover:bg-nasdem-orange/5 transition-all duration-200 group shadow-sm hover:shadow-md"
-                  >
-                    <span className="font-medium text-gray-700 group-hover:text-nasdem-orange transition-colors">
-                      {category.name}
-                    </span>
-                  </button>
-                ))}
-              </div>
-            </Card>
-
-            {/* Newsletter Signup */}
-            <Card className="p-6 border-2 border-nasdem-blue/40 shadow-lg hover:shadow-xl transition-all duration-300 bg-gradient-to-br from-nasdem-blue to-nasdem-blue/90 text-white">
-              <h3 className="text-xl font-bold mb-4">Berlangganan Berita</h3>
-              <p className="text-white/80 text-sm mb-4">
-                Dapatkan update terbaru kegiatan NasDem Sidoarjo langsung di email Anda.
-              </p>
-              <Button className="w-full bg-nasdem-orange hover:bg-nasdem-orange/90 text-white">Berlangganan</Button>
-            </Card>
           </div>
         </div>
       </div>
     </section>
-  )
+  );
 }

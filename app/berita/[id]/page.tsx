@@ -1,13 +1,13 @@
 import NasdemHeader from "@/components/nasdem-header";
 import NasdemFooter from "@/components/nasdem-footer";
-import NewsPageClient from "./NewsPageClient";
+import NewsDetailClient from "./NewsDetailClient";
 
-export default function BeritaPage() {
+export default function BeritaDetailPage() {
   return (
     <div className="min-h-screen bg-background">
       <NasdemHeader />
       <main>
-        <NewsPageClient />
+        <NewsDetailClient />
       </main>
       <NasdemFooter />
     </div>

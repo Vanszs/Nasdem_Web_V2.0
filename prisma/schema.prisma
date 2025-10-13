@@ -153,8 +153,9 @@ model Program {
   categoryId Int?
   category   Category? @relation(fields: [categoryId], references: [id], onDelete: SetNull, onUpdate: Cascade)
 
-  userId Int?
-  user   User? @relation(fields: [userId], references: [id], onDelete: SetNull, onUpdate: Cascade)
+  userId        Int?
+  user          User?           @relation(fields: [userId], references: [id], onDelete: SetNull, onUpdate: Cascade)
+  MemberProgram MemberProgram[]
 
   @@index([categoryId])
   @@index([userId])
@@ -245,22 +246,28 @@ model Member {
   updatedAt   DateTime      @updatedAt
   deletedAt   DateTime?     @db.Timestamptz
 
-  // Optional link ke CMS user
+  // 🆕 Data administrasi tambahan
+  nik               String? @db.VarChar(50)
+  ktaNumber         String? @db.VarChar(50)
+  occupation        String? @db.VarChar(100)
+  familyMemberCount Int?
+  maritalStatus     String? @db.VarChar(50)
+
+  // Relasi
   userId Int?
   user   User? @relation(fields: [userId], references: [id], onDelete: SetNull, onUpdate: Cascade)
 
-  // Struktur organisasi
   strukturId Int?
   struktur   StrukturOrganisasi? @relation(fields: [strukturId], references: [id], onDelete: SetNull, onUpdate: Cascade)
 
-  // Cadres relationship: a DPRT member can have up to 10 cadres (enforced in API)
   parentDprtMemberId Int?
   parentDprtMember   Member?  @relation("MemberCadres", fields: [parentDprtMemberId], references: [id], onDelete: SetNull, onUpdate: Cascade)
   cadres             Member[] @relation("MemberCadres")
 
-  // Benefit assignments and public applications
-  memberBenefits MemberBenefit[]
-  applications   MembershipApplication[]
+  // 🆕 Relasi program
+  MemberProgram MemberProgram[]
+
+  applications MembershipApplication[]
 
   @@index([status])
   @@index([userId])
@@ -281,30 +288,28 @@ model Benefit {
   updatedAt   DateTime  @updatedAt
   deletedAt   DateTime? @db.Timestamptz
 
-  assignments MemberBenefit[]
+  assignments MemberProgram[]
 
   @@index([title])
   @@index([category])
   @@index([deletedAt])
 }
 
-model MemberBenefit {
-  id        Int           @id @default(autoincrement())
-  memberId  Int
-  benefitId Int
-  status    BenefitStatus @default(granted)
-  grantedAt DateTime?
-  notes     String?
-  createdAt DateTime      @default(now())
-  updatedAt DateTime      @updatedAt
+model MemberProgram {
+  id         Int      @id @default(autoincrement())
+  memberId   Int
+  programId  Int
+  receivedAt DateTime @default(now())
+  notes      String?
 
-  member  Member  @relation(fields: [memberId], references: [id], onDelete: Cascade, onUpdate: Cascade)
-  benefit Benefit @relation(fields: [benefitId], references: [id], onDelete: Cascade, onUpdate: Cascade)
+  member    Member   @relation(fields: [memberId], references: [id], onDelete: Cascade)
+  program   Program  @relation(fields: [programId], references: [id], onDelete: Cascade)
+  Benefit   Benefit? @relation(fields: [benefitId], references: [id])
+  benefitId Int?
 
-  @@unique([memberId, benefitId])
+  @@unique([memberId, programId])
   @@index([memberId])
-  @@index([benefitId])
-  @@index([status])
+  @@index([programId])
 }
 
 model MembershipApplication {

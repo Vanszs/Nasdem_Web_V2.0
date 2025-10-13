@@ -1,21 +1,42 @@
 import { NextRequest, NextResponse } from "next/server";
 import { db } from "@/lib/db";
-import { requireAuth, requireRole } from "@/lib/jwt-middleware";
-import { newsSchemas, extractQueryParams, validateRequest } from "@/lib/validation";
+import {
+  getUserIfAuthenticated,
+  requireAuth,
+  requireRole,
+} from "@/lib/jwt-middleware";
+import {
+  newsSchemas,
+  extractQueryParams,
+  validateRequest,
+} from "@/lib/validation";
 import { UserRole } from "@/lib/rbac";
 
 // list semua berita
 export async function GET(req: NextRequest) {
   try {
     // Extract and validate query parameters
-    const query = extractQueryParams(newsSchemas.list, req.nextUrl.searchParams);
+    const query = extractQueryParams(
+      newsSchemas.list,
+      req.nextUrl.searchParams
+    );
 
     const now = new Date();
     const where: any = {};
 
-    if (query.status === "archived") {
-      where.deletedAt = { not: null };
+    // Determine user role if authenticated
+    const user = getUserIfAuthenticated(req);
+    const isPrivileged =
+      user && [UserRole.EDITOR, UserRole.SUPERADMIN].includes(user.role);
+
+    if (isPrivileged) {
+      if (query.status === "archived") {
+        where.deletedAt = { not: null };
+      } else {
+        where.deletedAt = null;
+      }
     } else {
+      // Public: never show archived (soft-deleted)
       where.deletedAt = null;
     }
 
@@ -26,30 +47,35 @@ export async function GET(req: NextRequest) {
       ];
     }
 
-    if (query.status === "draft") {
-      where.publishDate = null;
+    if (isPrivileged) {
+      if (query.status === "draft") {
+        where.publishDate = null;
+      } else {
+        const publishDateFilter: any = {};
+
+        if (query.status === "scheduled") {
+          publishDateFilter.gt = now;
+        }
+
+        if (query.status === "published") {
+          publishDateFilter.lte = now;
+        }
+
+        if (query.startDate) {
+          publishDateFilter.gte = new Date(query.startDate);
+        }
+
+        if (query.endDate) {
+          publishDateFilter.lte = new Date(query.endDate);
+        }
+
+        if (Object.keys(publishDateFilter).length) {
+          where.publishDate = publishDateFilter;
+        }
+      }
     } else {
-      const publishDateFilter: any = {};
-
-      if (query.status === "scheduled") {
-        publishDateFilter.gt = now;
-      }
-
-      if (query.status === "published") {
-        publishDateFilter.lte = now;
-      }
-
-      if (query.startDate) {
-        publishDateFilter.gte = new Date(query.startDate);
-      }
-
-      if (query.endDate) {
-        publishDateFilter.lte = new Date(query.endDate);
-      }
-
-      if (Object.keys(publishDateFilter).length) {
-        where.publishDate = publishDateFilter;
-      }
+      // Public: only published items up to now; ignore draft/scheduled requests
+      where.publishDate = { lte: now };
     }
 
     const [total, newsList] = await Promise.all([
@@ -94,16 +120,20 @@ export async function POST(req: NextRequest) {
 
   try {
     const body = await req.json();
-    
+
     // Validate input
     const validation = validateRequest(newsSchemas.create, body);
     if (!validation.success) {
       return NextResponse.json(
-        { success: false, error: validation.error, details: validation.details },
+        {
+          success: false,
+          error: validation.error,
+          details: validation.details,
+        },
         { status: 400 }
       );
     }
-    
+
     const data = validation.data;
     const userId = (req as any).user.userId;
 

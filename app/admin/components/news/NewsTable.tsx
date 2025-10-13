@@ -333,134 +333,155 @@ export function NewsTable() {
                 <TableHead>Penulis</TableHead>
                 <TableHead>Tanggal Publikasi</TableHead>
                 <TableHead>Dibuat</TableHead>
-                <TableHead className="text-right sticky right-0 bg-muted/30 z-10 min-w-[100px]">Actions</TableHead>
+                <TableHead className="text-right sticky right-0 bg-muted/30 z-10 min-w-[100px]">
+                  Actions
+                </TableHead>
               </TableRow>
             </TableHeader>
             <TableBody>
-            {query.isLoading && (
-              <TableRow>
-                <TableCell colSpan={5} className="py-10 text-center text-sm">
-                  Memuat data berita...
-                </TableCell>
-              </TableRow>
-            )}
-
-            {query.isError && !query.isLoading && (
-              <TableRow>
-                <TableCell
-                  colSpan={5}
-                  className="py-10 text-center text-sm text-red-600"
-                >
-                  {(query.error as Error)?.message ||
-                    "Terjadi kesalahan memuat data"}
-                </TableCell>
-              </TableRow>
-            )}
-
-            {isEmpty && (
-              <TableRow>
-                <TableCell
-                  colSpan={5}
-                  className="py-10 text-center text-sm text-muted-foreground"
-                >
-                  Tidak ada berita yang cocok dengan filter.
-                </TableCell>
-              </TableRow>
-            )}
-
-            {!query.isLoading &&
-              !query.isError &&
-              tableRows.map((row) => (
-                <TableRow key={row.id} className="hover:bg-muted/40">
-                  <TableCell>
-                    {row.thumbnailUrl ? (
-                      // eslint-disable-next-line @next/next/no-img-element
-                      <img
-                        src={row.thumbnailUrl}
-                        alt={row.title}
-                        className="h-16 w-24 rounded-lg object-cover border-2 border-gray-200 shadow-sm"
-                      />
-                    ) : (
-                      <div className="h-16 w-24 rounded-lg border-2 border-dashed border-gray-300 bg-gradient-to-br from-gray-50 to-gray-100 flex flex-col items-center justify-center gap-1 shadow-sm">
-                        <ImageIcon className="h-5 w-5 text-gray-400" />
-                        <span className="text-[10px] font-medium text-gray-500">No Image</span>
-                      </div>
-                    )}
-                  </TableCell>
-                  <TableCell className="py-4">
-                    <div className="space-y-1">
-                      <p className="font-semibold text-sm text-foreground">
-                        {row.title}
-                      </p>
-
-                    </div>
-                  </TableCell>
-                  <TableCell>
-                    <Badge className={row.badge.className}>
-                      {row.badge.label}
-                    </Badge>
-                  </TableCell>
-                  <TableCell className="text-sm">{row.author}</TableCell>
-                  <TableCell className="text-sm">{row.publishDate}</TableCell>
-                  <TableCell className="text-sm">{row.createdAt}</TableCell>
-                  <TableCell className="text-right sticky right-0 bg-white z-10 min-w-[100px] shadow-[ -5px 0 5px -5px rgba(0,0,0,0.1)]">
-                    <DropdownMenu>
-                      <DropdownMenuTrigger asChild>
-                        <Button variant="ghost" size="icon">
-                          <MoreHorizontal className="h-4 w-4" />
-                          <span className="sr-only">Menu aksi</span>
-                        </Button>
-                      </DropdownMenuTrigger>
-                      <DropdownMenuContent align="end" className="w-48">
-                        <DropdownMenuLabel>Aksi</DropdownMenuLabel>
-                        <DropdownMenuItem onSelect={() => handleEdit(row.id)}>
-                          <Edit className="mr-2 h-4 w-4" />
-                          Edit
-                        </DropdownMenuItem>
-                        <DropdownMenuSeparator />
-                        <DropdownMenuItem
-                          onSelect={() =>
-                            handleStatusChange(row.id, row.title, "published")
-                          }
-                          disabled={updateStatusMutation.isPending}
-                        >
-                          <RefreshCw className="mr-2 h-4 w-4" />
-                          Publikasikan Sekarang
-                        </DropdownMenuItem>
-                        <DropdownMenuItem
-                          onSelect={() =>
-                            handleStatusChange(row.id, row.title, "draft")
-                          }
-                          disabled={updateStatusMutation.isPending}
-                        >
-                          <RefreshCw className="mr-2 h-4 w-4" />
-                          Tandai sebagai Draft
-                        </DropdownMenuItem>
-                        <DropdownMenuItem
-                          onSelect={() =>
-                            handleStatusChange(row.id, row.title, "scheduled")
-                          }
-                          disabled={updateStatusMutation.isPending}
-                        >
-                          <RefreshCw className="mr-2 h-4 w-4" />
-                          Jadwalkan
-                        </DropdownMenuItem>
-                        <DropdownMenuSeparator />
-                        <DropdownMenuItem
-                          className="text-red-600 focus:text-red-600"
-                          onSelect={() => handleDelete(row.id, row.title)}
-                          disabled={deleteMutation.isPending}
-                        >
-                          <Trash2 className="mr-2 h-4 w-4" />
-                          Hapus
-                        </DropdownMenuItem>
-                      </DropdownMenuContent>
-                    </DropdownMenu>
+              {query.isLoading && (
+                <TableRow>
+                  <TableCell colSpan={5} className="py-10 text-center text-sm">
+                    Memuat data berita...
                   </TableCell>
                 </TableRow>
-              ))
-            }
-          </TableBody>
+              )}
+
+              {query.isError && !query.isLoading && (
+                <TableRow>
+                  <TableCell
+                    colSpan={5}
+                    className="py-10 text-center text-sm text-red-600"
+                  >
+                    {(query.error as Error)?.message ||
+                      "Terjadi kesalahan memuat data"}
+                  </TableCell>
+                </TableRow>
+              )}
+
+              {isEmpty && (
+                <TableRow>
+                  <TableCell
+                    colSpan={5}
+                    className="py-10 text-center text-sm text-muted-foreground"
+                  >
+                    Tidak ada berita yang cocok dengan filter.
+                  </TableCell>
+                </TableRow>
+              )}
+
+              {!query.isLoading &&
+                !query.isError &&
+                tableRows.map((row) => (
+                  <TableRow key={row.id} className="hover:bg-muted/40">
+                    <TableCell>
+                      {row.thumbnailUrl ? (
+                        // eslint-disable-next-line @next/next/no-img-element
+                        <img
+                          src={row.thumbnailUrl}
+                          alt={row.title}
+                          className="h-16 w-24 rounded-lg object-cover border-2 border-gray-200 shadow-sm"
+                        />
+                      ) : (
+                        <div className="h-16 w-24 rounded-lg border-2 border-dashed border-gray-300 bg-gradient-to-br from-gray-50 to-gray-100 flex flex-col items-center justify-center gap-1 shadow-sm">
+                          <ImageIcon className="h-5 w-5 text-gray-400" />
+                          <span className="text-[10px] font-medium text-gray-500">
+                            No Image
+                          </span>
+                        </div>
+                      )}
+                    </TableCell>
+                    <TableCell className="py-4">
+                      <div className="space-y-1">
+                        <p className="font-semibold text-sm text-foreground">
+                          {row.title}
+                        </p>
+                      </div>
+                    </TableCell>
+                    <TableCell>
+                      <Badge className={row.badge.className}>
+                        {row.badge.label}
+                      </Badge>
+                    </TableCell>
+                    <TableCell className="text-sm">{row.author}</TableCell>
+                    <TableCell className="text-sm">{row.publishDate}</TableCell>
+                    <TableCell className="text-sm">{row.createdAt}</TableCell>
+                    <TableCell className="text-right sticky right-0 bg-white z-10 min-w-[100px] shadow-[ -5px 0 5px -5px rgba(0,0,0,0.1)]">
+                      <DropdownMenu>
+                        <DropdownMenuTrigger asChild>
+                          <Button variant="ghost" size="icon">
+                            <MoreHorizontal className="h-4 w-4" />
+                            <span className="sr-only">Menu aksi</span>
+                          </Button>
+                        </DropdownMenuTrigger>
+                        <DropdownMenuContent align="end" className="w-48">
+                          <DropdownMenuLabel>Aksi</DropdownMenuLabel>
+                          <DropdownMenuItem
+                            onClick={(e) => {
+                              e.preventDefault();
+                              handleEdit(row.id);
+                            }}
+                          >
+                            <Edit className="mr-2 h-4 w-4" />
+                            Edit
+                          </DropdownMenuItem>
+                          <DropdownMenuSeparator />
+                          <DropdownMenuItem
+                            onClick={(e) => {
+                              e.preventDefault();
+                              handleStatusChange(
+                                row.id,
+                                row.title,
+                                "published"
+                              );
+                            }}
+                            disabled={updateStatusMutation.isPending}
+                          >
+                            <RefreshCw className="mr-2 h-4 w-4" />
+                            Publikasikan Sekarang
+                          </DropdownMenuItem>
+                          <DropdownMenuItem
+                            onClick={(e) => {
+                              e.preventDefault();
+                              handleStatusChange(row.id, row.title, "draft");
+                            }}
+                            disabled={updateStatusMutation.isPending}
+                          >
+                            <RefreshCw className="mr-2 h-4 w-4" />
+                            Tandai sebagai Draft
+                          </DropdownMenuItem>
+                          <DropdownMenuItem
+                            onClick={(e) => {
+                              e.preventDefault();
+                              handleStatusChange(
+                                row.id,
+                                row.title,
+                                "scheduled"
+                              );
+                            }}
+                            disabled={updateStatusMutation.isPending}
+                          >
+                            <RefreshCw className="mr-2 h-4 w-4" />
+                            Jadwalkan
+                          </DropdownMenuItem>
+                          <DropdownMenuSeparator />
+                          <DropdownMenuItem
+                            className="text-red-600 focus:text-red-600"
+                            onClick={(e) => {
+                              e.preventDefault();
+                              handleDelete(row.id, row.title);
+                            }}
+                            disabled={deleteMutation.isPending}
+                          >
+                            <Trash2 className="mr-2 h-4 w-4" />
+                            Hapus
+                          </DropdownMenuItem>
+                        </DropdownMenuContent>
+                      </DropdownMenu>
+                    </TableCell>
+                  </TableRow>
+                ))}
+            </TableBody>
           </Table>
         </div>
       </div>
