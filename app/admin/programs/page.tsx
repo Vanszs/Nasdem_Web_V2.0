@@ -7,7 +7,7 @@ import { ProgramStats } from "./components/ProgramStats";
 import { ProgramList } from "./components/ProgramList";
 import { DeleteProgramDialog } from "./components/DeleteProgramDialog";
 import type { Program } from "./types";
-import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
+import { useQuery, useQueryClient } from "@tanstack/react-query";
 
 export default function ProgramsPage() {
   const queryClient = useQueryClient();
@@ -29,19 +29,6 @@ export default function ProgramsPage() {
     setProgramToDelete(program);
     setDeleteDialogOpen(true);
   };
-
-  const deleteMutation = useMutation({
-    mutationFn: async (id: number) => {
-      const res = await fetch(`/api/programs/${id}`, { method: "DELETE" });
-      if (!res.ok) throw new Error("Gagal menghapus program");
-      return res.json();
-    },
-    onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ["programs"] });
-      setDeleteDialogOpen(false);
-      setProgramToDelete(null);
-    },
-  });
 
   const breadcrumbs = [{ label: "Program Kerja" }];
 
@@ -84,7 +71,6 @@ export default function ProgramsPage() {
         open={deleteDialogOpen}
         program={programToDelete}
         onOpenChange={setDeleteDialogOpen}
-        onDelete={(id) => deleteMutation.mutate(id)}
       />
     </AdminLayout>
   );

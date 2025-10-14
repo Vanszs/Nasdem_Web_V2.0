@@ -8,22 +8,42 @@ import {
   DialogFooter,
 } from "@/components/ui/dialog";
 import { Button } from "@/components/ui/button";
-import { AlertTriangle, Trash2 } from "lucide-react";
+import { AlertTriangle, Trash2, Loader2 } from "lucide-react";
 import type { Program } from "../types";
+import { useMutation, useQueryClient } from "@tanstack/react-query";
+import { toast } from "sonner";
 
 interface DeleteProgramDialogProps {
   open: boolean;
   program: Program | null;
   onOpenChange: (open: boolean) => void;
-  onDelete: (id: number) => void;
 }
 
 export function DeleteProgramDialog({
   open,
   program,
   onOpenChange,
-  onDelete,
 }: DeleteProgramDialogProps) {
+  const queryClient = useQueryClient();
+
+  const deleteMutation = useMutation({
+    mutationFn: async (id: number) => {
+      const res = await fetch(`/api/programs/${id}`, { method: "DELETE" });
+      if (!res.ok) throw new Error("Gagal menghapus program");
+      return res.json();
+    },
+    onSuccess: () => {
+      toast.success("Program berhasil dihapus");
+      queryClient.invalidateQueries({ queryKey: ["programs"] });
+      onOpenChange(false);
+    },
+    onError: (e: any) => {
+      toast.error(e?.message || "Gagal menghapus program");
+    },
+  });
+
+  const isDeleting = deleteMutation.isPending;
+
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
       <DialogContent className="sm:max-w-[425px]">
@@ -33,8 +53,9 @@ export function DeleteProgramDialog({
             Konfirmasi Hapus
           </DialogTitle>
           <DialogDescription>
-            Apakah Anda yakin ingin menghapus program ini? Tindakan ini tidak
-            dapat dibatalkan.
+            {isDeleting
+              ? "Sedang menghapus program..."
+              : "Apakah Anda yakin ingin menghapus program ini? Tindakan ini tidak dapat dibatalkan."}
           </DialogDescription>
         </DialogHeader>
         {program && (
@@ -53,17 +74,27 @@ export function DeleteProgramDialog({
           <Button
             variant="outline"
             onClick={() => onOpenChange(false)}
-            className="rounded-full"
+            disabled={isDeleting}
+            className="rounded-full cursor-pointer"
           >
             Batal
           </Button>
           <Button
             onClick={() => {
-              if (program) onDelete(program.id);
+              if (program) deleteMutation.mutate(program.id);
             }}
-            className="bg-[#C81E1E] hover:bg-[#A01818] rounded-full text-white"
+            disabled={!program || isDeleting}
+            className="bg-[#C81E1E] hover:bg-[#A01818] rounded-full text-white cursor-pointer"
           >
-            <Trash2 className="w-4 h-4 mr-2" /> Hapus
+            {isDeleting ? (
+              <>
+                <Loader2 className="w-4 h-4 mr-2 animate-spin" /> Menghapus...
+              </>
+            ) : (
+              <>
+                <Trash2 className="w-4 h-4 mr-2" /> Hapus
+              </>
+            )}
           </Button>
         </DialogFooter>
       </DialogContent>
