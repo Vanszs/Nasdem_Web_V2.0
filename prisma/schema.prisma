@@ -72,6 +72,11 @@ enum ProgramStatus {
   planning
 }
 
+enum BenefitStatus {
+  pending
+  completed
+}
+
 // ---------------------------
 // Core CMS
 // ---------------------------
@@ -275,17 +280,18 @@ model ProgramBenefitRecipient {
 
   receivedAt DateTime @default(now())
 
-  fullName          String      @db.VarChar(150)
-  email             String?     @db.VarChar(100)
-  nik               String?     @db.VarChar(50)
-  phone             String?     @db.VarChar(30)
+  fullName          String        @db.VarChar(150)
+  email             String?       @db.VarChar(100)
+  nik               String?       @db.VarChar(50)
+  phone             String?       @db.VarChar(30)
   dateOfBirth       DateTime?
   gender            GenderEnum?
-  occupation        String?     @db.VarChar(100)
+  occupation        String?       @db.VarChar(100)
   familyMemberCount Int?
-  proposerName      String?     @db.VarChar(150)
+  proposerName      String?       @db.VarChar(150)
   fullAddress       String?
   notes             String?
+  status            BenefitStatus
 
   @@unique([programId, nik])
   @@index([programId])
