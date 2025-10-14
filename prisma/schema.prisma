@@ -53,12 +53,6 @@ enum ElectionType {
   dprd
 }
 
-enum BenefitStatus {
-  pending
-  granted
-  revoked
-}
-
 enum ApplicationType {
   nasdem_muda
   member
@@ -86,9 +80,7 @@ model User {
 
   // Relations
   news      News[]
-  programs  Program[]
   galleries Gallery[]
-  members   Member[]
 
   @@index([username])
   @@index([role])
@@ -106,17 +98,6 @@ model Party {
   dprdPartyResults DprdPartyResult[]
 
   @@index([name])
-}
-
-model Category {
-  id          Int     @id @default(autoincrement())
-  name        String  @unique @db.VarChar(100)
-  subtitle    String? @db.VarChar(255)
-  description String?
-  iconUrl     String? @db.VarChar(255)
-
-  // Relations
-  programs Program[]
 }
 
 model News {
@@ -140,7 +121,8 @@ model News {
 
 model Program {
   id          Int       @id @default(autoincrement())
-  title       String    @db.VarChar(255)
+  category    String
+  name        String
   description String?
   startDate   DateTime?
   endDate     DateTime?
@@ -149,23 +131,19 @@ model Program {
   updatedAt   DateTime  @updatedAt
   deletedAt   DateTime? @db.Timestamptz
 
-  // Relations
-  categoryId Int?
-  category   Category? @relation(fields: [categoryId], references: [id], onDelete: SetNull, onUpdate: Cascade)
+  // Penerima benefit (bukan member)
+  recipients       ProgramBenefitRecipient[]
+  // Pendaftar PIP
+  pipRegistrations PipRegistration[]
 
-  userId        Int?
-  user          User?           @relation(fields: [userId], references: [id], onDelete: SetNull, onUpdate: Cascade)
-  MemberProgram MemberProgram[]
-
-  @@index([categoryId])
-  @@index([userId])
+  @@unique([category, name]) // kombinasi kategori+nama harus unik
   @@index([startDate])
   @@index([deletedAt])
 }
 
 model Gallery {
   id         Int       @id @default(autoincrement())
-  type       String?   @db.VarChar(50) // foto/video
+  type       String?   @db.VarChar(50)
   url        String    @db.VarChar(255)
   caption    String?
   uploadDate DateTime? @default(now())
@@ -199,7 +177,6 @@ model Region {
 
   strukturOrganisasi StrukturOrganisasi[]
 
-  // Opsional: unique (type, name) jika nama tidak duplikat per tipe
   @@unique([type, name])
   @@index([type])
   @@index([name])
@@ -240,11 +217,14 @@ model Member {
   gender      GenderEnum?
   status      MemberStatus? @default(active)
   photoUrl    String?       @db.VarChar(255)
-  joinDate    DateTime?     @default(now())
-  endDate     DateTime?
-  createdAt   DateTime      @default(now())
-  updatedAt   DateTime      @updatedAt
-  deletedAt   DateTime?     @db.Timestamptz
+  ktpPhotoUrl String?       @db.VarChar(255)
+  ktaPhotoUrl String?       @db.VarChar(255)
+
+  joinDate  DateTime? @default(now())
+  endDate   DateTime?
+  createdAt DateTime  @default(now())
+  updatedAt DateTime  @updatedAt
+  deletedAt DateTime? @db.Timestamptz
 
   // 🆕 Data administrasi tambahan
   nik               String? @db.VarChar(50)
@@ -253,10 +233,6 @@ model Member {
   familyMemberCount Int?
   maritalStatus     String? @db.VarChar(50)
 
-  // Relasi
-  userId Int?
-  user   User? @relation(fields: [userId], references: [id], onDelete: SetNull, onUpdate: Cascade)
-
   strukturId Int?
   struktur   StrukturOrganisasi? @relation(fields: [strukturId], references: [id], onDelete: SetNull, onUpdate: Cascade)
 
@@ -264,52 +240,84 @@ model Member {
   parentDprtMember   Member?  @relation("MemberCadres", fields: [parentDprtMemberId], references: [id], onDelete: SetNull, onUpdate: Cascade)
   cadres             Member[] @relation("MemberCadres")
 
-  // 🆕 Relasi program
-  MemberProgram MemberProgram[]
-
+  // Aplikasi keanggotaan
   applications MembershipApplication[]
 
   @@index([status])
-  @@index([userId])
   @@index([strukturId])
   @@index([parentDprtMemberId])
   @@index([fullName])
   @@index([deletedAt])
 }
 
-model Benefit {
-  id          Int       @id @default(autoincrement())
-  title       String    @db.VarChar(150)
-  description String?
-  category    String?   @db.VarChar(100)
-  startDate   DateTime?
-  endDate     DateTime?
-  createdAt   DateTime  @default(now())
-  updatedAt   DateTime  @updatedAt
-  deletedAt   DateTime? @db.Timestamptz
+// ---------------------------
+// Penerima Benefit Program (bukan Member)
+// ---------------------------
+model ProgramBenefitRecipient {
+  id Int @id @default(autoincrement())
 
-  assignments MemberProgram[]
+  // Relasi wajib ke program
+  programId Int
+  program   Program @relation(fields: [programId], references: [id], onDelete: Cascade)
 
-  @@index([title])
-  @@index([category])
-  @@index([deletedAt])
+  receivedAt DateTime @default(now())
+
+  fullName          String      @db.VarChar(150)
+  email             String?     @db.VarChar(100)
+  nik               String?     @db.VarChar(50)
+  phone             String?     @db.VarChar(30)
+  dateOfBirth       DateTime?
+  gender            GenderEnum?
+  occupation        String?     @db.VarChar(100)
+  familyMemberCount Int?
+  proposerName      String?     @db.VarChar(150)
+  fullAddress       String?
+  notes             String?
+
+  @@unique([programId, nik])
+  @@index([programId])
 }
 
-model MemberProgram {
-  id         Int      @id @default(autoincrement())
-  memberId   Int
-  programId  Int
-  receivedAt DateTime @default(now())
-  notes      String?
+// ---------------------------
+// Pendaftaran Program Beasiswa PIP
+// ---------------------------
+enum PipRegistrationStatus {
+  pending
+  verified
+  rejected
+  accepted
+}
 
-  member    Member   @relation(fields: [memberId], references: [id], onDelete: Cascade)
-  program   Program  @relation(fields: [programId], references: [id], onDelete: Cascade)
-  Benefit   Benefit? @relation(fields: [benefitId], references: [id])
-  benefitId Int?
+model PipRegistration {
+  id Int @id @default(autoincrement())
 
-  @@unique([memberId, programId])
-  @@index([memberId])
+  programId Int
+  program   Program @relation(fields: [programId], references: [id], onDelete: Cascade)
+  // Catatan: sebaiknya programId menunjuk ke program dengan (category=pendidikan, name=pip)
+
+  submittedAt   DateTime              @default(now())
+  reviewedAt    DateTime?
+  status        PipRegistrationStatus @default(pending)
+  reviewerNotes String?
+
+  // Data pendaftar
+  fullName          String      @db.VarChar(150)
+  email             String?     @db.VarChar(100)
+  nik               String      @db.VarChar(50)
+  phone             String?     @db.VarChar(30)
+  dateOfBirth       DateTime?
+  gender            GenderEnum?
+  occupation        String?     @db.VarChar(100)
+  familyMemberCount Int?
+  fullAddress       String?
+
+  // Dokumen opsional (bisa diperluas jika perlu)
+  ktpPhotoUrl String? @db.VarChar(255)
+  kkPhotoUrl  String? @db.VarChar(255)
+
+  @@unique([programId, nik])
   @@index([programId])
+  @@index([status])
 }
 
 model MembershipApplication {
@@ -350,7 +358,6 @@ model Caleg {
 
   dprdCalegResults DprdCalegResult[]
 
-  // Cegah duplikasi nama dalam satu partai
   @@unique([partyId, fullName])
   @@index([partyId])
   @@index([fullName])
@@ -376,7 +383,6 @@ model Kecamatan {
   desa     Desa[]
   analyses DprdElectionAnalysis[]
 
-  // Nama kecamatan unik dalam satu dapil
   @@unique([dapilId, name])
   @@index([dapilId])
   @@index([name])
@@ -392,7 +398,6 @@ model Desa {
   tps      Tps[]
   analyses DprdElectionAnalysis[]
 
-  // Nama desa unik dalam satu kecamatan
   @@unique([kecamatanId, name])
   @@index([kecamatanId])
   @@index([name])
@@ -407,7 +412,6 @@ model Tps {
 
   analyses DprdElectionAnalysis[]
 
-  // Nomor TPS unik per desa
   @@unique([desaId, number])
   @@index([desaId])
   @@index([number])
@@ -447,7 +451,6 @@ model DprdElectionAnalysis {
   partyResults DprdPartyResult[]
   calegResults DprdCalegResult[]
 
-  // Satu TPS per tahun sebaiknya unik
   @@unique([year, tpsId])
   @@index([year])
   @@index([dapilId])
@@ -466,7 +469,6 @@ model DprdPartyResult {
   partyId Int
   party   Party @relation(fields: [partyId], references: [id], onDelete: Cascade, onUpdate: Cascade)
 
-  // Cegah duplikasi baris partai pada satu analisis
   @@unique([electionAnalysisId, partyId])
   @@index([electionAnalysisId])
   @@index([partyId])
@@ -482,7 +484,6 @@ model DprdCalegResult {
   calegId Int
   caleg   Caleg @relation(fields: [calegId], references: [id], onDelete: Cascade, onUpdate: Cascade)
 
-  // Cegah duplikasi baris caleg pada satu analisis
   @@unique([electionAnalysisId, calegId])
   @@index([electionAnalysisId])
   @@index([calegId])
