@@ -93,7 +93,8 @@ export default function BeneficiariesPage() {
       nik: "3515012345670001",
       email: "ahmad.sulaiman@email.com",
       phone: "081234567890",
-      address: "Jl. Raya Sidoarjo No. 123, RT 05 RW 03, Kel. Lemahputro, Kec. Sidoarjo",
+      address:
+        "Jl. Raya Sidoarjo No. 123, RT 05 RW 03, Kel. Lemahputro, Kec. Sidoarjo",
       dateOfBirth: "1985-05-15",
       gender: "Laki-laki",
       occupation: "Pedagang",
@@ -113,7 +114,8 @@ export default function BeneficiariesPage() {
       nik: "3515012345670002",
       email: "siti.aminah@email.com",
       phone: "081234567891",
-      address: "Jl. Pahlawan No. 45, RT 02 RW 01, Kel. Bulusidokare, Kec. Sidoarjo",
+      address:
+        "Jl. Pahlawan No. 45, RT 02 RW 01, Kel. Bulusidokare, Kec. Sidoarjo",
       dateOfBirth: "1990-08-20",
       gender: "Perempuan",
       occupation: "Ibu Rumah Tangga",
@@ -153,7 +155,8 @@ export default function BeneficiariesPage() {
       nik: "3515012345670004",
       email: "dewi.kusuma@email.com",
       phone: "081234567893",
-      address: "Jl. Kartini No. 90, RT 03 RW 02, Kel. Cemengkalang, Kec. Sidoarjo",
+      address:
+        "Jl. Kartini No. 90, RT 03 RW 02, Kel. Cemengkalang, Kec. Sidoarjo",
       dateOfBirth: "1992-11-25",
       gender: "Perempuan",
       occupation: "Guru",
@@ -173,7 +176,8 @@ export default function BeneficiariesPage() {
       nik: "3515012345670005",
       email: "joko.widodo@email.com",
       phone: "081234567894",
-      address: "Jl. Sudirman No. 12, RT 01 RW 01, Kel. Sekardangan, Kec. Sidoarjo",
+      address:
+        "Jl. Sudirman No. 12, RT 01 RW 01, Kel. Sekardangan, Kec. Sidoarjo",
       dateOfBirth: "1987-07-18",
       gender: "Laki-laki",
       occupation: "Montir",
@@ -199,7 +203,8 @@ export default function BeneficiariesPage() {
     useState<Beneficiary | null>(null);
   const [isViewDialogOpen, setIsViewDialogOpen] = useState(false);
   const [isDeleteDialogOpen, setIsDeleteDialogOpen] = useState(false);
-  const [beneficiaryToDelete, setBeneficiaryToDelete] = useState<Beneficiary | null>(null);
+  const [beneficiaryToDelete, setBeneficiaryToDelete] =
+    useState<Beneficiary | null>(null);
 
   // Form state
   const [formData, setFormData] = useState({
@@ -257,13 +262,8 @@ export default function BeneficiariesPage() {
   });
 
   // Statistics
-  const totalFamily = beneficiaries.reduce(
-    (sum, b) => sum + b.familyCount,
-    0
-  );
-  const potentialVotes = Math.round(
-    (beneficiaries.length + totalFamily) / 2
-  );
+  const totalFamily = beneficiaries.reduce((sum, b) => sum + b.familyCount, 0);
+  const potentialVotes = Math.round((beneficiaries.length + totalFamily) / 2);
 
   const stats = {
     total: beneficiaries.length,
@@ -313,8 +313,10 @@ export default function BeneficiariesPage() {
 
   const handleDelete = () => {
     if (!beneficiaryToDelete) return;
-    
-    setBeneficiaries((prev) => prev.filter((b) => b.id !== beneficiaryToDelete.id));
+
+    setBeneficiaries((prev) =>
+      prev.filter((b) => b.id !== beneficiaryToDelete.id)
+    );
     toast.success("Berhasil", {
       description: `Penerima manfaat "${beneficiaryToDelete.fullName}" berhasil dihapus`,
     });
@@ -481,7 +483,9 @@ export default function BeneficiariesPage() {
         for (let i = 1; i < lines.length; i++) {
           if (!lines[i].trim()) continue;
 
-          const values = lines[i].split(",").map((v) => v.replace(/"/g, "").trim());
+          const values = lines[i]
+            .split(",")
+            .map((v) => v.replace(/"/g, "").trim());
 
           const programName = values[9] || "";
           newBeneficiaries.push({
@@ -575,13 +579,7 @@ export default function BeneficiariesPage() {
   };
 
   return (
-    <AdminLayout
-      breadcrumbs={[
-        { label: "Dashboard", href: "/admin" },
-        { label: "Program Kerja", href: "/admin/programs" },
-        { label: "Penerima Manfaat" },
-      ]}
-    >
+    <AdminLayout breadcrumbs={[{ label: "Penerima Manfaat" }]}>
       <div className="space-y-8">
         {/* Statistics Cards */}
         <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
@@ -866,116 +864,116 @@ export default function BeneficiariesPage() {
                       </TableHead>
                     </TableRow>
                   </TableHeader>
-                <TableBody>
-                  {filteredBeneficiaries.length === 0 ? (
-                    <TableRow>
-                      <TableCell
-                        colSpan={11}
-                        className="text-center py-8 text-gray-500"
-                      >
-                        Tidak ada data penerima manfaat
-                      </TableCell>
-                    </TableRow>
-                  ) : (
-                    filteredBeneficiaries.map((beneficiary, index) => (
-                      <TableRow
-                        key={beneficiary.id}
-                        className={`hover:bg-[#F0F6FF] transition-colors ${
-                          index % 2 === 0 ? "bg-white" : "bg-[#E8F9FF]/30"
-                        }`}
-                      >
-                        <TableCell className="font-semibold text-[#001B55]">
-                          {beneficiary.fullName}
-                        </TableCell>
-                        <TableCell className="text-gray-600 text-sm">
-                          {beneficiary.nik}
-                        </TableCell>
-                        <TableCell>
-                          <div className="space-y-1 text-sm">
-                            <div className="flex items-center gap-2 text-gray-600">
-                              <Phone className="w-3 h-3" />
-                              {beneficiary.phone}
-                            </div>
-                            <div className="flex items-center gap-2 text-gray-600">
-                              <Mail className="w-3 h-3" />
-                              {beneficiary.email}
-                            </div>
-                          </div>
-                        </TableCell>
-                        <TableCell className="text-gray-600 text-sm max-w-[200px]">
-                          <div className="flex items-start gap-2">
-                            <MapPin className="w-3 h-3 mt-0.5 flex-shrink-0" />
-                            <span className="line-clamp-2">
-                              {beneficiary.address}
-                            </span>
-                          </div>
-                        </TableCell>
-                        <TableCell className="text-gray-600 text-sm">
-                          {beneficiary.program}
-                        </TableCell>
-                        <TableCell className="text-sm">
-                          <Badge className="bg-[#C5BAFF]/20 text-[#001B55] border border-[#C5BAFF]/30 font-medium">
-                            {beneficiary.category}
-                          </Badge>
-                        </TableCell>
-                        <TableCell className="text-center">
-                          <div className="flex items-center justify-center gap-1.5">
-                            <Users className="w-4 h-4 text-[#001B55]" />
-                            <span className="font-semibold text-[#001B55]">
-                              {beneficiary.familyCount}
-                            </span>
-                          </div>
-                        </TableCell>
-                        <TableCell className="text-gray-600 text-sm">
-                          {beneficiary.proposerName}
-                        </TableCell>
-                        <TableCell>
-                          {getStatusBadge(beneficiary.status)}
-                        </TableCell>
-                        <TableCell className="text-gray-600 text-sm">
-                          {new Date(
-                            beneficiary.registeredAt
-                          ).toLocaleDateString("id-ID", {
-                            day: "numeric",
-                            month: "short",
-                            year: "numeric",
-                          })}
-                        </TableCell>
-                        <TableCell className="text-right sticky right-0 bg-white z-10 min-w-[200px] shadow-[ -5px 0 5px -5px rgba(0,0,0,0.1)]">
-                          <div className="flex items-center justify-end gap-2">
-                            <Button
-                              size="sm"
-                              variant="outline"
-                              onClick={() => handleView(beneficiary)}
-                              className="rounded-lg border-[#C4D9FF] hover:bg-[#E8F9FF] text-[#001B55]"
-                            >
-                              <Eye className="w-4 h-4" />
-                            </Button>
-                            <Button
-                              size="sm"
-                              variant="outline"
-                              onClick={() => handleEdit(beneficiary)}
-                              className="rounded-lg border-[#C4D9FF] hover:bg-[#E8F9FF] text-[#001B55]"
-                            >
-                              <Edit className="w-4 h-4" />
-                            </Button>
-                            <Button
-                              size="sm"
-                              variant="outline"
-                              onClick={() => openDeleteDialog(beneficiary)}
-                              className="rounded-lg border-[#F87171]/20 hover:bg-[#F87171]/5 text-[#F87171]"
-                            >
-                              <Trash2 className="w-4 h-4" />
-                            </Button>
-                          </div>
+                  <TableBody>
+                    {filteredBeneficiaries.length === 0 ? (
+                      <TableRow>
+                        <TableCell
+                          colSpan={11}
+                          className="text-center py-8 text-gray-500"
+                        >
+                          Tidak ada data penerima manfaat
                         </TableCell>
                       </TableRow>
-                    ))
-                  )}
-                </TableBody>
-              </Table>
+                    ) : (
+                      filteredBeneficiaries.map((beneficiary, index) => (
+                        <TableRow
+                          key={beneficiary.id}
+                          className={`hover:bg-[#F0F6FF] transition-colors ${
+                            index % 2 === 0 ? "bg-white" : "bg-[#E8F9FF]/30"
+                          }`}
+                        >
+                          <TableCell className="font-semibold text-[#001B55]">
+                            {beneficiary.fullName}
+                          </TableCell>
+                          <TableCell className="text-gray-600 text-sm">
+                            {beneficiary.nik}
+                          </TableCell>
+                          <TableCell>
+                            <div className="space-y-1 text-sm">
+                              <div className="flex items-center gap-2 text-gray-600">
+                                <Phone className="w-3 h-3" />
+                                {beneficiary.phone}
+                              </div>
+                              <div className="flex items-center gap-2 text-gray-600">
+                                <Mail className="w-3 h-3" />
+                                {beneficiary.email}
+                              </div>
+                            </div>
+                          </TableCell>
+                          <TableCell className="text-gray-600 text-sm max-w-[200px]">
+                            <div className="flex items-start gap-2">
+                              <MapPin className="w-3 h-3 mt-0.5 flex-shrink-0" />
+                              <span className="line-clamp-2">
+                                {beneficiary.address}
+                              </span>
+                            </div>
+                          </TableCell>
+                          <TableCell className="text-gray-600 text-sm">
+                            {beneficiary.program}
+                          </TableCell>
+                          <TableCell className="text-sm">
+                            <Badge className="bg-[#C5BAFF]/20 text-[#001B55] border border-[#C5BAFF]/30 font-medium">
+                              {beneficiary.category}
+                            </Badge>
+                          </TableCell>
+                          <TableCell className="text-center">
+                            <div className="flex items-center justify-center gap-1.5">
+                              <Users className="w-4 h-4 text-[#001B55]" />
+                              <span className="font-semibold text-[#001B55]">
+                                {beneficiary.familyCount}
+                              </span>
+                            </div>
+                          </TableCell>
+                          <TableCell className="text-gray-600 text-sm">
+                            {beneficiary.proposerName}
+                          </TableCell>
+                          <TableCell>
+                            {getStatusBadge(beneficiary.status)}
+                          </TableCell>
+                          <TableCell className="text-gray-600 text-sm">
+                            {new Date(
+                              beneficiary.registeredAt
+                            ).toLocaleDateString("id-ID", {
+                              day: "numeric",
+                              month: "short",
+                              year: "numeric",
+                            })}
+                          </TableCell>
+                          <TableCell className="text-right sticky right-0 bg-white z-10 min-w-[200px] shadow-[ -5px 0 5px -5px rgba(0,0,0,0.1)]">
+                            <div className="flex items-center justify-end gap-2">
+                              <Button
+                                size="sm"
+                                variant="outline"
+                                onClick={() => handleView(beneficiary)}
+                                className="rounded-lg border-[#C4D9FF] hover:bg-[#E8F9FF] text-[#001B55]"
+                              >
+                                <Eye className="w-4 h-4" />
+                              </Button>
+                              <Button
+                                size="sm"
+                                variant="outline"
+                                onClick={() => handleEdit(beneficiary)}
+                                className="rounded-lg border-[#C4D9FF] hover:bg-[#E8F9FF] text-[#001B55]"
+                              >
+                                <Edit className="w-4 h-4" />
+                              </Button>
+                              <Button
+                                size="sm"
+                                variant="outline"
+                                onClick={() => openDeleteDialog(beneficiary)}
+                                className="rounded-lg border-[#F87171]/20 hover:bg-[#F87171]/5 text-[#F87171]"
+                              >
+                                <Trash2 className="w-4 h-4" />
+                              </Button>
+                            </div>
+                          </TableCell>
+                        </TableRow>
+                      ))
+                    )}
+                  </TableBody>
+                </Table>
+              </div>
             </div>
-          </div>
           </CardContent>
         </Card>
 
@@ -1033,7 +1031,9 @@ export default function BeneficiariesPage() {
                       <Label className="text-gray-600 text-sm font-medium mb-1 block">
                         Jenis Kelamin
                       </Label>
-                      <p className="text-gray-700">{selectedBeneficiary.gender}</p>
+                      <p className="text-gray-700">
+                        {selectedBeneficiary.gender}
+                      </p>
                     </div>
 
                     <div>
@@ -1172,12 +1172,18 @@ export default function BeneficiariesPage() {
               </DialogTitle>
             </DialogHeader>
 
-            <form onSubmit={handleSubmit} className="flex-1 overflow-y-auto px-1">
+            <form
+              onSubmit={handleSubmit}
+              className="flex-1 overflow-y-auto px-1"
+            >
               <div className="space-y-5 py-4">
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-5">
                   {/* Nama Lengkap */}
                   <div className="space-y-2">
-                    <Label htmlFor="fullName" className="text-sm font-semibold text-[#001B55]">
+                    <Label
+                      htmlFor="fullName"
+                      className="text-sm font-semibold text-[#001B55]"
+                    >
                       Nama Lengkap <span className="text-red-500">*</span>
                     </Label>
                     <Input
@@ -1194,7 +1200,10 @@ export default function BeneficiariesPage() {
 
                   {/* NIK */}
                   <div className="space-y-2">
-                    <Label htmlFor="nik" className="text-sm font-semibold text-[#001B55]">
+                    <Label
+                      htmlFor="nik"
+                      className="text-sm font-semibold text-[#001B55]"
+                    >
                       NIK <span className="text-red-500">*</span>
                     </Label>
                     <Input
@@ -1212,7 +1221,10 @@ export default function BeneficiariesPage() {
 
                   {/* Email */}
                   <div className="space-y-2">
-                    <Label htmlFor="email" className="text-sm font-semibold text-[#001B55]">
+                    <Label
+                      htmlFor="email"
+                      className="text-sm font-semibold text-[#001B55]"
+                    >
                       Email <span className="text-red-500">*</span>
                     </Label>
                     <Input
@@ -1230,7 +1242,10 @@ export default function BeneficiariesPage() {
 
                   {/* Phone */}
                   <div className="space-y-2">
-                    <Label htmlFor="phone" className="text-sm font-semibold text-[#001B55]">
+                    <Label
+                      htmlFor="phone"
+                      className="text-sm font-semibold text-[#001B55]"
+                    >
                       Telepon <span className="text-red-500">*</span>
                     </Label>
                     <Input
@@ -1247,7 +1262,10 @@ export default function BeneficiariesPage() {
 
                   {/* Tanggal Lahir */}
                   <div className="space-y-2">
-                    <Label htmlFor="dateOfBirth" className="text-sm font-semibold text-[#001B55]">
+                    <Label
+                      htmlFor="dateOfBirth"
+                      className="text-sm font-semibold text-[#001B55]"
+                    >
                       Tanggal Lahir <span className="text-red-500">*</span>
                     </Label>
                     <Input
@@ -1255,7 +1273,10 @@ export default function BeneficiariesPage() {
                       type="date"
                       value={formData.dateOfBirth}
                       onChange={(e) =>
-                        setFormData({ ...formData, dateOfBirth: e.target.value })
+                        setFormData({
+                          ...formData,
+                          dateOfBirth: e.target.value,
+                        })
                       }
                       required
                       className="h-11 rounded-lg border-[#C4D9FF] focus:border-[#C5BAFF] transition-all"
@@ -1264,7 +1285,10 @@ export default function BeneficiariesPage() {
 
                   {/* Jenis Kelamin */}
                   <div className="space-y-2">
-                    <Label htmlFor="gender" className="text-sm font-semibold text-[#001B55]">
+                    <Label
+                      htmlFor="gender"
+                      className="text-sm font-semibold text-[#001B55]"
+                    >
                       Jenis Kelamin <span className="text-red-500">*</span>
                     </Label>
                     <Select
@@ -1286,7 +1310,10 @@ export default function BeneficiariesPage() {
 
                   {/* Pekerjaan */}
                   <div className="space-y-2">
-                    <Label htmlFor="occupation" className="text-sm font-semibold text-[#001B55]">
+                    <Label
+                      htmlFor="occupation"
+                      className="text-sm font-semibold text-[#001B55]"
+                    >
                       Pekerjaan <span className="text-red-500">*</span>
                     </Label>
                     <Input
@@ -1303,7 +1330,10 @@ export default function BeneficiariesPage() {
 
                   {/* Program */}
                   <div className="space-y-2">
-                    <Label htmlFor="programId" className="text-sm font-semibold text-[#001B55]">
+                    <Label
+                      htmlFor="programId"
+                      className="text-sm font-semibold text-[#001B55]"
+                    >
                       Program <span className="text-red-500">*</span>
                     </Label>
                     <Select
@@ -1328,7 +1358,10 @@ export default function BeneficiariesPage() {
 
                   {/* Kategori */}
                   <div className="space-y-2">
-                    <Label htmlFor="category" className="text-sm font-semibold text-[#001B55]">
+                    <Label
+                      htmlFor="category"
+                      className="text-sm font-semibold text-[#001B55]"
+                    >
                       Kategori Manfaat <span className="text-red-500">*</span>
                     </Label>
                     <Select
@@ -1353,7 +1386,10 @@ export default function BeneficiariesPage() {
 
                   {/* Jumlah Keluarga */}
                   <div className="space-y-2">
-                    <Label htmlFor="familyCount" className="text-sm font-semibold text-[#001B55]">
+                    <Label
+                      htmlFor="familyCount"
+                      className="text-sm font-semibold text-[#001B55]"
+                    >
                       Jumlah Keluarga <span className="text-red-500">*</span>
                     </Label>
                     <Input
@@ -1362,7 +1398,10 @@ export default function BeneficiariesPage() {
                       min="1"
                       value={formData.familyCount}
                       onChange={(e) =>
-                        setFormData({ ...formData, familyCount: e.target.value })
+                        setFormData({
+                          ...formData,
+                          familyCount: e.target.value,
+                        })
                       }
                       placeholder="1"
                       required
@@ -1372,14 +1411,20 @@ export default function BeneficiariesPage() {
 
                   {/* Nama Pengusul */}
                   <div className="space-y-2">
-                    <Label htmlFor="proposerName" className="text-sm font-semibold text-[#001B55]">
+                    <Label
+                      htmlFor="proposerName"
+                      className="text-sm font-semibold text-[#001B55]"
+                    >
                       Nama Pengusul <span className="text-red-500">*</span>
                     </Label>
                     <Input
                       id="proposerName"
                       value={formData.proposerName}
                       onChange={(e) =>
-                        setFormData({ ...formData, proposerName: e.target.value })
+                        setFormData({
+                          ...formData,
+                          proposerName: e.target.value,
+                        })
                       }
                       placeholder="Nama yang mengusulkan"
                       required
@@ -1390,8 +1435,12 @@ export default function BeneficiariesPage() {
 
                 {/* Alamat Lengkap */}
                 <div className="space-y-2">
-                  <Label htmlFor="address" className="text-sm font-semibold text-[#001B55]">
-                    Alamat Lengkap (dengan RT/RW) <span className="text-red-500">*</span>
+                  <Label
+                    htmlFor="address"
+                    className="text-sm font-semibold text-[#001B55]"
+                  >
+                    Alamat Lengkap (dengan RT/RW){" "}
+                    <span className="text-red-500">*</span>
                   </Label>
                   <Textarea
                     id="address"
@@ -1408,7 +1457,10 @@ export default function BeneficiariesPage() {
 
                 {/* Catatan */}
                 <div className="space-y-2">
-                  <Label htmlFor="notes" className="text-sm font-semibold text-[#001B55]">
+                  <Label
+                    htmlFor="notes"
+                    className="text-sm font-semibold text-[#001B55]"
+                  >
                     Catatan
                   </Label>
                   <Textarea
@@ -1518,17 +1570,26 @@ export default function BeneficiariesPage() {
               Konfirmasi Hapus
             </DialogTitle>
             <DialogDescription>
-              Apakah Anda yakin ingin menghapus penerima manfaat ini? Tindakan ini tidak dapat dibatalkan.
+              Apakah Anda yakin ingin menghapus penerima manfaat ini? Tindakan
+              ini tidak dapat dibatalkan.
             </DialogDescription>
           </DialogHeader>
           {beneficiaryToDelete && (
             <div className="py-4">
               <div className="bg-gray-50 rounded-lg p-4 border border-gray-200">
-                <h4 className="font-semibold text-[#001B55] mb-2">{beneficiaryToDelete.fullName}</h4>
-                <p className="text-sm text-gray-600 mb-2">NIK: {beneficiaryToDelete.nik}</p>
-                <p className="text-sm text-gray-600 mb-2">Program: {beneficiaryToDelete.program}</p>
+                <h4 className="font-semibold text-[#001B55] mb-2">
+                  {beneficiaryToDelete.fullName}
+                </h4>
+                <p className="text-sm text-gray-600 mb-2">
+                  NIK: {beneficiaryToDelete.nik}
+                </p>
+                <p className="text-sm text-gray-600 mb-2">
+                  Program: {beneficiaryToDelete.program}
+                </p>
                 <div className="mt-3 flex items-center gap-2">
-                  <span className="text-xs font-medium text-gray-500">Status:</span>
+                  <span className="text-xs font-medium text-gray-500">
+                    Status:
+                  </span>
                   {getStatusBadge(beneficiaryToDelete.status)}
                 </div>
               </div>

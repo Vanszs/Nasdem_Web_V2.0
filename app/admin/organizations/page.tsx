@@ -211,11 +211,7 @@ export default function Members() {
     kader: { label: "Kader", className: "bg-purple-600 text-white" },
   };
 
-  const breadcrumbs = [
-    { label: "Dashboard", href: "/admin" },
-    { label: "Struktur", href: "/admin/members" },
-    { label: "Daftar Anggota" },
-  ];
+  const breadcrumbs = [{ label: "Struktur Organisasi" }];
 
   return (
     <AdminLayout breadcrumbs={breadcrumbs}>
@@ -399,7 +395,8 @@ export default function Members() {
           <div className="mt-8 flex flex-col sm:flex-row gap-4 items-center justify-between">
             <div className="flex items-center gap-2 text-sm text-gray-600">
               <span>
-                Menampilkan {data?.data?.length === 0 ? 0 : (page - 1) * pageSize + 1}-
+                Menampilkan{" "}
+                {data?.data?.length === 0 ? 0 : (page - 1) * pageSize + 1}-
                 {Math.min(page * pageSize, data?.meta.total || 0)} dari{" "}
                 {data?.meta.total || 0} anggota
               </span>

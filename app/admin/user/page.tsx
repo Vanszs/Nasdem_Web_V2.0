@@ -32,10 +32,7 @@ import { ContentCard } from "../components/ui/ContentCard";
 import { ActionButton } from "../components/ui/ActionButton";
 
 export function UserPage() {
-  const breadcrumbs = [
-    { label: "Dashboard", href: "/admin" },
-    { label: "User Management" },
-  ];
+  const breadcrumbs = [{ label: "Pengguna Aplikasi" }];
 
   // Mock data untuk user
   const users = [
@@ -90,7 +87,10 @@ export function UserPage() {
           title="User Management"
           description="Kelola pengguna sistem admin panel NasDem Sidoarjo"
           action={
-            <ActionButton icon={<UserPlus className="w-4 h-4" />} variant="primary">
+            <ActionButton
+              icon={<UserPlus className="w-4 h-4" />}
+              variant="primary"
+            >
               Tambah User Baru
             </ActionButton>
           }
@@ -113,10 +113,16 @@ export function UserPage() {
               </Button>
             </div>
             <div className="flex gap-3">
-              <Badge variant="outline" className="border border-[#001B55]/20 bg-white text-[#001B55] font-medium px-3 py-1.5 rounded-lg">
+              <Badge
+                variant="outline"
+                className="border border-[#001B55]/20 bg-white text-[#001B55] font-medium px-3 py-1.5 rounded-lg"
+              >
                 Total: {users.length} users
               </Badge>
-              <Badge variant="outline" className="border border-emerald-500/20 bg-white text-emerald-600 font-medium px-3 py-1.5 rounded-lg">
+              <Badge
+                variant="outline"
+                className="border border-emerald-500/20 bg-white text-emerald-600 font-medium px-3 py-1.5 rounded-lg"
+              >
                 Active: {users.filter((u) => u.status === "Active").length}
               </Badge>
             </div>
@@ -132,22 +138,38 @@ export function UserPage() {
             <Table>
               <TableHeader>
                 <TableRow className="bg-gray-200 border-b-2 border-gray-300">
-                  <TableHead className="py-4 px-6 text-[#001B55] font-bold text-sm">Nama</TableHead>
-                  <TableHead className="py-4 px-6 text-[#001B55] font-bold text-sm">Email</TableHead>
-                  <TableHead className="py-4 px-6 text-[#001B55] font-bold text-sm">Role</TableHead>
-                  <TableHead className="py-4 px-6 text-[#001B55] font-bold text-sm">Status</TableHead>
-                  <TableHead className="py-4 px-6 text-[#001B55] font-bold text-sm">Last Login</TableHead>
-                  <TableHead className="py-4 px-6 text-[#001B55] font-bold text-sm sticky right-0 bg-gray-200 z-10 min-w-[100px]">Aksi</TableHead>
+                  <TableHead className="py-4 px-6 text-[#001B55] font-bold text-sm">
+                    Nama
+                  </TableHead>
+                  <TableHead className="py-4 px-6 text-[#001B55] font-bold text-sm">
+                    Email
+                  </TableHead>
+                  <TableHead className="py-4 px-6 text-[#001B55] font-bold text-sm">
+                    Role
+                  </TableHead>
+                  <TableHead className="py-4 px-6 text-[#001B55] font-bold text-sm">
+                    Status
+                  </TableHead>
+                  <TableHead className="py-4 px-6 text-[#001B55] font-bold text-sm">
+                    Last Login
+                  </TableHead>
+                  <TableHead className="py-4 px-6 text-[#001B55] font-bold text-sm sticky right-0 bg-gray-200 z-10 min-w-[100px]">
+                    Aksi
+                  </TableHead>
                 </TableRow>
               </TableHeader>
               <TableBody>
                 {users.map((user, index) => (
-                  <TableRow 
-                    key={user.id} 
+                  <TableRow
+                    key={user.id}
                     className="border-b border-gray-100 hover:bg-blue-100 transition-all duration-200"
-                    style={{ backgroundColor: index % 2 === 0 ? '#ffffff' : '#eff1f3' }}
+                    style={{
+                      backgroundColor: index % 2 === 0 ? "#ffffff" : "#eff1f3",
+                    }}
                   >
-                    <TableCell className="py-5 px-6 font-medium text-[#001B55]">{user.name}</TableCell>
+                    <TableCell className="py-5 px-6 font-medium text-[#001B55]">
+                      {user.name}
+                    </TableCell>
                     <TableCell className="py-5 px-6 text-gray-600">
                       {user.email}
                     </TableCell>

@@ -6,6 +6,8 @@ import {
   RegionType,
   MemberStatus,
   GenderEnum,
+  ProgramStatus,
+  Prisma,
 } from "@prisma/client";
 import bcrypt from "bcrypt";
 
@@ -35,7 +37,6 @@ async function main() {
   await db.strukturOrganisasi.deleteMany();
   await db.region.deleteMany();
   await db.sayapType.deleteMany();
-  await db.category.deleteMany();
   await db.party.deleteMany();
   await db.user.deleteMany();
 
@@ -90,29 +91,6 @@ async function main() {
       },
       { name: "Partai A", abbreviation: "PA", logoUrl: "/logos/a.png" },
       { name: "Partai B", abbreviation: "PB", logoUrl: "/logos/b.png" },
-    ],
-  });
-
-  // --------------------------
-  // 3. CATEGORY
-  // --------------------------
-  await db.category.createMany({
-    data: [
-      {
-        name: "Pendidikan",
-        subtitle: "Program edukasi",
-        description: "Kegiatan peningkatan mutu pendidikan",
-      },
-      {
-        name: "Kesehatan",
-        subtitle: "Program kesehatan",
-        description: "Layanan & sosialisasi kesehatan",
-      },
-      {
-        name: "Ekonomi",
-        subtitle: "Program ekonomi kerakyatan",
-        description: "UMKM & pemberdayaan ekonomi",
-      },
     ],
   });
 
@@ -184,26 +162,40 @@ async function main() {
   // --------------------------
   // 7. PROGRAMS
   // --------------------------
-  const category = await db.category.findFirst();
+  const coordinator = await db.member.findFirst({ orderBy: { id: "asc" } });
+  if (!coordinator) {
+    throw new Error(
+      "Coordinator member not found. Ensure members are seeded before programs."
+    );
+  }
   await db.program.createMany({
     data: [
       {
-        title: "Pelatihan UMKM",
+        category: "ekonomi",
+        name: "Pelatihan UMKM",
         description: "Meningkatkan kapasitas wirausaha lokal.",
+        target: 100,
+        currentTarget: 25,
+        budget: new Prisma.Decimal("50000000"),
+        status: ProgramStatus.ongoing,
         startDate: new Date("2024-03-01"),
         endDate: new Date("2024-03-05"),
-        categoryId: category?.id,
-        userId: superadmin.id,
+        coordinatorId: coordinator.id,
       },
       {
-        title: "Gerakan Sehat",
+        category: "kesehatan",
+        name: "Gerakan Sehat",
         description: "Sosialisasi hidup sehat di kecamatan.",
+        target: 200,
+        currentTarget: 80,
+        budget: new Prisma.Decimal("30000000"),
+        status: ProgramStatus.planning,
         startDate: new Date("2024-04-10"),
         endDate: new Date("2024-04-12"),
-        categoryId: category?.id,
-        userId: editor.id,
+        coordinatorId: coordinator.id,
       },
     ],
+    skipDuplicates: true,
   });
 
   // --------------------------
@@ -289,8 +281,7 @@ async function main() {
                 </ul>`,
         publishDate: new Date(),
         userId: superadmin.id,
-        thumbnailUrl:
-          "https://upload.wikimedia.org/wikipedia/commons/8/80/App_icon.png",
+        thumbnailUrl: "https://i.ytimg.com/vi/Hsc2XZSk_fE/maxresdefault.jpg",
       },
       {
         title: "Kegiatan Pengabdian Masyarakat",

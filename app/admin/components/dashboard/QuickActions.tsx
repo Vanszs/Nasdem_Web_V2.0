@@ -28,7 +28,7 @@ const quickActions = [
     iconBg: "from-[#FF9C04] to-[#FF9C04]/80",
   },
   {
-    title: "Kelola Struktur",
+    title: "Kelola Anggota",
     description: "Update data pengurus dan organisasi",
     href: "/admin/members",
     icon: Users,

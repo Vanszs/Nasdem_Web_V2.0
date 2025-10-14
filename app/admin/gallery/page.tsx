@@ -199,7 +199,7 @@ export default function Gallery() {
     setIsUploading(true);
     try {
       // Simulate upload process
-      await new Promise(resolve => setTimeout(resolve, 1500));
+      await new Promise((resolve) => setTimeout(resolve, 1500));
 
       const newItems: GalleryItem[] = uploadFormData.selectedFiles.map(
         (file, index) => ({
@@ -265,8 +265,9 @@ export default function Gallery() {
       iconColor: "text-[#001B55]",
     },
     dokumentasi: {
-      label: "Dokumentasi", 
-      className: "border border-emerald-500/20 bg-emerald-500 text-white shadow-sm",
+      label: "Dokumentasi",
+      className:
+        "border border-emerald-500/20 bg-emerald-500 text-white shadow-sm",
       iconColor: "text-emerald-500",
     },
     event: {
@@ -281,7 +282,7 @@ export default function Gallery() {
     },
   };
 
-  const breadcrumbs = [{ label: "Dashboard", href: "/" }, { label: "Galeri" }];
+  const breadcrumbs = [{ label: "Galeri" }];
 
   return (
     <AdminLayout breadcrumbs={breadcrumbs}>
@@ -303,29 +304,36 @@ export default function Gallery() {
                   </p>
                 </div>
               </div>
-              
+
               {/* Stats Cards */}
               <div className="flex flex-wrap gap-4">
                 <div className="bg-[#FFFFFF] rounded-2xl px-4 py-3 border border-gray-200/50 shadow-sm">
                   <div className="flex items-center gap-3">
                     <div className="w-2 h-2 bg-[#001B55] rounded-full animate-pulse"></div>
-                    <span className="text-sm font-semibold text-[#001B55]">{totalItems} Media</span>
+                    <span className="text-sm font-semibold text-[#001B55]">
+                      {totalItems} Media
+                    </span>
                   </div>
                 </div>
                 <div className="bg-[#FFFFFF] rounded-2xl px-4 py-3 border border-gray-200/50 shadow-sm">
                   <div className="flex items-center gap-3">
                     <div className="w-2 h-2 bg-[#16A34A] rounded-full animate-pulse"></div>
-                    <span className="text-sm font-semibold text-[#001B55]">{galleryItems.reduce((sum, item) => sum + item.views, 0)} Views</span>
+                    <span className="text-sm font-semibold text-[#001B55]">
+                      {galleryItems.reduce((sum, item) => sum + item.views, 0)}{" "}
+                      Views
+                    </span>
                   </div>
                 </div>
               </div>
             </div>
-            
+
             <div className="flex flex-col sm:flex-row gap-3">
               <Button
                 variant="outline"
                 className="bg-white border-2 border-[#001B55]/30 text-[#001B55] shadow-sm transition-all duration-300 hover:!bg-[#001B55] hover:!text-white hover:!border-[#001B55] hover:shadow-md group"
-                onClick={() => setViewMode(viewMode === "grid" ? "list" : "grid")}
+                onClick={() =>
+                  setViewMode(viewMode === "grid" ? "list" : "grid")
+                }
               >
                 <span className="flex items-center transition-colors duration-300 group-hover:text-white">
                   {viewMode === "grid" ? (
@@ -363,12 +371,15 @@ export default function Gallery() {
                   className="pl-12 pr-4 py-3 border-2 border-gray-300/70 hover:border-[#001B55]/50 focus:border-[#001B55] focus:ring-2 focus:ring-[#001B55]/20 rounded-2xl bg-white transition-all duration-300 text-[#001B55] placeholder:text-[#6B7280] shadow-sm"
                 />
               </div>
-              
+
               {/* Filter Section */}
               <div className="flex flex-col sm:flex-row gap-4">
                 <div className="flex items-center gap-3">
                   <Filter className="w-5 h-5 text-[#6B7280]" />
-                  <Select value={categoryFilter} onValueChange={setCategoryFilter}>
+                  <Select
+                    value={categoryFilter}
+                    onValueChange={setCategoryFilter}
+                  >
                     <SelectTrigger className="min-w-[200px] border-2 border-gray-300/70 hover:border-[#001B55]/50 focus:border-[#001B55] rounded-2xl bg-white transition-all duration-300 shadow-sm">
                       <SelectValue placeholder="Filter kategori" />
                     </SelectTrigger>
@@ -408,24 +419,29 @@ export default function Gallery() {
                 </div>
               </div>
             </div>
-            
+
             {/* Quick Filter Tags */}
             {searchTerm || categoryFilter !== "all" ? (
               <div className="flex flex-wrap gap-2 mt-4 pt-4 border-t border-gray-200/50">
                 {searchTerm && (
-                  <Badge 
-                    variant="secondary" 
+                  <Badge
+                    variant="secondary"
                     className="bg-[#001B55]/10 text-[#001B55] border border-[#001B55]/20 px-3 py-1 rounded-full"
                   >
                     Search: "{searchTerm}"
                   </Badge>
                 )}
                 {categoryFilter !== "all" && (
-                  <Badge 
+                  <Badge
                     variant="secondary"
                     className="bg-[#001B55]/10 text-[#001B55] border border-[#001B55]/20 px-3 py-1 rounded-full"
                   >
-                    Category: {categoryConfig[categoryFilter as keyof typeof categoryConfig]?.label}
+                    Category:{" "}
+                    {
+                      categoryConfig[
+                        categoryFilter as keyof typeof categoryConfig
+                      ]?.label
+                    }
                   </Badge>
                 )}
               </div>
@@ -436,16 +452,20 @@ export default function Gallery() {
         {/* Enhanced Gallery Grid/List */}
         {paginatedItems.length > 0 ? (
           <>
-            <div className={`${
-              viewMode === "grid" 
-                ? "grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6" 
-                : "space-y-4"
-            }`}>
+            <div
+              className={`${
+                viewMode === "grid"
+                  ? "grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6"
+                  : "space-y-4"
+              }`}
+            >
               {paginatedItems.map((item) => (
                 <Card
                   key={item.id}
                   className={`bg-white border border-gray-200/50 shadow-sm hover:shadow-xl hover:border-[#001B55]/30 transition-all duration-300 overflow-hidden group cursor-pointer ${
-                    viewMode === "list" ? "flex flex-row h-auto min-h-[280px]" : ""
+                    viewMode === "list"
+                      ? "flex flex-row h-auto min-h-[280px]"
+                      : ""
                   } rounded-3xl`}
                   onClick={() => handleDetailModal(item)}
                 >
@@ -454,13 +474,13 @@ export default function Gallery() {
                       viewMode === "list"
                         ? "w-80 h-auto flex-shrink-0 min-h-[200px] rounded-l-2xl"
                         : "aspect-[4/3]"
-                    }`}>
-
+                    }`}
+                  >
                     <Camera className="h-12 w-12 text-[#6B7280]/40 relative z-10" />
-                    
+
                     {/* Enhanced Hover Overlay */}
                     <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-black/20 to-transparent opacity-0 group-hover:opacity-100 transition-all duration-300 z-20" />
-                    
+
                     {/* Action Buttons on Hover */}
                     <div className="absolute inset-0 flex items-center justify-center opacity-0 group-hover:opacity-100 transition-all duration-300 z-30">
                       <div className="flex items-center gap-2">
@@ -486,22 +506,32 @@ export default function Gallery() {
                         </Button>
                       </div>
                     </div>
-                    
+
                     {/* Views Counter */}
                     <div className="absolute top-3 right-3 bg-black/50 backdrop-blur-sm rounded-full px-3 py-1 text-white text-xs font-medium flex items-center gap-1 z-20">
                       <Eye className="h-3 w-3" />
                       {item.views.toLocaleString()}
                     </div>
-                    
+
                     {/* Category Badge */}
                     <div className="absolute top-3 left-3 z-20">
-                      <Badge className={`${categoryConfig[item.category].className} text-xs font-semibold px-3 py-1 rounded-full`}>
+                      <Badge
+                        className={`${
+                          categoryConfig[item.category].className
+                        } text-xs font-semibold px-3 py-1 rounded-full`}
+                      >
                         {categoryConfig[item.category].label}
                       </Badge>
                     </div>
                   </div>
-                  
-                  <CardContent className={`${viewMode === "list" ? "flex-1 p-6 flex flex-col justify-between min-w-0" : "p-5"}`}>
+
+                  <CardContent
+                    className={`${
+                      viewMode === "list"
+                        ? "flex-1 p-6 flex flex-col justify-between min-w-0"
+                        : "p-5"
+                    }`}
+                  >
                     {viewMode === "list" ? (
                       <div className="space-y-4 flex-1">
                         {/* Header with Action Menu */}
@@ -510,11 +540,15 @@ export default function Gallery() {
                             <h3 className="font-bold text-[#001B55] text-lg leading-tight mb-2 group-hover:text-[#001B55]/80 transition-colors duration-300">
                               {item.title}
                             </h3>
-                            <Badge className={`${categoryConfig[item.category].className} text-xs font-semibold px-3 py-1 rounded-full inline-block`}>
+                            <Badge
+                              className={`${
+                                categoryConfig[item.category].className
+                              } text-xs font-semibold px-3 py-1 rounded-full inline-block`}
+                            >
                               {categoryConfig[item.category].label}
                             </Badge>
                           </div>
-                          
+
                           {/* Dropdown Menu - Always Visible and Clickable */}
                           <div className="flex-shrink-0">
                             <DropdownMenu>
@@ -531,7 +565,10 @@ export default function Gallery() {
                                   <span className="sr-only">Menu aksi</span>
                                 </Button>
                               </DropdownMenuTrigger>
-                              <DropdownMenuContent align="end" className="w-48 rounded-2xl shadow-xl border-gray-200/60">
+                              <DropdownMenuContent
+                                align="end"
+                                className="w-48 rounded-2xl shadow-xl border-gray-200/60"
+                              >
                                 <DropdownMenuItem
                                   className="flex items-center gap-3 rounded-xl hover:bg-gray-50 cursor-pointer"
                                   onClick={() => handleDetailModal(item)}
@@ -550,44 +587,57 @@ export default function Gallery() {
                             </DropdownMenu>
                           </div>
                         </div>
-                        
+
                         {/* Full Description - No truncation */}
                         <p className="text-sm text-[#6B7280] leading-relaxed">
                           {item.description}
                         </p>
-                        
+
                         {/* Full Metadata Display */}
                         <div className="space-y-3">
                           <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 text-sm text-[#6B7280]">
                             <div className="flex items-center gap-2">
                               <Calendar className="h-4 w-4 text-[#001B55] flex-shrink-0" />
-                              <span className="font-medium">Tanggal Upload:</span>
-                              <span>{new Date(item.uploadDate).toLocaleDateString("id-ID", { 
-                                day: "numeric", 
-                                month: "long", 
-                                year: "numeric" 
-                              })}</span>
+                              <span className="font-medium">
+                                Tanggal Upload:
+                              </span>
+                              <span>
+                                {new Date(item.uploadDate).toLocaleDateString(
+                                  "id-ID",
+                                  {
+                                    day: "numeric",
+                                    month: "long",
+                                    year: "numeric",
+                                  }
+                                )}
+                              </span>
                             </div>
-                            
+
                             {item.photographer && (
                               <div className="flex items-center gap-2">
                                 <Camera className="h-4 w-4 text-[#001B55] flex-shrink-0" />
                                 <span className="font-medium">Uploader:</span>
-                                <span className="truncate">{item.photographer}</span>
+                                <span className="truncate">
+                                  {item.photographer}
+                                </span>
                               </div>
                             )}
-                            
+
                             <div className="flex items-center gap-2">
                               <Eye className="h-4 w-4 text-[#16A34A] flex-shrink-0" />
                               <span className="font-medium">Views:</span>
-                              <span>{item.views.toLocaleString()} kali dilihat</span>
+                              <span>
+                                {item.views.toLocaleString()} kali dilihat
+                              </span>
                             </div>
                           </div>
-                          
+
                           {/* Tags - Full Display */}
                           {item.tags.length > 0 && (
                             <div className="space-y-2">
-                              <span className="text-sm font-medium text-[#001B55]">Tags:</span>
+                              <span className="text-sm font-medium text-[#001B55]">
+                                Tags:
+                              </span>
                               <div className="flex flex-wrap gap-2">
                                 {item.tags.map((tag) => (
                                   <span
@@ -622,7 +672,10 @@ export default function Gallery() {
                                 <MoreVertical className="h-4 w-4" />
                               </Button>
                             </DropdownMenuTrigger>
-                            <DropdownMenuContent align="end" className="w-48 rounded-2xl shadow-xl border-gray-200/60">
+                            <DropdownMenuContent
+                              align="end"
+                              className="w-48 rounded-2xl shadow-xl border-gray-200/60"
+                            >
                               <DropdownMenuItem
                                 className="flex items-center gap-3 rounded-xl hover:bg-gray-50 cursor-pointer"
                                 onClick={() => handleDetailModal(item)}
@@ -640,28 +693,35 @@ export default function Gallery() {
                             </DropdownMenuContent>
                           </DropdownMenu>
                         </div>
-                        
+
                         <p className="text-sm text-[#6B7280] line-clamp-2 leading-relaxed">
                           {item.description}
                         </p>
-                        
+
                         <div className="flex items-center justify-between text-xs text-[#6B7280]">
                           <div className="flex items-center gap-2">
                             <Calendar className="h-3 w-3" />
-                            <span>{new Date(item.uploadDate).toLocaleDateString("id-ID", { 
-                              day: "numeric", 
-                              month: "short", 
-                              year: "numeric" 
-                            })}</span>
+                            <span>
+                              {new Date(item.uploadDate).toLocaleDateString(
+                                "id-ID",
+                                {
+                                  day: "numeric",
+                                  month: "short",
+                                  year: "numeric",
+                                }
+                              )}
+                            </span>
                           </div>
                           {item.photographer && (
                             <div className="flex items-center gap-2">
                               <Camera className="h-3 w-3" />
-                              <span className="truncate max-w-[120px]">{item.photographer}</span>
+                              <span className="truncate max-w-[120px]">
+                                {item.photographer}
+                              </span>
                             </div>
                           )}
                         </div>
-                        
+
                         {item.tags.length > 0 && (
                           <div className="flex flex-wrap gap-1">
                             {item.tags.slice(0, 3).map((tag) => (
@@ -691,7 +751,19 @@ export default function Gallery() {
               <div className="bg-[#FFFFFF] border border-gray-200/50 rounded-2xl p-6 shadow-sm">
                 <div className="flex flex-col md:flex-row md:items-center justify-between gap-4">
                   <div className="text-sm text-[#6B7280] font-medium">
-                    Menampilkan <span className="text-[#001B55] font-bold">{((currentPage - 1) * itemsPerPage) + 1}</span> - <span className="text-[#001B55] font-bold">{Math.min(currentPage * itemsPerPage, totalItems)}</span> dari <span className="text-[#001B55] font-bold">{totalItems}</span> media
+                    Menampilkan{" "}
+                    <span className="text-[#001B55] font-bold">
+                      {(currentPage - 1) * itemsPerPage + 1}
+                    </span>{" "}
+                    -{" "}
+                    <span className="text-[#001B55] font-bold">
+                      {Math.min(currentPage * itemsPerPage, totalItems)}
+                    </span>{" "}
+                    dari{" "}
+                    <span className="text-[#001B55] font-bold">
+                      {totalItems}
+                    </span>{" "}
+                    media
                   </div>
 
                   <div className="flex items-center gap-3">
@@ -707,34 +779,39 @@ export default function Gallery() {
                     </Button>
 
                     <div className="flex items-center gap-1">
-                      {Array.from({ length: Math.min(totalPages, 7) }, (_, i) => {
-                        let page: number;
-                        if (totalPages <= 7) {
-                          page = i + 1;
-                        } else if (currentPage <= 4) {
-                          page = i + 1;
-                        } else if (currentPage >= totalPages - 3) {
-                          page = totalPages - 6 + i;
-                        } else {
-                          page = currentPage - 3 + i;
+                      {Array.from(
+                        { length: Math.min(totalPages, 7) },
+                        (_, i) => {
+                          let page: number;
+                          if (totalPages <= 7) {
+                            page = i + 1;
+                          } else if (currentPage <= 4) {
+                            page = i + 1;
+                          } else if (currentPage >= totalPages - 3) {
+                            page = totalPages - 6 + i;
+                          } else {
+                            page = currentPage - 3 + i;
+                          }
+
+                          return page > 0 && page <= totalPages ? (
+                            <Button
+                              key={page}
+                              variant={
+                                page === currentPage ? "default" : "outline"
+                              }
+                              size="sm"
+                              onClick={() => handlePageChange(page)}
+                              className={`min-w-[40px] h-10 rounded-xl font-semibold transition-all duration-300 ${
+                                page === currentPage
+                                  ? "bg-[#001B55] border-[#001B55] text-white shadow-lg"
+                                  : "border border-gray-200/50 hover:border-[#001B55] hover:bg-[#001B55]/5 hover:text-[#001B55] text-[#6B7280]"
+                              }`}
+                            >
+                              {page}
+                            </Button>
+                          ) : null;
                         }
-                        
-                        return page > 0 && page <= totalPages ? (
-                          <Button
-                            key={page}
-                            variant={page === currentPage ? "default" : "outline"}
-                            size="sm"
-                            onClick={() => handlePageChange(page)}
-                            className={`min-w-[40px] h-10 rounded-xl font-semibold transition-all duration-300 ${
-                              page === currentPage
-                                ? "bg-[#001B55] border-[#001B55] text-white shadow-lg"
-                                : "border border-gray-200/50 hover:border-[#001B55] hover:bg-[#001B55]/5 hover:text-[#001B55] text-[#6B7280]"
-                            }`}
-                          >
-                            {page}
-                          </Button>
-                        ) : null;
-                      })}
+                      )}
                     </div>
 
                     <Button
@@ -765,15 +842,18 @@ export default function Gallery() {
                     <Plus className="h-3 w-3 text-white" />
                   </div>
                 </div>
-                
+
                 {/* Content */}
                 <div className="space-y-3">
-                  <h3 className="text-2xl font-bold text-[#001B55]">Galeri Media Kosong</h3>
+                  <h3 className="text-2xl font-bold text-[#001B55]">
+                    Galeri Media Kosong
+                  </h3>
                   <p className="text-[#6B7280] leading-relaxed">
-                    Belum ada media yang diunggah. Mulai membangun koleksi galeri Anda dengan mengupload foto dan video pertama.
+                    Belum ada media yang diunggah. Mulai membangun koleksi
+                    galeri Anda dengan mengupload foto dan video pertama.
                   </p>
                 </div>
-                
+
                 {/* CTA Button */}
                 <div className="space-y-4">
                   <Button
@@ -784,7 +864,7 @@ export default function Gallery() {
                     <Upload className="w-5 h-5 mr-3" />
                     Upload Media Pertama
                   </Button>
-                  
+
                   {/* Quick Stats */}
                   <div className="flex items-center justify-center gap-6 text-sm text-[#6B7280]">
                     <div className="flex items-center gap-2">
@@ -835,9 +915,7 @@ export default function Gallery() {
                     <div className="flex flex-col items-center justify-center pt-5 pb-6">
                       <Upload className="w-8 h-8 mb-4 text-gray-500" />
                       <p className="mb-2 text-sm text-gray-500">
-                        <span className="font-semibold">
-                          Klik untuk upload
-                        </span>{" "}
+                        <span className="font-semibold">Klik untuk upload</span>{" "}
                         atau drag & drop
                       </p>
                       <p className="text-xs text-gray-500">
@@ -1009,7 +1087,7 @@ export default function Gallery() {
                 <div className="aspect-video bg-gray-100 rounded-lg overflow-hidden">
                   <Camera className="h-12 w-12 text-gray-400 m-auto" />
                 </div>
-                
+
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                   <div>
                     <Label className="text-sm font-medium">Judul</Label>
@@ -1017,31 +1095,41 @@ export default function Gallery() {
                   </div>
                   <div>
                     <Label className="text-sm font-medium">Kategori</Label>
-                    <p className="mt-1 text-sm">{categoryConfig[selectedItem.category].label}</p>
+                    <p className="mt-1 text-sm">
+                      {categoryConfig[selectedItem.category].label}
+                    </p>
                   </div>
                   <div>
-                    <Label className="text-sm font-medium">Tanggal Upload</Label>
+                    <Label className="text-sm font-medium">
+                      Tanggal Upload
+                    </Label>
                     <p className="mt-1 text-sm">{selectedItem.uploadDate}</p>
                   </div>
                   <div>
                     <Label className="text-sm font-medium">Fotografer</Label>
-                    <p className="mt-1 text-sm">{selectedItem.photographer || "-"}</p>
+                    <p className="mt-1 text-sm">
+                      {selectedItem.photographer || "-"}
+                    </p>
                   </div>
                   <div>
                     <Label className="text-sm font-medium">Lokasi</Label>
-                    <p className="mt-1 text-sm">{selectedItem.location || "-"}</p>
+                    <p className="mt-1 text-sm">
+                      {selectedItem.location || "-"}
+                    </p>
                   </div>
                   <div>
                     <Label className="text-sm font-medium">Views</Label>
-                    <p className="mt-1 text-sm">{selectedItem.views.toLocaleString()}</p>
+                    <p className="mt-1 text-sm">
+                      {selectedItem.views.toLocaleString()}
+                    </p>
                   </div>
                 </div>
-                
+
                 <div>
                   <Label className="text-sm font-medium">Deskripsi</Label>
                   <p className="mt-1 text-sm">{selectedItem.description}</p>
                 </div>
-                
+
                 <div>
                   <Label className="text-sm font-medium">Tags</Label>
                   <div className="mt-1 flex flex-wrap gap-2">
@@ -1056,13 +1144,18 @@ export default function Gallery() {
             )}
 
             <DialogFooter>
-              <Button variant="outline" onClick={() => setIsDetailModalOpen(false)}>
+              <Button
+                variant="outline"
+                onClick={() => setIsDetailModalOpen(false)}
+              >
                 Tutup
               </Button>
-              <Button onClick={() => {
-                setIsDetailModalOpen(false);
-                handleEditModal(selectedItem!);
-              }}>
+              <Button
+                onClick={() => {
+                  setIsDetailModalOpen(false);
+                  handleEditModal(selectedItem!);
+                }}
+              >
                 <Edit className="mr-2 h-4 w-4" />
                 Edit
               </Button>
@@ -1153,12 +1246,14 @@ export default function Gallery() {
               >
                 Batal
               </Button>
-              <Button onClick={() => {
-                toast.success("Berhasil", {
-                  description: "Media berhasil diperbarui",
-                });
-                setIsEditModalOpen(false);
-              }}>
+              <Button
+                onClick={() => {
+                  toast.success("Berhasil", {
+                    description: "Media berhasil diperbarui",
+                  });
+                  setIsEditModalOpen(false);
+                }}
+              >
                 <Save className="mr-2 h-4 w-4" />
                 Simpan Perubahan
               </Button>

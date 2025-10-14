@@ -9,7 +9,7 @@ import { ContentCard } from "../components/ui/ContentCard";
 import { ActionButton } from "../components/ui/ActionButton";
 
 export default function News() {
-  const breadcrumbs = [{ label: "Dashboard", href: "/admin" }, { label: "Berita" }];
+  const breadcrumbs = [{ label: "Berita" }];
 
   return (
     <AdminLayout breadcrumbs={breadcrumbs}>
@@ -21,7 +21,10 @@ export default function News() {
           description="Buat, edit, dan kelola semua artikel untuk publikasi website"
           action={
             <SafeLink to="/admin/news/create">
-              <ActionButton icon={<Plus className="w-4 h-4" />} variant="primary">
+              <ActionButton
+                icon={<Plus className="w-4 h-4" />}
+                variant="primary"
+              >
                 Tulis Berita Baru
               </ActionButton>
             </SafeLink>
@@ -29,11 +32,7 @@ export default function News() {
         />
 
         {/* News Table Section */}
-        <ContentCard
-          title="Daftar Berita"
-          description="Kelola dan publikasikan konten berita"
-          icon={<FileText className="w-5 h-5 text-[#001B55]" />}
-        >
+        <ContentCard>
           <NewsTable />
         </ContentCard>
       </div>

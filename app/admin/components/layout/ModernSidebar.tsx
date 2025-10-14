@@ -84,16 +84,16 @@ const menuItems = [
     ariaLabel: "Menu struktur organisasi",
     subItems: [
       {
-        title: "Organisasi",
+        title: "Struktur Organisasi",
         url: "/admin/organizations",
         icon: Network,
         ariaLabel: "Kelola data organisasi",
       },
       {
-        title: "Kelola Struktur",
+        title: "Kelola Anggota",
         url: "/admin/organizations/manage",
         icon: FolderKanban,
-        ariaLabel: "Kelola struktur organisasi",
+        ariaLabel: "Kelola anggota organisasi",
       },
     ],
   },
@@ -165,7 +165,7 @@ export function ModernSidebar({
   const handleKeyDown = (event: KeyboardEvent<HTMLDivElement>) => {
     const { key } = event;
     const focusableElements = sidebarRef.current?.querySelectorAll<HTMLElement>(
-      'a[href], button:not([disabled])'
+      "a[href], button:not([disabled])"
     );
     if (!focusableElements) return;
     const currentIndex = Array.from(focusableElements).indexOf(
@@ -201,7 +201,9 @@ export function ModernSidebar({
           }`}
         >
           <div
-            className={`flex items-center gap-3 ${isCollapsed ? "flex-col" : ""}`}
+            className={`flex items-center gap-3 ${
+              isCollapsed ? "flex-col" : ""
+            }`}
           >
             <div
               className="relative w-11 h-11 rounded-xl flex items-center justify-center bg-white border-2 border-[#001B55]/20 shadow-sm overflow-hidden"
@@ -274,7 +276,11 @@ export function ModernSidebar({
 
         <div className="space-y-1">
           {menuItems.map((item) => (
-            <div key={item.title} className="relative group/item" role="listitem">
+            <div
+              key={item.title}
+              className="relative group/item"
+              role="listitem"
+            >
               {item.isCollapsible ? (
                 <div className="relative">
                   <button
@@ -296,9 +302,7 @@ export function ModernSidebar({
                     >
                       <item.icon
                         className={`h-5 w-5 flex-shrink-0 transition-colors ${
-                          isGroupActive(item.subItems)
-                            ? "text-[#001B55]"
-                            : ""
+                          isGroupActive(item.subItems) ? "text-[#001B55]" : ""
                         }`}
                         aria-hidden="true"
                       />
@@ -309,7 +313,9 @@ export function ModernSidebar({
                           </span>
                           <ChevronDown
                             className={`h-4 w-4 transition-transform duration-200 ${
-                              openGroups.includes(item.title) ? "rotate-180 text-[#001B55]" : ""
+                              openGroups.includes(item.title)
+                                ? "rotate-180 text-[#001B55]"
+                                : ""
                             }`}
                             aria-hidden="true"
                           />
@@ -382,9 +388,7 @@ export function ModernSidebar({
                     >
                       <item.icon
                         className={`h-5 w-5 flex-shrink-0 ${
-                          isActive(item.url ?? "")
-                            ? "text-[#001B55]"
-                            : ""
+                          isActive(item.url ?? "") ? "text-[#001B55]" : ""
                         }`}
                         aria-hidden="true"
                       />

@@ -12,7 +12,10 @@ import {
 } from "lucide-react";
 import { AdminLayout } from "./components/layout/AdminLayout";
 import { KPIStat, KPIStatSkeleton } from "@/components/dashboard/kpi-stat";
-import { ChartCard, ChartCardSkeleton } from "@/components/dashboard/chart-card";
+import {
+  ChartCard,
+  ChartCardSkeleton,
+} from "@/components/dashboard/chart-card";
 import {
   DataTable,
   DataTableSkeleton,
@@ -78,44 +81,44 @@ const memberGrowthData = [
   {
     month: "Januari",
     "Total Anggota": 120,
-    "DPC": 35,
-    "DPRT": 45,
-    "Kader": 40,
+    DPC: 35,
+    DPRT: 45,
+    Kader: 40,
   },
   {
     month: "Februari",
     "Total Anggota": 135,
-    "DPC": 38,
-    "DPRT": 52,
-    "Kader": 45,
+    DPC: 38,
+    DPRT: 52,
+    Kader: 45,
   },
   {
     month: "Maret",
     "Total Anggota": 148,
-    "DPC": 42,
-    "DPRT": 58,
-    "Kader": 48,
+    DPC: 42,
+    DPRT: 58,
+    Kader: 48,
   },
   {
     month: "April",
     "Total Anggota": 162,
-    "DPC": 45,
-    "DPRT": 65,
-    "Kader": 52,
+    DPC: 45,
+    DPRT: 65,
+    Kader: 52,
   },
   {
     month: "Mei",
     "Total Anggota": 178,
-    "DPC": 48,
-    "DPRT": 72,
-    "Kader": 58,
+    DPC: 48,
+    DPRT: 72,
+    Kader: 58,
   },
   {
     month: "Juni",
     "Total Anggota": 195,
-    "DPC": 52,
-    "DPRT": 80,
-    "Kader": 63,
+    DPC: 52,
+    DPRT: 80,
+    Kader: 63,
   },
 ];
 
@@ -193,11 +196,10 @@ const tableColumns: DataTableColumn[] = [
 ];
 
 export default function AdminDashboard() {
-  const breadcrumbs = [{ label: "Dashboard" }];
   const [loading, setLoading] = useState(false);
 
   return (
-    <AdminLayout breadcrumbs={breadcrumbs}>
+    <AdminLayout>
       <div className="max-w-container mx-auto space-y-6">
         {/* Page Header */}
         <div className="mb-8">
@@ -225,28 +227,44 @@ export default function AdminDashboard() {
                 value={kpisData.totalContent}
                 format={{ type: "number" }}
                 icon={FileText}
-                delta={{ value: 8.2, direction: "up", tooltip: "Naik 8.2% dari bulan lalu" }}
+                delta={{
+                  value: 8.2,
+                  direction: "up",
+                  tooltip: "Naik 8.2% dari bulan lalu",
+                }}
               />
               <KPIStat
                 label="Views Bulanan"
                 value={kpisData.monthlyViews}
                 format={{ type: "number" }}
                 icon={Eye}
-                delta={{ value: 15.3, direction: "up", tooltip: "Naik 15.3% dari bulan lalu" }}
+                delta={{
+                  value: 15.3,
+                  direction: "up",
+                  tooltip: "Naik 15.3% dari bulan lalu",
+                }}
               />
               <KPIStat
                 label="Anggota Aktif"
                 value={kpisData.activeMembers}
                 format={{ type: "number" }}
                 icon={Users}
-                delta={{ value: 2.1, direction: "down", tooltip: "Turun 2.1% dari bulan lalu" }}
+                delta={{
+                  value: 2.1,
+                  direction: "down",
+                  tooltip: "Turun 2.1% dari bulan lalu",
+                }}
               />
               <KPIStat
                 label="Media Galeri"
                 value={kpisData.totalGallery}
                 format={{ type: "number" }}
                 icon={Image}
-                delta={{ value: 12.8, direction: "up", tooltip: "Naik 12.8% dari bulan lalu" }}
+                delta={{
+                  value: 12.8,
+                  direction: "up",
+                  tooltip: "Naik 12.8% dari bulan lalu",
+                }}
               />
             </>
           )}
@@ -355,9 +373,7 @@ export default function AdminDashboard() {
               </div>
               <h3 className="font-semibold text-text-primary">Kelola Galeri</h3>
             </div>
-            <p className="text-sm text-text-secondary">
-              Upload foto dan video
-            </p>
+            <p className="text-sm text-text-secondary">Upload foto dan video</p>
           </a>
 
           <a
@@ -385,9 +401,7 @@ export default function AdminDashboard() {
               </div>
               <h3 className="font-semibold text-text-primary">Statistik</h3>
             </div>
-            <p className="text-sm text-text-secondary">
-              Data analisis pemilu
-            </p>
+            <p className="text-sm text-text-secondary">Data analisis pemilu</p>
           </a>
         </div>
       </div>

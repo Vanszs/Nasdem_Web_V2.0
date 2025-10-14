@@ -3,37 +3,32 @@ import { db } from "@/lib/db";
 import { requireAuth, requireRole } from "@/lib/jwt-middleware";
 import { UserRole } from "@/lib/rbac";
 import { z } from "zod";
-import { BenefitStatus } from "@prisma/client";
+import {
+  GenderEnum,
+  MemberStatus,
+  OrgLevel,
+  PositionEnum,
+} from "@prisma/client";
 
-// List query schema defined inline
-// Supports both page/pageSize and take/skip (from some tables)
 const listQuerySchema = z.object({
-  // primary pagination
   page: z.coerce.number().int().min(1).optional(),
   pageSize: z.coerce.number().int().min(1).max(200).optional(),
-  // alt pagination used by some UIs
   take: z.coerce.number().int().min(1).max(200).optional(),
   skip: z.coerce.number().int().min(0).optional(),
-  // filters
   search: z.string().trim().optional(),
   name: z.string().trim().optional(),
   email: z.string().trim().optional(),
   address: z.string().trim().optional(),
-  status: z.string().optional(),
-  gender: z.string().optional(),
+  status: z.nativeEnum(MemberStatus).optional(),
+  gender: z.nativeEnum(GenderEnum).optional(),
   struktur: z.coerce.boolean().optional().default(false),
-  level: z.string().optional(),
-  position: z.string().optional(),
+  level: z.nativeEnum(OrgLevel).optional(),
+  position: z.nativeEnum(PositionEnum).optional(),
   sayapTypeId: z.coerce.number().optional(),
   regionId: z.coerce.number().optional(),
   unassigned: z.coerce.boolean().optional().default(false),
-  withBenefits: z.coerce.boolean().optional(),
-  hasBenefit: z.coerce.boolean().optional(),
-  benefitId: z.coerce.number().int().optional(),
-  benefitStatus: z.nativeEnum(BenefitStatus).optional(),
 });
 
-// Create body schema defined inline
 const createMemberSchema = z.object({
   fullName: z.string().min(1),
   email: z.string().email().optional(),
@@ -41,8 +36,8 @@ const createMemberSchema = z.object({
   dateOfBirth: z.string().optional(),
   address: z.string().optional(),
   bio: z.string().optional(),
-  gender: z.string().optional(),
-  status: z.string().optional(),
+  gender: z.nativeEnum(GenderEnum).optional(),
+  status: z.nativeEnum(MemberStatus).optional(),
   strukturId: z.number().optional(),
   photoUrl: z.string().url().optional(),
   joinDate: z.string().optional(),
@@ -61,13 +56,10 @@ export async function GET(req: NextRequest) {
   if (roleError) return roleError;
 
   try {
-    // Extract and validate query parameters
-    // 1) Remove empty string values to avoid coercion errors
     const rawEntries = Array.from(req.nextUrl.searchParams.entries()).filter(
       ([, v]) => v !== ""
     );
     const rawParams = Object.fromEntries(rawEntries);
-    // 2) Parse with Zod and support both page/pageSize and take/skip
     const parsedResult = listQuerySchema.safeParse(rawParams);
     if (!parsedResult.success) {
       return NextResponse.json(
@@ -123,35 +115,18 @@ export async function GET(req: NextRequest) {
       andConditions.push({ gender: parsed.gender });
     }
 
-    // Relational (optional)
     const strukturFilter: any = {};
     if (parsed.level) strukturFilter.level = parsed.level;
     if (parsed.position) strukturFilter.position = parsed.position;
     if (parsed.sayapTypeId) strukturFilter.sayapTypeId = parsed.sayapTypeId;
     if (parsed.regionId) strukturFilter.regionId = parsed.regionId;
     if (parsed.unassigned) {
-      // Only members without any struktur
       andConditions.push({ strukturId: null });
     } else if (Object.keys(strukturFilter).length) {
       andConditions.push({ struktur: { is: strukturFilter } });
     }
 
-    const benefitFilter: any = {};
-    if (parsed.benefitId) benefitFilter.benefitId = parsed.benefitId;
-    if (parsed.benefitStatus) benefitFilter.status = parsed.benefitStatus;
-    if (Object.keys(benefitFilter).length) {
-      andConditions.push({ memberBenefits: { some: benefitFilter } });
-    }
-
-    if (parsed.hasBenefit === true) {
-      andConditions.push({ memberBenefits: { some: {} } });
-    } else if (parsed.hasBenefit === false) {
-      andConditions.push({ memberBenefits: { none: {} } });
-    }
-
     const where = andConditions.length ? { AND: andConditions } : {};
-
-    const includeBenefits = parsed.withBenefits === true;
 
     const [total, data] = await Promise.all([
       db.member.count({ where }),
@@ -182,26 +157,6 @@ export async function GET(req: NextRequest) {
                   regionId: true,
                   sayapType: { select: { id: true, name: true } },
                   region: { select: { id: true, name: true, type: true } },
-                },
-              }
-            : false,
-          memberBenefits: includeBenefits
-            ? {
-                select: {
-                  id: true,
-                  status: true,
-                  grantedAt: true,
-                  notes: true,
-                  benefit: {
-                    select: {
-                      id: true,
-                      title: true,
-                      category: true,
-                      description: true,
-                      startDate: true,
-                      endDate: true,
-                    },
-                  },
                 },
               }
             : false,
@@ -250,7 +205,6 @@ export async function POST(req: NextRequest) {
     }
     const data = parsed.data;
 
-    // Check for duplicate email if provided
     if (data.email) {
       const existingMember = await db.member.findFirst({
         where: { email: data.email },

@@ -4,13 +4,6 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
-import {
-  Select,
-  SelectContent,
-  SelectItem,
-  SelectTrigger,
-  SelectValue,
-} from "@/components/ui/select";
 import { Badge } from "@/components/ui/badge";
 import {
   Dialog,
@@ -127,8 +120,6 @@ export default function Landing() {
     mission:
       "Membangun kaderitas yang kuat, melayani masyarakat dengan integritas, dan mengadvokasi kebijakan pro-rakyat.",
   });
-
-
 
   const [contactInfo, setContactInfo] = useState<ContactInfo>({
     id: "1",
@@ -250,8 +241,6 @@ export default function Landing() {
     });
   };
 
-
-
   const handleSaveContact = () => {
     if (!contactForm.address || !contactForm.phone || !contactForm.email) {
       toast.error("Error", {
@@ -279,10 +268,7 @@ export default function Landing() {
     });
   };
 
-  const breadcrumbs = [
-    { label: "Dashboard", href: "/" },
-    { label: "Landing Page" },
-  ];
+  const breadcrumbs = [{ label: "Landing Page" }];
 
   return (
     <AdminLayout breadcrumbs={breadcrumbs}>
@@ -297,7 +283,8 @@ export default function Landing() {
                 Manajemen Landing Page
               </h1>
               <p className="text-[#6B7280] mt-1">
-                Kelola konten halaman utama website dengan sistem yang terintegrasi
+                Kelola konten halaman utama website dengan sistem yang
+                terintegrasi
               </p>
             </div>
           </div>
@@ -314,7 +301,9 @@ export default function Landing() {
                 >
                   <div className="flex items-center gap-2.5">
                     <Image className="w-4 h-4 text-inherit opacity-80" />
-                    <span className="text-inherit font-medium">Hero Banner</span>
+                    <span className="text-inherit font-medium">
+                      Hero Banner
+                    </span>
                   </div>
                   <div className="absolute top-1 right-1 w-2 h-2 rounded-full bg-[#FF9C04] opacity-0 data-[state=active]:opacity-100 transition-all duration-300 shadow-sm scale-0 data-[state=active]:scale-100"></div>
                 </TabsTrigger>
@@ -324,7 +313,9 @@ export default function Landing() {
                 >
                   <div className="flex items-center gap-2.5">
                     <Users className="w-4 h-4 text-inherit opacity-80" />
-                    <span className="text-inherit font-medium">Tentang Kami</span>
+                    <span className="text-inherit font-medium">
+                      Tentang Kami
+                    </span>
                   </div>
                   <div className="absolute top-1 right-1 w-2 h-2 rounded-full bg-[#FF9C04] opacity-0 data-[state=active]:opacity-100 transition-all duration-300 shadow-sm scale-0 data-[state=active]:scale-100"></div>
                 </TabsTrigger>
@@ -353,7 +344,9 @@ export default function Landing() {
                 <span className="font-semibold text-[#001B55]">Live</span>
               </div>
               <div className="w-1 h-1 rounded-full bg-gray-300"></div>
-              <span className="font-medium">Pilih tab untuk mengelola konten</span>
+              <span className="font-medium">
+                Pilih tab untuk mengelola konten
+              </span>
             </div>
           </div>
 
@@ -366,7 +359,9 @@ export default function Landing() {
                     <div className="p-2 bg-gradient-to-br from-[#FF9C04] to-[#FF9C04]/80 rounded-2xl shadow-md">
                       <Image className="w-5 h-5 text-white" />
                     </div>
-                    <span className="text-xl font-bold">Hero Banners ({heroBanners.length})</span>
+                    <span className="text-xl font-bold">
+                      Hero Banners ({heroBanners.length})
+                    </span>
                   </CardTitle>
                   <Dialog
                     open={isBannerDialogOpen}
@@ -483,20 +478,35 @@ export default function Landing() {
                 <Table>
                   <TableHeader>
                     <TableRow className="bg-gray-200 border-b-2 border-gray-300">
-                      <TableHead className="font-bold text-[#001B55]">Preview</TableHead>
-                      <TableHead className="font-bold text-[#001B55]">Judul</TableHead>
-                      <TableHead className="font-bold text-[#001B55]">Subjudul</TableHead>
-                      <TableHead className="font-bold text-[#001B55]">Status</TableHead>
-                      <TableHead className="font-bold text-[#001B55]">Urutan</TableHead>
-                      <TableHead className="text-right font-bold text-[#001B55]">Aksi</TableHead>
+                      <TableHead className="font-bold text-[#001B55]">
+                        Preview
+                      </TableHead>
+                      <TableHead className="font-bold text-[#001B55]">
+                        Judul
+                      </TableHead>
+                      <TableHead className="font-bold text-[#001B55]">
+                        Subjudul
+                      </TableHead>
+                      <TableHead className="font-bold text-[#001B55]">
+                        Status
+                      </TableHead>
+                      <TableHead className="font-bold text-[#001B55]">
+                        Urutan
+                      </TableHead>
+                      <TableHead className="text-right font-bold text-[#001B55]">
+                        Aksi
+                      </TableHead>
                     </TableRow>
                   </TableHeader>
                   <TableBody>
                     {heroBanners.map((banner, index) => (
-                      <TableRow 
-                        key={banner.id} 
+                      <TableRow
+                        key={banner.id}
                         className="hover:bg-blue-100 transition-colors duration-200"
-                        style={{ backgroundColor: index % 2 === 0 ? '#ffffff' : '#eff1f3' }}
+                        style={{
+                          backgroundColor:
+                            index % 2 === 0 ? "#ffffff" : "#eff1f3",
+                        }}
                       >
                         <TableCell>
                           <div className="w-16 h-10 bg-gray-200 rounded overflow-hidden">

@@ -38,10 +38,7 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
 
-const breadcrumbs = [
-  { label: "Member", href: "/admin/members" },
-  { label: "Kelola Member" },
-];
+const breadcrumbs = [{ label: "Kelola Anggota" }];
 
 const optionalString = z.string().optional().or(z.literal(""));
 
@@ -231,7 +228,9 @@ export default function ManageOrganizationPage() {
       joinDate: values.joinDate ? values.joinDate : undefined,
       nik: values.nik ? values.nik : undefined,
       ktaNumber: values.ktaNumber ? values.ktaNumber : undefined,
-      familyCount: values.familyCount ? parseInt(values.familyCount.toString()) : undefined,
+      familyCount: values.familyCount
+        ? parseInt(values.familyCount.toString())
+        : undefined,
       maritalStatus: values.maritalStatus ? values.maritalStatus : undefined,
     };
 
@@ -560,7 +559,9 @@ export default function ManageOrganizationPage() {
                       />
                     </div>
                     <div className="space-y-1.5">
-                      <Label className="text-[11px] text-gray-600">No. KTA</Label>
+                      <Label className="text-[11px] text-gray-600">
+                        No. KTA
+                      </Label>
                       <Input
                         placeholder="Nomor KTA"
                         className="h-9 text-sm"
@@ -578,24 +579,34 @@ export default function ManageOrganizationPage() {
                       />
                     </div>
                     <div className="space-y-1.5">
-                      <Label className="text-[11px] text-gray-600">Status Perkawinan</Label>
+                      <Label className="text-[11px] text-gray-600">
+                        Status Perkawinan
+                      </Label>
                       <Select
                         defaultValue=""
-                        onValueChange={(value) => setValue("maritalStatus", value)}
+                        onValueChange={(value) =>
+                          setValue("maritalStatus", value)
+                        }
                       >
                         <SelectTrigger className="h-9 text-sm w-full">
                           <SelectValue placeholder="Pilih status" />
                         </SelectTrigger>
                         <SelectContent>
-                          <SelectItem value="Belum Kawin">Belum Kawin</SelectItem>
+                          <SelectItem value="Belum Kawin">
+                            Belum Kawin
+                          </SelectItem>
                           <SelectItem value="Kawin">Kawin</SelectItem>
                           <SelectItem value="Cerai Mati">Cerai Mati</SelectItem>
-                          <SelectItem value="Cerai Hidup">Cerai Hidup</SelectItem>
+                          <SelectItem value="Cerai Hidup">
+                            Cerai Hidup
+                          </SelectItem>
                         </SelectContent>
                       </Select>
                     </div>
                     <div className="space-y-1.5">
-                      <Label className="text-[11px] text-gray-600">Jumlah Keluarga</Label>
+                      <Label className="text-[11px] text-gray-600">
+                        Jumlah Keluarga
+                      </Label>
                       <Input
                         type="number"
                         placeholder="1"

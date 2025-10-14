@@ -192,7 +192,6 @@ export default function CreateNewsPage() {
   const isBusy = isSubmitting || mutation.isPending || isUploading;
 
   const breadcrumbs = [
-    { label: "Dashboard", href: "/admin" },
     { label: "Berita", href: "/admin/news" },
     { label: "Tulis Berita" },
   ];
@@ -207,7 +206,7 @@ export default function CreateNewsPage() {
                 variant="outline"
                 type="button"
                 onClick={() => router.push("/admin/news")}
-                className="border-2 border-gray-200 hover:border-gray-300"
+                className="border-2 border-gray-200 hover:border-gray-300 cursor-pointer"
               >
                 <ArrowLeft className="mr-2 h-4 w-4" />
                 Kembali
@@ -225,7 +224,7 @@ export default function CreateNewsPage() {
                 variant="outline"
                 disabled={isBusy}
                 onClick={handlePreview}
-                className="border-2 border-gray-200 hover:border-gray-300"
+                className="border-2 border-gray-200 hover:border-gray-300 cursor-pointer"
               >
                 <Eye className="mr-2 h-4 w-4" />
                 Pratinjau
@@ -233,7 +232,7 @@ export default function CreateNewsPage() {
               <Button
                 type="submit"
                 disabled={isBusy}
-                className="bg-[#FF9C04] hover:bg-[#001B55] text-white border-2 border-[#FF9C04] hover:border-[#001B55] shadow-lg transition-all duration-300"
+                className="bg-[#FF9C04] cursor-pointer hover:bg-[#001B55] text-white border-2 border-[#FF9C04] hover:border-[#001B55] shadow-lg transition-all duration-300"
               >
                 <Save className="mr-2 h-4 w-4" />
                 {isBusy ? "Menyimpan..." : "Simpan"}

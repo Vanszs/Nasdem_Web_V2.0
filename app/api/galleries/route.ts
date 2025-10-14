@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from "next/server";
 import { db } from "@/lib/db";
 import { requireAuth, requireRole } from "@/lib/jwt-middleware";
+import { UserRole } from "@/lib/rbac";
 
 export async function GET() {
   try {
@@ -20,7 +21,7 @@ export async function GET() {
 export async function POST(req: NextRequest) {
   const authError = requireAuth(req);
   if (authError) return authError;
-  const roleError = requireRole(req, ["editor", "superadmin"]);
+  const roleError = requireRole(req, [UserRole.ANALYST, UserRole.SUPERADMIN]);
   if (roleError) return roleError;
   try {
     const userId = (req as any).user.userId;

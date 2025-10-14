@@ -171,13 +171,23 @@ function StatistikPemiluPage() {
   } as const;
 
   // Dynamic options based on selection
-  const getKecamatanOptions = (): Array<{ value: string; label: string; disabled?: boolean }> => {
+  const getKecamatanOptions = (): Array<{
+    value: string;
+    label: string;
+    disabled?: boolean;
+  }> => {
     if (filters.dapil === "ALL_DAPIL") {
-      return [{ value: "ALL_KECAMATAN", label: "Mohon pilih Dapil terlebih dahulu", disabled: true }];
+      return [
+        {
+          value: "ALL_KECAMATAN",
+          label: "Mohon pilih Dapil terlebih dahulu",
+          disabled: true,
+        },
+      ];
     }
     return [
       { value: "ALL_KECAMATAN", label: "Semua Kecamatan" },
-      ...filterOptions.kecamatan.filter((k) => k.dapil === filters.dapil)
+      ...filterOptions.kecamatan.filter((k) => k.dapil === filters.dapil),
     ];
   };
 
@@ -715,10 +725,7 @@ function StatistikPemiluPage() {
   };
 
   // Breadcrumbs
-  const breadcrumbs = [
-    { label: "Dashboard", href: "/admin" },
-    { label: "Statistik Pemilu", href: "/admin/statistik-pemilu" },
-  ];
+  const breadcrumbs = [{ label: "Statistik Pemilu" }];
 
   // Mock data
   const kpiData = {
@@ -808,9 +815,19 @@ function StatistikPemiluPage() {
   ];
 
   // Remove old static getDesaOptions/getTpsOptions (if any) and ensure dynamic versions are defined here
-  const getDesaOptions = (): Array<{ value: string; label: string; disabled?: boolean }> => {
+  const getDesaOptions = (): Array<{
+    value: string;
+    label: string;
+    disabled?: boolean;
+  }> => {
     if (filters.kecamatan === "ALL_KECAMATAN") {
-      return [{ value: "ALL_DESA", label: "Mohon pilih Kecamatan terlebih dahulu", disabled: true }];
+      return [
+        {
+          value: "ALL_DESA",
+          label: "Mohon pilih Kecamatan terlebih dahulu",
+          disabled: true,
+        },
+      ];
     }
     const desaSet = new Set<string>();
     baseRecords
@@ -824,9 +841,19 @@ function StatistikPemiluPage() {
     ];
   };
 
-  const getTpsOptions = (): Array<{ value: string; label: string; disabled?: boolean }> => {
+  const getTpsOptions = (): Array<{
+    value: string;
+    label: string;
+    disabled?: boolean;
+  }> => {
     if (filters.desa === "ALL_DESA") {
-      return [{ value: "ALL_TPS", label: "Mohon pilih Desa terlebih dahulu", disabled: true }];
+      return [
+        {
+          value: "ALL_TPS",
+          label: "Mohon pilih Desa terlebih dahulu",
+          disabled: true,
+        },
+      ];
     }
     const tpsSet = new Set<string>();
     baseRecords
@@ -843,19 +870,39 @@ function StatistikPemiluPage() {
   };
 
   // Dynamic options for TABLE filters
-  const getTableKecamatanOptions = (): Array<{ value: string; label: string; disabled?: boolean }> => {
+  const getTableKecamatanOptions = (): Array<{
+    value: string;
+    label: string;
+    disabled?: boolean;
+  }> => {
     if (!tableFilters.dapil || tableFilters.dapil === "ALL_DAPIL") {
-      return [{ value: "ALL_KECAMATAN", label: "Mohon pilih Dapil terlebih dahulu", disabled: true }];
+      return [
+        {
+          value: "ALL_KECAMATAN",
+          label: "Mohon pilih Dapil terlebih dahulu",
+          disabled: true,
+        },
+      ];
     }
     return [
       { value: "ALL_KECAMATAN", label: "Semua Kecamatan" },
-      ...filterOptions.kecamatan.filter((k) => k.dapil === tableFilters.dapil)
+      ...filterOptions.kecamatan.filter((k) => k.dapil === tableFilters.dapil),
     ];
   };
 
-  const getTableDesaOptions = (): Array<{ value: string; label: string; disabled?: boolean }> => {
+  const getTableDesaOptions = (): Array<{
+    value: string;
+    label: string;
+    disabled?: boolean;
+  }> => {
     if (tableFilters.kecamatan === "ALL_KECAMATAN") {
-      return [{ value: "ALL_DESA", label: "Mohon pilih Kecamatan terlebih dahulu", disabled: true }];
+      return [
+        {
+          value: "ALL_DESA",
+          label: "Mohon pilih Kecamatan terlebih dahulu",
+          disabled: true,
+        },
+      ];
     }
     const desaSet = new Set<string>();
     baseRecords
@@ -869,14 +916,25 @@ function StatistikPemiluPage() {
     ];
   };
 
-  const getTableTpsOptions = (): Array<{ value: string; label: string; disabled?: boolean }> => {
+  const getTableTpsOptions = (): Array<{
+    value: string;
+    label: string;
+    disabled?: boolean;
+  }> => {
     if (tableFilters.desa === "ALL_DESA") {
-      return [{ value: "ALL_TPS", label: "Mohon pilih Desa terlebih dahulu", disabled: true }];
+      return [
+        {
+          value: "ALL_TPS",
+          label: "Mohon pilih Desa terlebih dahulu",
+          disabled: true,
+        },
+      ];
     }
     const tpsSet = new Set<string>();
     baseRecords
       .filter(
-        (r) => r.kecamatan === tableFilters.kecamatan && r.desa === tableFilters.desa
+        (r) =>
+          r.kecamatan === tableFilters.kecamatan && r.desa === tableFilters.desa
       )
       .forEach((r) => tpsSet.add(r.tps));
     return [
@@ -971,27 +1029,32 @@ function StatistikPemiluPage() {
   });
 
   // Filtered records untuk TABLE (berdasarkan tableFilters)
-  const tableFilteredRecords = showTable ? baseRecords.filter((r) => {
-    if (
-      tableFilters.dapil !== "ALL_DAPIL" &&
-      tableFilters.dapil &&
-      r.dapil !== tableFilters.dapil
-    )
-      return false;
-    if (
-      tableFilters.kecamatan !== "ALL_KECAMATAN" &&
-      tableFilters.kecamatan &&
-      r.kecamatan !== tableFilters.kecamatan
-    )
-      return false;
-    if (tableFilters.desa !== "ALL_DESA" && r.desa !== tableFilters.desa) return false;
-    if (tableFilters.tps !== "ALL_TPS" && r.tps !== tableFilters.tps) return false;
-    return true;
-  }) : [];
+  const tableFilteredRecords = showTable
+    ? baseRecords.filter((r) => {
+        if (
+          tableFilters.dapil !== "ALL_DAPIL" &&
+          tableFilters.dapil &&
+          r.dapil !== tableFilters.dapil
+        )
+          return false;
+        if (
+          tableFilters.kecamatan !== "ALL_KECAMATAN" &&
+          tableFilters.kecamatan &&
+          r.kecamatan !== tableFilters.kecamatan
+        )
+          return false;
+        if (tableFilters.desa !== "ALL_DESA" && r.desa !== tableFilters.desa)
+          return false;
+        if (tableFilters.tps !== "ALL_TPS" && r.tps !== tableFilters.tps)
+          return false;
+        return true;
+      })
+    : [];
 
   // Table data untuk tampilan tabel
   const finalTableData: TableData[] = tableFilteredRecords.map((r) => {
-    const totalArea = tableFilteredRecords.reduce((s, rr) => s + rr.suara, 0) || 1;
+    const totalArea =
+      tableFilteredRecords.reduce((s, rr) => s + rr.suara, 0) || 1;
     return {
       dapil: r.dapil,
       kecamatan:
@@ -1050,7 +1113,7 @@ function StatistikPemiluPage() {
                 size="sm"
                 variant="outline"
                 disabled={loading}
-                className="h-9 bg-[#F0F0F0] text-[#001B55] hover:bg-[#001B55] hover:text-white border border-[#F0F0F0] hover:border-[#001B55] transition-all duration-300"
+                className="h-9 cursor-pointer bg-[#F0F0F0] text-[#001B55] hover:bg-[#001B55] border border-[#F0F0F0] hover:border-[#001B55] transition-all duration-300"
               >
                 <RefreshCw
                   className={`w-4 h-4 mr-2 ${loading ? "animate-spin" : ""}`}
@@ -1074,7 +1137,11 @@ function StatistikPemiluPage() {
               </SelectTrigger>
               <SelectContent className="bg-white border border-[#F0F0F0] text-[#001B55]">
                 {filterOptions.tahun.map((option) => (
-                  <SelectItem key={option.value} value={option.value} className="hover:bg-[#F0F0F0]">
+                  <SelectItem
+                    key={option.value}
+                    value={option.value}
+                    className="hover:bg-[#F0F0F0]"
+                  >
                     {option.label}
                   </SelectItem>
                 ))}
@@ -1093,7 +1160,11 @@ function StatistikPemiluPage() {
               </SelectTrigger>
               <SelectContent className="bg-white border border-[#F0F0F0] text-[#001B55]">
                 {filterOptions.jenisPemilu.map((option) => (
-                  <SelectItem key={option.value} value={option.value} className="hover:bg-[#F0F0F0]">
+                  <SelectItem
+                    key={option.value}
+                    value={option.value}
+                    className="hover:bg-[#F0F0F0]"
+                  >
                     {option.label}
                   </SelectItem>
                 ))}
@@ -1119,7 +1190,11 @@ function StatistikPemiluPage() {
               </SelectTrigger>
               <SelectContent className="bg-white border border-[#F0F0F0] text-[#001B55]">
                 {filterOptions.dapil.map((option) => (
-                  <SelectItem key={option.value} value={option.value} className="hover:bg-[#F0F0F0]">
+                  <SelectItem
+                    key={option.value}
+                    value={option.value}
+                    className="hover:bg-[#F0F0F0]"
+                  >
                     {option.label}
                   </SelectItem>
                 ))}
@@ -1143,21 +1218,26 @@ function StatistikPemiluPage() {
             >
               <SelectTrigger className="h-10 w-[180px] bg-white border-2 border-gray-300 text-[#001B55] hover:border-[#001B55] focus:border-[#001B55] focus:ring-2 focus:ring-[#001B55]/20 transition-colors">
                 <SelectValue>
-                  {filters.dapil === "ALL_DAPIL" 
-                    ? "Pilih Kecamatan" 
+                  {filters.dapil === "ALL_DAPIL"
+                    ? "Pilih Kecamatan"
                     : filters.kecamatan === "ALL_KECAMATAN"
                     ? "Semua Kecamatan"
-                    : getKecamatanOptions().find(k => k.value === filters.kecamatan)?.label || "Pilih Kecamatan"
-                  }
+                    : getKecamatanOptions().find(
+                        (k) => k.value === filters.kecamatan
+                      )?.label || "Pilih Kecamatan"}
                 </SelectValue>
               </SelectTrigger>
               <SelectContent className="bg-white border border-[#F0F0F0] text-[#001B55]">
                 {getKecamatanOptions().map((option) => (
-                  <SelectItem 
-                    key={option.value} 
-                    value={option.value} 
+                  <SelectItem
+                    key={option.value}
+                    value={option.value}
                     disabled={option.disabled}
-                    className={option.disabled ? "text-gray-400 cursor-not-allowed" : "hover:bg-[#F0F0F0]"}
+                    className={
+                      option.disabled
+                        ? "text-gray-400 cursor-not-allowed"
+                        : "hover:bg-[#F0F0F0]"
+                    }
                   >
                     {option.label}
                   </SelectItem>
@@ -1181,17 +1261,21 @@ function StatistikPemiluPage() {
                     ? "Pilih Desa"
                     : filters.desa === "ALL_DESA"
                     ? "Semua Desa"
-                    : getDesaOptions().find(d => d.value === filters.desa)?.label || "Pilih Desa"
-                  }
+                    : getDesaOptions().find((d) => d.value === filters.desa)
+                        ?.label || "Pilih Desa"}
                 </SelectValue>
               </SelectTrigger>
               <SelectContent className="bg-white border border-[#F0F0F0] text-[#001B55]">
                 {getDesaOptions().map((option) => (
-                  <SelectItem 
-                    key={option.value} 
+                  <SelectItem
+                    key={option.value}
                     value={option.value}
                     disabled={option.disabled}
-                    className={option.disabled ? "text-gray-400 cursor-not-allowed" : "hover:bg-[#F0F0F0]"}
+                    className={
+                      option.disabled
+                        ? "text-gray-400 cursor-not-allowed"
+                        : "hover:bg-[#F0F0F0]"
+                    }
                   >
                     {option.label}
                   </SelectItem>
@@ -1211,17 +1295,19 @@ function StatistikPemiluPage() {
               disabled={true}
             >
               <SelectTrigger className="h-10 w-[150px] bg-gray-100 border-2 border-gray-200 text-gray-400 cursor-not-allowed transition-colors">
-                <SelectValue>
-                  Pilih TPS
-                </SelectValue>
+                <SelectValue>Pilih TPS</SelectValue>
               </SelectTrigger>
               <SelectContent className="bg-white border border-[#F0F0F0] text-[#001B55]">
                 {getTpsOptions().map((option) => (
-                  <SelectItem 
-                    key={option.value} 
+                  <SelectItem
+                    key={option.value}
                     value={option.value}
                     disabled={option.disabled}
-                    className={option.disabled ? "text-gray-400 cursor-not-allowed" : "hover:bg-[#F0F0F0]"}
+                    className={
+                      option.disabled
+                        ? "text-gray-400 cursor-not-allowed"
+                        : "hover:bg-[#F0F0F0]"
+                    }
                   >
                     {option.label}
                   </SelectItem>
@@ -1326,7 +1412,11 @@ function StatistikPemiluPage() {
               </SelectTrigger>
               <SelectContent className="bg-white border border-[#F0F0F0] text-[#001B55]">
                 {filterOptions.tahun.map((option) => (
-                  <SelectItem key={option.value} value={option.value} className="hover:bg-[#F0F0F0]">
+                  <SelectItem
+                    key={option.value}
+                    value={option.value}
+                    className="hover:bg-[#F0F0F0]"
+                  >
                     {option.label}
                   </SelectItem>
                 ))}
@@ -1345,7 +1435,11 @@ function StatistikPemiluPage() {
               </SelectTrigger>
               <SelectContent className="bg-white border border-[#F0F0F0] text-[#001B55]">
                 {filterOptions.jenisPemilu.map((option) => (
-                  <SelectItem key={option.value} value={option.value} className="hover:bg-[#F0F0F0]">
+                  <SelectItem
+                    key={option.value}
+                    value={option.value}
+                    className="hover:bg-[#F0F0F0]"
+                  >
                     {option.label}
                   </SelectItem>
                 ))}
@@ -1367,15 +1461,20 @@ function StatistikPemiluPage() {
             >
               <SelectTrigger className="h-10 w-[160px] bg-white border-2 border-gray-300 text-[#001B55] hover:border-[#001B55] focus:border-[#001B55] focus:ring-2 focus:ring-[#001B55]/20 transition-colors">
                 <SelectValue placeholder="Pilih Dapil">
-                  {tableFilters.dapil 
-                    ? filterOptions.dapil.find(d => d.value === tableFilters.dapil)?.label || "Pilih Dapil"
-                    : "Pilih Dapil"
-                  }
+                  {tableFilters.dapil
+                    ? filterOptions.dapil.find(
+                        (d) => d.value === tableFilters.dapil
+                      )?.label || "Pilih Dapil"
+                    : "Pilih Dapil"}
                 </SelectValue>
               </SelectTrigger>
               <SelectContent className="bg-white border border-[#F0F0F0] text-[#001B55]">
                 {filterOptions.dapil.map((option) => (
-                  <SelectItem key={option.value} value={option.value} className="hover:bg-[#F0F0F0]">
+                  <SelectItem
+                    key={option.value}
+                    value={option.value}
+                    className="hover:bg-[#F0F0F0]"
+                  >
                     {option.label}
                   </SelectItem>
                 ))}
@@ -1399,20 +1498,25 @@ function StatistikPemiluPage() {
               <SelectTrigger className="h-10 w-[180px] bg-white border-2 border-gray-300 text-[#001B55] hover:border-[#001B55] focus:border-[#001B55] focus:ring-2 focus:ring-[#001B55]/20 transition-colors">
                 <SelectValue>
                   {!tableFilters.dapil || tableFilters.dapil === "ALL_DAPIL"
-                    ? "Pilih Kecamatan" 
+                    ? "Pilih Kecamatan"
                     : tableFilters.kecamatan === "ALL_KECAMATAN"
                     ? "Semua Kecamatan"
-                    : getTableKecamatanOptions().find(k => k.value === tableFilters.kecamatan)?.label || "Pilih Kecamatan"
-                  }
+                    : getTableKecamatanOptions().find(
+                        (k) => k.value === tableFilters.kecamatan
+                      )?.label || "Pilih Kecamatan"}
                 </SelectValue>
               </SelectTrigger>
               <SelectContent className="bg-white border border-[#F0F0F0] text-[#001B55]">
                 {getTableKecamatanOptions().map((option) => (
-                  <SelectItem 
-                    key={option.value} 
-                    value={option.value} 
+                  <SelectItem
+                    key={option.value}
+                    value={option.value}
                     disabled={option.disabled}
-                    className={option.disabled ? "text-gray-400 cursor-not-allowed" : "hover:bg-[#F0F0F0]"}
+                    className={
+                      option.disabled
+                        ? "text-gray-400 cursor-not-allowed"
+                        : "hover:bg-[#F0F0F0]"
+                    }
                   >
                     {option.label}
                   </SelectItem>
@@ -1425,7 +1529,11 @@ function StatistikPemiluPage() {
               value={tableFilters.desa}
               onValueChange={(value) => {
                 if (tableFilters.kecamatan !== "ALL_KECAMATAN") {
-                  setTableFilters({ ...tableFilters, desa: value, tps: "ALL_TPS" });
+                  setTableFilters({
+                    ...tableFilters,
+                    desa: value,
+                    tps: "ALL_TPS",
+                  });
                 }
               }}
             >
@@ -1435,17 +1543,22 @@ function StatistikPemiluPage() {
                     ? "Pilih Desa"
                     : tableFilters.desa === "ALL_DESA"
                     ? "Semua Desa"
-                    : getTableDesaOptions().find(d => d.value === tableFilters.desa)?.label || "Pilih Desa"
-                  }
+                    : getTableDesaOptions().find(
+                        (d) => d.value === tableFilters.desa
+                      )?.label || "Pilih Desa"}
                 </SelectValue>
               </SelectTrigger>
               <SelectContent className="bg-white border border-[#F0F0F0] text-[#001B55]">
                 {getTableDesaOptions().map((option) => (
-                  <SelectItem 
-                    key={option.value} 
+                  <SelectItem
+                    key={option.value}
                     value={option.value}
                     disabled={option.disabled}
-                    className={option.disabled ? "text-gray-400 cursor-not-allowed" : "hover:bg-[#F0F0F0]"}
+                    className={
+                      option.disabled
+                        ? "text-gray-400 cursor-not-allowed"
+                        : "hover:bg-[#F0F0F0]"
+                    }
                   >
                     {option.label}
                   </SelectItem>
@@ -1464,17 +1577,19 @@ function StatistikPemiluPage() {
               disabled={true}
             >
               <SelectTrigger className="h-10 w-[150px] bg-gray-100 border-2 border-gray-200 text-gray-400 cursor-not-allowed transition-colors">
-                <SelectValue>
-                  Pilih TPS
-                </SelectValue>
+                <SelectValue>Pilih TPS</SelectValue>
               </SelectTrigger>
               <SelectContent className="bg-white border border-[#F0F0F0] text-[#001B55]">
                 {getTableTpsOptions().map((option) => (
-                  <SelectItem 
-                    key={option.value} 
+                  <SelectItem
+                    key={option.value}
                     value={option.value}
                     disabled={option.disabled}
-                    className={option.disabled ? "text-gray-400 cursor-not-allowed" : "hover:bg-[#F0F0F0]"}
+                    className={
+                      option.disabled
+                        ? "text-gray-400 cursor-not-allowed"
+                        : "hover:bg-[#F0F0F0]"
+                    }
                   >
                     {option.label}
                   </SelectItem>
@@ -1496,7 +1611,8 @@ function StatistikPemiluPage() {
                   Pilih Dapil untuk Menampilkan Data
                 </h3>
                 <p className="text-sm text-[#6B7280] max-w-md">
-                  Tabel akan otomatis muncul setelah Anda memilih Dapil atau filter lainnya
+                  Tabel akan otomatis muncul setelah Anda memilih Dapil atau
+                  filter lainnya
                 </p>
               </div>
             </div>

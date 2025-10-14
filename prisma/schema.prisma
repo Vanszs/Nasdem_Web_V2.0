@@ -65,6 +65,13 @@ enum ApplicationStatus {
   rejected
 }
 
+enum ProgramStatus {
+  pending
+  completed
+  ongoing
+  planning
+}
+
 // ---------------------------
 // Core CMS
 // ---------------------------
@@ -120,16 +127,23 @@ model News {
 }
 
 model Program {
-  id          Int       @id @default(autoincrement())
-  category    String
-  name        String
-  description String?
-  startDate   DateTime?
-  endDate     DateTime?
-  photoUrl    String?   @db.VarChar(255)
-  createdAt   DateTime  @default(now())
-  updatedAt   DateTime  @updatedAt
-  deletedAt   DateTime? @db.Timestamptz
+  id            Int           @id @default(autoincrement())
+  category      String
+  name          String
+  description   String?
+  target        Int
+  currentTarget Int
+  budget        Decimal
+  status        ProgramStatus
+  startDate     DateTime?
+  endDate       DateTime?
+  photoUrl      String?       @db.VarChar(255)
+  createdAt     DateTime      @default(now())
+  updatedAt     DateTime      @updatedAt
+  deletedAt     DateTime?     @db.Timestamptz
+
+  coordinatorId Int
+  coordinator   Member @relation(fields: [coordinatorId], references: [id], onDelete: Cascade, onUpdate: Cascade)
 
   // Penerima benefit (bukan member)
   recipients       ProgramBenefitRecipient[]
@@ -137,8 +151,6 @@ model Program {
   pipRegistrations PipRegistration[]
 
   @@unique([category, name]) // kombinasi kategori+nama harus unik
-  @@index([startDate])
-  @@index([deletedAt])
 }
 
 model Gallery {
@@ -242,6 +254,7 @@ model Member {
 
   // Aplikasi keanggotaan
   applications MembershipApplication[]
+  Program      Program[]
 
   @@index([status])
   @@index([strukturId])
