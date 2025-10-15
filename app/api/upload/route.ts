@@ -20,6 +20,9 @@ const ALLOWED_SCOPES: Record<string, string> = {
   struktur: "struktur",
   caleg: "caleg",
   news: "news",
+  hero: "hero",
+  cms: "cms",
+  gallery: "gallery",
 };
 
 function resolveScope(input?: string | null): string {
@@ -39,14 +42,16 @@ function generateSecureFilename(originalName: string): string {
 // Validate file content by reading magic numbers
 function validateFileContent(buffer: Buffer, mimeType: string): boolean {
   if (mimeType === "image/jpeg") {
-    return buffer[0] === 0xFF && buffer[1] === 0xD8 && buffer[2] === 0xFF;
+    return buffer[0] === 0xff && buffer[1] === 0xd8 && buffer[2] === 0xff;
   }
   if (mimeType === "image/png") {
-    return buffer.toString('ascii', 1, 4) === 'PNG';
+    return buffer.toString("ascii", 1, 4) === "PNG";
   }
   if (mimeType === "image/webp") {
-    return buffer.toString('ascii', 0, 4) === 'RIFF' &&
-           buffer.toString('ascii', 8, 12) === 'WEBP';
+    return (
+      buffer.toString("ascii", 0, 4) === "RIFF" &&
+      buffer.toString("ascii", 8, 12) === "WEBP"
+    );
   }
   return false;
 }
@@ -110,7 +115,10 @@ export async function POST(req: NextRequest) {
     // Validate file content to prevent file type spoofing
     if (!validateFileContent(buffer, file.type)) {
       return NextResponse.json(
-        { success: false, error: "File content does not match the declared type" },
+        {
+          success: false,
+          error: "File content does not match the declared type",
+        },
         { status: 400 }
       );
     }
@@ -129,7 +137,7 @@ export async function POST(req: NextRequest) {
     fs.mkdirSync(uploadDir, { recursive: true, mode: 0o755 });
 
     const filepath = path.join(uploadDir, filename);
-    
+
     // Write file with proper permissions
     fs.writeFileSync(filepath, buffer, { mode: 0o644 });
 

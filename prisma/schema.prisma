@@ -91,8 +91,7 @@ model User {
   deletedAt DateTime? @db.Timestamptz
 
   // Relations
-  news      News[]
-  galleries Gallery[]
+  news News[]
 
   @@index([username])
   @@index([role])
@@ -131,6 +130,41 @@ model News {
   @@index([deletedAt])
 }
 
+model CmsHeroBanner {
+  id        Int      @id @default(autoincrement())
+  imageUrl  String   @db.VarChar(255)
+  order     Int      @default(0)
+  isActive  Boolean  @default(true)
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+}
+
+model CmsAbout {
+  id       Int     @id @default(autoincrement())
+  vision   String? @db.Text
+  mission  String? @db.Text
+  videoUrl String? @db.VarChar(255)
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+}
+
+model CmsContact {
+  id               Int     @id @default(autoincrement())
+  phone            String? @db.VarChar(30)
+  email            String? @db.VarChar(100)
+  address          String? @db.VarChar(255)
+  operationalHours String? @db.VarChar(150)
+
+  instagramUrl String? @db.VarChar(255)
+  facebookUrl  String? @db.VarChar(255)
+  twitterUrl   String? @db.VarChar(255)
+  youtubeUrl   String? @db.VarChar(255)
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+}
+
 model Program {
   id            Int           @id @default(autoincrement())
   category      String
@@ -161,19 +195,13 @@ model Program {
 model Gallery {
   id         Int       @id @default(autoincrement())
   type       String?   @db.VarChar(50)
+  category   String?   @db.VarChar(255)
   url        String    @db.VarChar(255)
-  caption    String?
+  title      String?
   uploadDate DateTime? @default(now())
   createdAt  DateTime  @default(now())
   updatedAt  DateTime  @updatedAt
   deletedAt  DateTime? @db.Timestamptz
-
-  userId Int?
-  user   User? @relation(fields: [userId], references: [id], onDelete: SetNull, onUpdate: Cascade)
-
-  @@index([userId])
-  @@index([uploadDate])
-  @@index([deletedAt])
 }
 
 // ---------------------------
