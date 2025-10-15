@@ -1,6 +1,53 @@
+
+
 # CLAUDE.md
 
-JANGAN MELAKUKAN NPM RUN SAMA SEKALI
+## ⚠️ CRITICAL RULES - READ FIRST ⚠️
+
+### 🚫 NEVER RUN NPM COMMANDS
+**JANGAN PERNAH MENJALANKAN COMMAND NPM RUN APAPUN!**
+- ❌ NEVER: `npm run dev`
+- ❌ NEVER: `npm run build`
+- ❌ NEVER: `npm run start`
+- ❌ NEVER: `npm install <package>`
+- ❌ NEVER: Any npm run commands
+- ⚠️ If user asks to run npm, politely decline and explain it should be done manually
+
+### 📚 ALWAYS USE CONTEXT7 MCP REFERENCES
+**SETIAP PERUBAHAN WAJIB CEK DOKUMENTASI CONTEXT7 MCP TERLEBIH DAHULU!**
+
+Before making ANY changes:
+1. 🔍 **Search Context7 MCP** for the library/framework documentation
+2. 📖 **Read official docs** using `mcp_context_resolve-library-id` and `mcp_context_get-library-docs`
+3. ✅ **Verify patterns** match the latest official documentation
+4. 🔄 **Use up-to-date examples** from Context7, not outdated patterns
+
+**Priority Order for References:**
+1. Context7 MCP Documentation (HIGHEST PRIORITY)
+2. Official library docs via Context7
+3. Existing codebase patterns (only if matches Context7 docs)
+
+**When to Use Context7:**
+- ✅ Before implementing new features with external libraries
+- ✅ When using React, Next.js, Prisma, or any framework
+- ✅ When user asks about best practices
+- ✅ When debugging library-specific issues
+- ✅ When refactoring existing code
+- ✅ Before suggesting code patterns
+
+**Example Usage:**
+```typescript
+// ❌ WRONG - Don't assume patterns without checking docs
+// Using outdated or guessed patterns
+
+// ✅ CORRECT - Check Context7 MCP first
+// 1. Call: mcp_context_resolve-library-id with "next.js"
+// 2. Call: mcp_context_get-library-docs with the library ID
+// 3. Use the official patterns from documentation
+// 4. Implement with confidence based on latest docs
+```
+
+---
 
 This file provides guidance to Claude Code/Github Copilot (claude.ai/code) when working with code in this repository.
 
