@@ -24,7 +24,7 @@ export function MemberCard(props: MemberCardProps) {
   return (
     <div
       onClick={() => onClick(member)}
-      className="group relative overflow-hidden bg-white backdrop-blur-xl border border-white/40 rounded-xl shadow-md hover:shadow-lg transition-all duration-300 transform hover:scale-105 cursor-pointer"
+      className="group relative overflow-hidden bg-white backdrop-blur-xl border border-[#001B55]/30 rounded-xl shadow-md hover:shadow-lg transition-all duration-300 transform hover:scale-105 cursor-pointer"
     >
       <div className="absolute inset-0 bg-gradient-to-br from-[#001B55]/2 via-transparent to-[#FF9C04]/2 opacity-0 group-hover:opacity-100 transition-opacity duration-300"></div>
       <div className="relative p-4">

@@ -40,8 +40,14 @@ const createMemberSchema = z.object({
   status: z.nativeEnum(MemberStatus).optional(),
   strukturId: z.number().optional(),
   photoUrl: z.string().url().optional(),
+  ktpUrl: z.string().url().optional(),
   joinDate: z.string().optional(),
   endDate: z.string().optional(),
+  nik: z.string().optional(),
+  ktaNumber: z.string().optional(),
+  occupation: z.string().optional(),
+  familyCount: z.number().optional(),
+  maritalStatus: z.string().optional(),
 });
 
 export async function GET(req: NextRequest) {
@@ -230,6 +236,12 @@ export async function POST(req: NextRequest) {
         status: (data.status as any) ?? undefined,
         strukturId: data.strukturId || undefined,
         photoUrl: data.photoUrl || undefined,
+        ktpPhotoUrl: data.ktpUrl || undefined,
+        nik: data.nik || undefined,
+        ktaNumber: data.ktaNumber || undefined,
+        occupation: data.occupation || undefined,
+        familyMemberCount: data.familyCount || undefined,
+        maritalStatus: data.maritalStatus || undefined,
         joinDate: data.joinDate ? new Date(data.joinDate) : undefined,
         endDate: data.endDate ? new Date(data.endDate) : undefined,
       },
@@ -242,6 +254,7 @@ export async function POST(req: NextRequest) {
         gender: true,
         strukturId: true,
         photoUrl: true,
+        ktpPhotoUrl: true,
         joinDate: true,
       },
     });

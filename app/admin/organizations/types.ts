@@ -16,6 +16,7 @@ export interface Member {
   lastActivity?: string;
   nik?: string;
   ktaNumber?: string;
+  ktpPhotoUrl?: string;
   familyCount?: number;
   maritalStatus?: string;
   benefits?: string[];

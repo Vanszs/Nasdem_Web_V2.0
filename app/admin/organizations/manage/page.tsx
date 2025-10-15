@@ -1,7 +1,7 @@
 "use client";
 
 import * as React from "react";
-import { RefreshCw, Plus, Building2, ImageIcon, Upload, X } from "lucide-react";
+import { RefreshCw, Plus, Building2, ImageIcon, Upload, X, CreditCard } from "lucide-react";
 import { useDebounce } from "@/hooks/use-debounce";
 import { Button } from "@/components/ui/button";
 import { AdminLayout } from "../../components/layout/AdminLayout";
@@ -54,12 +54,14 @@ const addMemberSchema = z.object({
   address: optionalString,
   bio: optionalString,
   photoUrl: z.union([z.string().url("URL tidak valid"), z.literal("")]),
+  ktpUrl: z.union([z.string().url("URL tidak valid"), z.literal("")]),
   joinDate: optionalString,
   nik: optionalString,
   ktaNumber: optionalString,
   familyCount: z.union([z.string(), z.number(), z.literal("")]),
   maritalStatus: optionalString,
   useFileUpload: z.boolean().default(false),
+  useKtpFileUpload: z.boolean().default(false),
 });
 
 type AddMemberFormValues = z.infer<typeof addMemberSchema>;
@@ -74,12 +76,14 @@ const defaultAddValues: AddMemberFormValues = {
   address: "",
   bio: "",
   photoUrl: "",
+  ktpUrl: "",
   joinDate: "",
   nik: "",
   ktaNumber: "",
   familyCount: "",
   maritalStatus: "",
   useFileUpload: false,
+  useKtpFileUpload: false,
 };
 
 export default function ManageOrganizationPage() {
@@ -98,7 +102,9 @@ export default function ManageOrganizationPage() {
   const debouncedAddress = useDebounce(filters.address, 400);
   const [openAdd, setOpenAdd] = React.useState(false);
   const fileInputRef = React.useRef<HTMLInputElement>(null);
+  const ktpFileInputRef = React.useRef<HTMLInputElement>(null);
   const [photoFile, setPhotoFile] = React.useState<File | null>(null);
+  const [ktpFile, setKtpFile] = React.useState<File | null>(null);
 
   const {
     register,
@@ -113,14 +119,17 @@ export default function ManageOrganizationPage() {
   });
 
   const useFileUpload = watch("useFileUpload");
+  const useKtpFileUpload = watch("useKtpFileUpload");
   const genderValue = watch("gender");
   const statusValue = watch("status");
   const photoUrlValue = watch("photoUrl");
+  const ktpUrlValue = watch("ktpUrl");
 
   React.useEffect(() => {
     if (!openAdd) {
       reset(defaultAddValues);
       setPhotoFile(null);
+      setKtpFile(null);
     }
   }, [openAdd, reset]);
 
@@ -129,6 +138,12 @@ export default function ManageOrganizationPage() {
       setPhotoFile(null);
     }
   }, [useFileUpload]);
+
+  React.useEffect(() => {
+    if (!useKtpFileUpload) {
+      setKtpFile(null);
+    }
+  }, [useKtpFileUpload]);
 
   // Fetch member data for table view
   const page = Math.floor(filters.skip / filters.take) + 1;
@@ -201,6 +216,7 @@ export default function ManageOrganizationPage() {
 
   const handleSubmitAdd = handleSubmit(async (values) => {
     let finalPhotoUrl = values.photoUrl;
+    let finalKtpUrl = values.ktpUrl;
 
     if (values.useFileUpload) {
       if (!photoFile) {
@@ -215,6 +231,19 @@ export default function ManageOrganizationPage() {
       finalPhotoUrl = uploadedUrl;
     }
 
+    if (values.useKtpFileUpload) {
+      if (!ktpFile) {
+        toast.error("Silakan pilih file KTP");
+        return;
+      }
+      const uploadedKtpUrl = await handleFileUpload(ktpFile);
+      if (!uploadedKtpUrl) {
+        toast.error("Gagal mengunggah KTP");
+        return;
+      }
+      finalKtpUrl = uploadedKtpUrl;
+    }
+
     const payload = {
       fullName: values.fullName,
       email: values.email ? values.email : undefined,
@@ -225,6 +254,7 @@ export default function ManageOrganizationPage() {
       address: values.address ? values.address : undefined,
       bio: values.bio ? values.bio : undefined,
       photoUrl: finalPhotoUrl ? finalPhotoUrl : undefined,
+      ktpUrl: finalKtpUrl ? finalKtpUrl : undefined,
       joinDate: values.joinDate ? values.joinDate : undefined,
       nik: values.nik ? values.nik : undefined,
       ktaNumber: values.ktaNumber ? values.ktaNumber : undefined,
@@ -375,23 +405,30 @@ export default function ManageOrganizationPage() {
                           setPhotoFile(null);
                         }
                       }}
+                      className="w-full"
                     >
-                      <TabsList className="grid w-full grid-cols-2 h-8">
-                        <TabsTrigger value="url" className="text-[11px]">
+                      <TabsList className="grid w-full grid-cols-2 h-9 bg-gray-100">
+                        <TabsTrigger 
+                          value="url" 
+                          className="text-xs data-[state=active]:bg-white data-[state=active]:text-[#001B55] data-[state=active]:shadow-sm"
+                        >
                           URL Foto
                         </TabsTrigger>
-                        <TabsTrigger value="upload" className="text-[11px]">
+                        <TabsTrigger 
+                          value="upload" 
+                          className="text-xs data-[state=active]:bg-white data-[state=active]:text-[#001B55] data-[state=active]:shadow-sm"
+                        >
                           Unggah File
                         </TabsTrigger>
                       </TabsList>
-                      <TabsContent value="url" className="space-y-2 pt-3">
+                      <TabsContent value="url" className="space-y-2 pt-3 mt-0">
                         <Label className="text-[11px] text-gray-600">
                           Tautan gambar
                         </Label>
                         <Input
                           placeholder="https://domain.com/foto.jpg"
                           disabled={useFileUpload}
-                          className="h-8 text-sm"
+                          className="h-9 text-sm"
                           {...register("photoUrl")}
                         />
                         {errors.photoUrl && !useFileUpload && (
@@ -400,7 +437,7 @@ export default function ManageOrganizationPage() {
                           </p>
                         )}
                       </TabsContent>
-                      <TabsContent value="upload" className="space-y-2 pt-3">
+                      <TabsContent value="upload" className="space-y-2 pt-3 mt-0">
                         <div className="relative">
                           <input
                             ref={fileInputRef}
@@ -416,9 +453,9 @@ export default function ManageOrganizationPage() {
                             type="button"
                             variant="outline"
                             onClick={() => fileInputRef.current?.click()}
-                            className="h-8 w-full text-xs justify-center"
+                            className="h-9 w-full text-xs justify-center"
                           >
-                            <Upload className="h-3 w-3 mr-1" />
+                            <Upload className="h-3.5 w-3.5 mr-2" />
                             {photoFile ? photoFile.name : "Pilih file gambar"}
                           </Button>
                           {photoFile && (
@@ -427,6 +464,135 @@ export default function ManageOrganizationPage() {
                               size="icon"
                               variant="ghost"
                               onClick={() => setPhotoFile(null)}
+                              className="absolute -right-2 -top-2 h-6 w-6 rounded-full bg-red-100 text-red-600 hover:bg-red-200"
+                            >
+                              <X className="h-3 w-3" />
+                            </Button>
+                          )}
+                        </div>
+                      </TabsContent>
+                    </Tabs>
+                  </div>
+                </section>
+
+                {/* KTP Attachment Section */}
+                <section className="space-y-4">
+                  <div className="flex items-center gap-2">
+                    <div className="flex h-8 w-8 items-center justify-center rounded-md bg-blue-500/10 text-blue-600">
+                      <CreditCard className="h-4 w-4" />
+                    </div>
+                    <div className="min-w-0">
+                      <h3 className="text-xs font-semibold tracking-wide text-[#001B55] uppercase">
+                        Foto KTP
+                      </h3>
+                      <p className="text-[11px] text-gray-500">
+                        Upload foto identitas KTP
+                      </p>
+                    </div>
+                  </div>
+                  <div className="space-y-3">
+                    <div className="flex h-44 w-full items-center justify-center overflow-hidden rounded-lg border-2 border-dashed border-blue-300 bg-blue-50/50">
+                      {useKtpFileUpload && ktpFile ? (
+                        <img
+                          src={URL.createObjectURL(ktpFile)}
+                          alt="KTP Preview"
+                          className="h-full w-full object-cover"
+                        />
+                      ) : !useKtpFileUpload && ktpUrlValue ? (
+                        <img
+                          src={ktpUrlValue}
+                          alt="KTP Preview"
+                          className="h-full w-full object-cover"
+                          onError={(e) => {
+                            (
+                              e.currentTarget as HTMLImageElement
+                            ).style.display = "none";
+                          }}
+                        />
+                      ) : (
+                        <div className="text-center px-4">
+                          <CreditCard className="h-10 w-10 mx-auto mb-2 text-blue-400" />
+                          <p className="text-sm font-medium text-gray-600">
+                            Belum ada foto KTP
+                          </p>
+                          <p className="text-[11px] text-gray-500">
+                            Tambahkan foto KTP melalui URL atau unggah file
+                          </p>
+                        </div>
+                      )}
+                    </div>
+                    <Tabs
+                      value={useKtpFileUpload ? "upload" : "url"}
+                      onValueChange={(value) => {
+                        const shouldUpload = value === "upload";
+                        setValue("useKtpFileUpload", shouldUpload, {
+                          shouldValidate: true,
+                        });
+                        if (shouldUpload) {
+                          setValue("ktpUrl", "");
+                        } else {
+                          setKtpFile(null);
+                        }
+                      }}
+                      className="w-full"
+                    >
+                      <TabsList className="grid w-full grid-cols-2 h-9 bg-gray-100">
+                        <TabsTrigger 
+                          value="url" 
+                          className="text-xs data-[state=active]:bg-white data-[state=active]:text-[#001B55] data-[state=active]:shadow-sm"
+                        >
+                          URL KTP
+                        </TabsTrigger>
+                        <TabsTrigger 
+                          value="upload" 
+                          className="text-xs data-[state=active]:bg-white data-[state=active]:text-[#001B55] data-[state=active]:shadow-sm"
+                        >
+                          Unggah File
+                        </TabsTrigger>
+                      </TabsList>
+                      <TabsContent value="url" className="space-y-2 pt-3 mt-0">
+                        <Label className="text-[11px] text-gray-600">
+                          Tautan gambar KTP
+                        </Label>
+                        <Input
+                          placeholder="https://domain.com/ktp.jpg"
+                          disabled={useKtpFileUpload}
+                          className="h-9 text-sm"
+                          {...register("ktpUrl")}
+                        />
+                        {errors.ktpUrl && !useKtpFileUpload && (
+                          <p className="text-xs font-medium text-red-600">
+                            {errors.ktpUrl.message}
+                          </p>
+                        )}
+                      </TabsContent>
+                      <TabsContent value="upload" className="space-y-2 pt-3 mt-0">
+                        <div className="relative">
+                          <input
+                            ref={ktpFileInputRef}
+                            type="file"
+                            accept="image/*"
+                            onChange={(e) => {
+                              const file = e.target.files?.[0] || null;
+                              setKtpFile(file);
+                            }}
+                            className="hidden"
+                          />
+                          <Button
+                            type="button"
+                            variant="outline"
+                            onClick={() => ktpFileInputRef.current?.click()}
+                            className="h-9 w-full text-xs justify-center"
+                          >
+                            <Upload className="h-3.5 w-3.5 mr-2" />
+                            {ktpFile ? ktpFile.name : "Pilih file KTP"}
+                          </Button>
+                          {ktpFile && (
+                            <Button
+                              type="button"
+                              size="icon"
+                              variant="ghost"
+                              onClick={() => setKtpFile(null)}
                               className="absolute -right-2 -top-2 h-6 w-6 rounded-full bg-red-100 text-red-600 hover:bg-red-200"
                             >
                               <X className="h-3 w-3" />

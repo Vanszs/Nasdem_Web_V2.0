@@ -9,6 +9,8 @@ import { useDebounce } from "../../../hooks/use-debounce";
 import { SimplePagination } from "@/components/ui/pagination";
 import { useRegions } from "./hooks/useRegions";
 import { TabsFilters } from "./components/TabsFilters";
+import { Button } from "@/components/ui/button";
+import { Plus } from "lucide-react";
 import {
   Select,
   SelectContent,
@@ -156,6 +158,7 @@ export default function Members() {
         subDepartment: undefined, // tidak ada di schema baru
         description: m.bio || "",
         gender: m.gender || undefined,
+        ktpPhotoUrl: m.ktpPhotoUrl || undefined,
         struktur: so,
       };
     });
@@ -227,7 +230,13 @@ export default function Members() {
                 Kelola data anggota & struktur Partai NasDem Kabupaten Sidoarjo
               </p>
             </div>
-            <AddMemberDialog onOpenChange={setAddOpen} />
+            <Button
+              onClick={() => setAddOpen(true)}
+              className="bg-gradient-to-r from-[#001B55] to-[#003875] hover:from-[#003875] hover:to-[#001B55] text-white shadow-lg hover:shadow-xl transition-all duration-300 px-6 py-3"
+            >
+              <Plus className="h-5 w-5 mr-2" />
+              Tambahkan Anggota
+            </Button>
           </div>
         </div>
 
@@ -435,6 +444,11 @@ export default function Members() {
           departmentConfig={departmentConfig}
           getDPRTLeader={() => undefined}
           getKaderCount={() => 0}
+        />
+
+        <AddMemberDialog 
+          open={addOpen}
+          onOpenChange={setAddOpen}
         />
       </div>
     </AdminLayout>

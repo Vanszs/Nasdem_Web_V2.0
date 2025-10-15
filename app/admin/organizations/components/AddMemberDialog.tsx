@@ -4,7 +4,6 @@ import {
   DialogContent,
   DialogHeader,
   DialogTitle,
-  DialogTrigger,
 } from "@/components/ui/dialog";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -461,64 +460,82 @@ export function AddMemberDialog({
 
   return (
     <Dialog open={controlledOpen} onOpenChange={setOpen}>
-      <DialogTrigger asChild>
-        <Button
-          className="h-11 px-6 bg-[#C5BAFF] hover:bg-[#C4D9FF] text-[#001B55] font-semibold transition-all duration-300 shadow-[0_1px_3px_rgba(0,0,0,0.05)] hover:shadow-[0_4px_6px_rgba(0,0,0,0.08)] hover:scale-[1.02]"
-          style={{ borderRadius: "10px" }}
-        >
-          <Plus className="mr-2 h-5 w-5" /> Tambahkan Anggota
-        </Button>
-      </DialogTrigger>
+      {/* DialogTrigger removed - using controlled state from parent */}
       <DialogContent
-        className="max-w-4xl w-[90vw] max-h-[85vh] bg-white border border-[#D8E2F0] p-0 overflow-hidden flex flex-col"
+        className="!max-w-3xl max-h-[82vh] bg-white border border-[#D8E2F0] p-0 overflow-hidden flex flex-col"
         style={{
           borderRadius: "16px",
-          boxShadow: "0 8px 32px rgba(0, 27, 85, 0.12)",
+          boxShadow: "0 20px 60px rgba(0, 27, 85, 0.15)",
         }}
       >
-        <DialogHeader className="relative px-6 pt-5 pb-4 border-b border-[#E8F9FF]">
+        <DialogHeader className="px-5 pt-4 pb-3 border-b border-[#E8F9FF] bg-gradient-to-r from-white to-[#F8FBFF]">
           <div className="flex items-center gap-3">
             <div
-              className="flex h-10 w-10 items-center justify-center bg-[#E8F9FF]"
+              className="flex h-10 w-10 items-center justify-center bg-gradient-to-br from-[#001B55] to-[#003875] shadow-md"
               style={{ borderRadius: "10px" }}
             >
-              <UserPlus className="h-5 w-5 text-[#001B55]" />
+              <UserPlus className="h-5 w-5 text-white" />
             </div>
-            <div>
-              <DialogTitle className="text-xl font-bold text-[#001B55]">
-                Tambah Keanggotaan
+            <div className="flex-1">
+              <DialogTitle className="text-lg font-bold text-[#001B55]">
+                Tambah Keanggotaan Organisasi
               </DialogTitle>
-              <p className="text-sm text-[#475569] mt-0.5">
-                Kelola penautan anggota dan kader
+              <p className="text-xs text-[#475569] mt-0.5">
+                Tambahkan anggota ke struktur atau tautkan kader ke DPRT
               </p>
             </div>
           </div>
         </DialogHeader>
 
-        <div className="px-6 py-5 space-y-5 flex-1 overflow-y-auto">
+        <div className="flex-1 overflow-y-auto"
+          style={{
+            scrollbarWidth: 'thin',
+            scrollbarColor: '#C5BAFF #f0f0f0'
+          }}
+        >
+          <div className="px-5 py-4">
           <Tabs value={tab} onValueChange={setTab} className="w-full">
-            <TabsList className="w-full inline-flex h-auto p-0 bg-transparent gap-3 border-b-2 border-gray-200/80">
+            <TabsList className="w-full inline-flex h-auto p-0 bg-transparent gap-2 border-b-2 border-gray-200/80 mb-4">
               <TabsTrigger
                 value="org"
-                className="data-[state=active]:bg-[#C5BAFF] data-[state=active]:text-[#001B55] data-[state=active]:font-bold data-[state=active]:border-2 data-[state=active]:border-[#001B55] data-[state=active]:border-b-0 data-[state=inactive]:bg-white/50 data-[state=inactive]:text-[#475569] data-[state=inactive]:border-2 data-[state=inactive]:border-gray-200/80 data-[state=inactive]:border-b-0 data-[state=inactive]:hover:text-[#001B55] data-[state=inactive]:hover:border-[#001B55]/40 data-[state=inactive]:hover:bg-white font-medium transition-all duration-300 py-3 px-5 rounded-t-lg mb-[-2px]"
+                className="data-[state=active]:bg-gradient-to-r data-[state=active]:from-[#001B55] data-[state=active]:to-[#003875] data-[state=active]:text-white data-[state=active]:font-semibold data-[state=active]:border-2 data-[state=active]:border-[#001B55] data-[state=active]:border-b-0 data-[state=active]:shadow-md data-[state=inactive]:bg-white/70 data-[state=inactive]:text-[#475569] data-[state=inactive]:border data-[state=inactive]:border-gray-200 data-[state=inactive]:border-b-0 data-[state=inactive]:hover:text-[#001B55] data-[state=inactive]:hover:border-[#001B55]/30 data-[state=inactive]:hover:bg-white font-medium transition-all duration-200 py-2.5 px-4 rounded-t-lg mb-[-2px] text-sm"
               >
-                <Link2 className="mr-2 h-4 w-4" /> Anggota → Organisasi
+                <Link2 className="mr-1.5 h-4 w-4" /> Anggota → Organisasi
               </TabsTrigger>
               <TabsTrigger
                 value="kader"
-                className="data-[state=active]:bg-[#C5BAFF] data-[state=active]:text-[#001B55] data-[state=active]:font-bold data-[state=active]:border-2 data-[state=active]:border-[#001B55] data-[state=active]:border-b-0 data-[state=inactive]:bg-white/50 data-[state=inactive]:text-[#475569] data-[state=inactive]:border-2 data-[state=inactive]:border-gray-200/80 data-[state=inactive]:border-b-0 data-[state=inactive]:hover:text-[#001B55] data-[state=inactive]:hover:border-[#001B55]/40 data-[state=inactive]:hover:bg-white font-medium transition-all duration-300 py-3 px-5 rounded-t-lg mb-[-2px]"
+                className="data-[state=active]:bg-gradient-to-r data-[state=active]:from-[#001B55] data-[state=active]:to-[#003875] data-[state=active]:text-white data-[state=active]:font-semibold data-[state=active]:border-2 data-[state=active]:border-[#001B55] data-[state=active]:border-b-0 data-[state=active]:shadow-md data-[state=inactive]:bg-white/70 data-[state=inactive]:text-[#475569] data-[state=inactive]:border data-[state=inactive]:border-gray-200 data-[state=inactive]:border-b-0 data-[state=inactive]:hover:text-[#001B55] data-[state=inactive]:hover:border-[#001B55]/30 data-[state=inactive]:hover:bg-white font-medium transition-all duration-200 py-2.5 px-4 rounded-t-lg mb-[-2px] text-sm"
               >
-                <Users className="mr-2 h-4 w-4" /> Kader → DPRT
+                <Users className="mr-1.5 h-4 w-4" /> Kader → DPRT
               </TabsTrigger>
             </TabsList>
 
-            <TabsContent value="org" className="mt-5 space-y-4">
+            <TabsContent value="org" className="mt-0 space-y-4">
+              {/* Info Box untuk menjelaskan */}
+              <div className="bg-gradient-to-r from-blue-50 to-blue-50/50 border-l-3 border-[#001B55] p-3 rounded-lg">
+                <div className="flex items-start gap-2.5">
+                  <div className="flex-shrink-0 mt-0.5">
+                    <svg className="h-4 w-4 text-[#001B55]" fill="currentColor" viewBox="0 0 20 20">
+                      <path fillRule="evenodd" d="M18 10a8 8 0 11-16 0 8 8 0 0116 0zm-7-4a1 1 0 11-2 0 1 1 0 012 0zM9 9a1 1 0 000 2v3a1 1 0 001 1h1a1 1 0 100-2v-3a1 1 0 00-1-1H9z" clipRule="evenodd" />
+                    </svg>
+                  </div>
+                  <div>
+                    <h4 className="text-xs font-semibold text-[#001B55] mb-0.5">
+                      Menambahkan Anggota ke Struktur Organisasi
+                    </h4>
+                    <p className="text-[11px] text-[#475569] leading-snug">
+                      Tautkan anggota yang belum memiliki jabatan ke struktur organisasi. Pilih tipe, posisi, dan anggota.
+                    </p>
+                  </div>
+                </div>
+              </div>
+
               <Form {...orgForm}>
                 <form
                   onSubmit={orgForm.handleSubmit(onSubmitOrg)}
                   className="space-y-4"
                 >
-                  <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                  <div className="grid grid-cols-1 md:grid-cols-2 gap-3.5">
                     <FormField
                       control={orgForm.control}
                       name="level"
@@ -539,7 +556,7 @@ export function AddMemberDialog({
                               }}
                             >
                               <SelectTrigger
-                                className="h-11 bg-[#E8F9FF] border border-[#C4D9FF] hover:border-[#C5BAFF] focus:border-[#C5BAFF] focus:ring-2 focus:ring-[#C5BAFF]/20 text-[#001B55] transition-all duration-300"
+                                className="h-11 bg-white border-2 border-[#C4D9FF] hover:border-[#C5BAFF] focus:border-[#001B55] focus:ring-2 focus:ring-[#C5BAFF]/20 text-[#001B55] transition-all duration-300"
                                 style={{ borderRadius: "10px" }}
                               >
                                 <SelectValue placeholder="Pilih tipe organisasi" />
@@ -582,7 +599,7 @@ export function AddMemberDialog({
                               disabled={!watchLevel}
                             >
                               <SelectTrigger
-                                className="h-11 bg-[#E8F9FF] border border-[#C4D9FF] hover:border-[#C5BAFF] focus:border-[#C5BAFF] focus:ring-2 focus:ring-[#C5BAFF]/20 text-[#001B55] transition-all duration-300 disabled:opacity-50"
+                                className="h-11 bg-white border-2 border-[#C4D9FF] hover:border-[#C5BAFF] focus:border-[#001B55] focus:ring-2 focus:ring-[#C5BAFF]/20 text-[#001B55] transition-all duration-300 disabled:opacity-50"
                                 style={{ borderRadius: "10px" }}
                               >
                                 <SelectValue placeholder="Pilih posisi" />
@@ -629,7 +646,7 @@ export function AddMemberDialog({
                                   role="combobox"
                                   aria-expanded={openRegion}
                                   className={cn(
-                                    "w-full justify-between h-11 bg-[#E8F9FF] border border-[#C4D9FF] hover:border-[#C5BAFF] focus:border-[#C5BAFF] focus:ring-2 focus:ring-[#C5BAFF]/20 text-[#001B55] transition-all duration-300",
+                                    "w-full justify-between h-11 bg-white border-2 border-[#C4D9FF] hover:border-[#C5BAFF] focus:border-[#001B55] focus:ring-2 focus:ring-[#C5BAFF]/20 text-[#001B55] transition-all duration-300",
                                     !field.value && "text-[#475569]"
                                   )}
                                   style={{ borderRadius: "10px" }}
@@ -709,7 +726,7 @@ export function AddMemberDialog({
                               onValueChange={field.onChange}
                             >
                               <SelectTrigger
-                                className="h-11 bg-[#E8F9FF] border border-[#C4D9FF] hover:border-[#C5BAFF] focus:border-[#C5BAFF] focus:ring-2 focus:ring-[#C5BAFF]/20 text-[#001B55] transition-all duration-300"
+                                className="h-11 bg-white border-2 border-[#C4D9FF] hover:border-[#C5BAFF] focus:border-[#001B55] focus:ring-2 focus:ring-[#C5BAFF]/20 text-[#001B55] transition-all duration-300"
                                 style={{ borderRadius: "10px" }}
                               >
                                 <SelectValue placeholder="Pilih sayap" />
@@ -751,7 +768,7 @@ export function AddMemberDialog({
                               placeholder="Cari nama anggota..."
                               value={memberSearch}
                               onChange={(e) => setMemberSearch(e.target.value)}
-                              className="pl-10 h-11 bg-[#E8F9FF] border border-[#C4D9FF] hover:border-[#C5BAFF] focus:border-[#C5BAFF] focus:ring-2 focus:ring-[#C5BAFF]/20 text-[#001B55] placeholder:text-[#475569] transition-all duration-300"
+                              className="pl-10 h-11 bg-white border-2 border-[#C4D9FF] hover:border-[#C5BAFF] focus:border-[#001B55] focus:ring-2 focus:ring-[#C5BAFF]/20 text-[#001B55] placeholder:text-[#475569] transition-all duration-300"
                               style={{ borderRadius: "10px" }}
                             />
                           </div>
@@ -775,7 +792,7 @@ export function AddMemberDialog({
                     )}
                   />
 
-                  <div className="flex justify-end gap-3 pt-4 border-t border-[#E8F9FF]">
+                  <div className="flex justify-end gap-2.5 pt-4 border-t border-[#E8F9FF] bg-gradient-to-r from-white to-[#F8FBFF] -mx-5 -mb-4 px-5 pb-4 mt-4">
                     <Button
                       type="button"
                       variant="outline"
@@ -783,14 +800,14 @@ export function AddMemberDialog({
                         setOpen(false);
                         orgForm.reset();
                       }}
-                      className="h-10 px-6 bg-white border border-[#D8E2F0] hover:bg-[#F0F6FF] hover:border-[#C4D9FF] text-[#475569] hover:text-[#001B55] transition-all duration-300"
+                      className="h-9 px-5 bg-white border border-[#D8E2F0] hover:bg-[#F0F6FF] hover:border-[#C4D9FF] text-[#475569] hover:text-[#001B55] font-medium transition-all duration-200 text-sm"
                       style={{ borderRadius: "8px" }}
                     >
                       Batal
                     </Button>
                     <Button
                       type="submit"
-                      className="h-10 px-6 bg-[#C5BAFF] hover:bg-[#C4D9FF] text-[#001B55] font-semibold shadow-[0_1px_3px_rgba(0,0,0,0.05)] hover:shadow-[0_4px_6px_rgba(0,0,0,0.08)] transition-all duration-300"
+                      className="h-9 px-5 bg-gradient-to-r from-[#001B55] to-[#003875] hover:from-[#003875] hover:to-[#001B55] text-white font-semibold shadow-md hover:shadow-lg transition-all duration-200 text-sm"
                       style={{ borderRadius: "8px" }}
                       disabled={addMembersMutation.isPending}
                     >
@@ -801,7 +818,26 @@ export function AddMemberDialog({
               </Form>
             </TabsContent>
 
-            <TabsContent value="kader" className="mt-5 space-y-4">
+            <TabsContent value="kader" className="mt-0 space-y-4">
+              {/* Info Box untuk menjelaskan */}
+              <div className="bg-gradient-to-r from-blue-50 to-blue-50/50 border-l-3 border-[#001B55] p-3 rounded-lg">
+                <div className="flex items-start gap-2.5">
+                  <div className="flex-shrink-0 mt-0.5">
+                    <svg className="h-4 w-4 text-[#001B55]" fill="currentColor" viewBox="0 0 20 20">
+                      <path fillRule="evenodd" d="M18 10a8 8 0 11-16 0 8 8 0 0116 0zm-7-4a1 1 0 11-2 0 1 1 0 012 0zM9 9a1 1 0 000 2v3a1 1 0 001 1h1a1 1 0 100-2v-3a1 1 0 00-1-1H9z" clipRule="evenodd" />
+                    </svg>
+                  </div>
+                  <div>
+                    <h4 className="text-xs font-semibold text-[#001B55] mb-0.5">
+                      Menautkan Kader ke Member DPRT
+                    </h4>
+                    <p className="text-[11px] text-[#475569] leading-snug">
+                      Tautkan kader (anggota tanpa jabatan) ke member DPRT. Pilih member DPRT dan kader yang akan ditautkan.
+                    </p>
+                  </div>
+                </div>
+              </div>
+
               <Form {...kaderForm}>
                 <form
                   onSubmit={kaderForm.handleSubmit(onSubmitKader)}
@@ -827,7 +863,7 @@ export function AddMemberDialog({
                                 role="combobox"
                                 aria-expanded={openDprtMember}
                                 className={cn(
-                                  "w-full justify-between h-11 bg-[#E8F9FF] border border-[#C4D9FF] hover:border-[#C5BAFF] focus:border-[#C5BAFF] focus:ring-2 focus:ring-[#C5BAFF]/20 text-[#001B55] transition-all duration-300",
+                                  "w-full justify-between h-11 bg-white border-2 border-[#C4D9FF] hover:border-[#C5BAFF] focus:border-[#001B55] focus:ring-2 focus:ring-[#C5BAFF]/20 text-[#001B55] transition-all duration-300",
                                   !field.value && "text-[#475569]"
                                 )}
                                 style={{ borderRadius: "10px" }}
@@ -924,7 +960,7 @@ export function AddMemberDialog({
                     )}
                   />
 
-                  <div className="flex justify-end gap-3 pt-4 border-t border-[#E8F9FF]">
+                  <div className="flex justify-end gap-2.5 pt-4 border-t border-[#E8F9FF] bg-gradient-to-r from-white to-[#F8FBFF] -mx-5 -mb-4 px-5 pb-4 mt-4">
                     <Button
                       type="button"
                       variant="outline"
@@ -932,14 +968,14 @@ export function AddMemberDialog({
                         setOpen(false);
                         kaderForm.reset();
                       }}
-                      className="h-10 px-6 bg-white border border-[#D8E2F0] hover:bg-[#F0F6FF] hover:border-[#C4D9FF] text-[#475569] hover:text-[#001B55] transition-all duration-300"
+                      className="h-9 px-5 bg-white border border-[#D8E2F0] hover:bg-[#F0F6FF] hover:border-[#C4D9FF] text-[#475569] hover:text-[#001B55] font-medium transition-all duration-200 text-sm"
                       style={{ borderRadius: "8px" }}
                     >
                       Batal
                     </Button>
                     <Button
                       type="submit"
-                      className="h-10 px-6 bg-[#C5BAFF] hover:bg-[#C4D9FF] text-[#001B55] font-semibold shadow-[0_1px_3px_rgba(0,0,0,0.05)] hover:shadow-[0_4px_6px_rgba(0,0,0,0.08)] transition-all duration-300"
+                      className="h-9 px-5 bg-gradient-to-r from-[#001B55] to-[#003875] hover:from-[#003875] hover:to-[#001B55] text-white font-semibold shadow-md hover:shadow-lg transition-all duration-200 text-sm"
                       style={{ borderRadius: "8px" }}
                       disabled={addKadersMutation.isPending}
                     >
@@ -950,6 +986,7 @@ export function AddMemberDialog({
               </Form>
             </TabsContent>
           </Tabs>
+          </div>
         </div>
       </DialogContent>
     </Dialog>

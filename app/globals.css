@@ -135,6 +135,33 @@
   body {
     @apply bg-background text-foreground;
   }
+
+  /* Custom scrollbar styling for all elements */
+  * {
+    scrollbar-width: thin;
+    scrollbar-color: #C5BAFF #f0f0f0;
+  }
+
+  /* Webkit scrollbar styling (Chrome, Safari, Edge) */
+  *::-webkit-scrollbar {
+    width: 8px;
+    height: 8px;
+  }
+
+  *::-webkit-scrollbar-track {
+    background: #f0f0f0;
+    border-radius: 4px;
+  }
+
+  *::-webkit-scrollbar-thumb {
+    background: #C5BAFF;
+    border-radius: 4px;
+    transition: background 0.2s ease;
+  }
+
+  *::-webkit-scrollbar-thumb:hover {
+    background: #b0a5e6;
+  }
 }
 
 /* Custom NasDem utility classes */

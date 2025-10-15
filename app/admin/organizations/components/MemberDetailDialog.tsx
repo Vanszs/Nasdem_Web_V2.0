@@ -1,4 +1,5 @@
 "use client";
+import React from "react";
 import {
   Dialog,
   DialogContent,
@@ -18,6 +19,14 @@ import {
   Mail,
   Phone,
   MapPin,
+  Printer,
+  CreditCard,
+  Calendar,
+  Home,
+  Briefcase,
+  Heart,
+  User,
+  X,
 } from "lucide-react";
 import { Member } from "../types";
 import { useRouter } from "next/navigation";
@@ -42,482 +51,660 @@ export function MemberDetailDialog({
   getKaderCount,
 }: Props) {
   const router = useRouter();
+  
+  // DEBUG: Log when dialog opens to validate assumptions
+  React.useEffect(() => {
+    if (open && member) {
+      console.log("MemberDetailDialog opened:", {
+        memberName: member.name,
+        department: member.department,
+        hasPhoto: !!member.photo,
+        hasKtpPhoto: !!member.ktpPhotoUrl,
+        hasBenefits: member.benefits && member.benefits.length > 0,
+        hasAchievements: member.achievements && member.achievements.length > 0
+      });
+    }
+  }, [open, member]);
+  
+  const handlePrint = () => {
+    console.log("Print functionality triggered");
+    window.print();
+  };
+  
   if (!member) return null;
+  
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
-      <DialogContent className="!max-w-6xl max-h-[90vh] overflow-y-auto bg-white/95 backdrop-blur-xl border border-white/20">
-        <DialogHeader>
-          <DialogTitle className="text-2xl font-bold text-slate-800 mb-4">
-            Biodata Anggota
-          </DialogTitle>
-        </DialogHeader>
-        <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
-          <div className="space-y-6">
-            <div className="text-center">
-              <div className="relative mx-auto w-48 h-48 mb-4">
-                <div className="absolute -inset-3 bg-gradient-to-r from-[#001B55] via-[#FF9C04] to-[#001B55] rounded-full blur-lg opacity-30" />
-                <Avatar className="relative w-full h-full border-4 border-white/50 shadow-2xl">
-                  <AvatarImage
-                    src={member.photo}
-                    className="object-cover"
-                    alt={member.name}
-                  />
-                  <AvatarFallback className="bg-gradient-to-br from-slate-100 to-slate-200 text-slate-600 text-4xl font-bold">
-                    {member.name
-                      .split(" ")
-                      .map((n) => n[0])
-                      .join("")
-                      .substring(0, 2)}
-                  </AvatarFallback>
-                </Avatar>
-              </div>
-              <h2 className="text-2xl font-bold text-slate-800 mb-2">
-                {member.name}
-              </h2>
-              <p className="text-lg font-medium text-slate-600 mb-3">
-                {member.position}
-              </p>
-              <div className="flex justify-center">
-                <Badge
-                  className={`${
-                    departmentConfig[member.department]?.className
-                  } px-6 py-2 text-base font-medium`}
-                >
-                  {departmentConfig[member.department]?.label}
-                </Badge>
-              </div>
-              {member.region && (
-                <p className="text-sm text-slate-500 mt-2 bg-slate-100 px-4 py-1 rounded-full inline-block">
-                  Region: {member.region}
-                </p>
-              )}
-              {member.subDepartment && (
-                <p className="text-sm text-slate-500 mt-1 bg-slate-100 px-4 py-1 rounded-full inline-block">
-                  {member.department === "dprt" || member.department === "kader"
-                    ? "Desa"
-                    : "Sub"}
-                  : {member.subDepartment}
-                </p>
-              )}
+      <DialogContent className="!max-w-5xl max-h-[90vh] overflow-hidden bg-white border-2 border-[#D8E2F0] shadow-2xl p-0 rounded-2xl transition-all duration-300 ease-in-out" showCloseButton={false}>
+        {/* Custom Scrollbar Styles */}
+        <style jsx global>{`
+          /* Custom scrollbar for the dialog */
+          .scrollbar-thin {
+            scrollbar-width: thin;
+            scrollbar-color: #C5BAFF #f0f0f0;
+          }
+          
+          .scrollbar-thin::-webkit-scrollbar {
+            width: 8px;
+          }
+          
+          .scrollbar-thin::-webkit-scrollbar-track {
+            background: #f0f0f0;
+            border-radius: 4px;
+          }
+          
+          .scrollbar-thin::-webkit-scrollbar-thumb {
+            background: #C5BAFF;
+            border-radius: 4px;
+            transition: background 0.3s ease;
+          }
+          
+          .scrollbar-thin::-webkit-scrollbar-thumb:hover {
+            background: #001B55;
+          }
+        `}</style>
+
+        {/* Print Styles - Enhanced & Fixed */}
+        <style jsx global>{`
+          @media print {
+            /* Page setup */
+            @page {
+              size: A4;
+              margin: 12mm;
+            }
+            
+            /* Reset and base */
+            * {
+              -webkit-print-color-adjust: exact !important;
+              print-color-adjust: exact !important;
+            }
+            
+            body {
+              margin: 0;
+              padding: 0;
+            }
+            
+            /* Hide everything except print area */
+            body * {
+              visibility: hidden;
+            }
+            
+            .print-area,
+            .print-area * {
+              visibility: visible;
+            }
+            
+            /* Position print area */
+            .print-area {
+              position: absolute;
+              left: 0;
+              top: 0;
+              width: 100%;
+              background: white;
+              padding: 0;
+            }
+            
+            /* Hide screen-only elements */
+            .no-print,
+            .no-print * {
+              display: none !important;
+              visibility: hidden !important;
+            }
+            
+            /* Show print header */
+            .print-header {
+              display: flex !important;
+              visibility: visible !important;
+              margin-bottom: 12px;
+              padding-bottom: 8px;
+              border-bottom: 2px solid #001B55;
+            }
+            
+            /* Card styles for print */
+            .print-card {
+              page-break-inside: avoid;
+              break-inside: avoid;
+              margin-bottom: 6px;
+              border: 1px solid #e5e7eb !important;
+              border-radius: 6px;
+              overflow: hidden;
+            }
+            
+            /* Compact spacing */
+            .print-compact {
+              padding: 6px !important;
+            }
+            
+            /* Typography for print */
+            .print-text-sm {
+              font-size: 9pt !important;
+              line-height: 1.4 !important;
+            }
+            
+            .print-text-xs {
+              font-size: 8pt !important;
+              line-height: 1.3 !important;
+            }
+            
+            /* Headers in print */
+            .print-card h3 {
+              font-size: 9pt !important;
+              font-weight: 600 !important;
+              padding: 4px 6px !important;
+              margin: 0 !important;
+            }
+            
+            /* Grid layout for print */
+            .print-grid {
+              display: grid !important;
+              grid-template-columns: 1fr 1fr !important;
+              gap: 8px !important;
+            }
+            
+            /* Images for print */
+            img {
+              max-width: 100% !important;
+              height: auto !important;
+              page-break-inside: avoid;
+            }
+            
+            /* Badges */
+            .print-badge {
+              display: inline-block !important;
+              padding: 2px 6px !important;
+              border-radius: 4px !important;
+              font-size: 8pt !important;
+              font-weight: 500 !important;
+            }
+            
+            /* Avatar for print */
+            .print-avatar {
+              width: 48px !important;
+              height: 48px !important;
+              border-radius: 50% !important;
+              border: 2px solid #001B55 !important;
+            }
+          }
+          
+          @media screen {
+            .print-header {
+              display: none;
+            }
+          }
+        `}</style>
+
+        {/* Print Header - Professional Letterhead */}
+        <div className="print-header">
+          <div className="flex items-center justify-between w-full">
+            <div>
+              <h1 className="text-base font-bold text-[#001B55] mb-0">DPD PARTAI NASDEM SIDOARJO</h1>
+              <p className="text-[9pt] text-gray-600 mt-0.5">Biodata Anggota</p>
             </div>
-
-            {member.department === "kader" &&
-              member.region &&
-              member.subDepartment && (
-                <div className="bg-gradient-to-r from-blue-50 to-indigo-50 p-6 rounded-2xl border border-blue-200">
-                  <h3 className="font-semibold text-blue-800 text-lg mb-3 flex items-center gap-2">
-                    <Building className="h-5 w-5" /> Informasi DPRT
-                  </h3>
-                  {(() => {
-                    const dprtLeader = getDPRTLeader(
-                      member.region!,
-                      member.subDepartment!
-                    );
-                    const totalKaders = getKaderCount(
-                      member.region!,
-                      member.subDepartment!
-                    );
-                    return (
-                      <div className="space-y-3">
-                        {dprtLeader ? (
-                          <>
-                            <div className="flex items-start gap-3">
-                              <div className="w-10 h-10 bg-blue-100 rounded-full flex items-center justify-center">
-                                <UserCheck className="h-5 w-5 text-blue-600" />
-                              </div>
-                              <div>
-                                <p className="text-sm font-medium text-blue-800">
-                                  Ketua DPRT
-                                </p>
-                                <p className="text-blue-600 font-semibold">
-                                  {dprtLeader.name}
-                                </p>
-                              </div>
-                            </div>
-                            <div className="flex items-center gap-3">
-                              <div className="w-10 h-10 bg-green-100 rounded-full flex items-center justify-center">
-                                <Users className="h-5 w-5 text-green-600" />
-                              </div>
-                              <div>
-                                <p className="text-sm font-medium text-green-800">
-                                  Total Kader
-                                </p>
-                                <p className="text-green-600 font-semibold">
-                                  {totalKaders} orang di Desa{" "}
-                                  {member.subDepartment}
-                                </p>
-                              </div>
-                            </div>
-                          </>
-                        ) : (
-                          <div className="flex items-center gap-3">
-                            <div className="w-10 h-10 bg-orange-100 rounded-full flex items-center justify-center">
-                              <AlertTriangle className="h-5 w-5 text-orange-600" />
-                            </div>
-                            <div>
-                              <p className="text-orange-800 font-medium">
-                                Belum ada Ketua DPRT
-                              </p>
-                              <p className="text-sm text-orange-600">
-                                Desa {member.subDepartment} perlu ditugaskan
-                                Ketua DPRT
-                              </p>
-                            </div>
-                          </div>
-                        )}
-                      </div>
-                    );
-                  })()}
-                </div>
-              )}
-
-            {member.department === "dprt" &&
-              member.region &&
-              member.subDepartment && (
-                <div className="bg-gradient-to-r from-amber-50 to-orange-50 p-6 rounded-2xl border border-amber-200">
-                  <h3 className="font-semibold text-amber-800 text-lg mb-3 flex items-center gap-2">
-                    <Users className="h-5 w-5" /> Kader Dibawahi
-                  </h3>
-                  {(() => {
-                    const kaderCount = members.filter(
-                      (m) =>
-                        m.department === "kader" &&
-                        m.region === member.region &&
-                        m.subDepartment === member.subDepartment
-                    ).length;
-                    return (
-                      <div className="flex items-center justify-between">
-                        <div>
-                          <p className="text-amber-700 font-medium">
-                            {kaderCount > 0 ? (
-                              <>{kaderCount} kader aktif di bawah pengawasan</>
-                            ) : (
-                              <>Belum ada kader yang diawasi</>
-                            )}
-                          </p>
-                          <p className="text-sm text-amber-600">
-                            Desa {member.subDepartment}, Kec. {member.region}
-                          </p>
-                        </div>
-                        <Badge className="bg-amber-100 text-amber-800 hover:bg-amber-200">
-                          Lihat detail
-                        </Badge>
-                      </div>
-                    );
-                  })()}
-                </div>
-              )}
-
-            <div className="space-y-4 bg-slate-50/50 p-6 rounded-2xl">
-              <h3 className="font-semibold text-slate-800 text-lg mb-4">
-                Informasi Kontak
-              </h3>
-              <div className="space-y-3">
-                <div className="flex items-center gap-3">
-                  <div className="w-10 h-10 bg-blue-100 rounded-full flex items-center justify-center">
-                    <Mail className="h-5 w-5 text-blue-600" />
-                  </div>
-                  <div>
-                    <p className="text-sm font-medium text-slate-600">Email</p>
-                    <p className="text-slate-800">{member.email}</p>
-                  </div>
-                </div>
-                <div className="flex items-center gap-3">
-                  <div className="w-10 h-10 bg-green-100 rounded-full flex items-center justify-center">
-                    <Phone className="h-5 w-5 text-green-600" />
-                  </div>
-                  <div>
-                    <p className="text-sm font-medium text-slate-600">
-                      Telepon
-                    </p>
-                    <p className="text-slate-800">{member.phone}</p>
-                  </div>
-                </div>
-                <div className="flex items-start gap-3">
-                  <div className="w-10 h-10 bg-purple-100 rounded-full flex items-center justify-center mt-1">
-                    <MapPin className="h-5 w-5 text-purple-600" />
-                  </div>
-                  <div>
-                    <p className="text-sm font-medium text-slate-600">Alamat</p>
-                    <p className="text-slate-800 leading-relaxed">
-                      {member.address}
-                    </p>
-                  </div>
-                </div>
-              </div>
+            <div className="text-right">
+              <p className="text-[8pt] text-gray-600">
+                Dicetak: {new Date().toLocaleDateString("id-ID", {
+                  day: "2-digit",
+                  month: "long",
+                  year: "numeric"
+                })}
+              </p>
             </div>
           </div>
-
-          <div className="space-y-6">
-            <div className="space-y-4">
-              <h3 className="font-semibold text-slate-800 text-lg">
-                Detail Informasi
-              </h3>
-              <div className="grid grid-cols-1 gap-4">
-                <div className="bg-slate-50/50 p-4 rounded-xl">
-                  <p className="text-sm font-medium text-slate-600 mb-1">
-                    Tanggal Bergabung
-                  </p>
-                  <p className="text-slate-800 font-semibold">
-                    {new Date(member.joinDate).toLocaleDateString("id-ID", {
-                      weekday: "long",
-                      year: "numeric",
-                      month: "long",
-                      day: "numeric",
-                    })}
-                  </p>
+        </div>
+        
+        {/* Modern Flat Header - Clean & Organized */}
+        <div className="no-print bg-gradient-to-r from-white to-[#F8FBFF] border-b-2 border-[#E8F9FF] transition-all duration-300">
+          <div className="px-6 py-5">
+            <div className="flex items-center justify-between">
+              {/* Left Section - Avatar & Member Info */}
+              <div className="flex items-center gap-4 flex-1 min-w-0">
+                {/* Avatar with Ring */}
+                <div className="relative group">
+                  <div className="absolute -inset-1 bg-gradient-to-r from-[#001B55] to-[#FF9C04] rounded-full opacity-0 group-hover:opacity-20 transition-opacity duration-300 blur-sm"></div>
+                  <Avatar className="relative w-16 h-16 ring-2 ring-[#E8F9FF] ring-offset-2 transition-all duration-300 group-hover:ring-[#C5BAFF]">
+                    <AvatarImage src={member.photo} className="object-cover transition-transform duration-300 group-hover:scale-105" />
+                    <AvatarFallback className="bg-gradient-to-br from-[#001B55] to-[#003875] text-white text-lg font-bold">
+                      {member.name.split(" ").map((n) => n[0]).join("").substring(0, 2)}
+                    </AvatarFallback>
+                  </Avatar>
+                  {/* Status Indicator */}
+                  <div className={`absolute -bottom-0.5 -right-0.5 w-4 h-4 rounded-full border-2 border-white shadow-sm transition-all duration-300 ${member.status === "active" ? "bg-green-500 hover:bg-green-600" : "bg-gray-400 hover:bg-gray-500"}`}></div>
                 </div>
-                <div className="bg-slate-50/50 p-4 rounded-xl">
-                  <p className="text-sm font-medium text-slate-600 mb-1">
-                    Status
-                  </p>
-                  <Badge
-                    variant={
-                      member.status === "active" ? "default" : "secondary"
-                    }
-                    className="mt-1"
-                  >
-                    {member.status === "active" ? "Aktif" : "Tidak Aktif"}
-                  </Badge>
-                </div>
-              </div>
-              <div className="bg-slate-50/50 p-4 rounded-xl">
-                <p className="text-sm font-medium text-slate-600 mb-2">
-                  Bio
-                </p>
-                <p className="text-slate-800 leading-relaxed">
-                  {member.description}
-                </p>
-              </div>
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                <div className="bg-slate-50/50 p-4 rounded-xl">
-                  <p className="text-sm font-medium text-slate-600 mb-1">
-                    NIK
-                  </p>
-                  <p className="text-slate-800 font-semibold">
-                    {member.nik || "Tidak tersedia"}
-                  </p>
-                </div>
-                <div className="bg-slate-50/50 p-4 rounded-xl">
-                  <p className="text-sm font-medium text-slate-600 mb-1">
-                    No. KTA
-                  </p>
-                  <p className="text-slate-800 font-semibold">
-                    {member.ktaNumber || "Tidak tersedia"}
-                  </p>
-                </div>
-                <div className="bg-slate-50/50 p-4 rounded-xl">
-                  <p className="text-sm font-medium text-slate-600 mb-1">
-                    Jumlah Keluarga
-                  </p>
-                  <p className="text-slate-800 font-semibold">
-                    {member.familyCount || "Tidak tersedia"} orang
-                  </p>
-                </div>
-                <div className="bg-slate-50/50 p-4 rounded-xl">
-                  <p className="text-sm font-medium text-slate-600 mb-1">
-                    Status Perkawinan
-                  </p>
-                  <p className="text-slate-800 font-semibold">
-                    {member.maritalStatus || "Tidak tersedia"}
-                  </p>
-                </div>
-              </div>
-              <div className="bg-slate-50/50 p-4 rounded-xl">
-                <p className="text-sm font-medium text-slate-600 mb-2">
-                  Daftar Manfaat/Bantuan
-                </p>
-                <ul className="space-y-2">
-                  {member.benefits && member.benefits.length > 0 ? (
-                    member.benefits.map((benefit, i) => (
-                      <li
-                        key={i}
-                        className="flex items-center gap-2 text-slate-700"
-                      >
-                        <div className="w-2 h-2 bg-blue-500 rounded-full" />
-                        {benefit}
-                      </li>
-                    ))
-                  ) : (
-                    <li className="text-slate-500 italic">Belum ada data manfaat/bantuan</li>
-                  )}
-                </ul>
-              </div>
-              {member.achievements?.length ? (
-                <div className="bg-gradient-to-br from-blue-50/50 to-orange-50/50 p-4 rounded-xl">
-                  <div className="flex items-center gap-2 mb-3">
-                    <Trophy className="h-5 w-5 text-yellow-600" />
-                    <p className="text-sm font-medium text-slate-600">
-                      Pencapaian
-                    </p>
+                
+                {/* Member Info */}
+                <div className="flex-1 min-w-0">
+                  <h2 className="text-xl font-bold text-[#001B55] mb-1 truncate transition-colors duration-300 hover:text-[#003875]">{member.name}</h2>
+                  <p className="text-sm text-gray-600 mb-2 truncate">{member.position}</p>
+                  <div className="flex items-center gap-2 flex-wrap">
+                    <Badge variant="outline" className={`${departmentConfig[member.department]?.className} border-0 px-3 py-1 text-xs font-semibold shadow-sm transition-all duration-200 hover:shadow-md`}>
+                      {departmentConfig[member.department]?.label}
+                    </Badge>
+                    <Badge variant="outline" className={`border-0 px-3 py-1 text-xs font-semibold shadow-sm transition-all duration-200 hover:shadow-md ${member.status === "active" ? "bg-green-50 text-green-700 hover:bg-green-100" : "bg-gray-100 text-gray-600 hover:bg-gray-200"}`}>
+                      {member.status === "active" ? "Aktif" : "Tidak Aktif"}
+                    </Badge>
                   </div>
-                  <ul className="space-y-2">
-                    {member.achievements.map((a, i) => (
-                      <li
-                        key={i}
-                        className="flex items-center gap-2 text-slate-700"
-                      >
-                        <div className="w-2 h-2 bg-yellow-500 rounded-full" />{" "}
-                        {a}
-                      </li>
-                    ))}
-                  </ul>
                 </div>
-              ) : null}
-              {member.lastActivity && (
-                <div className="bg-green-50/50 p-4 rounded-xl">
-                  <div className="flex items-center gap-2 mb-2">
-                    <Clock className="h-5 w-5 text-green-600" />
-                    <p className="text-sm font-medium text-slate-600">
-                      Aktivitas Terakhir
-                    </p>
-                  </div>
-                  <p className="text-slate-700">{member.lastActivity}</p>
-                </div>
-              )}
+              </div>
+              
+              {/* Right Section - Action Buttons */}
+              <div className="flex items-center gap-3 ml-4">
+                {/* Print Button */}
+                <Button
+                  onClick={handlePrint}
+                  size="sm"
+                  className="bg-gradient-to-r from-[#E8F9FF] to-[#C5BAFF] hover:from-[#C5BAFF] hover:to-[#E8F9FF] text-[#001B55] border-0 rounded-lg px-4 py-2 gap-2 transition-all duration-300 font-medium shadow-md hover:shadow-lg transform hover:scale-105"
+                >
+                  <Printer className="w-4 h-4" />
+                  Cetak
+                </Button>
+                
+                {/* Close Button */}
+                <button
+                  onClick={() => onOpenChange(false)}
+                  className="w-10 h-10 rounded-lg bg-gradient-to-r from-gray-100 to-gray-200 hover:from-gray-200 hover:to-gray-300 flex items-center justify-center transition-all duration-300 group shadow-sm hover:shadow-md transform hover:scale-105"
+                  aria-label="Tutup dialog"
+                >
+                  <X className="w-5 h-5 text-gray-600 group-hover:text-gray-900 transition-colors duration-300" />
+                </button>
+              </div>
             </div>
           </div>
         </div>
 
-        {member.department === "dprt" &&
-          member.region &&
-          member.subDepartment && (
-            <div className="mt-8 pt-6 border-t border-slate-200/50">
-              <h3 className="font-bold text-slate-800 text-xl mb-4 flex items-center gap-2">
-                <UserCheck className="h-6 w-6 text-amber-600" /> Data Kader{" "}
-                {member.subDepartment}
-              </h3>
-              {(() => {
-                const kaderList = members.filter(
-                  (m) =>
-                    m.department === "kader" &&
-                    m.region === member.region &&
-                    m.subDepartment === member.subDepartment
-                );
-                if (!kaderList.length) {
-                  return (
-                    <div className="bg-white p-6 rounded-lg border border-slate-200 text-center">
-                      <div className="mx-auto w-16 h-16 bg-orange-50 rounded-full flex items-center justify-center mb-3">
-                        <AlertTriangle className="h-8 w-8 text-orange-400" />
+        {/* Scrollable Content - Compact */}
+        <div className="overflow-y-auto max-h-[calc(90vh-160px)] print-area scrollbar-thin scrollbar-track-gray-100 scrollbar-thumb-[#C5BAFF] hover:scrollbar-thumb-[#001B55] transition-all duration-300">
+          <div className="p-6 space-y-5">
+            
+            {/* Print Profile Header - Simple */}
+            <div className="hidden print:block mb-4 pb-4 border-b border-gray-300">
+              <div className="flex items-start gap-4">
+                <img 
+                  src={member.photo} 
+                  alt={member.name}
+                  className="print-avatar"
+                />
+                <div className="flex-1">
+                  <h2 className="text-lg font-bold text-[#001B55] mb-1">{member.name}</h2>
+                  <p className="text-sm text-gray-700 mb-2">{member.position}</p>
+                  <div className="flex gap-2 flex-wrap">
+                    <span className="print-badge" style={{ background: '#001B55', color: 'white' }}>
+                      {departmentConfig[member.department]?.label}
+                    </span>
+                    <span className="print-badge" style={{ 
+                      background: member.status === 'active' ? '#10b981' : '#6b7280',
+                      color: 'white'
+                    }}>
+                      {member.status === "active" ? "Aktif" : "Tidak Aktif"}
+                    </span>
+                  </div>
+                </div>
+              </div>
+            </div>
+            
+            {/* Main Content Grid - 2 Columns */}
+            <div className="grid grid-cols-1 lg:grid-cols-2 gap-4 print-grid">
+              
+              {/* Left Column */}
+              <div className="space-y-3">
+                
+                {/* Data Identitas - Compact */}
+                <div className="bg-white rounded-xl border border-gray-200 overflow-hidden print-card print-compact shadow-sm hover:shadow-md transition-all duration-300">
+                  <div className="bg-gradient-to-r from-[#E8F9FF] to-[#F0F6FF] px-4 py-3 border-b border-gray-200">
+                    <h3 className="font-semibold text-[#001B55] text-sm flex items-center gap-2">
+                      <CreditCard className="w-4 h-4 text-[#001B55]" />
+                      Data Identitas
+                    </h3>
+                  </div>
+                  <div className="p-4 space-y-3">
+                    <div className="grid grid-cols-2 gap-3">
+                      <div>
+                        <p className="text-[10px] font-medium text-gray-500 mb-0.5">NIK</p>
+                        <p className="text-xs font-semibold text-[#001B55]">{member.nik || "-"}</p>
                       </div>
-                      <p className="text-slate-700 font-medium mb-1">
-                        Belum ada kader di Desa {member.subDepartment}
-                      </p>
-                      <p className="text-sm text-slate-600 mb-4">
-                        Segera lakukan rekrutmen kader
-                      </p>
-                      <Button
-                        size="sm"
-                        className="bg-gradient-to-r from-[#001B55] to-[#003875] text-white"
-                      >
-                        Tambah Kader Baru
-                      </Button>
+                      <div>
+                        <p className="text-[10px] font-medium text-gray-500 mb-0.5">No. KTA</p>
+                        <p className="text-xs font-semibold text-[#001B55]">{member.ktaNumber || "-"}</p>
+                      </div>
                     </div>
-                  );
-                }
-                return (
-                  <div className="bg-white rounded-lg overflow-hidden border border-slate-200 shadow-sm">
-                    <table className="min-w-full divide-y divide-slate-200">
-                      <thead className="bg-slate-50">
-                        <tr>
-                          {[
-                            "No",
-                            "Nama",
-                            "Tanggal Lahir",
-                            "Desa Bertugas",
-                            "Status",
-                          ].map((h) => (
-                            <th
-                              key={h}
-                              className="px-4 py-3 text-left text-xs font-medium text-slate-700 uppercase tracking-wider"
-                            >
-                              {h}
-                            </th>
-                          ))}
-                        </tr>
-                      </thead>
-                      <tbody className="bg-white divide-y divide-slate-200">
-                        {kaderList.map((k, i) => (
-                          <tr
-                            key={k.id}
-                            className={
-                              i % 2 === 0 ? "bg-slate-50/30" : "bg-white"
-                            }
-                          >
-                            <td className="px-4 py-3 text-sm text-slate-700">
-                              {i + 1}
-                            </td>
-                            <td className="px-4 py-3">
-                              <div className="flex items-center">
-                                <div className="h-8 w-8 rounded-full bg-blue-100 mr-3 flex items-center justify-center">
-                                  <Users className="h-4 w-4 text-blue-600" />
-                                </div>
-                                <div className="text-sm font-medium text-slate-800">
-                                  {k.name}
-                                </div>
-                              </div>
-                            </td>
-                            <td className="px-4 py-3 text-sm text-slate-600">
-                              {new Date(
-                                new Date("1970-01-01").getTime() +
-                                  parseInt(k.id) * 10000000000
-                              ).toLocaleDateString("id-ID", {
-                                day: "numeric",
-                                month: "long",
-                                year: "numeric",
-                              })}
-                            </td>
-                            <td className="px-4 py-3 text-sm text-slate-600">
-                              Desa {k.subDepartment}
-                            </td>
-                            <td className="px-4 py-3">
-                              <span
-                                className={`px-2 inline-flex text-xs leading-5 font-semibold rounded-full ${
-                                  k.status === "active"
-                                    ? "bg-green-100 text-green-800"
-                                    : "bg-slate-100 text-slate-800"
-                                }`}
-                              >
-                                {k.status === "active"
-                                  ? "Aktif"
-                                  : "Tidak Aktif"}
-                              </span>
-                            </td>
-                          </tr>
-                        ))}
-                      </tbody>
-                    </table>
-                    <div className="px-4 py-3 bg-slate-50 border-t border-slate-200 flex justify-between items-center">
-                      <span className="text-sm text-slate-600 font-medium">
-                        Total {kaderList.length} kader
-                      </span>
-                      <Button
-                        size="sm"
-                        className="bg-gradient-to-r from-[#001B55] to-[#003875] text-white"
-                      >
-                        Tambah Kader Baru
-                      </Button>
+                    <div className="pt-2 border-t border-gray-100">
+                      <p className="text-[10px] font-medium text-gray-500 mb-0.5">Tanggal Bergabung</p>
+                      <div className="flex items-center gap-1.5">
+                        <Calendar className="w-3.5 h-3.5 text-[#001B55]" />
+                        <p className="text-xs font-medium text-gray-700">
+                          {new Date(member.joinDate).toLocaleDateString("id-ID", {
+                            day: "numeric",
+                            month: "long",
+                            year: "numeric",
+                          })}
+                        </p>
+                      </div>
                     </div>
                   </div>
-                );
-              })()}
-            </div>
-          )}
+                </div>
 
-        <div className="flex justify-end gap-4 mt-8 pt-6 border-t border-slate-200/50">
+                {/* Kontak - Compact */}
+                <div className="bg-white rounded-xl border border-gray-200 overflow-hidden print-card print-compact shadow-sm hover:shadow-md transition-all duration-300">
+                  <div className="bg-gradient-to-r from-[#E8F9FF] to-[#F0F6FF] px-4 py-3 border-b border-gray-200">
+                    <h3 className="font-semibold text-[#001B55] text-sm flex items-center gap-2">
+                      <Phone className="w-4 h-4 text-[#001B55]" />
+                      Informasi Kontak
+                    </h3>
+                  </div>
+                  <div className="p-4 space-y-3">
+                    <div>
+                      <div className="flex items-center gap-1.5 mb-0.5">
+                        <Mail className="w-3.5 h-3.5 text-[#001B55]" />
+                        <p className="text-[10px] font-medium text-gray-500">Email</p>
+                      </div>
+                      <p className="text-xs font-medium text-gray-700 ml-5">{member.email}</p>
+                    </div>
+                    <div className="pt-2 border-t border-gray-100">
+                      <div className="flex items-center gap-1.5 mb-0.5">
+                        <Phone className="w-3.5 h-3.5 text-[#001B55]" />
+                        <p className="text-[10px] font-medium text-gray-500">Telepon</p>
+                      </div>
+                      <p className="text-xs font-medium text-gray-700 ml-5">{member.phone}</p>
+                    </div>
+                    <div className="pt-2 border-t border-gray-100">
+                      <div className="flex items-center gap-1.5 mb-0.5">
+                        <MapPin className="w-3.5 h-3.5 text-[#001B55]" />
+                        <p className="text-[10px] font-medium text-gray-500">Alamat Lengkap</p>
+                      </div>
+                      <p className="text-xs font-medium text-gray-700 leading-relaxed ml-5">
+                        {member.address}
+                      </p>
+                    </div>
+                  </div>
+                </div>
+
+                {/* Data Keluarga - Compact */}
+                <div className="bg-white rounded-xl border border-gray-200 overflow-hidden print-card print-compact shadow-sm hover:shadow-md transition-all duration-300">
+                  <div className="bg-gradient-to-r from-[#E8F9FF] to-[#F0F6FF] px-4 py-3 border-b border-gray-200">
+                    <h3 className="font-semibold text-[#001B55] text-sm flex items-center gap-2">
+                      <Heart className="w-4 h-4 text-[#001B55]" />
+                      Data Keluarga
+                    </h3>
+                  </div>
+                  <div className="p-4">
+                    <div className="grid grid-cols-2 gap-3">
+                      <div>
+                        <p className="text-[10px] font-medium text-gray-500 mb-0.5">Status Perkawinan</p>
+                        <p className="text-xs font-semibold text-gray-700">{member.maritalStatus || "-"}</p>
+                      </div>
+                      <div>
+                        <p className="text-[10px] font-medium text-gray-500 mb-0.5">Jumlah Keluarga</p>
+                        <p className="text-xs font-semibold text-gray-700">
+                          {member.familyCount ? `${member.familyCount} orang` : "-"}
+                        </p>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+
+              </div>
+
+              {/* Right Column */}
+              <div className="space-y-3">
+                
+                {/* Biodata & Deskripsi - Compact */}
+                <div className="bg-white rounded-xl border border-gray-200 overflow-hidden print-card print-compact shadow-sm hover:shadow-md transition-all duration-300">
+                  <div className="bg-gradient-to-r from-[#E8F9FF] to-[#F0F6FF] px-4 py-3 border-b border-gray-200">
+                    <h3 className="font-semibold text-[#001B55] text-sm flex items-center gap-2">
+                      <User className="w-4 h-4 text-[#001B55]" />
+                      Biodata & Deskripsi
+                    </h3>
+                  </div>
+                  <div className="p-4">
+                    <p className="text-xs text-gray-700 leading-relaxed whitespace-pre-wrap print-text-sm">
+                      {member.description || "Belum ada deskripsi"}
+                    </p>
+                  </div>
+                </div>
+
+                {/* Program & Bantuan - Compact */}
+                <div className="bg-white rounded-xl border border-gray-200 overflow-hidden print-card print-compact shadow-sm hover:shadow-md transition-all duration-300">
+                  <div className="bg-gradient-to-r from-[#E8F9FF] to-[#F0F6FF] px-4 py-3 border-b border-gray-200">
+                    <h3 className="font-semibold text-[#001B55] text-sm flex items-center gap-2">
+                      <Briefcase className="w-4 h-4 text-[#001B55]" />
+                      Program & Bantuan
+                    </h3>
+                  </div>
+                  <div className="p-4">
+                    {member.benefits && member.benefits.length > 0 ? (
+                      <ul className="space-y-1.5">
+                        {member.benefits.map((benefit, i) => (
+                          <li
+                            key={i}
+                            className="flex items-start gap-2 p-2 bg-[#E8F9FF] rounded-md"
+                          >
+                            <div className="w-1 h-1 bg-[#001B55] rounded-full mt-1.5 flex-shrink-0" />
+                            <span className="text-xs text-gray-700 font-medium print-text-xs">{benefit}</span>
+                          </li>
+                        ))}
+                      </ul>
+                    ) : (
+                      <p className="text-gray-500 italic text-center py-2 text-xs">Belum ada data</p>
+                    )}
+                  </div>
+                </div>
+
+                {/* Foto KTP - Enhanced */}
+                <div className="bg-white rounded-xl border border-gray-200 overflow-hidden print-card print-compact shadow-sm hover:shadow-md transition-all duration-300">
+                  <div className="bg-gradient-to-r from-[#E8F9FF] to-[#F0F6FF] px-4 py-3 border-b border-gray-200">
+                    <h3 className="font-semibold text-[#001B55] text-sm flex items-center gap-2">
+                      <CreditCard className="w-4 h-4 text-[#001B55]" />
+                      Foto KTP
+                    </h3>
+                  </div>
+                  <div className="p-4">
+                    {member.ktpPhotoUrl ? (
+                      <div className="relative rounded-lg overflow-hidden border border-gray-300 shadow-sm">
+                        <img
+                          src={member.ktpPhotoUrl}
+                          alt="Foto KTP"
+                          className="w-full h-auto max-h-48 object-contain bg-gray-50"
+                        />
+                      </div>
+                    ) : (
+                      <div className="flex items-center justify-center py-6 bg-gray-50 rounded-lg border-2 border-dashed border-gray-300">
+                        <div className="text-center">
+                          <CreditCard className="w-6 h-6 text-gray-400 mx-auto mb-1.5" />
+                          <p className="text-xs text-gray-500 italic">Belum ada foto KTP</p>
+                        </div>
+                      </div>
+                    )}
+                  </div>
+                </div>
+
+                {/* Pencapaian - Compact */}
+                {member.achievements && member.achievements.length > 0 && (
+                  <div className="bg-white rounded-xl border border-gray-200 overflow-hidden print-card print-compact shadow-sm hover:shadow-md transition-all duration-300">
+                    <div className="bg-gradient-to-r from-[#E8F9FF] to-[#F0F6FF] px-4 py-3 border-b border-gray-200">
+                      <h3 className="font-semibold text-[#001B55] text-sm flex items-center gap-2">
+                        <Trophy className="w-4 h-4 text-[#001B55]" />
+                        Pencapaian & Prestasi
+                      </h3>
+                    </div>
+                    <div className="p-4">
+                      <ul className="space-y-1.5">
+                        {member.achievements.map((achievement, i) => (
+                          <li
+                            key={i}
+                            className="flex items-start gap-2 p-2 bg-yellow-50 rounded-md"
+                          >
+                            <Trophy className="w-3 h-3 text-yellow-600 mt-0.5 flex-shrink-0" />
+                            <span className="text-xs text-gray-700 font-medium print-text-xs">{achievement}</span>
+                          </li>
+                        ))}
+                      </ul>
+                    </div>
+                  </div>
+                )}
+
+                {/* Aktivitas Terakhir - Compact */}
+                {member.lastActivity && (
+                  <div className="bg-white rounded-xl border border-gray-200 overflow-hidden print-card print-compact shadow-sm hover:shadow-md transition-all duration-300">
+                    <div className="bg-gradient-to-r from-[#E8F9FF] to-[#F0F6FF] px-4 py-3 border-b border-gray-200">
+                      <h3 className="font-semibold text-[#001B55] text-sm flex items-center gap-2">
+                        <Clock className="w-4 h-4 text-[#001B55]" />
+                        Aktivitas Terakhir
+                      </h3>
+                    </div>
+                    <div className="p-4">
+                      <p className="text-xs text-gray-700 leading-relaxed print-text-sm">{member.lastActivity}</p>
+                    </div>
+                  </div>
+                )}
+
+              </div>
+            </div>
+
+            {/* Informasi Organisasi - DPRT Info for Kader */}
+            {member.department === "kader" &&
+              member.region &&
+              member.subDepartment && (
+                <div className="bg-white rounded-xl border border-gray-200 overflow-hidden mt-4 print-card print-compact shadow-sm hover:shadow-md transition-all duration-300">
+                  <div className="bg-gradient-to-r from-[#E8F9FF] to-[#F0F6FF] px-4 py-3 border-b border-gray-200">
+                    <h3 className="font-semibold text-[#001B55] text-sm flex items-center gap-2">
+                      <Building className="w-4 h-4 text-[#001B55]" />
+                      Informasi DPRT
+                    </h3>
+                  </div>
+                  <div className="p-4">
+                    {(() => {
+                      const dprtLeader = getDPRTLeader(
+                        member.region!,
+                        member.subDepartment!
+                      );
+                      const totalKaders = getKaderCount(
+                        member.region!,
+                        member.subDepartment!
+                      );
+                      return (
+                        <div className="space-y-3">
+                          {dprtLeader ? (
+                            <>
+                              <div className="flex items-center gap-3 p-3 bg-[#E8F9FF] rounded-lg">
+                                <div className="w-10 h-10 bg-[#001B55] rounded-lg flex items-center justify-center flex-shrink-0">
+                                  <UserCheck className="h-5 w-5 text-white" />
+                                </div>
+                                <div className="min-w-0 flex-1">
+                                  <p className="text-xs font-medium text-gray-500">
+                                    Ketua DPRT
+                                  </p>
+                                  <p className="text-sm text-[#001B55] font-bold truncate">
+                                    {dprtLeader.name}
+                                  </p>
+                                </div>
+                              </div>
+                              <div className="flex items-center gap-3 p-3 bg-green-50 rounded-lg">
+                                <div className="w-10 h-10 bg-green-500 rounded-lg flex items-center justify-center flex-shrink-0">
+                                  <Users className="h-5 w-5 text-white" />
+                                </div>
+                                <div>
+                                  <p className="text-xs font-medium text-gray-500">
+                                    Total Kader
+                                  </p>
+                                  <p className="text-sm text-gray-700 font-bold">
+                                    {totalKaders} orang
+                                  </p>
+                                  <p className="text-xs text-gray-600">Desa {member.subDepartment}</p>
+                                </div>
+                              </div>
+                            </>
+                          ) : (
+                            <div className="flex items-center gap-3 p-3 bg-orange-50 rounded-lg border border-orange-200">
+                              <div className="w-10 h-10 bg-orange-500 rounded-lg flex items-center justify-center flex-shrink-0">
+                                <AlertTriangle className="h-5 w-5 text-white" />
+                              </div>
+                              <div className="min-w-0 flex-1">
+                                <p className="text-orange-900 font-bold text-sm truncate">
+                                  Belum ada Ketua DPRT
+                                </p>
+                                <p className="text-xs text-orange-700">
+                                  Desa {member.subDepartment} perlu ditugaskan Ketua DPRT
+                                </p>
+                              </div>
+                            </div>
+                          )}
+                        </div>
+                      );
+                    })()}
+                  </div>
+                </div>
+              )}
+
+            {/* Kader yang Dibawahi - untuk DPRT */}
+            {member.department === "dprt" &&
+              member.region &&
+              member.subDepartment && (
+                <div className="bg-white rounded-xl border border-gray-200 overflow-hidden mt-4 print-card print-compact shadow-sm hover:shadow-md transition-all duration-300">
+                  <div className="bg-gradient-to-r from-[#E8F9FF] to-[#F0F6FF] px-4 py-3 border-b border-gray-200">
+                    <h3 className="font-semibold text-[#001B55] text-sm flex items-center gap-2">
+                      <Users className="w-4 h-4 text-[#001B55]" />
+                      Kader Dibawahi
+                    </h3>
+                  </div>
+                  <div className="p-4">
+                    {(() => {
+                      const kaderCount = members.filter(
+                        (m) =>
+                          m.department === "kader" &&
+                          m.region === member.region &&
+                          m.subDepartment === member.subDepartment
+                      ).length;
+                      return (
+                        <div className="flex items-center justify-between p-3 bg-amber-50 rounded-lg">
+                          <div className="min-w-0 flex-1">
+                            <p className="text-amber-900 font-bold text-sm truncate">
+                              {kaderCount > 0 ? (
+                                <>{kaderCount} kader aktif</>
+                              ) : (
+                                <>Belum ada kader yang diawasi</>
+                              )}
+                            </p>
+                            <p className="text-xs text-amber-700 mt-0.5 truncate">
+                              Desa {member.subDepartment}, Kec. {member.region}
+                            </p>
+                          </div>
+                          <Badge className="bg-amber-500 text-white hover:bg-amber-600 px-3 py-1 text-sm">
+                            {kaderCount}
+                          </Badge>
+                        </div>
+                      );
+                    })()}
+                  </div>
+                </div>
+              )}
+
+          </div>
+        </div>
+
+        {/* Footer Actions - Compact Modern */}
+        <div className="no-print bg-gradient-to-r from-white to-[#F8FBFF] flex items-center justify-between px-6 py-4 border-t border-gray-200 transition-all duration-300">
           <Button
-            variant="secondary"
+            variant="ghost"
             onClick={() => onOpenChange(false)}
-            className="px-6 text-primary"
+            className="text-gray-600 hover:text-gray-900 hover:bg-gray-100 text-sm h-10 px-4 transition-all duration-300 hover:shadow-sm"
           >
             Tutup
           </Button>
-          <Button
-            className="px-6 bg-gradient-to-r from-[#001B55] to-[#003875] text-white"
-            onClick={() => router.push(`/admin/organizations/edit/${member.id}`)}
-          >
-            Edit Profile
-          </Button>
+          <div className="flex gap-3">
+            <Button
+              variant="outline"
+              onClick={() => router.push(`/admin/organizations/edit/${member.id}`)}
+              className="border-gray-300 text-gray-700 hover:bg-gray-50 text-sm h-10 px-4 transition-all duration-300 hover:shadow-sm"
+            >
+              Edit
+            </Button>
+            <Button
+              onClick={handlePrint}
+              className="bg-gradient-to-r from-[#001B55] to-[#003875] hover:from-[#003875] hover:to-[#001B55] text-white rounded-lg shadow-md hover:shadow-lg text-sm h-10 px-4 transition-all duration-300 transform hover:scale-105"
+            >
+              <Printer className="w-4 h-4 mr-2" />
+              Cetak PDF
+            </Button>
+          </div>
         </div>
       </DialogContent>
     </Dialog>

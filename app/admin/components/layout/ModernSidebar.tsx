@@ -20,6 +20,9 @@ import {
   Sparkles,
   ClipboardList,
   HandHeart,
+  Clock,
+  GraduationCap,
+  UserCheck,
 } from "lucide-react";
 
 import { SafeNavLink } from "./SafeNavLink";
@@ -102,6 +105,26 @@ const menuItems = [
     url: "/admin/user",
     icon: UserPlus,
     ariaLabel: "Kelola pengguna",
+  },
+  {
+    title: "Pending Request",
+    icon: Clock,
+    isCollapsible: true,
+    ariaLabel: "Menu permintaan yang menunggu persetujuan",
+    subItems: [
+      {
+        title: "PIP (Beasiswa)",
+        url: "/admin/pending-requests/pip",
+        icon: GraduationCap,
+        ariaLabel: "Kelola pendaftaran beasiswa PIP",
+      },
+      {
+        title: "Member Regist",
+        url: "/admin/pending-requests/member-regist",
+        icon: UserCheck,
+        ariaLabel: "Kelola pendaftaran anggota baru",
+      },
+    ],
   },
   {
     title: "Statistik Pemilu",

@@ -2,6 +2,7 @@ import { Button } from "@/components/ui/button"
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
 import { Badge } from "@/components/ui/badge"
 import { Progress } from "@/components/ui/progress"
+import Link from "next/link"
 import {
   GraduationCap,
   Sprout,
@@ -13,6 +14,7 @@ import {
   Target,
   CheckCircle,
   Clock,
+  FileText,
 } from "lucide-react"
 import NasdemHeader from "@/components/nasdem-header"
 import NasdemFooter from "@/components/nasdem-footer"
@@ -221,6 +223,21 @@ export default function ProgramPage() {
                         </div>
                       </div>
                     </div>
+
+                    {/* Tombol Daftar untuk Pendidikan Inklusif */}
+                    {program.title === "Pendidikan Inklusif" && (
+                      <div className="mt-6 pt-6 border-t border-gray-200">
+                        <Link href="/program/pendidikan-inklusif/daftar">
+                          <Button className="w-full bg-gradient-to-r from-nasdem-orange to-nasdem-orange/90 hover:from-nasdem-orange/90 hover:to-nasdem-orange text-white font-semibold py-3 rounded-lg transition-all duration-300 shadow-lg hover:shadow-xl transform hover:scale-[1.02]">
+                            <FileText className="mr-2 h-5 w-5" />
+                            Daftar Program Pendidikan Inklusif (PIP)
+                          </Button>
+                        </Link>
+                        <p className="text-xs text-gray-500 text-center mt-2">
+                          Tersedia untuk siswa kurang mampu dan berprestasi
+                        </p>
+                      </div>
+                    )}
                   </CardContent>
                 </Card>
               )

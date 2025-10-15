@@ -10,7 +10,15 @@ import {
 } from "@/components/ui/select";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
-import { BarChart3, Calendar, RefreshCw } from "lucide-react";
+import {
+  Dialog,
+  DialogContent,
+  DialogDescription,
+  DialogHeader,
+  DialogTitle,
+  DialogTrigger,
+} from "@/components/ui/dialog";
+import { BarChart3, Calendar, RefreshCw, GitCompare, X } from "lucide-react";
 import { AdminLayout } from "../components/layout/AdminLayout";
 import { StatistikChartsSection } from "../components/statistik/StatistikChartsSection";
 import { StatistikDataTable } from "../components/statistik/StatistikDataTable";
@@ -54,7 +62,21 @@ interface TableData {
 
 function StatistikPemiluPage() {
   const [loading, setLoading] = useState(false);
+  const [isCompareMode, setIsCompareMode] = useState(false);
+  const [compareDialogOpen, setCompareDialogOpen] = useState(false);
+  
   const [filters, setFilters] = useState<FilterState>({
+    tahun: "2024",
+    dapil: "ALL_DAPIL",
+    kecamatan: "ALL_KECAMATAN",
+    desa: "ALL_DESA",
+    tps: "ALL_TPS",
+    jenisPemilu: "partai",
+    partai: "ALL_PARTAI",
+  });
+
+  // State untuk filter perbandingan (Filter 2)
+  const [compareFilters, setCompareFilters] = useState<FilterState>({
     tahun: "2024",
     dapil: "ALL_DAPIL",
     kecamatan: "ALL_KECAMATAN",
@@ -1103,17 +1125,403 @@ function StatistikPemiluPage() {
               </div>
             </div>
 
-            <div className="flex items-center gap-4">
+            <div className="flex items-center gap-3">
               <div className="flex items-center gap-2 text-xs text-[#6B7280]">
                 <Calendar className="w-4 h-4" />
                 Update: {new Date().toLocaleString("id-ID")}
               </div>
+              
+              {/* Compare Button */}
+              <Dialog open={compareDialogOpen} onOpenChange={setCompareDialogOpen}>
+                <DialogTrigger asChild>
+                  <Button
+                    size="sm"
+                    variant="outline"
+                    className="h-9 bg-white text-[#001B55] hover:bg-[#E8F9FF] border border-[#C4D9FF] hover:border-[#001B55] transition-all duration-300"
+                  >
+                    <GitCompare className="w-4 h-4 mr-2" />
+                    Bandingkan
+                  </Button>
+                </DialogTrigger>
+                <DialogContent className="max-w-6xl max-h-[90vh] overflow-y-auto bg-white">
+                  <DialogHeader className="pb-4 border-b border-[#E8F9FF]">
+                    <div className="flex items-center gap-3">
+                      <div className="p-2 bg-[#001B55] rounded-lg">
+                        <GitCompare className="w-5 h-5 text-white" />
+                      </div>
+                      <div>
+                        <DialogTitle className="text-xl font-bold text-[#001B55]">
+                          Perbandingan Filter Statistik
+                        </DialogTitle>
+                        <DialogDescription className="text-sm text-[#475569] mt-0.5">
+                          Pilih dua filter berbeda untuk membandingkan data statistik (hingga level desa)
+                        </DialogDescription>
+                      </div>
+                    </div>
+                  </DialogHeader>
+                  
+                  <div className="grid grid-cols-1 lg:grid-cols-[1fr_auto_1fr] gap-5 mt-5 items-start">
+                    {/* Filter 1 Card */}
+                    <div className="bg-white rounded-lg border border-[#E8F9FF] overflow-hidden">
+                      {/* Card Header */}
+                      <div className="px-4 py-3 border-b border-[#E8F9FF] bg-[#FBFBFB]">
+                        <div className="flex items-center gap-2.5">
+                          <div className="w-7 h-7 rounded bg-[#001B55] flex items-center justify-center text-xs font-bold text-white">
+                            1
+                          </div>
+                          <div>
+                            <h3 className="text-sm font-semibold text-[#001B55]">Filter Pertama</h3>
+                          </div>
+                        </div>
+                      </div>
+
+                      {/* Card Body */}
+                      <div className="p-4 space-y-3">
+                        {/* Tahun */}
+                        <div className="space-y-1.5">
+                          <label className="text-xs font-medium text-[#475569]">Tahun</label>
+                          <Select
+                            value={filters.tahun}
+                            onValueChange={(value) =>
+                              setFilters({ ...filters, tahun: value })
+                            }
+                          >
+                            <SelectTrigger className="h-10 bg-white border-[#E8F9FF] hover:border-[#C4D9FF] focus:ring-1 focus:ring-[#001B55] focus:border-[#001B55] text-sm transition-colors">
+                              <SelectValue />
+                            </SelectTrigger>
+                            <SelectContent>
+                              {filterOptions.tahun.map((option) => (
+                                <SelectItem key={option.value} value={option.value}>
+                                  {option.label}
+                                </SelectItem>
+                              ))}
+                            </SelectContent>
+                          </Select>
+                        </div>
+
+                        {/* Jenis Pemilu */}
+                        <div className="space-y-1.5">
+                          <label className="text-xs font-medium text-[#475569]">Jenis Pemilu</label>
+                          <Select
+                            value={filters.jenisPemilu}
+                            onValueChange={(value) =>
+                              setFilters({ ...filters, jenisPemilu: value })
+                            }
+                          >
+                            <SelectTrigger className="h-10 bg-white border-[#E8F9FF] hover:border-[#C4D9FF] focus:ring-1 focus:ring-[#001B55] focus:border-[#001B55] text-sm transition-colors">
+                              <SelectValue />
+                            </SelectTrigger>
+                            <SelectContent>
+                              {filterOptions.jenisPemilu.map((option) => (
+                                <SelectItem key={option.value} value={option.value}>
+                                  {option.label}
+                                </SelectItem>
+                              ))}
+                            </SelectContent>
+                          </Select>
+                        </div>
+
+                        {/* Dapil */}
+                        <div className="space-y-1.5">
+                          <label className="text-xs font-medium text-[#475569]">Dapil</label>
+                          <Select
+                            value={filters.dapil}
+                            onValueChange={(value) =>
+                              setFilters({
+                                ...filters,
+                                dapil: value,
+                                kecamatan: "ALL_KECAMATAN",
+                                desa: "ALL_DESA",
+                              })
+                            }
+                          >
+                            <SelectTrigger className="h-10 bg-white border-[#E8F9FF] hover:border-[#C4D9FF] focus:ring-1 focus:ring-[#001B55] focus:border-[#001B55] text-sm transition-colors">
+                              <SelectValue />
+                            </SelectTrigger>
+                            <SelectContent>
+                              {filterOptions.dapil.map((option) => (
+                                <SelectItem key={option.value} value={option.value}>
+                                  {option.label}
+                                </SelectItem>
+                              ))}
+                            </SelectContent>
+                          </Select>
+                        </div>
+
+                        {/* Kecamatan */}
+                        {filters.dapil !== "ALL_DAPIL" && (
+                          <div className="space-y-1.5">
+                            <label className="text-xs font-medium text-[#475569]">Kecamatan</label>
+                            <Select
+                              value={filters.kecamatan}
+                              onValueChange={(value) =>
+                                setFilters({
+                                  ...filters,
+                                  kecamatan: value,
+                                  desa: "ALL_DESA",
+                                })
+                              }
+                            >
+                              <SelectTrigger className="h-10 bg-white border-[#E8F9FF] hover:border-[#C4D9FF] focus:ring-1 focus:ring-[#001B55] focus:border-[#001B55] text-sm transition-colors">
+                                <SelectValue placeholder="Pilih Kecamatan" />
+                              </SelectTrigger>
+                              <SelectContent>
+                                <SelectItem value="ALL_KECAMATAN">Semua Kecamatan</SelectItem>
+                                {filterOptions.kecamatan
+                                  .filter((k) => k.dapil === filters.dapil)
+                                  .map((option) => (
+                                    <SelectItem key={option.value} value={option.value}>
+                                      {option.label}
+                                    </SelectItem>
+                                  ))}
+                              </SelectContent>
+                            </Select>
+                          </div>
+                        )}
+
+                        {/* Desa */}
+                        {filters.kecamatan !== "ALL_KECAMATAN" && filters.kecamatan && (
+                          <div className="space-y-1.5">
+                            <label className="text-xs font-medium text-[#475569]">Desa/Kelurahan</label>
+                            <Select
+                              value={filters.desa}
+                              onValueChange={(value) =>
+                                setFilters({
+                                  ...filters,
+                                  desa: value,
+                                })
+                              }
+                            >
+                              <SelectTrigger className="h-10 bg-white border-[#E8F9FF] hover:border-[#C4D9FF] focus:ring-1 focus:ring-[#001B55] focus:border-[#001B55] text-sm transition-colors">
+                                <SelectValue placeholder="Pilih Desa" />
+                              </SelectTrigger>
+                              <SelectContent>
+                                <SelectItem value="ALL_DESA">Semua Desa</SelectItem>
+                                {getDesaOptions()
+                                  .filter((d) => !d.disabled)
+                                  .map((option) => (
+                                    <SelectItem key={option.value} value={option.value}>
+                                      {option.label}
+                                    </SelectItem>
+                                  ))}
+                              </SelectContent>
+                            </Select>
+                          </div>
+                        )}
+                      </div>
+                    </div>
+
+                    {/* VS Divider */}
+                    <div className="hidden lg:flex items-center justify-center py-8">
+                      <div className="flex flex-col items-center gap-2">
+                        <div className="w-10 h-10 rounded-full bg-[#FBFBFB] border border-[#E8F9FF] flex items-center justify-center">
+                          <GitCompare className="w-4 h-4 text-[#001B55]" />
+                        </div>
+                        <span className="text-[10px] font-semibold text-[#6B7280] tracking-wider">VS</span>
+                      </div>
+                    </div>
+
+                    {/* Filter 2 Card */}
+                    <div className="bg-white rounded-lg border border-[#E8F9FF] overflow-hidden">
+                      {/* Card Header */}
+                      <div className="px-4 py-3 border-b border-[#E8F9FF] bg-[#FBFBFB]">
+                        <div className="flex items-center gap-2.5">
+                          <div className="w-7 h-7 rounded bg-[#001B55] flex items-center justify-center text-xs font-bold text-white">
+                            2
+                          </div>
+                          <div>
+                            <h3 className="text-sm font-semibold text-[#001B55]">Filter Kedua</h3>
+                          </div>
+                        </div>
+                      </div>
+
+                      {/* Card Body */}
+                      <div className="p-4 space-y-3">
+                        {/* Tahun */}
+                        <div className="space-y-1.5">
+                          <label className="text-xs font-medium text-[#475569]">Tahun</label>
+                          <Select
+                            value={compareFilters.tahun}
+                            onValueChange={(value) =>
+                              setCompareFilters({ ...compareFilters, tahun: value })
+                            }
+                          >
+                            <SelectTrigger className="h-10 bg-white border-[#E8F9FF] hover:border-[#C4D9FF] focus:ring-1 focus:ring-[#001B55] focus:border-[#001B55] text-sm transition-colors">
+                              <SelectValue />
+                            </SelectTrigger>
+                            <SelectContent>
+                              {filterOptions.tahun.map((option) => (
+                                <SelectItem key={option.value} value={option.value}>
+                                  {option.label}
+                                </SelectItem>
+                              ))}
+                            </SelectContent>
+                          </Select>
+                        </div>
+
+                        {/* Jenis Pemilu */}
+                        <div className="space-y-1.5">
+                          <label className="text-xs font-medium text-[#475569]">Jenis Pemilu</label>
+                          <Select
+                            value={compareFilters.jenisPemilu}
+                            onValueChange={(value) =>
+                              setCompareFilters({ ...compareFilters, jenisPemilu: value })
+                            }
+                          >
+                            <SelectTrigger className="h-10 bg-white border-[#E8F9FF] hover:border-[#C4D9FF] focus:ring-1 focus:ring-[#001B55] focus:border-[#001B55] text-sm transition-colors">
+                              <SelectValue />
+                            </SelectTrigger>
+                            <SelectContent>
+                              {filterOptions.jenisPemilu.map((option) => (
+                                <SelectItem key={option.value} value={option.value}>
+                                  {option.label}
+                                </SelectItem>
+                              ))}
+                            </SelectContent>
+                          </Select>
+                        </div>
+
+                        {/* Dapil */}
+                        <div className="space-y-1.5">
+                          <label className="text-xs font-medium text-[#475569]">Dapil</label>
+                          <Select
+                            value={compareFilters.dapil}
+                            onValueChange={(value) =>
+                              setCompareFilters({
+                                ...compareFilters,
+                                dapil: value,
+                                kecamatan: "ALL_KECAMATAN",
+                                desa: "ALL_DESA",
+                              })
+                            }
+                          >
+                            <SelectTrigger className="h-10 bg-white border-[#E8F9FF] hover:border-[#C4D9FF] focus:ring-1 focus:ring-[#001B55] focus:border-[#001B55] text-sm transition-colors">
+                              <SelectValue />
+                            </SelectTrigger>
+                            <SelectContent>
+                              {filterOptions.dapil.map((option) => (
+                                <SelectItem key={option.value} value={option.value}>
+                                  {option.label}
+                                </SelectItem>
+                              ))}
+                            </SelectContent>
+                          </Select>
+                        </div>
+
+                        {/* Kecamatan */}
+                        {compareFilters.dapil !== "ALL_DAPIL" && (
+                          <div className="space-y-1.5">
+                            <label className="text-xs font-medium text-[#475569]">Kecamatan</label>
+                            <Select
+                              value={compareFilters.kecamatan}
+                              onValueChange={(value) =>
+                                setCompareFilters({
+                                  ...compareFilters,
+                                  kecamatan: value,
+                                  desa: "ALL_DESA",
+                                })
+                              }
+                            >
+                              <SelectTrigger className="h-10 bg-white border-[#E8F9FF] hover:border-[#C4D9FF] focus:ring-1 focus:ring-[#001B55] focus:border-[#001B55] text-sm transition-colors">
+                                <SelectValue placeholder="Pilih Kecamatan" />
+                              </SelectTrigger>
+                              <SelectContent>
+                                <SelectItem value="ALL_KECAMATAN">Semua Kecamatan</SelectItem>
+                                {filterOptions.kecamatan
+                                  .filter((k) => k.dapil === compareFilters.dapil)
+                                  .map((option) => (
+                                    <SelectItem key={option.value} value={option.value}>
+                                      {option.label}
+                                    </SelectItem>
+                                  ))}
+                              </SelectContent>
+                            </Select>
+                          </div>
+                        )}
+
+                        {/* Desa */}
+                        {compareFilters.kecamatan !== "ALL_KECAMATAN" && compareFilters.kecamatan && (
+                          <div className="space-y-1.5">
+                            <label className="text-xs font-medium text-[#475569]">Desa/Kelurahan</label>
+                            <Select
+                              value={compareFilters.desa}
+                              onValueChange={(value) =>
+                                setCompareFilters({
+                                  ...compareFilters,
+                                  desa: value,
+                                })
+                              }
+                            >
+                              <SelectTrigger className="h-10 bg-white border-[#E8F9FF] hover:border-[#C4D9FF] focus:ring-1 focus:ring-[#001B55] focus:border-[#001B55] text-sm transition-colors">
+                                <SelectValue placeholder="Pilih Desa" />
+                              </SelectTrigger>
+                              <SelectContent>
+                                <SelectItem value="ALL_DESA">Semua Desa</SelectItem>
+                                {getDesaOptions()
+                                  .filter((d) => !d.disabled)
+                                  .map((option) => (
+                                    <SelectItem key={option.value} value={option.value}>
+                                      {option.label}
+                                    </SelectItem>
+                                  ))}
+                              </SelectContent>
+                            </Select>
+                          </div>
+                        )}
+                      </div>
+                    </div>
+                  </div>
+
+                  {/* Info Footer */}
+                  <div className="mt-5 px-4 py-2.5 bg-[#FBFBFB] rounded-lg border border-[#E8F9FF]">
+                    <p className="text-xs text-[#6B7280] text-center">
+                      Hasil perbandingan akan ditampilkan di halaman terpisah
+                    </p>
+                  </div>
+
+                  {/* Action Buttons */}
+                  <div className="flex justify-end gap-2.5 mt-5 pt-4 border-t border-[#E8F9FF]">
+                    <Button
+                      variant="outline"
+                      onClick={() => {
+                        setCompareDialogOpen(false);
+                      }}
+                      className="h-9 px-4 border-[#C4D9FF] text-[#475569] hover:bg-[#E8F9FF] hover:text-[#001B55]"
+                    >
+                      Batal
+                    </Button>
+                    <Button
+                      onClick={() => {
+                        // Navigate to comparison page with filters
+                        const params = new URLSearchParams({
+                          filter1_tahun: filters.tahun,
+                          filter1_jenisPemilu: filters.jenisPemilu,
+                          filter1_dapil: filters.dapil,
+                          filter1_kecamatan: filters.kecamatan || "ALL_KECAMATAN",
+                          filter1_desa: filters.desa || "ALL_DESA",
+                          filter2_tahun: compareFilters.tahun,
+                          filter2_jenisPemilu: compareFilters.jenisPemilu,
+                          filter2_dapil: compareFilters.dapil,
+                          filter2_kecamatan: compareFilters.kecamatan || "ALL_KECAMATAN",
+                          filter2_desa: compareFilters.desa || "ALL_DESA",
+                        });
+                        window.location.href = `/admin/statistik-pemilu/perbandingan?${params.toString()}`;
+                      }}
+                      className="h-9 px-4 bg-[#001B55] hover:bg-[#C5BAFF] hover:text-[#001B55] text-white transition-all"
+                    >
+                      <GitCompare className="w-4 h-4 mr-2" />
+                      Lihat Perbandingan
+                    </Button>
+                  </div>
+                </DialogContent>
+              </Dialog>
+              
               <Button
                 onClick={handleRefreshData}
                 size="sm"
                 variant="outline"
                 disabled={loading}
-                className="h-9 cursor-pointer bg-[#F0F0F0] text-[#001B55] hover:bg-[#001B55] border border-[#F0F0F0] hover:border-[#001B55] transition-all duration-300"
+                className="h-9 cursor-pointer bg-[#F0F0F0] text-[#001B55] hover:bg-[#001B55] hover:text-white border border-[#F0F0F0] hover:border-[#001B55] transition-all duration-300"
               >
                 <RefreshCw
                   className={`w-4 h-4 mr-2 ${loading ? "animate-spin" : ""}`}
@@ -1348,17 +1756,44 @@ function StatistikPemiluPage() {
                 }
               </Badge>
             )}
-            {filters.desa && filters.desa !== "ALL_DESA" && (
-              <Badge className="px-3 py-1 border border-gray-400/20 bg-white text-gray-600 text-xs">
-                {filters.desa}
-              </Badge>
-            )}
-            {filters.tps && filters.tps !== "ALL_TPS" && (
-              <Badge className="px-3 py-1 border border-red-500/20 bg-white text-red-600 text-xs">
-                TPS {filters.tps}
-              </Badge>
-            )}
           </div>
+
+          {/* Compare Mode Indicator */}
+          {isCompareMode && (
+            <div className="mt-4 p-4 bg-gradient-to-r from-purple-50 to-blue-50 rounded-xl border-2 border-purple-200 animate-in fade-in duration-300">
+              <div className="flex items-center justify-between">
+                <div className="flex items-center gap-3">
+                  <div className="p-2 bg-gradient-to-br from-purple-500 to-blue-500 rounded-lg">
+                    <GitCompare className="w-5 h-5 text-white" />
+                  </div>
+                  <div>
+                    <h4 className="text-sm font-semibold text-[#001B55] mb-1">
+                      Mode Perbandingan Aktif
+                    </h4>
+                    <div className="flex items-center gap-4 text-xs text-[#6B7280]">
+                      <div className="flex items-center gap-1.5">
+                        <div className="w-2 h-2 rounded-full bg-blue-500"></div>
+                        <span>Filter 1: {filterOptions.dapil.find((d) => d.value === filters.dapil)?.label}</span>
+                      </div>
+                      <div className="flex items-center gap-1.5">
+                        <div className="w-2 h-2 rounded-full bg-purple-500"></div>
+                        <span>Filter 2: {filterOptions.dapil.find((d) => d.value === compareFilters.dapil)?.label}</span>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+                <Button
+                  size="sm"
+                  variant="ghost"
+                  onClick={() => setIsCompareMode(false)}
+                  className="h-8 text-[#6B7280] hover:text-red-600 hover:bg-red-50"
+                >
+                  <X className="w-4 h-4 mr-1" />
+                  Tutup Perbandingan
+                </Button>
+              </div>
+            </div>
+          )}
         </div>
 
         {/* KPI Cards */}

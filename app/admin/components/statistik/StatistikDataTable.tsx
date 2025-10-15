@@ -154,6 +154,8 @@ export function StatistikDataTable({ data, loading }: StatistikDataTableProps) {
     }
 
     const map = new Map<string, TmpGroup>();
+    const columnTotalsMap = new Map<string, number>();
+    let totalVotes = 0;
 
     filteredRaw.forEach((row) => {
       const key = row.partai;
@@ -171,6 +173,8 @@ export function StatistikDataTable({ data, loading }: StatistikDataTableProps) {
       const colKey = getRowKey(row);
       g.columns[colKey] = (g.columns[colKey] || 0) + row.suara;
       g.total += row.suara;
+      columnTotalsMap.set(colKey, (columnTotalsMap.get(colKey) || 0) + row.suara);
+      totalVotes += row.suara;
 
       // candidate
       if (!g.calegMap.has(row.caleg)) {
@@ -185,12 +189,6 @@ export function StatistikDataTable({ data, loading }: StatistikDataTableProps) {
       c.total += row.suara;
     });
 
-    // Hitung grand total
-    const grandTotal = Array.from(map.values()).reduce(
-      (acc, g) => acc + g.total,
-      0
-    );
-
     // Build group rows
     const groupRows: GroupRow[] = Array.from(map.values()).map((g) => ({
       _rowType: "group",
@@ -199,7 +197,7 @@ export function StatistikDataTable({ data, loading }: StatistikDataTableProps) {
       logo: g.logo,
       partaiColor: g.partaiColor,
       total: g.total,
-      percent: grandTotal ? (g.total / grandTotal) * 100 : 0,
+      percent: totalVotes ? (g.total / totalVotes) * 100 : 0,
       columns: columnKeys.reduce((acc, ck) => {
         acc[ck] = g.columns[ck] || 0;
         return acc;
@@ -232,7 +230,12 @@ export function StatistikDataTable({ data, loading }: StatistikDataTableProps) {
       calegRowsMap[gr.partai] = arr;
     });
 
-    return { groupRows, calegRowsMap };
+    const columnTotals = columnKeys.reduce((acc, ck) => {
+      acc[ck] = columnTotalsMap.get(ck) || 0;
+      return acc;
+    }, {} as Record<string, number>);
+
+    return { groupRows, calegRowsMap, columnTotals, grandTotal: totalVotes };
   }, [filteredRaw, columnKeys, pivotLevel]);
 
   // Sorting (by total or by specific column)
@@ -478,15 +481,15 @@ export function StatistikDataTable({ data, loading }: StatistikDataTableProps) {
                     {columnKeys.map((col) => (
                       <td
                         key={col}
-                        className="px-4 py-4 text-sm font-semibold text-[#111827]"
+                        className="px-4 py-4 text-sm font-semibold text-[#111827] text-right"
                       >
                         {g.columns[col]?.toLocaleString("id-ID") || 0}
                       </td>
                     ))}
-                    <td className="px-5 py-4 text-sm font-bold text-[#111827]">
+                    <td className="px-5 py-4 text-sm font-bold text-[#111827] text-right">
                       {g.total.toLocaleString("id-ID")}
                     </td>
-                    <td className="px-5 py-4 text-sm font-bold text-[#111827] sticky right-0 bg-white z-10 min-w-[80px] shadow-[ -5px 0 5px -5px rgba(0,0,0,0.1)]">
+                    <td className="px-5 py-4 text-sm font-bold text-[#111827] text-center sticky right-0 bg-white z-10 min-w-[80px] shadow-[ -5px 0 5px -5px rgba(0,0,0,0.1)]">
                       {g.percent.toFixed(1)}%
                     </td>
                   </tr>
@@ -510,15 +513,15 @@ export function StatistikDataTable({ data, loading }: StatistikDataTableProps) {
                   {columnKeys.map((col) => (
                     <td
                       key={col}
-                      className="px-4 py-3 text-sm font-medium text-[#001B55]"
+                      className="px-4 py-3 text-sm font-medium text-[#001B55] text-right"
                     >
                       {c.columns[col]?.toLocaleString("id-ID") || 0}
                     </td>
                   ))}
-                  <td className="px-5 py-3 text-sm font-semibold text-[#001B55]">
+                  <td className="px-5 py-3 text-sm font-semibold text-[#001B55] text-right">
                     {c.total.toLocaleString("id-ID")}
                   </td>
-                  <td className="px-5 py-3 text-sm font-semibold text-[#001B55] sticky right-0 bg-[#E8F9FF]/20 z-10 min-w-[80px] shadow-[ -5px 0 5px -5px rgba(0,0,0,0.1)]">
+                  <td className="px-5 py-3 text-sm font-semibold text-[#001B55] text-center sticky right-0 bg-[#E8F9FF]/20 z-10 min-w-[80px] shadow-[ -5px 0 5px -5px rgba(0,0,0,0.1)]">
                     {c.percent.toFixed(1)}%
                   </td>
                 </tr>
@@ -536,6 +539,22 @@ export function StatistikDataTable({ data, loading }: StatistikDataTableProps) {
               </tr>
             )}
           </tbody>
+          <tfoot>
+            <tr className="bg-[#E8F9FF] text-sm font-semibold text-[#001B55]">
+              <td className="rounded-bl-2xl px-6 py-3">TOTAL</td>
+              {columnKeys.map((col) => (
+                <td key={`total-${col}`} className="px-4 py-3 text-right">
+                  {(grouped.columnTotals[col] || 0).toLocaleString("id-ID")}
+                </td>
+              ))}
+              <td className="px-5 py-3 text-right">
+                {grouped.grandTotal.toLocaleString("id-ID")}
+              </td>
+              <td className="rounded-br-2xl px-5 py-3 text-center sticky right-0 bg-[#E8F9FF] z-10 min-w-[80px] shadow-[ -5px 0 5px -5px rgba(0,0,0,0.1)]">
+                {grouped.grandTotal > 0 ? "100%" : "0%"}
+              </td>
+            </tr>
+          </tfoot>
         </table>
       </div>
 
