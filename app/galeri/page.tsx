@@ -9,12 +9,7 @@ import { useState, useMemo } from "react";
 import { useDebounce } from "@/hooks/use-debounce";
 import { useQuery } from "@tanstack/react-query";
 import { Input } from "@/components/ui/input";
-import {
-  Dialog,
-  DialogContent,
-  DialogHeader,
-  DialogTitle,
-} from "@/components/ui/dialog";
+import { GalleryDetailModal } from "@/app/admin/gallery/components/GalleryDetailModal";
 
 const categories = [
   { value: "all", label: "Semua" },
@@ -96,8 +91,14 @@ export default function GaleriPage() {
   const [category, setCategory] = useState("all");
   const [currentPage, setCurrentPage] = useState(1);
   const [detailOpen, setDetailOpen] = useState(false);
-  const [detailTitle, setDetailTitle] = useState("");
-  const [detailMedia, setDetailMedia] = useState<Activity["media"]>([]);
+  const [detailActivity, setDetailActivity] = useState<{
+    title: string;
+    description?: string | null;
+    createdAt: string;
+    location?: string | null;
+    category?: string | null;
+    media: Activity["media"];
+  } | null>(null);
   const itemsPerPage = 12;
   const debouncedQ = useDebounce(search, 400);
   const { data, isLoading } = useActivities(debouncedQ, category);
@@ -118,8 +119,26 @@ export default function GaleriPage() {
   const pageItems = mapped.slice(start, start + itemsPerPage);
 
   const onOpenDetail = (item: (typeof mapped)[number]) => {
-    setDetailTitle(item.title);
-    setDetailMedia(item.media);
+    const full = activities.find((a) => a.id === item.id);
+    setDetailActivity(
+      full
+        ? {
+            title: full.title,
+            description: full.description,
+            createdAt: full.createdAt,
+            location: full.location,
+            category: full.category,
+            media: full.media,
+          }
+        : {
+            title: item.title,
+            description: undefined,
+            createdAt: new Date().toISOString(),
+            location: undefined,
+            category: undefined,
+            media: item.media,
+          }
+    );
     setDetailOpen(true);
   };
 
@@ -270,70 +289,29 @@ export default function GaleriPage() {
         </div>
       </section>
 
-      {/* Detail Modal */}
-      <Dialog open={detailOpen} onOpenChange={setDetailOpen}>
-        <DialogContent className="max-w-3xl">
-          <DialogHeader>
-            <DialogTitle className="text-nasdem-blue">
-              {detailTitle}
-            </DialogTitle>
-          </DialogHeader>
-          {detailMedia.length > 0 && <DetailSlider media={detailMedia} />}
-        </DialogContent>
-      </Dialog>
+      {/* Detail Modal - shared component with two-column layout and auto slide */}
+      {detailActivity && (
+        <GalleryDetailModal
+          open={detailOpen}
+          onOpenChange={setDetailOpen}
+          title={detailActivity.title}
+          media={detailActivity.media.map((m) => ({
+            id: m.id,
+            type: m.type,
+            url: m.url,
+            caption: m.caption ?? undefined,
+          }))}
+          description={detailActivity.description || undefined}
+          uploadDate={detailActivity.createdAt}
+          location={detailActivity.location || undefined}
+          category={detailActivity.category || undefined}
+          autoPlaySeconds={4}
+        />
+      )}
 
       <NasdemFooter />
     </div>
   );
 }
 
-function DetailSlider({ media }: { media: Activity["media"] }) {
-  const [index, setIndex] = useState(0);
-  const current = media[index];
-  const prev = () => setIndex((i) => (i - 1 + media.length) % media.length);
-  const next = () => setIndex((i) => (i + 1) % media.length);
-  return (
-    <div className="relative w-full aspect-video bg-gray-200 rounded-lg overflow-hidden">
-      {current?.type === "image" ? (
-        <Image
-          src={current.url}
-          alt={current.caption || "image"}
-          fill
-          className="object-contain"
-        />
-      ) : (
-        <iframe
-          src={current?.url || ""}
-          className="w-full h-full"
-          allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
-          allowFullScreen
-        />
-      )}
-      {media.length > 1 && (
-        <div className="absolute inset-0 flex items-center justify-between p-2">
-          <Button
-            variant="outline"
-            size="icon"
-            onClick={prev}
-            className="cursor-pointer border-nasdem-orange text-nasdem-orange"
-          >
-            <ChevronLeft className="h-5 w-5" />
-          </Button>
-          <Button
-            variant="outline"
-            size="icon"
-            onClick={next}
-            className="cursor-pointer border-nasdem-orange text-nasdem-orange"
-          >
-            <ChevronRight className="h-5 w-5" />
-          </Button>
-        </div>
-      )}
-      {current?.caption && (
-        <div className="absolute bottom-0 left-0 right-0 bg-black/50 text-white text-sm p-2">
-          {current.caption}
-        </div>
-      )}
-    </div>
-  );
-}
+// DetailSlider removed in favor of shared GalleryDetailModal

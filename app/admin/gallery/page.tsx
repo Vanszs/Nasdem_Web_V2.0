@@ -162,6 +162,10 @@ export default function Page() {
         onOpenChange={setDetailOpen}
         title={detailTitle}
         media={detailMedia}
+        description={selectedActivity?.description}
+        uploadDate={selectedActivity?.createdAt ?? selectedActivity?.eventDate}
+        location={selectedActivity?.location}
+        category={selectedActivity?.category}
         onEdit={() => {
           const a = selectedActivity;
           if (a) {
