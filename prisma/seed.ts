@@ -150,6 +150,16 @@ async function main() {
         gender: GenderEnum.male,
         status: MemberStatus.active,
         strukturId: struktur?.id,
+        email: "ahmad.ketua@nasdem.local",
+        address: "Jl. Pahlawan No. 1, Sidoarjo",
+        photoUrl: "/placeholder-user.jpg",
+        nik: "3515xxxxxxxx0001",
+        ktaNumber: "KTA-0001",
+        occupation: "Wiraswasta",
+        familyMemberCount: 4,
+        maritalStatus: "Menikah",
+        dateOfBirth: new Date("1980-01-15"),
+        joinDate: new Date("2024-01-10"),
       },
       {
         fullName: "Siti Sekretaris",
@@ -157,9 +167,53 @@ async function main() {
         gender: GenderEnum.female,
         status: MemberStatus.active,
         strukturId: struktur?.id,
+        email: "siti.sekretaris@nasdem.local",
+        address: "Jl. Diponegoro No. 10, Sidoarjo",
+        photoUrl: "/placeholder-user.jpg",
+        nik: "3515xxxxxxxx0002",
+        ktaNumber: "KTA-0002",
+        occupation: "Ibu Rumah Tangga",
+        familyMemberCount: 3,
+        maritalStatus: "Menikah",
+        dateOfBirth: new Date("1985-05-20"),
+        joinDate: new Date("2024-01-12"),
       },
     ],
   });
+
+  // Tambah banyak member dengan data lengkap
+  const moreMembers = Array.from({ length: 40 }).map((_, i) => {
+    const isFemale = i % 2 === 1;
+    const idSuffix = (i + 3).toString().padStart(4, "0");
+    return {
+      fullName: isFemale
+        ? `Hj. Dewi Anggraini ${i + 1}`
+        : `H. Budi Santosa ${i + 1}`,
+      email: `member${idSuffix}@nasdem.local`,
+      phone: `08${Math.floor(100000000 + Math.random() * 899999999)}`,
+      gender: isFemale ? GenderEnum.female : GenderEnum.male,
+      status: MemberStatus.active,
+      strukturId: struktur?.id ?? null,
+      address: `Perum Sutorejo Blok ${String.fromCharCode(65 + (i % 26))} No.${
+        (i % 50) + 1
+      }, Sidoarjo`,
+      bio: "Kader aktif Partai NasDem Sidoarjo",
+      photoUrl: "/placeholder-user.jpg",
+      ktpPhotoUrl: "/placeholder-user.jpg",
+      nik: `3515xxxxxxxx${idSuffix}`,
+      ktaNumber: `KTA-${idSuffix}`,
+      occupation: isFemale ? "Guru" : "Karyawan Swasta",
+      familyMemberCount: (i % 5) + 2,
+      maritalStatus: i % 3 === 0 ? "Lajang" : "Menikah",
+      dateOfBirth: new Date(1975 + (i % 25), i % 12, (i % 27) + 1),
+      joinDate: new Date(2024, i % 12, (i % 27) + 1),
+      endDate: null as any,
+    };
+  });
+
+  if (moreMembers.length) {
+    await db.member.createMany({ data: moreMembers as any });
+  }
 
   // --------------------------
   // 7. PROGRAMS
@@ -321,14 +375,14 @@ async function main() {
         {
           activityId: a1.id,
           type: "image",
-          url: "/uploads/gallery/rapat-1.jpg",
+          url: "https://i.ytimg.com/vi/8c23rO8r0yc/hq720.jpg?sqp=-oaymwEhCK4FEIIDSFryq4qpAxMIARUAAAAAGAElAADIQj0AgKJD&rs=AOn4CLCqlXnTDUdl_4zt1E_OGCpuOhXu4w",
           caption: "Pembukaan rapat",
           order: 0,
         },
         {
           activityId: a1.id,
           type: "image",
-          url: "/uploads/gallery/rapat-2.jpg",
+          url: "https://i.ytimg.com/vi/1UaElu_gwKw/hqdefault.jpg",
           caption: "Diskusi program",
           order: 1,
         },
@@ -350,14 +404,14 @@ async function main() {
         {
           activityId: a2.id,
           type: "image",
-          url: "/uploads/gallery/baksos-1.jpg",
+          url: "https://cdn.antaranews.com/cache/1200x800/2025/10/09/IMG_20251009_232808.jpg",
           caption: "Pembagian sembako",
           order: 0,
         },
         {
           activityId: a2.id,
           type: "video",
-          url: "https://www.youtube.com/watch?v=dQw4w9WgXcQ",
+          url: "https://www.youtube.com/watch?v=L7B6V_OgzSY",
           caption: "Rangkuman kegiatan",
           order: 1,
         },
