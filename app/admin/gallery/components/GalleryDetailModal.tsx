@@ -111,11 +111,11 @@ export function GalleryDetailModal({
               />
             ) : null}
 
-            <div className="absolute inset-x-0 bottom-0 h-1/3 bg-gradient-to-t from-black/60 to-transparent pointer-events-none" />
+            <div className="absolute inset-x-0 bottom-0 h-1/3 bg-gradient-to-t from-black/80 to-transparent pointer-events-none" />
 
             {current?.caption && (
               <div className="absolute inset-x-0 bottom-0 p-4 z-10">
-                <p className="text-white text-sm drop-shadow-md max-w-[90%]">
+                <p className="text-white font-bold text-sm drop-shadow-md max-w-[90%]">
                   {current.caption}
                 </p>
               </div>

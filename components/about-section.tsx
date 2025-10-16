@@ -68,7 +68,7 @@ export function AboutSection() {
                   height="400px"
                   muted
                   playing={isPlaying}
-                  controls
+                  controls={false}
                   onPlay={() => {
                     setExpanded(true);
                     setIsPlaying(true);

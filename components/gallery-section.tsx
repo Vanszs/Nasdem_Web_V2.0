@@ -1,30 +1,65 @@
-"use client"
+"use client";
 
-import { useState } from "react"
-import { Card } from "@/components/ui/card"
-import { Button } from "@/components/ui/button"
+import { useState, useMemo } from "react";
+import { Card } from "@/components/ui/card";
+import { Button } from "@/components/ui/button";
+import { useQuery } from "@tanstack/react-query";
+import Image from "next/image";
 
 export function GallerySection() {
-  const [activeTab, setActiveTab] = useState("foto")
+  const [activeTab, setActiveTab] = useState("foto");
 
-  const photos = [
-    "/placeholder.svg?height=300&width=400",
-    "/placeholder.svg?height=300&width=400",
-    "/placeholder.svg?height=300&width=400",
-    "/placeholder.svg?height=300&width=400",
-    "/placeholder.svg?height=300&width=400",
-    "/placeholder.svg?height=300&width=400",
-  ]
+  const { data, isLoading } = useQuery({
+    queryKey: ["gallery", "homepage"],
+    queryFn: async () => {
+      const res = await fetch(`/api/galleries`);
+      if (!res.ok) throw new Error("Gagal memuat galeri");
+      const json = await res.json();
+      return json?.data ?? [];
+    },
+    staleTime: 60 * 1000,
+  });
+
+  type Activity = {
+    id: number;
+    title: string;
+    description?: string | null;
+    category?: string | null;
+    media: Array<{
+      id: number;
+      type: "image" | "video";
+      url: string;
+      caption?: string | null;
+    }>;
+  };
+
+  const { photos, videos } = useMemo(() => {
+    const items = (data as Activity[]) || [];
+    const media = items.flatMap((a) =>
+      a.media.map((m) => ({ ...m, activityTitle: a.title }))
+    );
+    return {
+      photos: media.filter((m) => m.type === "image").slice(0, 6),
+      videos: media.filter((m) => m.type === "video").slice(0, 4),
+    };
+  }, [data]);
 
   return (
-    <section id="galeri" className="py-16 md:py-20 bg-gradient-to-b from-gray-50 to-white">
+    <section
+      id="galeri"
+      className="py-16 md:py-20 bg-gradient-to-b from-gray-50 to-white"
+    >
       <div className="container mx-auto px-4 sm:px-6 lg:px-8">
         <div className="text-center mb-12 md:mb-16 animate-fade-in-up">
           <div className="inline-flex items-center gap-2 bg-nasdem-orange/10 rounded-full px-5 py-2 mb-4 shadow-sm border border-nasdem-orange/20">
             <div className="w-2 h-2 bg-nasdem-orange rounded-full animate-pulse"></div>
-            <span className="text-nasdem-blue text-sm font-semibold">Dokumentasi</span>
+            <span className="text-nasdem-blue text-sm font-semibold">
+              Dokumentasi
+            </span>
           </div>
-          <h2 className="text-3xl md:text-4xl lg:text-5xl font-bold text-[#001B55] mb-4 leading-tight">Galeri Multimedia</h2>
+          <h2 className="text-3xl md:text-4xl lg:text-5xl font-bold text-[#001B55] mb-4 leading-tight">
+            Galeri Multimedia
+          </h2>
           <p className="text-base md:text-lg text-[#6B7280] max-w-2xl mx-auto leading-relaxed">
             Dokumentasi kegiatan dan program DPD NasDem Sidoarjo
           </p>
@@ -61,58 +96,102 @@ export function GallerySection() {
 
         {activeTab === "foto" && (
           <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-6 md:gap-8 mb-16">
-            {photos.map((photo, index) => (
-              <Card
-                key={index}
-                className="overflow-hidden group hover:shadow-2xl transition-all duration-300 hover:-translate-y-2 animate-fade-in-up rounded-2xl border-2 border-nasdem-blue/20 hover:border-nasdem-blue/40 shadow-lg"
-                style={{ animationDelay: `${index * 0.1}s` }}
-              >
-                <img
-                  src={photo || "/placeholder.svg"}
-                  alt={`Kegiatan NasDem Sidoarjo ${index + 1}`}
-                  className="w-full h-64 object-cover group-hover:scale-105 transition-transform duration-300"
-                />
-              </Card>
-            ))}
+            {isLoading ? (
+              Array.from({ length: 6 }).map((_, i) => (
+                <Card
+                  key={i}
+                  className="overflow-hidden rounded-2xl border-2 border-nasdem-blue/20"
+                >
+                  <div className="w-full h-64 bg-gray-100 animate-pulse" />
+                </Card>
+              ))
+            ) : photos.length === 0 ? (
+              <div className="col-span-full text-center text-[#6B7280]">
+                Belum ada foto.
+              </div>
+            ) : (
+              photos.map((m, index) => (
+                <Card
+                  key={m.id}
+                  className="overflow-hidden p-0 group hover:shadow-2xl transition-all duration-300 hover:-translate-y-2 animate-fade-in-up rounded-2xl border-2 border-nasdem-blue/20 hover:border-nasdem-blue/40 shadow-lg"
+                  style={{ animationDelay: `${index * 0.1}s` }}
+                >
+                  <div className="relative w-full h-80">
+                    <Image
+                      src={m.url || "/placeholder.svg"}
+                      alt={
+                        m.caption ||
+                        m.activityTitle ||
+                        `Kegiatan NasDem Sidoarjo ${index + 1}`
+                      }
+                      fill
+                      className="object-cover group-hover:scale-105 transition-transform duration-300"
+                    />
+                    <div className="absolute inset-x-0 bottom-0 p-3">
+                      <div className="absolute inset-x-0 bottom-0 h-20 bg-gradient-to-t from-black/80 to-transparent pointer-events-none" />
+                      <p className="relative z-10 font-bold tracking-wide text-white text-sm line-clamp-2">
+                        {m.caption || m.activityTitle}
+                      </p>
+                    </div>
+                  </div>
+                </Card>
+              ))
+            )}
           </div>
         )}
 
         {activeTab === "video" && (
           <div className="grid md:grid-cols-2 gap-6 md:gap-8 mb-16">
-            <Card className="overflow-hidden group hover:shadow-2xl transition-all duration-300 animate-fade-in-up rounded-2xl border-2 border-nasdem-blue/20 hover:border-nasdem-blue/40 shadow-lg hover:-translate-y-1">
-              <div className="relative">
-                <img
-                  src="/placeholder.svg?height=300&width=500"
-                  alt="Video Profil Ketua"
-                  className="w-full h-64 object-cover"
-                />
-                <div className="absolute inset-0 bg-gradient-to-t from-black/70 via-black/30 to-transparent flex items-center justify-center">
-                  <div className="w-16 h-16 bg-[#FF9C04] rounded-full flex items-center justify-center shadow-lg hover:bg-[#001B55] transition-colors duration-300">
-                    <div className="w-0 h-0 border-l-[12px] border-l-white border-y-[8px] border-y-transparent ml-1"></div>
+            {isLoading ? (
+              Array.from({ length: 4 }).map((_, i) => (
+                <Card
+                  key={i}
+                  className="overflow-hidden rounded-2xl border-2 border-nasdem-blue/20"
+                >
+                  <div className="w-full h-64 bg-gray-100 animate-pulse" />
+                </Card>
+              ))
+            ) : videos.length === 0 ? (
+              <div className="col-span-full text-center text-[#6B7280]">
+                Belum ada video.
+              </div>
+            ) : (
+              videos.map((v, index) => (
+                <Card
+                  key={v.id}
+                  className="overflow-hidden p-0 group hover:shadow-2xl transition-all duration-300 animate-fade-in-up rounded-2xl border-2 border-nasdem-blue/20 hover:border-nasdem-blue/40 shadow-lg hover:-translate-y-1"
+                  style={{ animationDelay: `${index * 0.1}s` }}
+                >
+                  <div className="relative w-full h-80">
+                    {/* Lightweight video preview: image overlay or iframe (if YouTube embed URL) */}
+                    {v.url.includes("youtube.com") ||
+                    v.url.includes("youtu.be") ? (
+                      <iframe
+                        src={v.url}
+                        className="w-full h-full"
+                        loading="lazy"
+                        allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share"
+                        allowFullScreen
+                        title={v.caption || `Video ${index + 1}`}
+                      />
+                    ) : (
+                      <Image
+                        src={"/placeholder.svg"}
+                        alt={v.caption || `Video ${index + 1}`}
+                        fill
+                        className="object-cover"
+                      />
+                    )}
+                    <div className="absolute inset-x-0 bottom-0 p-3">
+                      <div className="absolute inset-x-0 bottom-0 h-20 bg-gradient-to-t from-black/80 to-transparent pointer-events-none" />
+                      <p className="relative z-10 font-bold tracking-wide text-white text-sm line-clamp-2">
+                        {v.caption}
+                      </p>
+                    </div>
                   </div>
-                </div>
-              </div>
-              <div className="p-6">
-                <h3 className="font-semibold text-[#001B55] text-lg">Profil Ketua DPD NasDem Sidoarjo</h3>
-              </div>
-            </Card>
-            <Card className="overflow-hidden group hover:shadow-2xl transition-all duration-300 animate-fade-in-up animate-delay-200 rounded-2xl border-2 border-nasdem-blue/20 hover:border-nasdem-blue/40 shadow-lg hover:-translate-y-1">
-              <div className="relative">
-                <img
-                  src="/placeholder.svg?height=300&width=500"
-                  alt="Video Kegiatan Sosial"
-                  className="w-full h-64 object-cover"
-                />
-                <div className="absolute inset-0 bg-gradient-to-t from-black/70 via-black/30 to-transparent flex items-center justify-center">
-                  <div className="w-16 h-16 bg-[#FF9C04] rounded-full flex items-center justify-center shadow-lg hover:bg-[#001B55] transition-colors duration-300">
-                    <div className="w-0 h-0 border-l-[12px] border-l-white border-y-[8px] border-y-transparent ml-1"></div>
-                  </div>
-                </div>
-              </div>
-              <div className="p-6">
-                <h3 className="font-semibold text-[#001B55] text-lg">Dokumentasi Kegiatan Sosial</h3>
-              </div>
-            </Card>
+                </Card>
+              ))
+            )}
           </div>
         )}
 
@@ -128,5 +207,5 @@ export function GallerySection() {
         </div>
       </div>
     </section>
-  )
+  );
 }
