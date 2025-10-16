@@ -21,7 +21,7 @@ const pipRegistrationSchema = z.object({
 export async function POST(req: NextRequest) {
   try {
     const formData = await req.formData();
-    
+
     // Extract and validate data
     const data = {
       fullName: formData.get("fullName") as string,
@@ -54,7 +54,9 @@ export async function POST(req: NextRequest) {
     // Save KTP photo
     if (ktpPhoto && ktpPhoto.size > 0) {
       const ktpBuffer = Buffer.from(await ktpPhoto.arrayBuffer());
-      const ktpFilename = `ktp-${validatedData.nik}-${Date.now()}.${ktpPhoto.name.split(".").pop()}`;
+      const ktpFilename = `ktp-${
+        validatedData.nik
+      }-${Date.now()}.${ktpPhoto.name.split(".").pop()}`;
       const ktpPath = join(uploadDir, ktpFilename);
       await writeFile(ktpPath, ktpBuffer);
       ktpPhotoUrl = `/uploads/pip/${ktpFilename}`;
@@ -63,7 +65,9 @@ export async function POST(req: NextRequest) {
     // Save KK photo
     if (kkPhoto && kkPhoto.size > 0) {
       const kkBuffer = Buffer.from(await kkPhoto.arrayBuffer());
-      const kkFilename = `kk-${validatedData.nik}-${Date.now()}.${kkPhoto.name.split(".").pop()}`;
+      const kkFilename = `kk-${validatedData.nik}-${Date.now()}.${kkPhoto.name
+        .split(".")
+        .pop()}`;
       const kkPath = join(uploadDir, kkFilename);
       await writeFile(kkPath, kkBuffer);
       kkPhotoUrl = `/uploads/pip/${kkFilename}`;
@@ -75,20 +79,16 @@ export async function POST(req: NextRequest) {
         category: "pendidikan",
         name: {
           contains: "Pendidikan Inklusif",
+          mode: "insensitive",
         },
       },
     });
 
     if (!program) {
-      // Create default PIP program if not exists
-      program = await db.program.create({
-        data: {
-          name: "Pendidikan Inklusif (PIP)",
-          category: "pendidikan",
-          description: "Program bantuan pendidikan untuk siswa kurang mampu",
-          status: "active",
-        },
-      });
+      return NextResponse.json(
+        { message: "Program PIP (Pendidikan Inklusif) tidak ditemukan" },
+        { status: 400 }
+      );
     }
 
     // Check if NIK already registered
@@ -117,7 +117,9 @@ export async function POST(req: NextRequest) {
         dateOfBirth: new Date(validatedData.dateOfBirth),
         gender: validatedData.gender,
         occupation: validatedData.occupation || null,
-        familyMemberCount: validatedData.familyMemberCount ? parseInt(validatedData.familyMemberCount) : null,
+        familyMemberCount: validatedData.familyMemberCount
+          ? parseInt(validatedData.familyMemberCount)
+          : null,
         fullAddress: validatedData.fullAddress,
         ktpPhotoUrl,
         kkPhotoUrl,

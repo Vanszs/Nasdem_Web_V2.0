@@ -103,11 +103,6 @@ export async function GET(req: NextRequest) {
 }
 
 export async function POST(req: NextRequest) {
-  const authError = requireAuth(req);
-  if (authError) return authError;
-  const roleError = requireRole(req, [UserRole.EDITOR, UserRole.SUPERADMIN]);
-  if (roleError) return roleError;
-
   try {
     const json = await req.json();
     const parsed = bodySchema.safeParse(json);

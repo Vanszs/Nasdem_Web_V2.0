@@ -3,50 +3,77 @@ import { db } from "@/lib/db";
 import { requireAuth, requireRole } from "@/lib/jwt-middleware";
 import { toInt } from "@/lib/parsers";
 import { UserRole } from "@/lib/rbac";
+import { z } from "zod";
+
+const listQuerySchema = z.object({
+  page: z.coerce.number().int().min(1).optional(),
+  pageSize: z.coerce.number().int().min(1).max(200).optional(),
+  q: z.string().trim().optional(),
+  category: z.string().trim().optional(),
+  status: z.enum(["pending", "completed", "ongoing", "planning"]).optional(),
+});
 
 // list semua program
 export async function GET(req: NextRequest) {
   try {
-    const { searchParams } = new URL(req.url);
-    const q = searchParams.get("q")?.trim() || null;
+    const raw = Object.fromEntries(new URL(req.url).searchParams.entries());
+    const parsed = listQuerySchema.safeParse(raw);
+    if (!parsed.success) {
+      return NextResponse.json(
+        {
+          success: false,
+          error: "Invalid query",
+          details: parsed.error.flatten(),
+        },
+        { status: 400 }
+      );
+    }
+    const {
+      page = 1,
+      pageSize = 20,
+      q,
+      category,
+      status = "ongoing",
+    } = parsed.data;
 
-    // Query ke database
-    const programs = await db.program.findMany({
-      where: q
-        ? {
-            OR: [
-              {
-                name: {
-                  contains: q,
-                  mode: "insensitive",
-                },
-              },
-              {
-                category: {
-                  contains: q,
-                  mode: "insensitive",
-                },
-              },
-              {
-                description: {
-                  contains: q,
-                  mode: "insensitive",
-                },
-              },
-            ],
-          }
-        : undefined,
-      orderBy: { createdAt: "desc" },
-      include: {
-        coordinator: {
-          select: {
-            fullName: true,
+    const AND: any[] = [];
+    // only show ongoing by default
+    if (status) AND.push({ status });
+    if (q) {
+      AND.push({
+        OR: [
+          { name: { contains: q, mode: "insensitive" } },
+          { category: { contains: q, mode: "insensitive" } },
+          { description: { contains: q, mode: "insensitive" } },
+        ],
+      });
+    }
+    if (category) {
+      AND.push({ category: { equals: category, mode: "insensitive" as any } });
+    }
+
+    const where = AND.length ? { AND } : undefined;
+
+    const [total, programs] = await Promise.all([
+      db.program.count({ where } as any),
+      db.program.findMany({
+        where: where as any,
+        take: pageSize,
+        skip: (page - 1) * pageSize,
+        orderBy: { createdAt: "desc" },
+        include: {
+          coordinator: {
+            select: { id: true, fullName: true, photoUrl: true },
           },
         },
-      },
-    });
+      }),
+    ]);
 
-    return NextResponse.json({ success: true, data: programs });
+    return NextResponse.json({
+      success: true,
+      data: programs,
+      meta: { page, pageSize, total, totalPages: Math.ceil(total / pageSize) },
+    });
   } catch (err: any) {
     return NextResponse.json(
       { success: false, error: err.message },
