@@ -93,11 +93,11 @@ const NasdemHeader = () => {
             </li>
             <li className="relative">
               <a
-                href="#profil"
-                className={getLinkClasses("#profil", "story-link")}
+                href="/#profil"
+                className={getLinkClasses("/#profil", "story-link")}
               >
                 Profil
-                <ActiveIndicator isActive={isActiveLink("#profil")} />
+                <ActiveIndicator isActive={isActiveLink("/#profil")} />
               </a>
             </li>
             <li className="relative">

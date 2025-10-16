@@ -1,21 +1,71 @@
+"use client";
+
 import { Button } from "@/components/ui/button";
 import { ArrowRight, Calendar, Users, Trophy } from "lucide-react";
 import Image from "next/image";
+import { useQuery } from "@tanstack/react-query";
+import { Swiper, SwiperSlide } from "swiper/react";
+import { Autoplay, EffectFade } from "swiper/modules";
+import "swiper/css";
+import "swiper/css/effect-fade";
 
 const NasdemHero = () => {
+  const { data, isLoading } = useQuery({
+    queryKey: ["cms", "hero-banners"],
+    queryFn: async () => {
+      const res = await fetch("/api/cms/hero-banners");
+      if (!res.ok) throw new Error("Gagal memuat hero banner");
+      return res.json();
+    },
+    staleTime: 60 * 1000,
+  });
+  const banners: Array<{ id: number; imageUrl: string }> = data?.data || [];
+
   return (
-    <section id="beranda" className="relative h-[calc(100vh-70px)] md:h-[calc(100vh-90px)] flex items-center overflow-hidden">
+    <section
+      id="beranda"
+      className="relative h-[calc(100vh-70px)] md:h-[calc(100vh-90px)] flex items-center overflow-hidden"
+    >
       {/* Background Image */}
       <div className="absolute inset-0">
-        <Image
-          src={"/nasdem-hero.jpg"}
-          alt="Kantor DPD Partai NasDem Sidoarjo"
-          fill
-          className="w-full h-full object-cover"
-          loading="eager"
-          priority
-        />
-        <div className="absolute inset-0 bg-gradient-to-r from-primary/95 via-primary/80 to-primary/60"></div>
+        {banners.length > 0 ? (
+          <Swiper
+            modules={[Autoplay, EffectFade]}
+            autoplay={{ delay: 5000, disableOnInteraction: false }}
+            loop
+            effect="fade"
+            speed={1000}
+            allowTouchMove={false}
+            className="w-full h-full"
+          >
+            {banners.map((b) => (
+              <SwiperSlide key={b.id}>
+                <div className="relative w-full h-full">
+                  <Image
+                    src={b.imageUrl}
+                    alt={`Banner NasDem ${b.id}`}
+                    fill
+                    priority
+                    sizes="100vw"
+                    className="object-cover transition-transform duration-700 scale-100 group-hover:scale-105"
+                  />
+                  <div className="absolute inset-0 bg-gradient-to-r from-primary/95 via-primary/80 to-primary/60" />
+                </div>
+              </SwiperSlide>
+            ))}
+          </Swiper>
+        ) : (
+          <>
+            <Image
+              src="/nasdem-hero.jpg"
+              alt="Kantor DPD Partai NasDem Sidoarjo"
+              fill
+              className="object-cover"
+              priority
+            />
+            <div className="absolute inset-0 bg-gradient-to-r from-primary/95 via-primary/80 to-primary/60" />
+          </>
+        )}
       </div>
 
       {/* Content */}
@@ -34,7 +84,9 @@ const NasdemHero = () => {
             <h1 className="text-3xl sm:text-4xl md:text-5xl lg:text-6xl font-bold text-primary-foreground leading-tight">
               DPD Partai <span className="text-secondary">NasDem</span>
               <br />
-              <span className="text-2xl sm:text-3xl md:text-4xl lg:text-5xl">Sidoarjo</span>
+              <span className="text-2xl sm:text-3xl md:text-4xl lg:text-5xl">
+                Sidoarjo
+              </span>
             </h1>
 
             <p className="text-base sm:text-lg md:text-xl text-primary-foreground/90 max-w-2xl leading-relaxed">
@@ -53,7 +105,7 @@ const NasdemHero = () => {
                 size="lg"
                 variant="secondary"
                 className="hover-scale group font-semibold bg-secondary text-primary hover:bg-secondary/90"
-                onClick={() => window.location.href = '/bergabung'}
+                onClick={() => (window.location.href = "/bergabung")}
               >
                 <span>Bergabung dengan Kami</span>
                 <ArrowRight className="ml-2 h-4 w-4 group-hover:translate-x-1 transition-transform" />

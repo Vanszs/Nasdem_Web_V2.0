@@ -41,6 +41,11 @@ async function main() {
   await db.sayapType.deleteMany();
   await db.party.deleteMany();
   await db.user.deleteMany();
+  await db.cmsAbout.deleteMany();
+  await db.cmsContact.deleteMany();
+  await db.cmsHeroBanner.deleteMany();
+  await db.activity.deleteMany();
+  await db.activityMedia.deleteMany();
 
   console.log("✅ All tables truncated.");
 
@@ -411,7 +416,7 @@ async function main() {
         {
           activityId: a2.id,
           type: "video",
-          url: "https://www.youtube.com/watch?v=L7B6V_OgzSY",
+          url: "https://www.youtube.com/embed/_bJJvcVoT7s?si=TPTbeefE70_vPyAa",
           caption: "Rangkuman kegiatan",
           order: 1,
         },
@@ -430,7 +435,7 @@ async function main() {
         "Mewujudkan Sidoarjo sebagai daerah yang maju, demokratis, dan berkeadilan sosial melalui gerakan perubahan yang berkelanjutan.",
       mission:
         "Membangun kaderitas yang kuat, melayani masyarakat dengan integritas, dan mengadvokasi kebijakan pro-rakyat.",
-      videoUrl: "https://www.youtube.com/watch?v=dQw4w9WgXcQ",
+      videoUrl: "https://www.youtube.com/embed/_bJJvcVoT7s?si=TPTbeefE70_vPyAa",
     },
   });
 
@@ -450,12 +455,14 @@ async function main() {
   await db.cmsHeroBanner.createMany({
     data: [
       {
-        imageUrl: "/api/placeholder/800/400",
+        imageUrl:
+          "https://i2.wp.com/nasionalnews.id/wp-content/uploads/2025/02/IMG-20250208-WA0013.jpg",
         order: 1,
         isActive: true,
       },
       {
-        imageUrl: "/api/placeholder/800/400",
+        imageUrl:
+          "https://arkdesign-architects.com/wp-content/uploads/2021/12/Nasdem-Tower-view.jpg",
         order: 2,
         isActive: true,
       },

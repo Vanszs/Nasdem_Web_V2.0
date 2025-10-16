@@ -1,5 +1,8 @@
 "use client";
 
+import { useState } from "react";
+import { motion, AnimatePresence } from "framer-motion";
+import ReactPlayer from "react-player";
 import { Button } from "@/components/ui/button";
 import { Target, Heart, Handshake, Award } from "lucide-react";
 import Image from "next/image";
@@ -14,6 +17,7 @@ export function AboutSection() {
       return res.json();
     },
   });
+
   const about:
     | {
         vision?: string | null;
@@ -22,10 +26,14 @@ export function AboutSection() {
       }
     | undefined = data?.data;
 
+  // 🆕 State untuk cinematic mode
+  const [expanded, setExpanded] = useState(false);
+  const [isPlaying, setIsPlaying] = useState(false);
+
   return (
     <section
       id="profil"
-      className="py-16 md:py-24 bg-gradient-to-b from-white to-gray-50"
+      className="py-16 md:py-24 bg-gradient-to-b from-white to-gray-50 relative"
     >
       <div className="container mx-auto px-4 sm:px-6 lg:px-8">
         {/* Section Header */}
@@ -48,19 +56,23 @@ export function AboutSection() {
 
         {/* Content Grid */}
         <div className="grid lg:grid-cols-2 gap-8 lg:gap-12 items-center mb-12 md:mb-16">
-          {/* Image */}
+          {/* Video / Gambar */}
           <div className="relative">
             <div className="relative overflow-hidden rounded-2xl shadow-2xl border-2 border-nasdem-blue/20 hover:border-nasdem-blue/40 hover:shadow-3xl transition-all duration-300">
               {isLoading ? (
                 <div className="w-full h-[400px] bg-gray-100 animate-pulse" />
               ) : about?.videoUrl ? (
-                <iframe
+                <ReactPlayer
                   src={about.videoUrl}
-                  className="w-full h-[400px]"
-                  loading="lazy"
-                  allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share"
-                  allowFullScreen
-                  title="Video Tentang Kami"
+                  width="100%"
+                  height="400px"
+                  muted
+                  playing={isPlaying}
+                  controls
+                  onPlay={() => {
+                    setExpanded(true);
+                    setIsPlaying(true);
+                  }}
                 />
               ) : (
                 <Image
@@ -69,11 +81,11 @@ export function AboutSection() {
                   width={600}
                   height={400}
                   className="w-full h-[400px] object-cover hover:scale-105 transition-transform duration-500"
-                  priority={false}
                 />
               )}
-              <div className="absolute inset-0 bg-gradient-to-t from-nasdem-blue/40 via-nasdem-blue/10 to-transparent"></div>
+              <div className="absolute pointer-events-none inset-0 bg-gradient-to-t from-nasdem-blue/40 via-nasdem-blue/10 to-transparent"></div>
             </div>
+
             {/* Floating Card */}
             <div className="absolute -bottom-6 -right-6 bg-white rounded-xl p-6 shadow-2xl border-2 border-nasdem-blue/20 hover:border-nasdem-blue/40 hover:shadow-3xl transition-all duration-300">
               <div className="text-center">
@@ -141,84 +153,54 @@ export function AboutSection() {
             <Button
               variant="outline"
               className="hover-fade-up font-semibold border-nasdem-blue bg-nasdem-blue/5 text-nasdem-blue hover:bg-nasdem-blue hover:text-white px-8 py-3"
-              onClick={() => {
-                const profilSection = document.getElementById("profil");
-                if (profilSection) {
-                  profilSection.scrollIntoView({ behavior: "smooth" });
-                }
-              }}
             >
               Pelajari Lebih Lanjut
             </Button>
           </div>
         </div>
-
-        {/* History Section */}
-        <div className="bg-white rounded-2xl p-8 md:p-12 mb-12 md:mb-16 shadow-xl border-2 border-nasdem-blue/20 hover:border-nasdem-blue/40 hover:shadow-2xl transition-all duration-300">
-          <h3 className="text-2xl md:text-3xl font-bold text-nasdem-blue mb-6 text-center">
-            Sejarah & Pencapaian
-          </h3>
-          <div className="max-w-4xl mx-auto space-y-4 text-center">
-            <p className="text-gray-600 text-lg leading-relaxed">
-              DPD Partai NasDem Sidoarjo didirikan sebagai bagian dari gerakan
-              perubahan nasional yang dipimpin oleh Partai NasDem. Sejak
-              berdiri, kami telah konsisten memperjuangkan kepentingan
-              masyarakat Sidoarjo.
-            </p>
-            <p className="text-gray-600 text-lg leading-relaxed">
-              Di bawah kepemimpinan{" "}
-              <span className="font-semibold text-nasdem-blue">
-                Muh. Zakaria Dimas Pratama, S.Kom
-              </span>{" "}
-              (periode 2024-2029), DPD NasDem Sidoarjo terus mengembangkan
-              program-program inovatif untuk pemberdayaan masyarakat dan
-              pembangunan daerah.
-            </p>
-          </div>
-        </div>
-
-        {/* Values */}
-        <div className="grid md:grid-cols-3 gap-6 md:gap-8">
-          <div className="bg-white rounded-2xl p-8 border-2 border-nasdem-blue/20 text-center hover:shadow-2xl hover:border-nasdem-blue/40 transition-all duration-300 hover:-translate-y-1 shadow-lg">
-            <div className="w-16 h-16 bg-nasdem-blue/10 rounded-full flex items-center justify-center mx-auto mb-4 border border-nasdem-blue/20">
-              <Handshake className="text-nasdem-blue h-8 w-8" />
-            </div>
-            <h4 className="text-xl font-bold text-nasdem-blue mb-3">
-              Integritas
-            </h4>
-            <p className="text-gray-600 text-sm leading-relaxed">
-              Menjalankan amanah dengan jujur, transparan, dan bertanggung jawab
-              kepada rakyat Sidoarjo.
-            </p>
-          </div>
-
-          <div className="bg-white rounded-2xl p-8 border-2 border-nasdem-blue/20 text-center hover:shadow-2xl hover:border-nasdem-blue/40 transition-all duration-300 hover:-translate-y-1 shadow-lg">
-            <div className="w-16 h-16 bg-nasdem-orange/10 rounded-full flex items-center justify-center mx-auto mb-4 border border-nasdem-orange/20">
-              <Award className="text-nasdem-orange h-8 w-8" />
-            </div>
-            <h4 className="text-xl font-bold text-nasdem-blue mb-3">
-              Keunggulan
-            </h4>
-            <p className="text-gray-600 text-sm leading-relaxed">
-              Mengutamakan kualitas dalam setiap program dan pelayanan untuk
-              mencapai hasil terbaik.
-            </p>
-          </div>
-
-          <div className="bg-white rounded-2xl p-8 border-2 border-nasdem-blue/20 text-center hover:shadow-2xl hover:border-nasdem-blue/40 transition-all duration-300 hover:-translate-y-1 shadow-lg">
-            <div className="w-16 h-16 bg-nasdem-blue/10 rounded-full flex items-center justify-center mx-auto mb-4 border border-nasdem-blue/20">
-              <Heart className="text-nasdem-blue h-8 w-8" />
-            </div>
-            <h4 className="text-xl font-bold text-nasdem-blue mb-3">
-              Kemanusiaan
-            </h4>
-            <p className="text-gray-600 text-sm leading-relaxed">
-              Mengutamakan kepentingan rakyat dan keadilan sosial dalam setiap
-              keputusan politik.
-            </p>
-          </div>
-        </div>
       </div>
+
+      {/* 🆕 Cinematic Overlay dengan ReactPlayer + Framer Motion */}
+      <AnimatePresence>
+        {expanded && (
+          <motion.div
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            exit={{ opacity: 0 }}
+            transition={{ duration: 0.3 }}
+            className="fixed inset-0 z-[999] bg-black/70 backdrop-blur-sm flex items-center justify-center"
+          >
+            <motion.div
+              initial={{ scale: 0.8, opacity: 0 }}
+              animate={{ scale: 1, opacity: 1 }}
+              exit={{ scale: 0.8, opacity: 0 }}
+              transition={{ duration: 0.4, type: "spring" }}
+              className="relative w-[90vw] h-[70vh] bg-black rounded-xl overflow-hidden shadow-2xl"
+            >
+              <ReactPlayer
+                src={about?.videoUrl || ""}
+                width="100%"
+                height="100%"
+                playing={isPlaying}
+                controls
+                onPlay={() => {
+                  setExpanded(true);
+                  setIsPlaying(true);
+                }}
+              />
+              <button
+                onClick={() => {
+                  setIsPlaying(false);
+                  setExpanded(false);
+                }}
+                className="absolute top-4 right-4 bg-white/10 hover:bg-white/20 text-white text-2xl rounded-full px-3 py-1 transition"
+              >
+                ✕
+              </button>
+            </motion.div>
+          </motion.div>
+        )}
+      </AnimatePresence>
     </section>
   );
 }

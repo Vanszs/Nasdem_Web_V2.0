@@ -11,7 +11,10 @@ const bannerSchema = z.object({
 });
 
 export async function GET() {
-  const data = await db.cmsHeroBanner.findMany({ orderBy: { order: "asc" } });
+  const data = await db.cmsHeroBanner.findMany({
+    where: { isActive: true },
+    orderBy: { order: "asc" },
+  });
   return NextResponse.json({ data });
 }
 
