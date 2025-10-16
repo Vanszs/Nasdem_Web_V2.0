@@ -189,19 +189,81 @@ model Program {
   // Pendaftar PIP
   pipRegistrations PipRegistration[]
 
-  @@unique([category, name]) // kombinasi kategori+nama harus unik
+  @@unique([category, name])
 }
 
-model Gallery {
-  id         Int       @id @default(autoincrement())
-  type       String?   @db.VarChar(50)
-  category   String?   @db.VarChar(255)
-  url        String    @db.VarChar(255)
-  title      String?
-  uploadDate DateTime? @default(now())
-  createdAt  DateTime  @default(now())
-  updatedAt  DateTime  @updatedAt
-  deletedAt  DateTime? @db.Timestamptz
+// ---------------------------
+// Benefit & MemberBenefit (Program-related benefits assignment to members)
+// ---------------------------
+model Benefit {
+  id          Int       @id @default(autoincrement())
+  title       String    @db.VarChar(150)
+  description String?
+  category    String?
+  startDate   DateTime?
+  endDate     DateTime?
+  createdAt   DateTime  @default(now())
+  updatedAt   DateTime  @updatedAt
+  deletedAt   DateTime? @db.Timestamptz
+
+  // Relations
+  assignments MemberBenefit[]
+
+  @@index([deletedAt])
+  @@index([category])
+}
+
+model MemberBenefit {
+  id        Int           @id @default(autoincrement())
+  memberId  Int
+  benefitId Int
+  status    BenefitStatus
+  grantedAt DateTime?
+  notes     String?
+  createdAt DateTime      @default(now())
+  updatedAt DateTime      @updatedAt
+
+  // Relations
+  member  Member  @relation(fields: [memberId], references: [id], onDelete: Cascade, onUpdate: Cascade)
+  benefit Benefit @relation(fields: [benefitId], references: [id], onDelete: Cascade, onUpdate: Cascade)
+
+  @@unique([memberId, benefitId])
+  @@index([memberId])
+  @@index([benefitId])
+}
+
+model Activity {
+  id          Int       @id @default(autoincrement())
+  title       String    @db.VarChar(150)
+  description String?   @db.Text
+  category    String?   @db.VarChar(100)
+  eventDate   DateTime?
+  location    String?   @db.VarChar(150)
+
+  createdAt DateTime  @default(now())
+  updatedAt DateTime  @updatedAt
+  deletedAt DateTime? @db.Timestamptz
+
+  media ActivityMedia[]
+
+  @@index([category])
+  @@index([eventDate])
+  @@index([deletedAt])
+}
+
+model ActivityMedia {
+  id         Int      @id @default(autoincrement())
+  activityId Int
+  activity   Activity @relation(fields: [activityId], references: [id], onDelete: Cascade)
+
+  type       String   @db.VarChar(20)
+  url        String   @db.VarChar(255)
+  caption    String?  @db.VarChar(255)
+  order      Int      @default(0)
+  uploadedAt DateTime @default(now())
+
+  @@index([activityId])
+  @@index([type])
 }
 
 // ---------------------------
@@ -286,8 +348,9 @@ model Member {
   cadres             Member[] @relation("MemberCadres")
 
   // Aplikasi keanggotaan
-  applications MembershipApplication[]
-  Program      Program[]
+  applications  MembershipApplication[]
+  Program       Program[]
+  MemberBenefit MemberBenefit[]
 
   @@index([status])
   @@index([strukturId])

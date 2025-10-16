@@ -30,7 +30,9 @@ async function main() {
   await db.kecamatan.deleteMany();
   await db.dapil.deleteMany();
   await db.caleg.deleteMany();
-  await db.gallery.deleteMany();
+  // Clear new gallery tables
+  await (db as any).activityMedia.deleteMany();
+  await (db as any).activity.deleteMany();
   await db.news.deleteMany();
   await db.program.deleteMany();
   await db.member.deleteMany();
@@ -301,25 +303,68 @@ async function main() {
   });
 
   // --------------------------
-  // 9. GALLERY
+  // 9. ACTIVITIES & MEDIA (Gallery replacement)
   // --------------------------
-  await db.gallery.createMany({
-    data: [
-      {
-        type: "photo",
-        url: "/uploads/gallery/rapat-1.jpg",
-        caption: "Rapat internal pengurus",
-        uploadDate: new Date(),
-        userId: superadmin.id,
+  const activities = await db.$transaction(async (tx) => {
+    const a1 = await (tx as any).activity.create({
+      data: {
+        title: "Rapat Koordinasi DPD",
+        description: "Rapat koordinasi pengurus membahas program kerja 2025",
+        category: "internal",
+        eventDate: new Date("2024-01-15"),
+        location: "Kantor DPD NasDem Sidoarjo",
       },
-      {
-        type: "video",
-        url: "https://www.youtube.com/watch?v=dQw4w9WgXcQ",
-        caption: "Dokumentasi kegiatan",
-        uploadDate: new Date(),
-        userId: editor.id,
+    });
+
+    await (tx as any).activityMedia.createMany({
+      data: [
+        {
+          activityId: a1.id,
+          type: "image",
+          url: "/uploads/gallery/rapat-1.jpg",
+          caption: "Pembukaan rapat",
+          order: 0,
+        },
+        {
+          activityId: a1.id,
+          type: "image",
+          url: "/uploads/gallery/rapat-2.jpg",
+          caption: "Diskusi program",
+          order: 1,
+        },
+      ],
+    });
+
+    const a2 = await (tx as any).activity.create({
+      data: {
+        title: "Bakti Sosial Ramadan",
+        description: "Program bakti sosial membagikan sembako",
+        category: "sosial",
+        eventDate: new Date("2024-03-20"),
+        location: "Kelurahan Sidoarjo",
       },
-    ],
+    });
+
+    await (tx as any).activityMedia.createMany({
+      data: [
+        {
+          activityId: a2.id,
+          type: "image",
+          url: "/uploads/gallery/baksos-1.jpg",
+          caption: "Pembagian sembako",
+          order: 0,
+        },
+        {
+          activityId: a2.id,
+          type: "video",
+          url: "https://www.youtube.com/watch?v=dQw4w9WgXcQ",
+          caption: "Rangkuman kegiatan",
+          order: 1,
+        },
+      ],
+    });
+
+    return [a1, a2];
   });
 
   // --------------------------

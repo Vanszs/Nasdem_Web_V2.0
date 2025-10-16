@@ -20,7 +20,7 @@ const assignBenefitSchema = z.object({
 });
 
 export async function GET(req: NextRequest) {
-  const authError = requireAuth(req);
+  const authError = await requireAuth(req);
   if (authError) return authError;
 
   const roleError = requireRole(req, [
@@ -63,7 +63,7 @@ export async function GET(req: NextRequest) {
       andConditions.push({ status: parsed.status });
     }
 
-    const assignments = await db.memberBenefit.findMany({
+    const assignments = await (db as any).memberBenefit.findMany({
       where: andConditions.length ? { AND: andConditions } : undefined,
       orderBy: { createdAt: "desc" },
       select: {
@@ -108,7 +108,7 @@ export async function GET(req: NextRequest) {
 }
 
 export async function POST(req: NextRequest) {
-  const authError = requireAuth(req);
+  const authError = await requireAuth(req);
   if (authError) return authError;
 
   const roleError = requireRole(req, [UserRole.EDITOR, UserRole.SUPERADMIN]);
@@ -132,7 +132,7 @@ export async function POST(req: NextRequest) {
     const data = parsed.data;
 
     try {
-      const assignment = await db.memberBenefit.create({
+      const assignment = await (db as any).memberBenefit.create({
         data: {
           memberId: data.memberId,
           benefitId: data.benefitId,
@@ -171,7 +171,10 @@ export async function POST(req: NextRequest) {
         },
       });
 
-      return NextResponse.json({ success: true, data: assignment }, { status: 201 });
+      return NextResponse.json(
+        { success: true, data: assignment },
+        { status: 201 }
+      );
     } catch (err: any) {
       if (
         err instanceof Prisma.PrismaClientKnownRequestError &&

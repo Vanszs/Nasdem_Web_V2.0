@@ -19,7 +19,7 @@ export async function PATCH(
   req: NextRequest,
   { params }: { params: { id: string } }
 ) {
-  const authError = requireAuth(req);
+  const authError = await requireAuth(req);
   if (authError) return authError;
 
   const roleError = requireRole(req, [UserRole.EDITOR, UserRole.SUPERADMIN]);
@@ -50,7 +50,7 @@ export async function PATCH(
 
     const data = parsed.data;
 
-    const updated = await db.memberBenefit.update({
+    const updated = await (db as any).memberBenefit.update({
       where: { id: assignmentId },
       data: {
         status: data.status ?? undefined,
@@ -101,7 +101,7 @@ export async function DELETE(
   req: NextRequest,
   { params }: { params: { id: string } }
 ) {
-  const authError = requireAuth(req);
+  const authError = await requireAuth(req);
   if (authError) return authError;
 
   const roleError = requireRole(req, [UserRole.EDITOR, UserRole.SUPERADMIN]);
@@ -116,7 +116,7 @@ export async function DELETE(
   }
 
   try {
-    await db.memberBenefit.delete({ where: { id: assignmentId } });
+    await (db as any).memberBenefit.delete({ where: { id: assignmentId } });
     return NextResponse.json({ success: true });
   } catch (err: any) {
     console.error("Error deleting member benefit:", err);

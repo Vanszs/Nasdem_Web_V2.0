@@ -21,7 +21,7 @@ const createBenefitSchema = z.object({
 });
 
 export async function GET(req: NextRequest) {
-  const authError = requireAuth(req);
+  const authError = await requireAuth(req);
   if (authError) return authError;
 
   const roleError = requireRole(req, [
@@ -62,7 +62,9 @@ export async function GET(req: NextRequest) {
     }
 
     if (parsed.category) {
-      conditions.push({ category: { equals: parsed.category, mode: "insensitive" } });
+      conditions.push({
+        category: { equals: parsed.category, mode: "insensitive" },
+      });
     }
 
     if (parsed.status) {
@@ -71,7 +73,7 @@ export async function GET(req: NextRequest) {
 
     const includeRecipients = parsed.withRecipients === true;
 
-    const benefits = await db.benefit.findMany({
+    const benefits = await (db as any).benefit.findMany({
       where: conditions.length ? { AND: conditions } : undefined,
       orderBy: { createdAt: "desc" },
       select: {
@@ -119,7 +121,7 @@ export async function GET(req: NextRequest) {
 }
 
 export async function POST(req: NextRequest) {
-  const authError = requireAuth(req);
+  const authError = await requireAuth(req);
   if (authError) return authError;
 
   const roleError = requireRole(req, [UserRole.EDITOR, UserRole.SUPERADMIN]);
@@ -142,7 +144,7 @@ export async function POST(req: NextRequest) {
 
     const data = parsed.data;
 
-    const benefit = await db.benefit.create({
+    const benefit = await (db as any).benefit.create({
       data: {
         title: data.title,
         description: data.description || undefined,

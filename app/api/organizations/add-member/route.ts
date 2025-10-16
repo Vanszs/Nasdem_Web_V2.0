@@ -5,7 +5,7 @@ import { toInt, toIntArray } from "@/lib/parsers";
 import { UserRole } from "@/lib/rbac";
 
 export async function POST(req: NextRequest) {
-  const authError = requireAuth(req);
+  const authError = await requireAuth(req);
   if (authError) return authError;
   const roleError = requireRole(req, [UserRole.EDITOR, UserRole.SUPERADMIN]);
   if (roleError) return roleError;

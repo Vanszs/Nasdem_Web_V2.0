@@ -1,5 +1,6 @@
 import { NextRequest, NextResponse } from "next/server";
 import jwt from "jsonwebtoken";
+import { db } from "@/lib/db";
 import {
   UserRole,
   Permission,
@@ -30,7 +31,7 @@ export function isTokenBlacklisted(token: string): boolean {
   return tokenBlacklist.has(token);
 }
 
-export function requireAuth(req: NextRequest) {
+export async function requireAuth(req: NextRequest) {
   try {
     const token = req.cookies.get("token")?.value;
     if (!token) {
@@ -54,9 +55,19 @@ export function requireAuth(req: NextRequest) {
       throw new AuthenticationError("Token expired");
     }
 
+    // Verify user still exists and not soft-deleted
+    const userRecord = await db.user.findUnique({
+      where: { id: decoded.userId },
+    });
+    if (!userRecord || userRecord.deletedAt) {
+      throw new AuthenticationError("User not found or deactivated");
+    }
+
+    // Attach user with role from DB (authoritative)
     (req as any).user = {
-      userId: decoded.userId,
-      role: decoded.role as UserRole,
+      userId: userRecord.id,
+      role: (userRecord.role?.toString?.().toUpperCase?.() ||
+        decoded.role) as UserRole,
     };
 
     return null; // request diteruskan
@@ -71,6 +82,12 @@ export function requireAuth(req: NextRequest) {
     if (err.name === "JsonWebTokenError") {
       return NextResponse.json(
         { success: false, error: "Invalid token" },
+        { status: 401 }
+      );
+    }
+    if (err instanceof AuthenticationError) {
+      return NextResponse.json(
+        { success: false, error: err.message },
         { status: 401 }
       );
     }
