@@ -18,12 +18,14 @@ export function ProgramCard({
   program,
   IconComponent,
   JoinDialog,
-  onJoin,
+  DetailDialog,
+  showJoin = true,
 }: {
   program: any;
   IconComponent: any;
-  JoinDialog: React.ReactNode;
-  onJoin?: () => void;
+  JoinDialog?: React.ReactNode;
+  DetailDialog: React.ReactNode;
+  showJoin?: boolean;
 }) {
   const target = Number(program.target) || 0;
   const current = Number(program.currentTarget) || 0;
@@ -104,15 +106,28 @@ export function ProgramCard({
                   </span>
                 </div>
               </div>
-              <div className="justify-self-end">
+              <div className="justify-self-end flex gap-2">
                 <Dialog>
                   <DialogTrigger asChild>
-                    <Button className="bg-gradient-to-r from-nasdem-orange to-nasdem-orange/90 hover:from-nasdem-orange/90 hover:to-nasdem-orange text-white">
-                      Ikut Program
+                    <Button
+                      variant="outline"
+                      className="border-gray-300 hover:border-[#001B55] hover:text-[#001B55]"
+                    >
+                      Detail Program
                     </Button>
                   </DialogTrigger>
-                  {JoinDialog}
+                  {DetailDialog}
                 </Dialog>
+                {showJoin && JoinDialog && (
+                  <Dialog>
+                    <DialogTrigger asChild>
+                      <Button className="bg-gradient-to-r from-nasdem-orange to-nasdem-orange/90 hover:from-nasdem-orange/90 hover:to-nasdem-orange text-white">
+                        Ikut Program
+                      </Button>
+                    </DialogTrigger>
+                    {JoinDialog}
+                  </Dialog>
+                )}
               </div>
             </div>
           </div>

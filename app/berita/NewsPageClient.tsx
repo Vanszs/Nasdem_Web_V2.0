@@ -4,6 +4,7 @@ import { useMemo, useState } from "react";
 import { useQuery } from "@tanstack/react-query";
 import { Skeleton } from "@/components/ui/skeleton";
 import NewsContent from "@/components/news-content";
+import { SimplePagination } from "@/components/ui/pagination";
 
 type PublicNews = {
   id: string;
@@ -72,6 +73,7 @@ export default function NewsPageClient() {
         cache: "no-store",
       });
       const json = await res.json();
+      console.log(json);
       if (!res.ok || !json.success)
         throw new Error(json.error || "Gagal memuat berita");
       return json;
@@ -150,7 +152,6 @@ export default function NewsPageClient() {
                 ))}
               </div>
 
-              {/* Pagination skeleton */}
               <div className="flex justify-center items-center gap-2 mt-12">
                 {Array.from({ length: 5 }).map((_, i) => (
                   <Skeleton
@@ -188,12 +189,24 @@ export default function NewsPageClient() {
   }
 
   return (
-    <NewsContent
-      news={news}
-      recentNews={recentNews}
-      currentPage={listData?.meta.page || page}
-      totalPages={listData?.meta.totalPages || 1}
-      totalCount={listData?.meta.total || news.length}
-    />
+    <section className="py-16">
+      <div className="container mx-auto px-4">
+        <NewsContent
+          news={news}
+          recentNews={recentNews}
+          currentPage={listData?.meta.page || page}
+          totalPages={listData?.meta.totalPages || 1}
+          totalCount={listData?.meta.total || news.length}
+        />
+        <div className="mt-10">
+          <SimplePagination
+            page={listData?.meta.page || page}
+            totalPages={listData?.meta.totalPages || 1}
+            totalItems={listData?.meta.total || news.length}
+            onChange={(p) => setPage(p)}
+          />
+        </div>
+      </div>
+    </section>
   );
 }

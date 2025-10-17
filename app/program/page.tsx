@@ -3,15 +3,7 @@
 import { useState } from "react";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { Button } from "@/components/ui/button";
-import {
-  Card,
-  CardContent,
-  CardDescription,
-  CardHeader,
-  CardTitle,
-} from "@/components/ui/card";
-import { Badge } from "@/components/ui/badge";
-import { Progress } from "@/components/ui/progress";
+import { Card, CardContent, CardHeader } from "@/components/ui/card";
 import {
   GraduationCap,
   Sprout,
@@ -19,15 +11,14 @@ import {
   Building,
   Users,
   Briefcase,
-  Calendar,
   Target,
-  Clock,
 } from "lucide-react";
 import NasdemHeader from "@/components/nasdem-header";
 import NasdemFooter from "@/components/nasdem-footer";
-import { ProgramFilters } from "@/components/programs/ProgramFilters";
-import { ProgramCard } from "@/components/programs/ProgramCard";
-import { JoinProgramDialog as JoinDialog } from "@/components/programs/JoinProgramDialog";
+import { ProgramFilters } from "@/app/program/components/ProgramFilters";
+import { ProgramCard } from "@/app/program/components/ProgramCard";
+import { JoinProgramDialog as JoinDialog } from "@/app/program/components/JoinProgramDialog";
+import { ProgramDetailDialog } from "@/app/program/components/ProgramDetailDialog";
 import { SimplePagination } from "@/components/ui/pagination";
 import { toast } from "sonner";
 import { useDebounce } from "@/hooks/use-debounce";
@@ -181,17 +172,26 @@ export default function ProgramPage() {
               programs.map((program: any, index: number) => {
                 const IconComponent =
                   categoryIconMap[program.category?.toLowerCase?.()] || Target;
+                const isPip =
+                  (program.category || "").toLowerCase() === "pendidikan" &&
+                  (program.name || "")
+                    .toLowerCase()
+                    .includes("pendidikan inklusif");
                 return (
                   <ProgramCard
                     key={program.id ?? index}
                     program={program}
                     IconComponent={IconComponent}
+                    DetailDialog={<ProgramDetailDialog program={program} />}
+                    showJoin={isPip}
                     JoinDialog={
-                      <JoinDialog
-                        programId={program.id}
-                        isSubmitting={joinMutation.isPending}
-                        onSubmit={(fd) => joinMutation.mutate(fd)}
-                      />
+                      isPip ? (
+                        <JoinDialog
+                          programId={program.id}
+                          isSubmitting={joinMutation.isPending}
+                          onSubmit={(fd) => joinMutation.mutate(fd)}
+                        />
+                      ) : undefined
                     }
                   />
                 );
@@ -206,30 +206,6 @@ export default function ProgramPage() {
             onChange={(p) => setPage(p)}
             totalItems={meta.total}
           />
-
-          {/* CTA Section */}
-          <Card className="bg-gradient-to-r from-nasdem-blue to-nasdem-orange text-white text-center mt-10">
-            <CardContent className="p-8 md:p-12">
-              <h3 className="text-2xl md:text-3xl font-bold mb-4">
-                Bergabunglah dalam Gerakan Perubahan
-              </h3>
-              <p className="text-white/90 text-lg mb-6 max-w-2xl mx-auto">
-                Mari bersama-sama mewujudkan Sidoarjo yang lebih maju, adil, dan
-                sejahtera melalui program-program nyata.
-              </p>
-              <div className="flex flex-col sm:flex-row gap-4 justify-center">
-                <Button className="bg-white text-nasdem-blue hover:bg-gray-100 font-semibold text-lg px-8 py-3 rounded-lg transition-all duration-300 transform hover:scale-105">
-                  Daftar Sebagai Relawan
-                </Button>
-                <Button
-                  variant="outline"
-                  className="border-white bg-white/10 text-white hover:bg-white hover:text-nasdem-blue font-semibold text-lg px-8 py-3 rounded-lg backdrop-blur-sm transition-all duration-300 transform hover:scale-105"
-                >
-                  Hubungi Tim Program
-                </Button>
-              </div>
-            </CardContent>
-          </Card>
         </div>
       </main>
 

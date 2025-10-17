@@ -23,24 +23,24 @@ export function ProgramFilters({
   return (
     <div className="mb-8 rounded-xl bg-white border border-gray-200 shadow-lg p-4 md:p-6">
       <div className="grid grid-cols-1 md:grid-cols-12 gap-3">
-        <div className="md:col-span-8">
+        <div className="md:col-span-9">
           <Input
             placeholder="Cari program..."
             value={q}
             onChange={(e) => onQChange(e.target.value)}
-            className="bg-white border-gray-300 focus:border-[#001B55] focus:ring-2 focus:ring-[#001B55]/20"
+            className="bg-white p-5 border-gray-300 focus:border-[#001B55] focus:ring-2 focus:ring-[#001B55]/20"
           />
         </div>
-        <div className="md:col-span-4">
+        <div className="md:col-span-3">
           <Select
             value={category ?? "all"}
             onValueChange={(v) => onCategoryChange(v === "all" ? undefined : v)}
           >
-            <SelectTrigger className="bg-white border-gray-300 focus:border-[#001B55] focus:ring-2 focus:ring-[#001B55]/20">
+            <SelectTrigger className="bg-white w-full p-5 border-gray-300 focus:border-[#001B55] focus:ring-2 focus:ring-[#001B55]/20">
               <SelectValue placeholder="Semua kategori" />
             </SelectTrigger>
             <SelectContent>
-              <SelectItem value="all">Semua</SelectItem>
+              <SelectItem value="all">Semua Program</SelectItem>
               <SelectItem value="pendidikan">Pendidikan</SelectItem>
               <SelectItem value="ekonomi">Ekonomi</SelectItem>
               <SelectItem value="pertanian">Pertanian</SelectItem>
