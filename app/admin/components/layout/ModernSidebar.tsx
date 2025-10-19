@@ -26,31 +26,37 @@ import {
 } from "lucide-react";
 
 import { SafeNavLink } from "./SafeNavLink";
+import { UserRole } from "@/lib/rbac";
 
-const menuItems = [
+// Define all menu items with their required roles
+const allMenuItems = [
   {
     title: "Dashboard",
     url: "/admin",
     icon: LayoutDashboard,
     ariaLabel: "Dashboard utama",
+    requiredRoles: [UserRole.SUPERADMIN, UserRole.EDITOR, UserRole.ANALYST],
   },
   {
     title: "CMS",
     icon: Monitor,
     isCollapsible: true,
     ariaLabel: "Menu Content Management System",
+    requiredRoles: [UserRole.SUPERADMIN, UserRole.EDITOR],
     subItems: [
       {
         title: "Berita",
         url: "/admin/news",
         icon: FileText,
         ariaLabel: "Kelola berita",
+        requiredRoles: [UserRole.SUPERADMIN, UserRole.EDITOR],
       },
       {
         title: "Galeri",
         url: "/admin/gallery",
         icon: ImageIcon,
         ariaLabel: "Kelola galeri foto dan video",
+        requiredRoles: [UserRole.SUPERADMIN, UserRole.EDITOR],
       },
     ],
   },
@@ -59,24 +65,28 @@ const menuItems = [
     url: "/admin/landing",
     icon: Globe,
     ariaLabel: "Edit halaman landing",
+    requiredRoles: [UserRole.SUPERADMIN, UserRole.EDITOR],
   },
   {
     title: "Program Kerja",
     icon: ClipboardList,
     isCollapsible: true,
     ariaLabel: "Menu Program Kerja",
+    requiredRoles: [UserRole.SUPERADMIN],
     subItems: [
       {
         title: "Daftar Program",
         url: "/admin/programs",
         icon: ClipboardList,
         ariaLabel: "Kelola program kerja",
+        requiredRoles: [UserRole.SUPERADMIN],
       },
       {
         title: "Penerima Manfaat",
         url: "/admin/beneficiaries",
         icon: HandHeart,
         ariaLabel: "Kelola penerima manfaat program",
+        requiredRoles: [UserRole.SUPERADMIN],
       },
     ],
   },
@@ -85,18 +95,21 @@ const menuItems = [
     icon: Network,
     isCollapsible: true,
     ariaLabel: "Menu struktur organisasi",
+    requiredRoles: [UserRole.SUPERADMIN],
     subItems: [
       {
         title: "Struktur Organisasi",
         url: "/admin/organizations",
         icon: Network,
         ariaLabel: "Kelola data organisasi",
+        requiredRoles: [UserRole.SUPERADMIN],
       },
       {
         title: "Kelola Anggota",
         url: "/admin/organizations/manage",
         icon: FolderKanban,
         ariaLabel: "Kelola anggota organisasi",
+        requiredRoles: [UserRole.SUPERADMIN],
       },
     ],
   },
@@ -105,24 +118,28 @@ const menuItems = [
     url: "/admin/user",
     icon: UserPlus,
     ariaLabel: "Kelola pengguna",
+    requiredRoles: [UserRole.SUPERADMIN],
   },
   {
     title: "Pending Request",
     icon: Clock,
     isCollapsible: true,
     ariaLabel: "Menu permintaan yang menunggu persetujuan",
+    requiredRoles: [UserRole.SUPERADMIN],
     subItems: [
       {
         title: "PIP (Beasiswa)",
         url: "/admin/pending-requests/pip",
         icon: GraduationCap,
         ariaLabel: "Kelola pendaftaran beasiswa PIP",
+        requiredRoles: [UserRole.SUPERADMIN],
       },
       {
         title: "Member Regist",
         url: "/admin/pending-requests/member-regist",
         icon: UserCheck,
         ariaLabel: "Kelola pendaftaran anggota baru",
+        requiredRoles: [UserRole.SUPERADMIN],
       },
     ],
   },
@@ -131,6 +148,7 @@ const menuItems = [
     url: "/admin/statistik-pemilu",
     icon: BarChart3,
     ariaLabel: "Lihat statistik dan data pemilu",
+    requiredRoles: [UserRole.SUPERADMIN, UserRole.ANALYST],
   },
 ];
 
@@ -145,13 +163,64 @@ export function ModernSidebar({
 }: ModernSidebarProps) {
   const currentPath = usePathname() || "/";
   const sidebarRef = useRef<HTMLElement>(null);
+  const [userRole, setUserRole] = useState<UserRole | null>(null);
+  const [menuItems, setMenuItems] = useState<typeof allMenuItems>(allMenuItems);
+  const [isLoading, setIsLoading] = useState(true);
+
+  // Fetch user data and filter menu items based on role
+  useEffect(() => {
+    const fetchUserData = async () => {
+      try {
+        const response = await fetch("/api/auth/me", {
+          method: "GET",
+          credentials: "include",
+        });
+
+        if (response.ok) {
+          const data = await response.json();
+          if (data.success) {
+            const role = data.data.role as UserRole;
+            setUserRole(role);
+            
+            // Filter menu items based on user role
+            const filteredItems = allMenuItems.filter(item => {
+              if (!item.requiredRoles.includes(role)) {
+                return false;
+              }
+              return true;
+            }).map(item => {
+              // Create a deep copy of the item with filtered sub-items
+              const newItem = { ...item };
+              if (newItem.subItems) {
+                newItem.subItems = newItem.subItems.filter(subItem =>
+                  subItem.requiredRoles.includes(role)
+                );
+              }
+              return newItem;
+            });
+            
+            setMenuItems(filteredItems);
+            setIsLoading(false);
+          }
+        } else {
+          // If not authenticated, redirect to login
+          window.location.href = "/";
+        }
+      } catch (error) {
+        console.error("Failed to fetch user data:", error);
+        window.location.href = "/";
+      }
+    };
+
+    fetchUserData();
+  }, []);
 
   const getInitialOpenGroups = () => {
     const groups: string[] = [];
-    menuItems.forEach((item) => {
+    menuItems.forEach((item: any) => {
       if (item.isCollapsible && item.subItems) {
         const hasActiveSubItem = item.subItems.some(
-          (subItem) =>
+          (subItem: any) =>
             currentPath === subItem.url ||
             currentPath.startsWith(subItem.url + "/")
         );
@@ -173,7 +242,7 @@ export function ModernSidebar({
   useEffect(() => {
     const newOpenGroups = getInitialOpenGroups();
     setOpenGroups(newOpenGroups);
-  }, [currentPath]);
+  }, [currentPath, menuItems]);
 
   const isActive = (path: string) => currentPath === path;
   const isGroupActive = (subItems?: { url: string }[]) =>
@@ -298,7 +367,12 @@ export function ModernSidebar({
         )}
 
         <div className="space-y-1">
-          {menuItems.map((item) => (
+          {isLoading ? (
+            <div className="flex justify-center items-center py-8">
+              <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-[#001B55]"></div>
+            </div>
+          ) : (
+            menuItems.map((item: any) => (
             <div
               key={item.title}
               className="relative group/item"
@@ -362,7 +436,7 @@ export function ModernSidebar({
                       className="ml-8 mt-1 mb-1 space-y-1 pl-3 border-l border-[#001B55]/20"
                       role="list"
                     >
-                      {item.subItems?.map((subItem) => {
+                      {item.subItems?.map((subItem: any) => {
                         const SubIcon = subItem.icon;
                         const subItemActive = isActive(subItem.url);
                         return (
@@ -435,7 +509,8 @@ export function ModernSidebar({
                 </>
               )}
             </div>
-          ))}
+))
+          )}
         </div>
       </div>
 

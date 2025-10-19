@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import {
   Search,
   Bell,
@@ -27,6 +27,7 @@ import {
 } from "@/components/ui/breadcrumb";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { useRouter } from "next/navigation";
+import { UserRole } from "@/lib/rbac";
 
 interface TopNavbarProps {
   breadcrumbs?: { label: string; href?: string }[];
@@ -38,6 +39,34 @@ export function TopNavbar({
   onToggleSidebar,
 }: TopNavbarProps) {
   const router = useRouter();
+  const [user, setUser] = useState<any>(null);
+
+  // Fetch user data on component mount
+  useEffect(() => {
+    const fetchUserData = async () => {
+      try {
+        const response = await fetch("/api/auth/me", {
+          method: "GET",
+          credentials: "include",
+        });
+
+        if (response.ok) {
+          const data = await response.json();
+          if (data.success) {
+            setUser(data.data);
+          }
+        } else {
+          // If not authenticated, redirect to login
+          router.replace("/");
+        }
+      } catch (error) {
+        console.error("Failed to fetch user data:", error);
+        router.replace("/");
+      }
+    };
+
+    fetchUserData();
+  }, [router]);
 
   const handleLogout = async () => {
     try {
@@ -47,6 +76,28 @@ export function TopNavbar({
     } finally {
       router.replace("/");
     }
+  };
+
+  const getRoleDisplayName = (role: UserRole) => {
+    switch (role) {
+      case UserRole.SUPERADMIN:
+        return "Super Admin";
+      case UserRole.EDITOR:
+        return "Editor";
+      case UserRole.ANALYST:
+        return "Analyst";
+      default:
+        return "Unknown";
+    }
+  };
+
+  const getInitials = (name: string) => {
+    return name
+      .split(" ")
+      .map((n) => n[0])
+      .join("")
+      .toUpperCase()
+      .slice(0, 2);
   };
 
   return (
@@ -123,17 +174,17 @@ export function TopNavbar({
               >
                 <div className="flex items-center gap-3">
                   <Avatar className="h-8 w-8 ring-2 ring-offset-2 ring-offset-white ring-primary/30 group-hover:ring-primary/50 transition-all duration-300 shadow-sm">
-                    <AvatarImage src="/placeholder-avatar.jpg" alt="Admin" />
+                    <AvatarImage src="/placeholder-avatar.jpg" alt={user?.username || "Admin"} />
                     <AvatarFallback className="bg-gradient-to-br from-primary to-primary/80 text-white text-sm font-semibold">
-                      AD
+                      {user ? getInitials(user.username) : "AD"}
                     </AvatarFallback>
                   </Avatar>
                   <div className="hidden md:flex flex-col items-start">
                     <span className="text-sm font-medium text-foreground">
-                      Admin User
+                      {user?.username || "Admin User"}
                     </span>
                     <span className="text-xs text-muted-foreground font-medium">
-                      Super Admin
+                      {user ? getRoleDisplayName(user.role) : "Loading..."}
                     </span>
                   </div>
                   <ChevronDown className="h-4 w-4 text-muted-foreground group-hover:text-foreground transition-all duration-300 group-hover:rotate-180" />
@@ -147,17 +198,17 @@ export function TopNavbar({
               <DropdownMenuLabel className="px-4 py-3 border-b border-gray-100">
                 <div className="flex items-center gap-3">
                   <Avatar className="h-10 w-10">
-                    <AvatarImage src="/placeholder-avatar.jpg" alt="Admin" />
+                    <AvatarImage src="/placeholder-avatar.jpg" alt={user?.username || "Admin"} />
                     <AvatarFallback className="bg-gradient-to-br from-primary to-primary/80 text-white font-semibold">
-                      AD
+                      {user ? getInitials(user.username) : "AD"}
                     </AvatarFallback>
                   </Avatar>
                   <div>
                     <p className="text-sm font-semibold text-foreground">
-                      Admin User
+                      {user?.username || "Admin User"}
                     </p>
                     <p className="text-xs text-muted-foreground">
-                      admin@nasdem-sidoarjo.id
+                      {user?.email || "admin@nasdem-sidoarjo.id"}
                     </p>
                   </div>
                 </div>
