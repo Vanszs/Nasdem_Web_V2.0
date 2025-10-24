@@ -1,5 +1,5 @@
 export interface Member {
-  id: string;
+  id: number;
   name: string;
   position: string;
   department: "dpd" | "dpc" | "dprt" | "sayap" | "kader";

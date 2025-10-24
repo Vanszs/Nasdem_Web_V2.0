@@ -5,6 +5,7 @@ import { TooltipProvider } from "@/components/ui/tooltip";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { useState } from "react";
 import { AppProgressProvider as ProgressProvider } from "@bprogress/next";
+import { AuthProvider } from "./hooks/useAuth";
 
 export function Providers({ children }: { children: React.ReactNode }) {
   const [queryClient] = useState(
@@ -33,10 +34,12 @@ export function Providers({ children }: { children: React.ReactNode }) {
       shallowRouting
     >
       <QueryClientProvider client={queryClient}>
-        <TooltipProvider>
-          {children}
-          <Toaster richColors closeButton />
-        </TooltipProvider>
+        <AuthProvider>
+          <TooltipProvider>
+            {children}
+            <Toaster richColors closeButton />
+          </TooltipProvider>
+        </AuthProvider>
       </QueryClientProvider>
     </ProgressProvider>
   );

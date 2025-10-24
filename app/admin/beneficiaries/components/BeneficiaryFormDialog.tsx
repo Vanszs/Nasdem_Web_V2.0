@@ -68,7 +68,9 @@ export function BeneficiaryFormDialog({
   const { data: programsRes, isLoading: loadingPrograms } = useQuery({
     queryKey: ["programs"],
     queryFn: async () => {
-      const res = await fetch("/api/programs");
+      const res = await fetch("/api/programs", {
+        credentials: "include",
+      });
       if (!res.ok) throw new Error("Gagal memuat program");
       return res.json();
     },
@@ -163,6 +165,7 @@ export function BeneficiaryFormDialog({
       const res = await fetch("/api/beneficiaries", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
+        credentials: "include",
         body: JSON.stringify(payload),
       });
       if (!res.ok) throw new Error("Gagal menambahkan penerima manfaat");
@@ -181,6 +184,7 @@ export function BeneficiaryFormDialog({
       const res = await fetch(`/api/beneficiaries/${payload.id}`, {
         method: "PUT",
         headers: { "Content-Type": "application/json" },
+        credentials: "include",
         body: JSON.stringify(payload),
       });
       if (!res.ok) throw new Error("Gagal memperbarui penerima manfaat");

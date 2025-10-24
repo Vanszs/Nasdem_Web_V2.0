@@ -7,6 +7,7 @@ import {
   MemberStatus,
   GenderEnum,
   ProgramStatus,
+  BenefitStatus,
   Prisma,
 } from "@prisma/client";
 import bcrypt from "bcrypt";
@@ -22,6 +23,7 @@ async function main() {
   console.log("🧹 Clearing old data...");
 
   // Hapus semua data dengan urutan aman
+  await db.programBenefitRecipient.deleteMany();
   await db.dprdCalegResult.deleteMany();
   await db.dprdPartyResult.deleteMany();
   await db.dprdElectionAnalysis.deleteMany();
@@ -258,6 +260,125 @@ async function main() {
     ],
     skipDuplicates: true,
   });
+
+  // --------------------------
+  // 7.5. PROGRAM BENEFIT RECIPIENTS (Penerima Manfaat)
+  // --------------------------
+  const programs = await db.program.findMany({ take: 2 });
+  if (programs.length > 0) {
+    const beneficiariesData = [
+      // Penerima untuk Program 1 (Pelatihan UMKM)
+      {
+        programId: programs[0].id,
+        fullName: "Budi Hartono",
+        email: "budi.hartono@example.com",
+        nik: "3515081234567801",
+        phone: "081234567801",
+        dateOfBirth: new Date("1985-03-15"),
+        gender: GenderEnum.male,
+        occupation: "Pedagang Kecil",
+        familyMemberCount: 4,
+        proposerName: "Ahmad Ketua",
+        fullAddress: "Jl. Mawar No. 12, Sidoarjo",
+        notes: "Membutuhkan pelatihan manajemen usaha",
+        status: BenefitStatus.completed,
+      },
+      {
+        programId: programs[0].id,
+        fullName: "Siti Nurhaliza",
+        email: "siti.nurhaliza@example.com",
+        nik: "3515082345678902",
+        phone: "081234567802",
+        dateOfBirth: new Date("1990-07-20"),
+        gender: GenderEnum.female,
+        occupation: "Ibu Rumah Tangga",
+        familyMemberCount: 3,
+        proposerName: "Siti Sekretaris",
+        fullAddress: "Jl. Melati No. 5, Sidoarjo",
+        notes: "Ingin memulai usaha rumahan",
+        status: BenefitStatus.completed,
+      },
+      {
+        programId: programs[0].id,
+        fullName: "Agus Setiawan",
+        email: "agus.setiawan@example.com",
+        nik: "3515083456789013",
+        phone: "081234567803",
+        dateOfBirth: new Date("1988-11-10"),
+        gender: GenderEnum.male,
+        occupation: "Buruh Lepas",
+        familyMemberCount: 5,
+        proposerName: "Ahmad Ketua",
+        fullAddress: "Jl. Dahlia No. 8, Sidoarjo",
+        notes: "Bergabung untuk meningkatkan pendapatan",
+        status: BenefitStatus.pending,
+      },
+      // Penerima untuk Program 2 (Gerakan Sehat)
+      {
+        programId: programs[1]?.id ?? programs[0].id,
+        fullName: "Dewi Kusuma",
+        email: "dewi.kusuma@example.com",
+        nik: "3515084567890124",
+        phone: "081234567804",
+        dateOfBirth: new Date("1992-05-25"),
+        gender: GenderEnum.female,
+        occupation: "Guru",
+        familyMemberCount: 2,
+        proposerName: "Siti Sekretaris",
+        fullAddress: "Jl. Anggrek No. 15, Sidoarjo",
+        notes: "Peserta program pemeriksaan kesehatan",
+        status: BenefitStatus.completed,
+      },
+      {
+        programId: programs[1]?.id ?? programs[0].id,
+        fullName: "Rudi Prasetyo",
+        email: "rudi.prasetyo@example.com",
+        nik: "3515085678901235",
+        phone: "081234567805",
+        dateOfBirth: new Date("1983-09-08"),
+        gender: GenderEnum.male,
+        occupation: "Petani",
+        familyMemberCount: 6,
+        proposerName: "Ahmad Ketua",
+        fullAddress: "Jl. Kenanga No. 20, Sidoarjo",
+        notes: "Mengikuti sosialisasi hidup sehat",
+        status: BenefitStatus.completed,
+      },
+      {
+        programId: programs[1]?.id ?? programs[0].id,
+        fullName: "Lina Marlina",
+        email: "lina.marlina@example.com",
+        nik: "3515086789012346",
+        phone: "081234567806",
+        dateOfBirth: new Date("1995-12-30"),
+        gender: GenderEnum.female,
+        occupation: "Karyawan Swasta",
+        familyMemberCount: 3,
+        proposerName: "Siti Sekretaris",
+        fullAddress: "Jl. Tulip No. 7, Sidoarjo",
+        notes: "Tertarik dengan program senam bersama",
+        status: BenefitStatus.pending,
+      },
+    ];
+
+    // Gunakan upsert untuk menghindari duplikasi
+    for (const beneficiary of beneficiariesData) {
+      await db.programBenefitRecipient.upsert({
+        where: {
+          programId_nik: {
+            programId: beneficiary.programId,
+            nik: beneficiary.nik!,
+          },
+        },
+        update: {},
+        create: beneficiary,
+      });
+    }
+
+    console.log(
+      `✅ Seeded ${beneficiariesData.length} program benefit recipients`
+    );
+  }
 
   // --------------------------
   // 8. NEWS

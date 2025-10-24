@@ -25,7 +25,10 @@ export function DeleteBeneficiaryDialog({
   const queryClient = useQueryClient();
   const mutation = useMutation({
     mutationFn: async (id: number) => {
-      const res = await fetch(`/api/beneficiaries/${id}`, { method: "DELETE" });
+      const res = await fetch(`/api/beneficiaries/${id}`, {
+        method: "DELETE",
+        credentials: "include",
+      });
       if (!res.ok) throw new Error("Gagal menghapus penerima manfaat");
       return res.json();
     },

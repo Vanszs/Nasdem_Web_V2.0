@@ -55,7 +55,9 @@ export default function BeneficiariesPage() {
   const { data: programsRes, isLoading: loadingPrograms } = useQuery({
     queryKey: ["programs"],
     queryFn: async () => {
-      const res = await fetch("/api/programs");
+      const res = await fetch("/api/programs", {
+        credentials: "include",
+      });
       if (!res.ok) throw new Error("Gagal memuat program");
       return res.json();
     },
@@ -82,7 +84,9 @@ export default function BeneficiariesPage() {
   const { data, isLoading } = useQuery({
     queryKey: ["beneficiaries", queryParams],
     queryFn: async () => {
-      const res = await fetch(`/api/beneficiaries?${queryParams}`);
+      const res = await fetch(`/api/beneficiaries?${queryParams}`, {
+        credentials: "include",
+      });
       if (!res.ok) throw new Error("Gagal memuat data");
       return res.json();
     },
