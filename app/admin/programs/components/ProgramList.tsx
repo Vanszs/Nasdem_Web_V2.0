@@ -116,7 +116,7 @@ export function ProgramList({
                         e.stopPropagation();
                         onEdit(program);
                       }}
-                      className="rounded-full border-[#FF9C04] text-[#001B55] hover:bg-[#FF9C04] hover:text-white transition-colors cursor-pointer"
+                      className="rounded-full border-[#FF9C04] text-[#001B55] hover:bg-[#FF9C04] transition-colors cursor-pointer"
                     >
                       <Pencil className="w-4 h-4" />
                     </Button>
@@ -127,7 +127,7 @@ export function ProgramList({
                         e.stopPropagation();
                         onDeleteRequest(program);
                       }}
-                      className="rounded-full border-[#C81E1E] text-[#C81E1E] hover:bg-[#C81E1E] hover:text-white cursor-pointer transition-colors"
+                      className="rounded-full border-[#C81E1E] text-[#C81E1E] hover:bg-[#C81E1E] cursor-pointer transition-colors"
                     >
                       <Trash2 className="w-4 h-4" />
                     </Button>

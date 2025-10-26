@@ -39,12 +39,8 @@ import { Label } from "@/components/ui/label";
 import { Switch as Toggle } from "@/components/ui/switch";
 
 const bannerSchema = z.object({
-  imageUrl: z
-    .string()
-    .url({ message: "Masukkan URL gambar yang valid" })
-    .optional(),
-  // transient state for UI only; not sent to API
-  uploadMode: z.boolean().optional(),
+  imageUrl: z.string().min(1, "URL gambar wajib diisi"),
+  uploadMode: z.boolean(),
   order: z.coerce.number().min(0),
   isActive: z.boolean().default(true),
 });
@@ -66,12 +62,14 @@ export function HeroBannersSection() {
 
   const [open, setOpen] = useState(false);
   const [editingId, setEditingId] = useState<number | null>(null);
+  const [isUploading, setIsUploading] = useState(false);
+  const [previewUrl, setPreviewUrl] = useState<string | null>(null);
 
   const form = useForm<BannerForm>({
     resolver: zodResolver(bannerSchema),
     defaultValues: {
       imageUrl: "",
-      uploadMode: false,
+      uploadMode: true,
       order: 0,
       isActive: true,
     },
@@ -81,9 +79,16 @@ export function HeroBannersSection() {
   useEffect(() => {
     if (!open) {
       setEditingId(null);
-      form.reset({ imageUrl: "", order: 0, isActive: true });
+      setPreviewUrl(null);
+      setIsUploading(false);
+      form.reset({ imageUrl: "", uploadMode: true, order: 0, isActive: true });
+    } else {
+      // Set preview jika edit mode dan ada imageUrl
+      if (editingId && form.getValues("imageUrl")) {
+        setPreviewUrl(form.getValues("imageUrl"));
+      }
     }
-  }, [open]);
+  }, [open, editingId]);
 
   const createMut = useMutation({
     mutationFn: async (payload: BannerForm) => {
@@ -153,9 +158,12 @@ export function HeroBannersSection() {
             </DialogTrigger>
             <DialogContent className="sm:max-w-[600px]">
               <DialogHeader>
-                <DialogTitle>
-                  {editingId ? "Edit Banner" : "Tambah Banner"}
+                <DialogTitle className="text-xl font-bold text-[#001B55]">
+                  {editingId ? "Edit Banner Hero" : "Tambah Banner Hero"}
                 </DialogTitle>
+                <p className="text-sm text-gray-600 mt-1">
+                  Upload gambar banner untuk ditampilkan di halaman utama
+                </p>
               </DialogHeader>
               <Form {...form}>
                 <form
@@ -164,63 +172,174 @@ export function HeroBannersSection() {
                       ? updateMut.mutate({ id: editingId, ...values })
                       : createMut.mutate(values)
                   )}
-                  className="space-y-4"
+                  className="space-y-5 pt-3"
                 >
-                  <div className="flex items-center justify-between rounded-lg border p-3">
-                    <Label className="m-0">Unggah file gambar</Label>
+                  {/* Upload Mode Toggle */}
+                  <div className="flex items-center justify-between rounded-lg border border-gray-300 bg-gray-50 p-3">
+                    <div className="flex items-center gap-2">
+                      <Upload className="w-4 h-4 text-[#001B55]" />
+                      <Label className="m-0 font-medium text-[#001B55]">
+                        Upload dari komputer
+                      </Label>
+                    </div>
                     <Toggle
                       checked={!!form.watch("uploadMode")}
-                      onCheckedChange={(v) => form.setValue("uploadMode", v)}
+                      onCheckedChange={(v) => {
+                        form.setValue("uploadMode", v);
+                        if (!v) {
+                          setPreviewUrl(null);
+                          form.setValue("imageUrl", "");
+                        }
+                      }}
                     />
                   </div>
+
                   {form.watch("uploadMode") ? (
-                    <div className="space-y-2">
-                      <input
-                        ref={fileInputRef}
-                        type="file"
-                        accept="image/jpeg,image/png,image/webp"
-                        className="hidden"
-                        onChange={async (e) => {
-                          const file = e.target.files?.[0];
-                          if (!file) return;
-                          try {
-                            const fd = new FormData();
-                            fd.append("file", file);
-                            fd.append("scope", "hero");
-                            const res = await fetch("/api/upload?scope=hero", {
-                              method: "POST",
-                              body: fd,
-                            });
-                            if (!res.ok) throw new Error("Gagal upload gambar");
-                            const json = await res.json();
-                            if (!json?.url)
-                              throw new Error("Respon upload tidak valid");
-                            form.setValue("imageUrl", json.url, {
-                              shouldValidate: true,
-                            });
-                            toast.success("Gambar berhasil diupload");
-                          } catch (err: any) {
-                            toast.error(err?.message || "Gagal upload gambar");
-                          } finally {
-                            // reset to allow re-upload same file
-                            if (fileInputRef.current)
-                              fileInputRef.current.value = "";
+                    <div className="space-y-3">
+                      {/* Drag & Drop Upload Area */}
+                      <div className="space-y-2">
+                        <Label className="text-xs font-medium text-gray-700">
+                          Gambar Banner <span className="text-red-500">*</span>
+                        </Label>
+                        <input
+                          ref={fileInputRef}
+                          type="file"
+                          accept="image/jpeg,image/png,image/webp"
+                          className="hidden"
+                          onChange={async (e) => {
+                            const file = e.target.files?.[0];
+                            if (!file) return;
+
+                            // Validasi ukuran file (max 5MB)
+                            if (file.size > 5 * 1024 * 1024) {
+                              toast.error("Ukuran gambar maksimal 5MB");
+                              return;
+                            }
+
+                            // Validasi tipe file
+                            if (!file.type.startsWith("image/")) {
+                              toast.error("File harus berupa gambar");
+                              return;
+                            }
+
+                            setIsUploading(true);
+                            try {
+                              // Preview lokal
+                              const localPreview = URL.createObjectURL(file);
+                              setPreviewUrl(localPreview);
+
+                              const fd = new FormData();
+                              fd.append("file", file);
+                              fd.append("scope", "hero");
+                              const res = await fetch(
+                                "/api/upload?scope=hero",
+                                {
+                                  method: "POST",
+                                  body: fd,
+                                }
+                              );
+                              if (!res.ok)
+                                throw new Error("Gagal upload gambar");
+                              const json = await res.json();
+                              if (!json?.url)
+                                throw new Error("Respon upload tidak valid");
+
+                              form.setValue("imageUrl", json.url, {
+                                shouldValidate: true,
+                              });
+                              setPreviewUrl(json.url);
+                              toast.success("Gambar berhasil diupload");
+                            } catch (err: any) {
+                              toast.error(
+                                err?.message || "Gagal upload gambar"
+                              );
+                              setPreviewUrl(null);
+                            } finally {
+                              setIsUploading(false);
+                              if (fileInputRef.current)
+                                fileInputRef.current.value = "";
+                            }
+                          }}
+                        />
+
+                        {/* Upload Area dengan Preview */}
+                        <div
+                          onClick={() =>
+                            !isUploading && fileInputRef.current?.click()
                           }
-                        }}
-                      />
-                      <Button
-                        type="button"
-                        variant="outline"
-                        className="flex items-center gap-2"
-                        onClick={() => fileInputRef.current?.click()}
-                      >
-                        <Upload className="w-4 h-4" /> Pilih File
-                      </Button>
-                      {form.watch("imageUrl") && (
-                        <div className="text-xs text-[#475569] break-all">
-                          URL: {form.watch("imageUrl")}
+                          className={`
+                            border-2 border-dashed rounded-xl p-6 text-center transition-all cursor-pointer
+                            ${
+                              isUploading
+                                ? "border-blue-300 bg-blue-50 cursor-wait"
+                                : previewUrl
+                                ? "border-green-300 bg-green-50 hover:border-green-400"
+                                : "border-gray-300 bg-gray-50 hover:border-[#FF9C04] hover:bg-[#FF9C04]/5"
+                            }
+                          `}
+                        >
+                          {isUploading ? (
+                            <div className="flex flex-col items-center gap-3">
+                              <div className="w-12 h-12 border-4 border-blue-200 border-t-[#001B55] rounded-full animate-spin" />
+                              <p className="text-sm font-medium text-[#001B55]">
+                                Mengupload gambar...
+                              </p>
+                            </div>
+                          ) : previewUrl ? (
+                            <div className="space-y-3">
+                              <div className="relative w-full h-48 rounded-lg overflow-hidden bg-gray-100">
+                                <img
+                                  src={previewUrl}
+                                  alt="Preview"
+                                  className="w-full h-full object-cover"
+                                />
+                              </div>
+                              <div className="flex items-center justify-center gap-2 text-sm text-green-700">
+                                <svg
+                                  className="w-5 h-5"
+                                  fill="currentColor"
+                                  viewBox="0 0 20 20"
+                                >
+                                  <path
+                                    fillRule="evenodd"
+                                    d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z"
+                                    clipRule="evenodd"
+                                  />
+                                </svg>
+                                <span className="font-medium">
+                                  Gambar berhasil diupload
+                                </span>
+                              </div>
+                              <Button
+                                type="button"
+                                size="sm"
+                                variant="outline"
+                                className="mt-2"
+                                onClick={(e) => {
+                                  e.stopPropagation();
+                                  fileInputRef.current?.click();
+                                }}
+                              >
+                                Ganti Gambar
+                              </Button>
+                            </div>
+                          ) : (
+                            <div className="flex flex-col items-center gap-3">
+                              <div className="w-16 h-16 rounded-full bg-gradient-to-br from-[#FF9C04] to-[#FF9C04]/80 flex items-center justify-center shadow-lg">
+                                <Upload className="w-8 h-8 text-white" />
+                              </div>
+                              <div>
+                                <p className="text-sm font-semibold text-[#001B55] mb-1">
+                                  Klik untuk upload gambar
+                                </p>
+                                <p className="text-xs text-gray-500">
+                                  PNG, JPG, WEBP (Maks. 5MB)
+                                </p>
+                              </div>
+                            </div>
+                          )}
                         </div>
-                      )}
+                      </div>
                     </div>
                   ) : (
                     <FormField
@@ -228,34 +347,82 @@ export function HeroBannersSection() {
                       name="imageUrl"
                       render={({ field }) => (
                         <FormItem>
-                          <FormLabel>URL Gambar</FormLabel>
+                          <FormLabel className="text-xs font-medium text-gray-700">
+                            URL Gambar <span className="text-red-500">*</span>
+                          </FormLabel>
                           <FormControl>
-                            <Input placeholder="https://..." {...field} />
+                            <Input
+                              placeholder="https://example.com/image.jpg"
+                              {...field}
+                              onChange={(e) => {
+                                field.onChange(e);
+                                setPreviewUrl(e.target.value);
+                              }}
+                              className="h-10 border-gray-300 focus:border-[#C5BAFF] focus:ring-[#C5BAFF]"
+                            />
                           </FormControl>
-                          <FormMessage />
+                          <FormMessage className="text-xs" />
+                          {previewUrl && (
+                            <div className="mt-3 p-3 border border-gray-200 rounded-lg bg-gray-50">
+                              <p className="text-xs font-medium text-gray-700 mb-2">
+                                Preview:
+                              </p>
+                              <div className="relative w-full h-48 rounded-lg overflow-hidden bg-gray-100">
+                                <img
+                                  src={previewUrl}
+                                  alt="Preview"
+                                  className="w-full h-full object-cover"
+                                  onError={() => setPreviewUrl(null)}
+                                />
+                              </div>
+                            </div>
+                          )}
                         </FormItem>
                       )}
                     />
                   )}
+                  {/* Order Input */}
                   <FormField
                     control={form.control}
                     name="order"
                     render={({ field }) => (
                       <FormItem>
-                        <FormLabel>Urutan</FormLabel>
+                        <FormLabel className="text-xs font-medium text-gray-700">
+                          Urutan Tampilan{" "}
+                          <span className="text-red-500">*</span>
+                        </FormLabel>
                         <FormControl>
-                          <Input type="number" {...field} />
+                          <Input
+                            type="number"
+                            min={0}
+                            placeholder="0"
+                            {...field}
+                            className="h-10 border-gray-300 focus:border-[#C5BAFF] focus:ring-[#C5BAFF]"
+                          />
                         </FormControl>
-                        <FormMessage />
+                        <p className="text-xs text-gray-500 mt-1">
+                          Banner dengan urutan lebih kecil akan ditampilkan
+                          lebih dulu
+                        </p>
+                        <FormMessage className="text-xs" />
                       </FormItem>
                     )}
                   />
+
+                  {/* Active Status Toggle */}
                   <FormField
                     control={form.control}
                     name="isActive"
                     render={({ field }) => (
-                      <FormItem className="flex items-center justify-between rounded-lg border p-3">
-                        <FormLabel className="m-0">Aktif</FormLabel>
+                      <FormItem className="flex items-center justify-between rounded-lg border border-gray-300 bg-gray-50 p-3">
+                        <div>
+                          <FormLabel className="m-0 font-medium text-[#001B55]">
+                            Status Aktif
+                          </FormLabel>
+                          <p className="text-xs text-gray-500 mt-0.5">
+                            Banner akan ditampilkan di halaman utama
+                          </p>
+                        </div>
                         <FormControl>
                           <Switch
                             checked={field.value}
@@ -265,19 +432,85 @@ export function HeroBannersSection() {
                       </FormItem>
                     )}
                   />
-                  <div className="flex justify-end gap-2">
+
+                  {/* Action Buttons */}
+                  <div className="flex justify-end gap-2 pt-4 border-t border-gray-200">
                     <Button
                       type="button"
                       variant="outline"
                       onClick={() => setOpen(false)}
+                      disabled={
+                        isUploading ||
+                        createMut.isPending ||
+                        updateMut.isPending
+                      }
+                      className="h-10 px-5 cursor-pointer"
                     >
                       Batal
                     </Button>
                     <Button
                       type="submit"
-                      disabled={createMut.isPending || updateMut.isPending}
+                      disabled={
+                        isUploading ||
+                        createMut.isPending ||
+                        updateMut.isPending ||
+                        !form.watch("imageUrl")
+                      }
+                      className="h-10 px-5 cursor-pointer bg-[#001B55] hover:bg-[#001B55]/90 text-white"
                     >
-                      {editingId ? "Simpan Perubahan" : "Simpan"}
+                      {isUploading ? (
+                        <>
+                          <svg
+                            className="animate-spin -ml-1 mr-2 h-4 w-4"
+                            xmlns="http://www.w3.org/2000/svg"
+                            fill="none"
+                            viewBox="0 0 24 24"
+                          >
+                            <circle
+                              className="opacity-25"
+                              cx="12"
+                              cy="12"
+                              r="10"
+                              stroke="currentColor"
+                              strokeWidth="4"
+                            />
+                            <path
+                              className="opacity-75"
+                              fill="currentColor"
+                              d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"
+                            />
+                          </svg>
+                          Mengupload...
+                        </>
+                      ) : createMut.isPending || updateMut.isPending ? (
+                        <>
+                          <svg
+                            className="animate-spin -ml-1 mr-2 h-4 w-4"
+                            xmlns="http://www.w3.org/2000/svg"
+                            fill="none"
+                            viewBox="0 0 24 24"
+                          >
+                            <circle
+                              className="opacity-25"
+                              cx="12"
+                              cy="12"
+                              r="10"
+                              stroke="currentColor"
+                              strokeWidth="4"
+                            />
+                            <path
+                              className="opacity-75"
+                              fill="currentColor"
+                              d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"
+                            />
+                          </svg>
+                          Menyimpan...
+                        </>
+                      ) : editingId ? (
+                        "Simpan Perubahan"
+                      ) : (
+                        "Simpan Banner"
+                      )}
                     </Button>
                   </div>
                 </form>
@@ -339,9 +572,11 @@ export function HeroBannersSection() {
                           setEditingId(b.id);
                           form.reset({
                             imageUrl: b.imageUrl,
+                            uploadMode: false,
                             order: b.order,
                             isActive: b.isActive,
                           });
+                          setPreviewUrl(b.imageUrl);
                           setOpen(true);
                         }}
                       >

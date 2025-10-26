@@ -24,7 +24,7 @@ const bodySchema = z.object({
 });
 
 export async function GET(_req: NextRequest, ctx: { params: { id: string } }) {
-  const authError = requireAuth(_req);
+  const authError = await requireAuth(_req);
   if (authError) return authError;
   const roleError = requireRole(_req, [
     UserRole.EDITOR,
@@ -57,7 +57,7 @@ export async function GET(_req: NextRequest, ctx: { params: { id: string } }) {
 }
 
 export async function PUT(req: NextRequest, ctx: { params: { id: string } }) {
-  const authError = requireAuth(req);
+  const authError = await requireAuth(req);
   if (authError) return authError;
   const roleError = requireRole(req, [UserRole.EDITOR, UserRole.SUPERADMIN]);
   if (roleError) return roleError;
@@ -112,7 +112,7 @@ export async function DELETE(
   req: NextRequest,
   ctx: { params: { id: string } }
 ) {
-  const authError = requireAuth(req);
+  const authError = await requireAuth(req);
   if (authError) return authError;
   const roleError = requireRole(req, [UserRole.EDITOR, UserRole.SUPERADMIN]);
   if (roleError) return roleError;

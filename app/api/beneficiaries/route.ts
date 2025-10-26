@@ -30,7 +30,7 @@ const bodySchema = z.object({
 });
 
 export async function GET(req: NextRequest) {
-  const authError = requireAuth(req);
+  const authError = await requireAuth(req);
   if (authError) return authError;
   const roleError = requireRole(req, [
     UserRole.EDITOR,
@@ -103,12 +103,9 @@ export async function GET(req: NextRequest) {
 }
 
 export async function POST(req: NextRequest) {
-  const authError = requireAuth(req);
+  const authError = await requireAuth(req);
   if (authError) return authError;
-  const roleError = requireRole(req, [
-    UserRole.EDITOR,
-    UserRole.SUPERADMIN,
-  ]);
+  const roleError = requireRole(req, [UserRole.EDITOR, UserRole.SUPERADMIN]);
   if (roleError) return roleError;
 
   try {

@@ -5,7 +5,7 @@ import { z } from "zod";
 import { UserRole } from "@/lib/rbac";
 
 const bannerSchema = z.object({
-  imageUrl: z.string().url({ message: "URL gambar tidak valid" }),
+  imageUrl: z.string(),
   order: z.number().int().nonnegative().default(0),
   isActive: z.boolean().default(true),
 });
@@ -19,7 +19,7 @@ export async function GET() {
 }
 
 export async function POST(req: NextRequest) {
-  const authError = requireAuth(req);
+  const authError = await requireAuth(req);
   if (authError) return authError;
   const roleError = requireRole(req, [UserRole.SUPERADMIN, UserRole.EDITOR]);
   if (roleError) return roleError;

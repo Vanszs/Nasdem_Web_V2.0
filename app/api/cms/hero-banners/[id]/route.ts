@@ -6,7 +6,7 @@ import { UserRole } from "@/lib/rbac";
 
 const idParam = z.object({ id: z.coerce.number().int().positive() });
 const bannerUpdateSchema = z.object({
-  imageUrl: z.string().url().optional(),
+  imageUrl: z.string(),
   order: z.number().int().nonnegative().optional(),
   isActive: z.boolean().optional(),
 });
@@ -31,7 +31,7 @@ export async function PATCH(
   req: NextRequest,
   context: { params: Promise<{ id: string }> }
 ) {
-  const authError = requireAuth(req);
+  const authError = await requireAuth(req);
   if (authError) return authError;
   const roleError = requireRole(req, [UserRole.SUPERADMIN, UserRole.EDITOR]);
   if (roleError) return roleError;
@@ -59,7 +59,7 @@ export async function DELETE(
   req: NextRequest,
   context: { params: Promise<{ id: string }> }
 ) {
-  const authError = requireAuth(req);
+  const authError = await requireAuth(req);
   if (authError) return authError;
   const roleError = requireRole(req, [UserRole.SUPERADMIN, UserRole.EDITOR]);
   if (roleError) return roleError;

@@ -86,6 +86,20 @@ export function ProgramFormDialog({
   const [open, setOpen] = useState(false);
   const queryClient = useQueryClient();
 
+  // Helper: format to yyyy-MM-dd for <input type="date">
+  const toDateInputValue = (value?: string | null): string | undefined => {
+    if (!value) return undefined;
+    // If already yyyy-MM-dd
+    if (/^\d{4}-\d{2}-\d{2}$/.test(value)) return value;
+    // If ISO string with time
+    const d = new Date(value);
+    if (isNaN(d.getTime())) return undefined;
+    const yyyy = d.getFullYear();
+    const mm = String(d.getMonth() + 1).padStart(2, "0");
+    const dd = String(d.getDate()).padStart(2, "0");
+    return `${yyyy}-${mm}-${dd}`;
+  };
+
   // Prefill when editing
   const defaultValues: Partial<FormValues> = useMemo(() => {
     if (!editingProgram) return {};
@@ -138,8 +152,8 @@ export function ProgramFormDialog({
         currentTarget: editingProgram.currentTarget,
         budget: Number(editingProgram.budget),
         status: editingProgram.status as any,
-        startDate: editingProgram.startDate ?? undefined,
-        endDate: editingProgram.endDate ?? undefined,
+        startDate: toDateInputValue(editingProgram.startDate ?? undefined),
+        endDate: toDateInputValue(editingProgram.endDate ?? undefined),
         coordinatorId: editingProgram.coordinatorId,
       });
     } else {
@@ -163,6 +177,7 @@ export function ProgramFormDialog({
   );
 
   const [search, setSearch] = useState("");
+  const [popoverOpen, setPopoverOpen] = useState(false);
   const { data: members = [], isFetching } = useQuery({
     queryKey: ["members"],
     queryFn: async () => {
@@ -542,7 +557,7 @@ export function ProgramFormDialog({
                     Koordinator
                   </FormLabel>
                   <div className="relative w-full">
-                    <Popover>
+                    <Popover open={popoverOpen} onOpenChange={setPopoverOpen}>
                       <PopoverTrigger asChild>
                         <Button
                           variant="outline"
@@ -574,25 +589,22 @@ export function ProgramFormDialog({
                               {isFetching ? "Memuat..." : "Tidak ditemukan"}
                             </CommandEmpty>
                             <CommandGroup>
-                              {members
-                                .filter((m) =>
-                                  m.fullName
-                                    .toLowerCase()
-                                    .includes(search.toLowerCase())
-                                )
-                                .map((m) => (
-                                  <CommandItem
-                                    key={m.id}
-                                    value={String(m.id)}
-                                    onSelect={() =>
-                                      form.setValue("coordinatorId", m.id, {
-                                        shouldValidate: true,
-                                      })
-                                    }
-                                  >
-                                    {m.fullName}
-                                  </CommandItem>
-                                ))}
+                              {members.map((m) => (
+                                <CommandItem
+                                  key={m.id}
+                                  // Use fullName as value to leverage internal filtering
+                                  value={m.fullName}
+                                  onSelect={() => {
+                                    form.setValue("coordinatorId", m.id, {
+                                      shouldValidate: true,
+                                    });
+                                    setPopoverOpen(false);
+                                    setSearch("");
+                                  }}
+                                >
+                                  {m.fullName}
+                                </CommandItem>
+                              ))}
                             </CommandGroup>
                           </CommandList>
                         </Command>
