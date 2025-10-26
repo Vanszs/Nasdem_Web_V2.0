@@ -112,7 +112,7 @@ export async function GET(req: NextRequest) {
 
 // create berita baru
 export async function POST(req: NextRequest) {
-  const authError = requireAuth(req);
+  const authError = await requireAuth(req);
   if (authError) return authError;
 
   const roleError = requireRole(req, [UserRole.EDITOR, UserRole.SUPERADMIN]);

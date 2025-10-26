@@ -2,7 +2,7 @@
 
 import { useEffect, useMemo, useState } from "react";
 import { z } from "zod";
-import { useForm } from "react-hook-form";
+import { useForm, useWatch } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { useMutation, useQueryClient } from "@tanstack/react-query";
 import { toast } from "sonner";
@@ -49,9 +49,9 @@ const MediaTypeEnum = ["image", "video"] as const;
 const mediaItemSchema = z.object({
   id: z.number().optional(),
   type: z.enum(MediaTypeEnum),
-  url: z.string().url({ message: "URL tidak valid" }),
-  caption: z.string().optional(),
-  order: z.number().int().nonnegative().optional(),
+  url: z.string(),
+  caption: z.string().min(1, "Caption wajib diisi"),
+  order: z.number().int().nonnegative(),
 });
 
 const formSchema = z.object({
@@ -75,6 +75,12 @@ export function ActivityFormDialog({ open, onOpenChange, initialData }: Props) {
   const queryClient = useQueryClient();
   const isEdit = Boolean(initialData?.id);
   const [isUploading, setIsUploading] = useState(false);
+  const inferType = (url: string): (typeof MediaTypeEnum)[number] =>
+    /youtube\.com|youtu\.be|vimeo\.com|\.mp4($|\?)|\.webm($|\?)|\.m3u8($|\?)|\.mov($|\?)/i.test(
+      url
+    )
+      ? "video"
+      : "image";
   const form = useForm<FormValues>({
     resolver: zodResolver(formSchema),
     defaultValues: {
@@ -83,7 +89,26 @@ export function ActivityFormDialog({ open, onOpenChange, initialData }: Props) {
       category: (initialData?.category as any) || "sosial",
       eventDate: initialData?.eventDate || "",
       location: initialData?.location || "",
-      media: (initialData?.media as any) || [],
+      media: Array.isArray(initialData?.media)
+        ? (initialData!.media as any[])
+            .map((m, i) =>
+              typeof m === "string"
+                ? {
+                    type: inferType(m),
+                    url: m,
+                    caption: "Media " + (i + 1),
+                    order: i,
+                  }
+                : {
+                    id: (m as any).id,
+                    type: (m as any).type,
+                    url: (m as any).url,
+                    caption: (m as any).caption || "Media " + (i + 1),
+                    order: (m as any).order ?? i,
+                  }
+            )
+            .filter((m) => Boolean(m?.url))
+        : [],
     },
   });
 
@@ -95,12 +120,33 @@ export function ActivityFormDialog({ open, onOpenChange, initialData }: Props) {
         category: (initialData?.category as any) || "sosial",
         eventDate: initialData?.eventDate || "",
         location: initialData?.location || "",
-        media: (initialData?.media as any) || [],
+        media: Array.isArray(initialData?.media)
+          ? (initialData!.media as any[])
+              .map((m, i) =>
+                typeof m === "string"
+                  ? {
+                      type: inferType(m),
+                      url: m,
+                      caption: "Media " + (i + 1),
+                      order: i,
+                    }
+                  : {
+                      id: (m as any).id,
+                      type: (m as any).type,
+                      url: (m as any).url,
+                      caption: (m as any).caption || "Media " + (i + 1),
+                      order: (m as any).order ?? i,
+                    }
+              )
+              .filter((m) => Boolean(m?.url))
+          : [],
       });
     }
   }, [open, initialData, form]);
 
-  const media = form.watch("media");
+  // Use useWatch to avoid triggering internal state updates during render
+  const media = (useWatch({ control: form.control, name: "media" }) ||
+    []) as Array<z.infer<typeof mediaItemSchema>>;
 
   const uploadImages = async (files: File[]) => {
     setIsUploading(true);
@@ -115,12 +161,12 @@ export function ActivityFormDialog({ open, onOpenChange, initialData }: Props) {
           toast.error("Ukuran gambar maksimal 5MB");
           continue;
         }
-        const form = new FormData();
-        form.append("file", file);
-        form.append("scope", "gallery");
+        const fd = new FormData();
+        fd.append("file", file);
+        fd.append("scope", "gallery");
         const res = await fetch("/api/upload?scope=gallery", {
           method: "POST",
-          body: form,
+          body: fd,
         });
         const json = await res.json();
         if (!res.ok || !json?.url)
@@ -128,17 +174,17 @@ export function ActivityFormDialog({ open, onOpenChange, initialData }: Props) {
         results.push({ url: json.url });
       }
       if (results.length) {
-        const current = form.watch("media") || [];
-        const merged = [
-          ...current,
-          ...results.map((r, idx) => ({
+        // Simpan ke pending dengan caption & order default untuk setiap media
+        const currentLength = (form.getValues("media") || []).length;
+        setPendingMedia(
+          results.map((r, idx) => ({
             type: "image" as const,
             url: r.url,
-            order: current.length + idx,
-          })),
-        ];
-        form.setValue("media", merged, { shouldValidate: true });
-        toast.success(`${results.length} gambar ditambahkan`);
+            caption: "",
+            order: currentLength + idx,
+          }))
+        );
+        setShowMediaConfirmDialog(true);
       }
     } catch (e: any) {
       toast.error(e?.message || "Upload gagal");
@@ -155,12 +201,12 @@ export function ActivityFormDialog({ open, onOpenChange, initialData }: Props) {
       toast.error("URL tidak valid");
       return;
     }
-    const current = form.watch("media") || [];
-    form.setValue(
-      "media",
-      [...current, { type: "image", url, order: current.length }],
-      { shouldValidate: true }
-    );
+    // Simpan ke pending dengan caption & order default
+    const currentLength = (form.getValues("media") || []).length;
+    setPendingMedia([
+      { type: "image", url, caption: "", order: currentLength },
+    ]);
+    setShowMediaConfirmDialog(true);
   };
 
   const addVideoByUrl = (url: string) => {
@@ -171,20 +217,117 @@ export function ActivityFormDialog({ open, onOpenChange, initialData }: Props) {
       toast.error("URL tidak valid");
       return;
     }
-    const current = form.watch("media") || [];
-    form.setValue(
-      "media",
-      [...current, { type: "video", url, order: current.length }],
-      { shouldValidate: true }
-    );
+    // Simpan ke pending dengan caption & order default
+    const currentLength = (form.getValues("media") || []).length;
+    setPendingMedia([
+      { type: "video", url, caption: "", order: currentLength },
+    ]);
+    setShowMediaConfirmDialog(true);
   };
 
   const removeMedia = (idx: number) => {
-    const current = form.watch("media") || [];
+    const current = (form.getValues("media") || []) as Array<
+      z.infer<typeof mediaItemSchema>
+    >;
     const next = current
       .filter((_, i) => i !== idx)
       .map((m, i) => ({ ...m, order: i }));
     form.setValue("media", next, { shouldValidate: true });
+  };
+
+  // Handler untuk konfirmasi penambahan media dengan caption & order individual
+  const confirmAddMedia = () => {
+    if (pendingMedia.length === 0) return;
+
+    // Validasi semua caption harus diisi
+    const emptyCaption = pendingMedia.some((pm) => !pm.caption.trim());
+    if (emptyCaption) {
+      toast.error("Semua caption wajib diisi");
+      return;
+    }
+
+    const current = (form.getValues("media") || []) as Array<
+      z.infer<typeof mediaItemSchema>
+    >;
+
+    // Tambahkan semua media dari pending dengan caption & order masing-masing
+    const newMedia = pendingMedia.map((pm) => ({
+      type: pm.type,
+      url: pm.url,
+      caption: pm.caption.trim(),
+      order: pm.order,
+    }));
+
+    form.setValue("media", [...current, ...newMedia], { shouldValidate: true });
+    toast.success(`${pendingMedia.length} media ditambahkan`);
+
+    // Reset state
+    setPendingMedia([]);
+    setShowMediaConfirmDialog(false);
+    setImageUrlInput("");
+    setVideoUrlInput("");
+  };
+
+  const cancelAddMedia = () => {
+    setPendingMedia([]);
+    setShowMediaConfirmDialog(false);
+  };
+
+  // Handler untuk update caption/order pada pending media
+  const updatePendingMedia = (
+    idx: number,
+    field: "caption" | "order",
+    value: string | number
+  ) => {
+    setPendingMedia((prev) =>
+      prev.map((pm, i) => (i === idx ? { ...pm, [field]: value } : pm))
+    );
+  };
+
+  // Handler untuk membuka dialog edit media existing
+  const openEditMedia = (idx: number) => {
+    const current = (form.getValues("media") || []) as Array<
+      z.infer<typeof mediaItemSchema>
+    >;
+    const mediaToEdit = current[idx];
+    if (mediaToEdit) {
+      setEditingMediaIndex(idx);
+      setEditCaption(mediaToEdit.caption);
+      setEditOrder(mediaToEdit.order);
+      setShowEditMediaDialog(true);
+    }
+  };
+
+  const confirmEditMedia = () => {
+    if (editingMediaIndex === null) return;
+    if (!editCaption.trim()) {
+      toast.error("Caption wajib diisi");
+      return;
+    }
+
+    const current = (form.getValues("media") || []) as Array<
+      z.infer<typeof mediaItemSchema>
+    >;
+    const updated = current.map((m, i) =>
+      i === editingMediaIndex
+        ? { ...m, caption: editCaption.trim(), order: editOrder }
+        : m
+    );
+
+    form.setValue("media", updated, { shouldValidate: true });
+    toast.success("Media berhasil diperbarui");
+
+    setEditingMediaIndex(null);
+    setShowEditMediaDialog(false);
+    setEditCaption("");
+    setEditOrder(0);
+  };
+
+  const cancelEditMedia = () => {
+    setEditingMediaIndex(null);
+    setShowEditMediaDialog(false);
+    setEditCaption("");
+    setEditOrder(0);
   };
 
   const mutation = useMutation({
@@ -195,8 +338,14 @@ export function ActivityFormDialog({ open, onOpenChange, initialData }: Props) {
         category: values.category,
         eventDate: values.eventDate || undefined,
         location: values.location,
-        media: values.media,
+        media: values.media.map((m, idx) => ({
+          type: m.type,
+          url: m.url,
+          caption: m.caption,
+          order: idx,
+        })),
       };
+      // trigger mutation to create/update activity
       const res = await fetch(
         isEdit ? `/api/galleries/${initialData?.id}` : "/api/galleries",
         {
@@ -218,13 +367,35 @@ export function ActivityFormDialog({ open, onOpenChange, initialData }: Props) {
     onError: (err: any) => toast.error(err?.message || "Gagal menyimpan"),
   });
 
-  const onSubmit = (values: FormValues) => mutation.mutate(values);
+  const onSubmit = (values: FormValues) => {
+    console.log("Submitting form with values:", values);
+    mutation.mutate(values);
+  };
 
   const [imageUrlInput, setImageUrlInput] = useState("");
   const [videoUrlInput, setVideoUrlInput] = useState("");
 
   const [mediaType, setMediaType] = useState<"image" | "video">("image");
   const fileInputRef = useState<HTMLInputElement | null>(null);
+
+  // State untuk dialog konfirmasi media - setiap media punya caption & order sendiri
+  const [pendingMedia, setPendingMedia] = useState<
+    Array<{
+      type: "image" | "video";
+      url: string;
+      caption: string;
+      order: number;
+    }>
+  >([]);
+  const [showMediaConfirmDialog, setShowMediaConfirmDialog] = useState(false);
+
+  // State untuk edit media existing
+  const [editingMediaIndex, setEditingMediaIndex] = useState<number | null>(
+    null
+  );
+  const [showEditMediaDialog, setShowEditMediaDialog] = useState(false);
+  const [editCaption, setEditCaption] = useState("");
+  const [editOrder, setEditOrder] = useState(0);
 
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
@@ -235,9 +406,58 @@ export function ActivityFormDialog({ open, onOpenChange, initialData }: Props) {
           </DialogTitle>
         </DialogHeader>
 
+        {/* Fallback UI: saving/error state banner */}
+        {(mutation.isPending || mutation.isError) && (
+          <div
+            className={
+              "mt-3 mb-2 rounded-lg border px-3 py-2 text-sm" +
+              (mutation.isPending
+                ? " bg-[#E8F9FF] border-[#C4D9FF] text-[#001B55]"
+                : " bg-red-50 border-red-200 text-red-700")
+            }
+            role="status"
+            aria-live="polite"
+          >
+            {mutation.isPending ? (
+              <div className="flex items-center gap-2">
+                <svg
+                  className="animate-spin h-4 w-4"
+                  xmlns="http://www.w3.org/2000/svg"
+                  fill="none"
+                  viewBox="0 0 24 24"
+                >
+                  <circle
+                    className="opacity-25"
+                    cx="12"
+                    cy="12"
+                    r="10"
+                    stroke="currentColor"
+                    strokeWidth="4"
+                  />
+                  <path
+                    className="opacity-75"
+                    fill="currentColor"
+                    d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"
+                  />
+                </svg>
+                {isEdit ? "Menyimpan perubahan..." : "Menyimpan aktivitas..."}
+              </div>
+            ) : (
+              <span>
+                {(mutation.error as any)?.message || "Terjadi kesalahan"}
+              </span>
+            )}
+          </div>
+        )}
+
         <Form {...form}>
           <form
-            onSubmit={form.handleSubmit(onSubmit)}
+            onSubmit={form.handleSubmit(onSubmit, (errors) => {
+              console.log("Validation errors:", errors);
+              toast.error(
+                "Form belum valid, periksa kembali field yang wajib diisi"
+              );
+            })}
             className="space-y-5 pt-4"
           >
             {/* Basic Info Section */}
@@ -258,6 +478,7 @@ export function ActivityFormDialog({ open, onOpenChange, initialData }: Props) {
                         <Input
                           {...field}
                           placeholder="Masukkan judul aktivitas"
+                          disabled={mutation.isPending || isUploading}
                           className="h-9 text-sm border-gray-300 focus:border-[#C5BAFF] focus:ring-[#C5BAFF]"
                         />
                       </FormControl>
@@ -279,7 +500,10 @@ export function ActivityFormDialog({ open, onOpenChange, initialData }: Props) {
                         onValueChange={field.onChange}
                       >
                         <FormControl>
-                          <SelectTrigger className="h-9 text-sm border-gray-300 focus:border-[#C5BAFF] focus:ring-[#C5BAFF]">
+                          <SelectTrigger
+                            disabled={mutation.isPending || isUploading}
+                            className="h-9 text-sm border-gray-300 focus:border-[#C5BAFF] focus:ring-[#C5BAFF]"
+                          >
                             <SelectValue placeholder="Pilih kategori" />
                           </SelectTrigger>
                         </FormControl>
@@ -312,6 +536,7 @@ export function ActivityFormDialog({ open, onOpenChange, initialData }: Props) {
                         <Input
                           type="date"
                           {...field}
+                          disabled={mutation.isPending || isUploading}
                           className="h-9 text-sm border-gray-300 focus:border-[#C5BAFF] focus:ring-[#C5BAFF]"
                         />
                       </FormControl>
@@ -332,6 +557,7 @@ export function ActivityFormDialog({ open, onOpenChange, initialData }: Props) {
                         <Input
                           {...field}
                           placeholder="Masukkan lokasi"
+                          disabled={mutation.isPending || isUploading}
                           className="h-9 text-sm border-gray-300 focus:border-[#C5BAFF] focus:ring-[#C5BAFF]"
                         />
                       </FormControl>
@@ -353,6 +579,7 @@ export function ActivityFormDialog({ open, onOpenChange, initialData }: Props) {
                           {...field}
                           placeholder="Tuliskan deskripsi singkat aktivitas"
                           rows={3}
+                          disabled={mutation.isPending || isUploading}
                           className="text-sm border-gray-300 focus:border-[#C5BAFF] focus:ring-[#C5BAFF] resize-none"
                         />
                       </FormControl>
@@ -443,7 +670,7 @@ export function ActivityFormDialog({ open, onOpenChange, initialData }: Props) {
                           uploadImages(Array.from(e.target.files || []))
                         }
                         className="hidden"
-                        disabled={isUploading}
+                        disabled={isUploading || mutation.isPending}
                       />
                     </label>
                     {isUploading && (
@@ -461,6 +688,7 @@ export function ActivityFormDialog({ open, onOpenChange, initialData }: Props) {
                       value={imageUrlInput}
                       onChange={(e) => setImageUrlInput(e.target.value)}
                       placeholder="Atau masukkan URL gambar"
+                      disabled={mutation.isPending || isUploading}
                       className="h-9 text-sm border-gray-300 focus:border-[#C5BAFF] focus:ring-[#C5BAFF]"
                     />
                     <Button
@@ -468,6 +696,7 @@ export function ActivityFormDialog({ open, onOpenChange, initialData }: Props) {
                       size="sm"
                       variant="outline"
                       className="h-9 px-4 text-xs cursor-pointer border-gray-300 hover:bg-[#E8F9FF] hover:border-[#C5BAFF] hover:text-[#001B55]"
+                      disabled={mutation.isPending || isUploading}
                       onClick={() => {
                         addImageByUrl(imageUrlInput);
                         setImageUrlInput("");
@@ -483,6 +712,7 @@ export function ActivityFormDialog({ open, onOpenChange, initialData }: Props) {
                     value={videoUrlInput}
                     onChange={(e) => setVideoUrlInput(e.target.value)}
                     placeholder="Masukkan URL video (YouTube, Vimeo, dll)"
+                    disabled={mutation.isPending || isUploading}
                     className="h-9 text-sm border-gray-300 focus:border-[#C5BAFF] focus:ring-[#C5BAFF]"
                   />
                   <Button
@@ -490,6 +720,7 @@ export function ActivityFormDialog({ open, onOpenChange, initialData }: Props) {
                     size="sm"
                     variant="outline"
                     className="h-9 px-4 text-xs cursor-pointer border-gray-300 hover:bg-[#E8F9FF] hover:border-[#C5BAFF] hover:text-[#001B55]"
+                    disabled={mutation.isPending || isUploading}
                     onClick={() => {
                       addVideoByUrl(videoUrlInput);
                       setVideoUrlInput("");
@@ -518,49 +749,88 @@ export function ActivityFormDialog({ open, onOpenChange, initialData }: Props) {
                         key={idx}
                         className="relative group border border-gray-300 rounded-lg overflow-hidden hover:border-[#C5BAFF] transition-colors"
                       >
-                        {m.type === "image" ? (
-                          <div className="relative aspect-square bg-gray-200">
-                            <Image
-                              src={m.url}
-                              alt={m.caption || `image-${idx}`}
-                              fill
-                              className="object-cover"
-                            />
-                          </div>
-                        ) : (
-                          <div className="aspect-square bg-gradient-to-br from-[#001B55] to-[#001B55]/80 flex flex-col items-center justify-center text-white">
-                            <svg
-                              className="w-8 h-8 mb-1"
-                              fill="currentColor"
-                              viewBox="0 0 20 20"
+                        <div className="relative">
+                          {m.type === "image" ? (
+                            <div className="relative aspect-square bg-gray-200">
+                              <Image
+                                src={m.url}
+                                alt={`image-${idx}`}
+                                fill
+                                className="object-cover"
+                              />
+                            </div>
+                          ) : (
+                            <div className="aspect-square bg-gradient-to-br from-[#001B55] to-[#001B55]/80 flex flex-col items-center justify-center text-white">
+                              <svg
+                                className="w-8 h-8 mb-1"
+                                fill="currentColor"
+                                viewBox="0 0 20 20"
+                              >
+                                <path d="M10 18a8 8 0 100-16 8 8 0 000 16zM9.555 7.168A1 1 0 008 8v4a1 1 0 001.555.832l3-2a1 1 0 000-1.664l-3-2z" />
+                              </svg>
+                              <span className="text-[10px] font-medium">
+                                Video
+                              </span>
+                            </div>
+                          )}
+                          {/* Action buttons */}
+                          <div className="absolute top-1 right-1 flex gap-1 opacity-0 group-hover:opacity-100 transition-opacity">
+                            <button
+                              type="button"
+                              onClick={() => openEditMedia(idx)}
+                              className="bg-blue-500 hover:bg-blue-600 text-white p-1 rounded-md text-xs font-medium cursor-pointer shadow-lg"
+                              disabled={mutation.isPending || isUploading}
+                              title="Edit caption & order"
                             >
-                              <path d="M10 18a8 8 0 100-16 8 8 0 000 16zM9.555 7.168A1 1 0 008 8v4a1 1 0 001.555.832l3-2a1 1 0 000-1.664l-3-2z" />
-                            </svg>
-                            <span className="text-[10px] font-medium">
-                              Video
-                            </span>
+                              <svg
+                                className="w-3 h-3"
+                                fill="none"
+                                stroke="currentColor"
+                                viewBox="0 0 24 24"
+                              >
+                                <path
+                                  strokeLinecap="round"
+                                  strokeLinejoin="round"
+                                  strokeWidth={2}
+                                  d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z"
+                                />
+                              </svg>
+                            </button>
+                            <button
+                              type="button"
+                              onClick={() => removeMedia(idx)}
+                              className="bg-red-500 hover:bg-red-600 text-white p-1 rounded-md text-xs font-medium cursor-pointer shadow-lg"
+                              disabled={mutation.isPending || isUploading}
+                              title="Hapus media"
+                            >
+                              <svg
+                                className="w-3 h-3"
+                                fill="none"
+                                stroke="currentColor"
+                                viewBox="0 0 24 24"
+                              >
+                                <path
+                                  strokeLinecap="round"
+                                  strokeLinejoin="round"
+                                  strokeWidth={2}
+                                  d="M6 18L18 6M6 6l12 12"
+                                />
+                              </svg>
+                            </button>
                           </div>
-                        )}
-                        <button
-                          type="button"
-                          onClick={() => removeMedia(idx)}
-                          className="absolute top-1 right-1 bg-red-500 hover:bg-red-600 text-white p-1 rounded-md text-xs font-medium cursor-pointer opacity-0 group-hover:opacity-100 transition-opacity shadow-lg"
-                          title="Hapus media"
-                        >
-                          <svg
-                            className="w-3 h-3"
-                            fill="none"
-                            stroke="currentColor"
-                            viewBox="0 0 24 24"
+                        </div>
+                        {/* Caption & Order Info Display */}
+                        <div className="p-2 border-t border-gray-200 bg-white">
+                          <p
+                            className="text-[10px] text-gray-600 font-medium truncate"
+                            title={m.caption || "Tanpa caption"}
                           >
-                            <path
-                              strokeLinecap="round"
-                              strokeLinejoin="round"
-                              strokeWidth={2}
-                              d="M6 18L18 6M6 6l12 12"
-                            />
-                          </svg>
-                        </button>
+                            {m.caption || "Tanpa caption"}
+                          </p>
+                          <p className="text-[9px] text-gray-400 mt-0.5">
+                            Order: {m.order ?? idx}
+                          </p>
+                        </div>
                       </div>
                     ))}
                   </div>
@@ -617,6 +887,239 @@ export function ActivityFormDialog({ open, onOpenChange, initialData }: Props) {
           </form>
         </Form>
       </DialogContent>
+
+      {/* Dialog Konfirmasi Media - Input Caption & Order Individual */}
+      <Dialog
+        open={showMediaConfirmDialog}
+        onOpenChange={setShowMediaConfirmDialog}
+      >
+        <DialogContent className="max-w-3xl max-h-[85vh] overflow-y-auto">
+          <DialogHeader>
+            <DialogTitle className="text-lg font-bold text-[#001B55]">
+              Tambah Caption & Order Media ({pendingMedia.length} media)
+            </DialogTitle>
+            <p className="text-xs text-gray-600 mt-1">
+              Isi caption dan urutan untuk setiap media sebelum menambahkan
+            </p>
+          </DialogHeader>
+
+          <div className="space-y-4 py-4">
+            {/* List media dengan input individual */}
+            <div className="space-y-3">
+              {pendingMedia.map((pm, idx) => (
+                <div
+                  key={idx}
+                  className="border border-gray-300 rounded-lg p-3 bg-gray-50 hover:border-[#C5BAFF] transition-colors"
+                >
+                  <div className="flex gap-3">
+                    {/* Preview media */}
+                    <div className="flex-shrink-0 w-20 h-20">
+                      <div className="relative w-full h-full border border-gray-300 rounded-lg overflow-hidden">
+                        {pm.type === "image" ? (
+                          <Image
+                            src={pm.url}
+                            alt={`preview-${idx}`}
+                            fill
+                            className="object-cover"
+                          />
+                        ) : (
+                          <div className="w-full h-full bg-gradient-to-br from-[#001B55] to-[#001B55]/80 flex items-center justify-center text-white">
+                            <svg
+                              className="w-8 h-8"
+                              fill="currentColor"
+                              viewBox="0 0 20 20"
+                            >
+                              <path d="M10 18a8 8 0 100-16 8 8 0 000 16zM9.555 7.168A1 1 0 008 8v4a1 1 0 001.555.832l3-2a1 1 0 000-1.664l-3-2z" />
+                            </svg>
+                          </div>
+                        )}
+                      </div>
+                    </div>
+
+                    {/* Input caption & order */}
+                    <div className="flex-1 space-y-2">
+                      <div className="flex items-start gap-2">
+                        <span className="inline-flex items-center justify-center w-6 h-6 rounded-full bg-[#001B55] text-white text-xs font-bold flex-shrink-0 mt-0.5">
+                          {idx + 1}
+                        </span>
+                        <div className="flex-1 space-y-2">
+                          {/* Caption Input */}
+                          <div>
+                            <label className="text-xs font-medium text-gray-700 block mb-1">
+                              Caption <span className="text-red-500">*</span>
+                            </label>
+                            <Textarea
+                              value={pm.caption}
+                              onChange={(e) =>
+                                updatePendingMedia(
+                                  idx,
+                                  "caption",
+                                  e.target.value
+                                )
+                              }
+                              placeholder={`Caption untuk media #${idx + 1}...`}
+                              rows={2}
+                              className="text-sm border-gray-300 focus:border-[#C5BAFF] focus:ring-[#C5BAFF] resize-none"
+                            />
+                          </div>
+
+                          {/* Order Input */}
+                          <div className="w-32">
+                            <label className="text-xs font-medium text-gray-700 block mb-1">
+                              Order <span className="text-red-500">*</span>
+                            </label>
+                            <Input
+                              type="number"
+                              min={0}
+                              value={pm.order}
+                              onChange={(e) =>
+                                updatePendingMedia(
+                                  idx,
+                                  "order",
+                                  parseInt(e.target.value) || 0
+                                )
+                              }
+                              className="h-8 text-sm border-gray-300 focus:border-[#C5BAFF] focus:ring-[#C5BAFF]"
+                            />
+                          </div>
+                        </div>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+              ))}
+            </div>
+
+            {/* Helper text */}
+            <div className="bg-blue-50 border border-blue-200 rounded-lg p-3">
+              <p className="text-xs text-blue-800">
+                <strong>Tips:</strong> Caption wajib diisi untuk setiap media.
+                Order menentukan urutan tampilan (0 = pertama, 1 = kedua, dst).
+              </p>
+            </div>
+          </div>
+
+          {/* Action Buttons */}
+          <div className="flex justify-end gap-2 pt-3 border-t border-gray-200">
+            <Button
+              type="button"
+              variant="outline"
+              onClick={cancelAddMedia}
+              className="h-9 px-5 text-sm cursor-pointer border-gray-300 hover:bg-gray-100"
+            >
+              Batal
+            </Button>
+            <Button
+              type="button"
+              onClick={confirmAddMedia}
+              disabled={pendingMedia.some((pm) => !pm.caption.trim())}
+              className="h-9 px-5 text-sm cursor-pointer bg-[#001B55] hover:bg-[#001B55]/90 text-white disabled:opacity-50 disabled:cursor-not-allowed"
+            >
+              Tambahkan {pendingMedia.length} Media
+            </Button>
+          </div>
+        </DialogContent>
+      </Dialog>
+
+      {/* Dialog Edit Media Existing */}
+      <Dialog open={showEditMediaDialog} onOpenChange={setShowEditMediaDialog}>
+        <DialogContent className="max-w-md">
+          <DialogHeader>
+            <DialogTitle className="text-lg font-bold text-[#001B55]">
+              Edit Caption & Order Media
+            </DialogTitle>
+          </DialogHeader>
+
+          <div className="space-y-4 py-4">
+            {/* Preview media yang akan diedit */}
+            {editingMediaIndex !== null && media[editingMediaIndex] && (
+              <div className="space-y-2">
+                <p className="text-xs font-medium text-gray-700">
+                  Media yang akan diedit
+                </p>
+                <div className="w-full max-w-xs mx-auto">
+                  <div className="relative aspect-square border border-gray-300 rounded-lg overflow-hidden">
+                    {media[editingMediaIndex].type === "image" ? (
+                      <Image
+                        src={media[editingMediaIndex].url}
+                        alt="edit-preview"
+                        fill
+                        className="object-cover"
+                      />
+                    ) : (
+                      <div className="w-full h-full bg-gradient-to-br from-[#001B55] to-[#001B55]/80 flex flex-col items-center justify-center text-white">
+                        <svg
+                          className="w-12 h-12"
+                          fill="currentColor"
+                          viewBox="0 0 20 20"
+                        >
+                          <path d="M10 18a8 8 0 100-16 8 8 0 000 16zM9.555 7.168A1 1 0 008 8v4a1 1 0 001.555.832l3-2a1 1 0 000-1.664l-3-2z" />
+                        </svg>
+                        <span className="text-sm font-medium mt-2">Video</span>
+                      </div>
+                    )}
+                  </div>
+                </div>
+              </div>
+            )}
+
+            {/* Caption Input */}
+            <div className="space-y-1.5">
+              <label className="text-xs font-medium text-gray-700">
+                Caption <span className="text-red-500">*</span>
+              </label>
+              <Textarea
+                value={editCaption}
+                onChange={(e) => setEditCaption(e.target.value)}
+                placeholder="Masukkan caption untuk media ini..."
+                rows={3}
+                className="text-sm border-gray-300 focus:border-[#C5BAFF] focus:ring-[#C5BAFF] resize-none"
+              />
+              <p className="text-xs text-gray-500">
+                Caption wajib diisi untuk setiap media
+              </p>
+            </div>
+
+            {/* Order Input */}
+            <div className="space-y-1.5">
+              <label className="text-xs font-medium text-gray-700">
+                Urutan (Order) <span className="text-red-500">*</span>
+              </label>
+              <Input
+                type="number"
+                min={0}
+                value={editOrder}
+                onChange={(e) => setEditOrder(parseInt(e.target.value) || 0)}
+                placeholder="0"
+                className="h-9 text-sm border-gray-300 focus:border-[#C5BAFF] focus:ring-[#C5BAFF]"
+              />
+              <p className="text-xs text-gray-500">
+                Urutan media saat ditampilkan (0 = pertama)
+              </p>
+            </div>
+          </div>
+
+          {/* Action Buttons */}
+          <div className="flex justify-end gap-2 pt-3 border-t border-gray-200">
+            <Button
+              type="button"
+              variant="outline"
+              onClick={cancelEditMedia}
+              className="h-9 px-5 text-sm cursor-pointer border-gray-300 hover:bg-gray-100"
+            >
+              Batal
+            </Button>
+            <Button
+              type="button"
+              onClick={confirmEditMedia}
+              disabled={!editCaption.trim()}
+              className="h-9 px-5 text-sm cursor-pointer bg-[#001B55] hover:bg-[#001B55]/90 text-white disabled:opacity-50 disabled:cursor-not-allowed"
+            >
+              Simpan Perubahan
+            </Button>
+          </div>
+        </DialogContent>
+      </Dialog>
     </Dialog>
   );
 }

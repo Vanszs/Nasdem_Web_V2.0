@@ -1,8 +1,10 @@
 import { NextRequest, NextResponse } from "next/server";
 import { db } from "@/lib/db";
-import { getUserIfAuthenticated, requireAuth, requireRole } from "@/lib/jwt-middleware";
-import { SoftDeleteHelper } from "@/lib/soft-delete";
-import { newsSchemas, validateRequest } from "@/lib/validation";
+import {
+  getUserIfAuthenticated,
+  requireAuth,
+  requireRole,
+} from "@/lib/jwt-middleware";
 import { UserRole } from "@/lib/rbac";
 
 // Helper function to validate ID
@@ -17,16 +19,24 @@ function validateId(id: string): number {
 // detail berita
 export async function GET(
   req: NextRequest,
-  { params }: { params: { id: string } }
+  context: { params: Promise<{ id: string }> }
 ) {
   try {
-    const newsId = validateId(params.id);
+    const newsId = validateId((await context.params).id);
     const now = new Date();
 
     const user = getUserIfAuthenticated(req);
-    const isPrivileged = user && [UserRole.EDITOR, UserRole.SUPERADMIN, UserRole.ANALYST].includes(user.role);
+    const isPrivileged =
+      user &&
+      [UserRole.EDITOR, UserRole.SUPERADMIN, UserRole.ANALYST].includes(
+        user.role
+      );
 
-    const wherePublic = { id: newsId, deletedAt: null as any, publishDate: { lte: now } as any };
+    const wherePublic = {
+      id: newsId,
+      deletedAt: null as any,
+      publishDate: { lte: now } as any,
+    };
 
     const newsWithRelations = await db.news.findFirst({
       where: isPrivileged ? { id: newsId } : (wherePublic as any),
@@ -61,9 +71,9 @@ export async function GET(
 // update berita
 export async function PUT(
   req: NextRequest,
-  { params }: { params: { id: string } }
+  context: { params: Promise<{ id: string }> }
 ) {
-  const authError = requireAuth(req);
+  const authError = await requireAuth(req);
   if (authError) return authError;
 
   const roleError = requireRole(req, [UserRole.EDITOR, UserRole.SUPERADMIN]);
@@ -72,7 +82,7 @@ export async function PUT(
     const { title, content, publishDate, thumbnailUrl } = await req.json();
 
     const updated = await db.news.update({
-      where: { id: parseInt(params.id) },
+      where: { id: parseInt((await context.params).id) },
       data: {
         title,
         content,
@@ -99,16 +109,18 @@ export async function PUT(
 // hapus berita
 export async function DELETE(
   req: NextRequest,
-  { params }: { params: { id: string } }
+  context: { params: Promise<{ id: string }> }
 ) {
-  const authError = requireAuth(req);
+  const authError = await requireAuth(req);
   if (authError) return authError;
 
   const roleError = requireRole(req, [UserRole.EDITOR, UserRole.SUPERADMIN]);
   if (roleError) return roleError;
 
   try {
-    await db.news.delete({ where: { id: parseInt(params.id) } });
+    await db.news.delete({
+      where: { id: parseInt((await context.params).id) },
+    });
     return NextResponse.json({ success: true, message: "News deleted" });
   } catch (err: any) {
     return NextResponse.json(

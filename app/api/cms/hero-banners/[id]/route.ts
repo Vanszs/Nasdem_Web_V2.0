@@ -13,9 +13,9 @@ const bannerUpdateSchema = z.object({
 
 export async function GET(
   _req: NextRequest,
-  { params }: { params: { id: string } }
+  context: { params: Promise<{ id: string }> }
 ) {
-  const parsedId = idParam.safeParse(params);
+  const parsedId = idParam.safeParse(await context.params);
   if (!parsedId.success) {
     return NextResponse.json({ error: "ID tidak valid" }, { status: 400 });
   }
@@ -29,14 +29,14 @@ export async function GET(
 
 export async function PATCH(
   req: NextRequest,
-  { params }: { params: { id: string } }
+  context: { params: Promise<{ id: string }> }
 ) {
   const authError = requireAuth(req);
   if (authError) return authError;
   const roleError = requireRole(req, [UserRole.SUPERADMIN, UserRole.EDITOR]);
   if (roleError) return roleError;
 
-  const parsedId = idParam.safeParse(params);
+  const parsedId = idParam.safeParse(await context.params);
   if (!parsedId.success) {
     return NextResponse.json({ error: "ID tidak valid" }, { status: 400 });
   }
@@ -57,17 +57,17 @@ export async function PATCH(
 
 export async function DELETE(
   req: NextRequest,
-  { params }: { params: { id: string } }
+  context: { params: Promise<{ id: string }> }
 ) {
   const authError = requireAuth(req);
   if (authError) return authError;
   const roleError = requireRole(req, [UserRole.SUPERADMIN, UserRole.EDITOR]);
   if (roleError) return roleError;
 
-  const bannerId = Number(params.id);
-  if (!bannerId) {
+  const { id } = await context.params;
+  if (!id) {
     return NextResponse.json({ error: "ID tidak valid" }, { status: 400 });
   }
-  await db.cmsHeroBanner.delete({ where: { id: bannerId } });
+  await db.cmsHeroBanner.delete({ where: { id: parseInt(id) } });
   return NextResponse.json({ success: true });
 }

@@ -34,7 +34,7 @@ const categoryConfig: Record<
 > = {
   sosial: {
     label: "Sosial",
-    className: "bg-brand-primary text-white border-2 border-brand-primary/20",
+    className: "bg-blue-500 text-white border-2 border-blue-500/20",
   },
   politik: {
     label: "Politik",

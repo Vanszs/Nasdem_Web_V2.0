@@ -21,7 +21,7 @@ const MediaTypeEnum = z.enum(["image", "video"]);
 const mediaSchema = z.object({
   id: z.number().optional(),
   type: MediaTypeEnum,
-  url: z.string().url(),
+  url: z.string(),
   caption: z.string().optional(),
   order: z.number().int().nonnegative().optional(),
 });

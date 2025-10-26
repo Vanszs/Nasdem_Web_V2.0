@@ -107,7 +107,10 @@ export function requireRole(req: NextRequest, allowedRoles: UserRole[]) {
     );
   }
 
-  if (!allowedRoles.includes(user.role)) {
+  const userRole = String(user.role).toLowerCase();
+  const allowed = allowedRoles.map((r) => r.toLowerCase());
+
+  if (!allowed.includes(userRole)) {
     return NextResponse.json(
       { success: false, error: "Insufficient permissions" },
       { status: 403 }

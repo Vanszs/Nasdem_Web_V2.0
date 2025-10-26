@@ -21,7 +21,7 @@ const MediaTypeEnum = z.enum(["image", "video"]);
 const mediaSchema = z.object({
   id: z.number().optional(),
   type: MediaTypeEnum,
-  url: z.string().url(),
+  url: z.string(),
   caption: z.string().optional(),
   order: z.number().int().nonnegative().optional(),
 });
@@ -37,11 +37,12 @@ const activityUpdateSchema = z.object({
 
 export async function GET(
   req: NextRequest,
-  { params }: { params: { id: string } }
+  context: { params: Promise<{ id: string }> }
 ) {
   try {
+    const { id } = await context.params;
     const activity = await (db as any).activity.findUnique({
-      where: { id: parseInt(params.id) },
+      where: { id: parseInt(id) },
       include: {
         media: { orderBy: [{ order: "asc" }, { uploadedAt: "asc" }] },
       },
@@ -152,14 +153,16 @@ export async function PUT(
 
 export async function DELETE(
   req: NextRequest,
-  { params }: { params: { id: string } }
+  context: { params: Promise<{ id: string }> }
 ) {
   const authError = await requireAuth(req);
   if (authError) return authError;
   const roleError = requireRole(req, [UserRole.EDITOR, UserRole.SUPERADMIN]);
   if (roleError) return roleError;
+
+  const { id } = await context.params;
   try {
-    await (db as any).activity.delete({ where: { id: parseInt(params.id) } });
+    await (db as any).activity.delete({ where: { id: parseInt(id) } });
     return NextResponse.json({ success: true, message: "Activity deleted" });
   } catch (err: any) {
     return NextResponse.json(

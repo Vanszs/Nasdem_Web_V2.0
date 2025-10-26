@@ -3,7 +3,6 @@ import { requireAuth, requireRole } from "@/lib/jwt-middleware";
 import fs from "fs";
 import path from "path";
 import { randomBytes } from "crypto";
-import { z } from "zod";
 import { UserRole } from "@/lib/rbac";
 
 export const runtime = "nodejs";
@@ -57,12 +56,12 @@ function validateFileContent(buffer: Buffer, mimeType: string): boolean {
 }
 
 export async function POST(req: NextRequest) {
-  const authError = requireAuth(req);
-  if (authError) return authError;
-  const roleError = requireRole(req, [UserRole.EDITOR, UserRole.SUPERADMIN]);
-  if (roleError) return roleError;
-
   try {
+    // Auth checks must be awaited to ensure a proper NextResponse is returned
+    const authError = await requireAuth(req);
+    if (authError) return authError;
+    const roleError = requireRole(req, [UserRole.EDITOR, UserRole.SUPERADMIN]);
+    if (roleError) return roleError;
     const urlScope = req.nextUrl.searchParams.get("scope");
     const form = await req.formData();
     const formScope = form.get("scope") as string | null;
