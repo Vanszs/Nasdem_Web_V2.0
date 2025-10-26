@@ -4,6 +4,7 @@ import { AdminLayout } from "../components/layout/AdminLayout";
 import { MemberCard } from "./components/MemberCard";
 import { AddMemberDialog } from "./components/AddMemberDialog";
 import { MemberDetailDialog } from "./components/MemberDetailDialog";
+import { EditOrgMembershipDialog } from "./components/EditOrgMembershipDialog";
 import { useMembers } from "./hooks/useMembers";
 import { useDebounce } from "../../../hooks/use-debounce";
 import { SimplePagination } from "@/components/ui/pagination";
@@ -162,6 +163,7 @@ export default function Members() {
   const [selectedMember, setSelectedMember] = useState<any | null>(null);
   const [detailOpen, setDetailOpen] = useState(false);
   const [addOpen, setAddOpen] = useState(false);
+  const [editOpen, setEditOpen] = useState(false);
 
   // Debug effect to log state changes
   useEffect(() => {
@@ -183,6 +185,13 @@ export default function Members() {
   const openDetail = (m: any) => {
     setSelectedMember(m);
     setDetailOpen(true);
+  };
+
+  const handleRequestEdit = (m: any) => {
+    setDetailOpen(false);
+    setSelectedMember(m);
+    // Delay to let close animation finish before opening next dialog
+    setTimeout(() => setEditOpen(true), 200);
   };
 
   // STATUS & LEVEL CONFIG (dipertahankan untuk badge)
@@ -350,6 +359,7 @@ export default function Members() {
                 departmentConfig={departmentConfig}
                 getDPRTLeader={() => undefined}
                 getKaderCount={() => 0}
+                onRemoved={() => refetch()}
               />
             ))}
           </div>
@@ -397,9 +407,20 @@ export default function Members() {
           departmentConfig={departmentConfig}
           getDPRTLeader={() => undefined}
           getKaderCount={() => 0}
+          onRequestEdit={handleRequestEdit}
         />
-
         <AddMemberDialog open={addOpen} onOpenChange={setAddOpen} />
+        {/* Edit membership dialog */}
+        <EditOrgMembershipDialog
+          open={editOpen}
+          onOpenChange={(v: boolean) => setEditOpen(v)}
+          member={selectedMember}
+          onSaved={() => {
+            setEditOpen(false);
+            refetch();
+          }}
+          key={selectedMember?.id ?? "none"}
+        />
       </div>
     </AdminLayout>
   );

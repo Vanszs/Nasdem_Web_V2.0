@@ -38,6 +38,7 @@ interface Props {
   departmentConfig: any;
   getDPRTLeader: (region: string, subDepartment: string) => Member | undefined;
   getKaderCount: (region: string, subDepartment: string) => number;
+  onRequestEdit?: (member: Member) => void;
 }
 
 export function MemberDetailDialog({
@@ -48,6 +49,7 @@ export function MemberDetailDialog({
   departmentConfig,
   getDPRTLeader,
   getKaderCount,
+  onRequestEdit,
 }: Props) {
   const router = useRouter();
 
@@ -822,9 +824,7 @@ export function MemberDetailDialog({
           <div className="flex gap-3">
             <Button
               variant="outline"
-              onClick={() =>
-                router.push(`/admin/organizations/edit/${member.id}`)
-              }
+              onClick={() => onRequestEdit?.(member)}
               className="border-gray-300 text-gray-700 hover:bg-gray-50 text-sm h-10 px-4 transition-all duration-300 hover:shadow-sm"
             >
               Edit

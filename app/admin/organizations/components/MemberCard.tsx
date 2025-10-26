@@ -1,7 +1,31 @@
+"use client";
 import { Badge } from "@/components/ui/badge";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
-import { Mail, Phone, MapPin, Users, Check, X, Clock } from "lucide-react";
+import {
+  Mail,
+  Phone,
+  MapPin,
+  Users,
+  Check,
+  X,
+  Clock,
+  Trash2,
+} from "lucide-react";
 import { Member } from "../types";
+import * as React from "react";
+import { Button } from "@/components/ui/button";
+import { useMutation, useQueryClient } from "@tanstack/react-query";
+import { toast } from "sonner";
+import {
+  AlertDialog,
+  AlertDialogAction,
+  AlertDialogCancel,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogTitle,
+} from "@/components/ui/alert-dialog";
 
 interface MemberCardProps {
   member: Member;
@@ -10,6 +34,7 @@ interface MemberCardProps {
   departmentConfig: any;
   getDPRTLeader: (region: string, subDepartment: string) => Member | undefined;
   getKaderCount: (region: string, subDepartment: string) => number;
+  onRemoved?: () => void;
 }
 
 export function MemberCard(props: MemberCardProps) {
@@ -20,14 +45,87 @@ export function MemberCard(props: MemberCardProps) {
     departmentConfig,
     getDPRTLeader,
     getKaderCount,
+    onRemoved,
   } = props;
+  const queryClient = useQueryClient();
+  const [confirmOpen, setConfirmOpen] = React.useState(false);
+  const removeMutation = useMutation({
+    mutationFn: async () => {
+      const res = await fetch("/api/organizations/remove-member", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ memberId: Number(member.id) }),
+      });
+      const json = await res.json();
+      if (!res.ok || !json.success) {
+        throw new Error(json.error || "Gagal menghapus dari organisasi");
+      }
+      return json;
+    },
+    onSuccess: () => {
+      toast.success("Anggota dihapus dari organisasi");
+      queryClient.invalidateQueries({ queryKey: ["members"] });
+      // Defer callbacks to avoid setState during render warnings
+      setTimeout(() => {
+        onRemoved?.();
+        setConfirmOpen(false);
+      }, 0);
+    },
+    onError: (e: any) => {
+      toast.error(e?.message || "Gagal menghapus anggota");
+      setConfirmOpen(false);
+    },
+  });
   return (
     <div
       onClick={() => onClick(member)}
       className="group relative overflow-hidden bg-white backdrop-blur-xl border border-[#001B55]/30 rounded-xl shadow-md hover:shadow-lg transition-all duration-300 transform hover:scale-105 cursor-pointer"
     >
+      {removeMutation.isPending && (
+        <div className="absolute inset-0 bg-white/60 backdrop-blur-[1px] z-10 flex items-center justify-center">
+          <span className="h-4 w-4 animate-spin rounded-full border-2 border-[#001B55]/40 border-t-[#001B55]" />
+        </div>
+      )}
       <div className="absolute inset-0 bg-gradient-to-br from-[#001B55]/2 via-transparent to-[#FF9C04]/2 opacity-0 group-hover:opacity-100 transition-opacity duration-300"></div>
       <div className="relative p-4">
+        <button
+          type="button"
+          onClick={(e) => {
+            e.stopPropagation();
+            if (removeMutation.isPending) return;
+            setConfirmOpen(true);
+          }}
+          aria-label="Hapus dari organisasi"
+          className="absolute right-2 top-2 z-10 h-8 w-8 rounded-full bg-red-50 text-red-600 hover:bg-red-100 flex items-center justify-center shadow-sm"
+        >
+          <Trash2 className="h-4 w-4" />
+        </button>
+        <AlertDialog open={confirmOpen} onOpenChange={(o) => setConfirmOpen(o)}>
+          <AlertDialogContent onClick={(e) => e.stopPropagation()}>
+            <AlertDialogHeader>
+              <AlertDialogTitle>Hapus dari organisasi?</AlertDialogTitle>
+              <AlertDialogDescription>
+                Tindakan ini hanya melepas {member.name} dari struktur
+                organisasi saat ini. Data anggota tidak dihapus.
+              </AlertDialogDescription>
+            </AlertDialogHeader>
+            <AlertDialogFooter>
+              <AlertDialogCancel disabled={removeMutation.isPending}>
+                Batal
+              </AlertDialogCancel>
+              <AlertDialogAction
+                disabled={removeMutation.isPending}
+                onClick={(e) => {
+                  e.stopPropagation();
+                  removeMutation.mutate();
+                }}
+                className="bg-red-600 text-white hover:bg-red-700"
+              >
+                {removeMutation.isPending ? "Menghapus..." : "Hapus"}
+              </AlertDialogAction>
+            </AlertDialogFooter>
+          </AlertDialogContent>
+        </AlertDialog>
         <div className="flex flex-col items-center space-y-3">
           <div className="relative">
             <div className="absolute -inset-1 bg-gradient-to-r from-[#001B55] via-[#FF9C04] to-[#001B55] rounded-full blur-sm opacity-20 group-hover:opacity-30 transition-opacity duration-300"></div>
