@@ -139,7 +139,7 @@
   /* Custom scrollbar styling for all elements */
   * {
     scrollbar-width: thin;
-    scrollbar-color: #C5BAFF #f0f0f0;
+    scrollbar-color: #c5baff #f0f0f0;
   }
 
   /* Webkit scrollbar styling (Chrome, Safari, Edge) */
@@ -154,7 +154,7 @@
   }
 
   *::-webkit-scrollbar-thumb {
-    background: #C5BAFF;
+    background: #c5baff;
     border-radius: 4px;
     transition: background 0.2s ease;
   }

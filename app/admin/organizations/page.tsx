@@ -149,7 +149,7 @@ export default function Members() {
         department: so?.level || levelParam || "dpd",
         position: so?.position || "anggota",
         region: so?.Region?.name || undefined,
-        subDepartment: undefined, // tidak ada di schema baru
+        subDepartment: undefined,
         description: m.bio || "",
         gender: m.gender || undefined,
         ktpPhotoUrl: m.ktpPhotoUrl || undefined,
