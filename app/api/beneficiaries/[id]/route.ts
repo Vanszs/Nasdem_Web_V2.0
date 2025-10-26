@@ -3,16 +3,18 @@ import { db } from "@/lib/db";
 import { requireAuth, requireRole } from "@/lib/jwt-middleware";
 import { UserRole } from "@/lib/rbac";
 import { z } from "zod";
-import { GenderEnum } from "@prisma/client";
+import { GenderEnum, Prisma } from "@prisma/client";
 
 const idParam = z.object({ id: z.coerce.number().int() });
 
 const bodySchema = z.object({
-  programId: z.coerce.number().int().optional(),
+  // Accept numbers and coerce, but reject non-positive values to avoid FK=0
+  programId: z.coerce.number().int().positive().optional(),
   fullName: z.string().min(1).optional(),
   email: z.string().email().optional().nullable(),
   nik: z.string().optional().nullable(),
   phone: z.string().optional().nullable(),
+  // Frontend sends YYYY-MM-DD or null
   dateOfBirth: z.string().optional().nullable(),
   gender: z.nativeEnum(GenderEnum).optional().nullable(),
   occupation: z.string().optional().nullable(),
@@ -23,7 +25,10 @@ const bodySchema = z.object({
   status: z.enum(["pending", "completed"]).optional(),
 });
 
-export async function GET(_req: NextRequest, ctx: { params: { id: string } }) {
+export async function GET(
+  _req: NextRequest,
+  ctx: { params: Promise<{ id: string }> }
+) {
   const authError = await requireAuth(_req);
   if (authError) return authError;
   const roleError = requireRole(_req, [
@@ -56,14 +61,18 @@ export async function GET(_req: NextRequest, ctx: { params: { id: string } }) {
   }
 }
 
-export async function PUT(req: NextRequest, ctx: { params: { id: string } }) {
+export async function PUT(
+  req: NextRequest,
+  ctx: { params: Promise<{ id: string }> }
+) {
   const authError = await requireAuth(req);
   if (authError) return authError;
+
   const roleError = requireRole(req, [UserRole.EDITOR, UserRole.SUPERADMIN]);
   if (roleError) return roleError;
 
   try {
-    const { id } = idParam.parse(ctx.params);
+    const { id } = idParam.parse(await ctx.params);
     const json = await req.json();
     const parsed = bodySchema.safeParse(json);
     if (!parsed.success) {
@@ -76,33 +85,59 @@ export async function PUT(req: NextRequest, ctx: { params: { id: string } }) {
         { status: 400 }
       );
     }
-    const b = parsed.data as z.infer<typeof bodySchema>;
+
+    const b = parsed.data;
+
+    const data: Record<string, any> = Object.fromEntries(
+      Object.entries(b).map(([k, v]) => {
+        if (k === "dateOfBirth") {
+          return [k, v ? new Date(v) : null];
+        }
+        return [k, v];
+      })
+    );
+
     const updated = await db.programBenefitRecipient.update({
       where: { id },
-      data: {
-        programId: b.programId ?? undefined,
-        fullName: b.fullName ?? undefined,
-        email: b.email ?? undefined,
-        nik: b.nik ?? undefined,
-        phone: b.phone ?? undefined,
-        dateOfBirth: b.dateOfBirth
-          ? new Date(String(b.dateOfBirth))
-          : undefined,
-        gender: (b.gender as any) ?? undefined,
-        occupation: b.occupation ?? undefined,
-        familyMemberCount: b.familyMemberCount ?? undefined,
-        proposerName: b.proposerName ?? undefined,
-        fullAddress: b.fullAddress ?? undefined,
-        notes: b.notes ?? undefined,
-        status: (b.status as any) ?? undefined,
-      } as any,
+      data,
       select: { id: true },
     });
+
     return NextResponse.json({ success: true, data: updated });
-  } catch (e) {
+  } catch (e: any) {
     console.error("/api/beneficiaries/[id] PUT error", e);
+
+    if (e instanceof Prisma.PrismaClientKnownRequestError) {
+      switch (e.code) {
+        case "P2002":
+          return NextResponse.json(
+            {
+              success: false,
+              error:
+                "Data duplikat. Kombinasi Program dan NIK sudah terdaftar.",
+              details: e.meta,
+            },
+            { status: 400 }
+          );
+        case "P2003":
+          return NextResponse.json(
+            {
+              success: false,
+              error: "Program tidak ditemukan atau tidak valid.",
+              details: e.meta,
+            },
+            { status: 400 }
+          );
+        case "P2025":
+          return NextResponse.json(
+            { success: false, error: "Data tidak ditemukan." },
+            { status: 404 }
+          );
+      }
+    }
+
     return NextResponse.json(
-      { success: false, error: "Failed to update" },
+      { success: false, error: "Gagal memperbarui data." },
       { status: 500 }
     );
   }
@@ -110,7 +145,7 @@ export async function PUT(req: NextRequest, ctx: { params: { id: string } }) {
 
 export async function DELETE(
   req: NextRequest,
-  ctx: { params: { id: string } }
+  ctx: { params: Promise<{ id: string }> }
 ) {
   const authError = await requireAuth(req);
   if (authError) return authError;
@@ -118,8 +153,9 @@ export async function DELETE(
   if (roleError) return roleError;
 
   try {
-    const { id } = idParam.parse(ctx.params);
-    await db.programBenefitRecipient.delete({ where: { id } });
+    await db.programBenefitRecipient.delete({
+      where: { id: parseInt((await ctx.params).id) },
+    });
     return NextResponse.json({ success: true });
   } catch (e) {
     console.error("/api/beneficiaries/[id] DELETE error", e);

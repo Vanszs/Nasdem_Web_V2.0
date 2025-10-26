@@ -37,6 +37,16 @@ import type {
 } from "../types";
 import { Loader2, Plus } from "lucide-react";
 
+function toDateInputValue(d?: string | null): string {
+  if (!d) return "";
+  const date = new Date(d);
+  if (isNaN(date.getTime())) return "";
+  const yyyy = date.getFullYear();
+  const mm = String(date.getMonth() + 1).padStart(2, "0");
+  const dd = String(date.getDate()).padStart(2, "0");
+  return `${yyyy}-${mm}-${dd}`;
+}
+
 const schema = z.object({
   programId: z.coerce.number().int().min(1, "Pilih program"),
   fullName: z.string().min(1, "Nama wajib diisi"),
@@ -89,7 +99,7 @@ export function BeneficiaryFormDialog({
       email: editing.email ?? "",
       nik: editing.nik ?? "",
       phone: editing.phone ?? "",
-      dateOfBirth: editing.dateOfBirth ?? "",
+      dateOfBirth: toDateInputValue(editing.dateOfBirth),
       gender: (editing.gender as any) ?? "",
       occupation: editing.occupation ?? "",
       familyMemberCount: editing.familyMemberCount ?? undefined,
@@ -132,7 +142,7 @@ export function BeneficiaryFormDialog({
         email: editing.email ?? "",
         nik: editing.nik ?? "",
         phone: editing.phone ?? "",
-        dateOfBirth: editing.dateOfBirth ?? "",
+        dateOfBirth: toDateInputValue(editing.dateOfBirth),
         gender: (editing.gender as any) ?? "",
         occupation: editing.occupation ?? "",
         familyMemberCount: editing.familyMemberCount ?? 0,

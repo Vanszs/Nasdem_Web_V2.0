@@ -47,7 +47,8 @@ export default function BeneficiariesPage() {
   const [status, setStatus] = useState<string>("all");
   const [programId, setProgramId] = useState<string>("all");
   const [openDelete, setOpenDelete] = useState(false);
-  const [selected, setSelected] = useState<Beneficiary | null>(null);
+  const [editing, setEditing] = useState<Beneficiary | null>(null);
+  const [deleteTarget, setDeleteTarget] = useState<Beneficiary | null>(null);
   const [openImport, setOpenImport] = useState(false);
   const queryClient = useQueryClient();
 
@@ -271,8 +272,8 @@ export default function BeneficiariesPage() {
                   <Plus className="w-4 h-4 mr-2" /> Import CSV
                 </Button>
                 <BeneficiaryFormDialog
-                  editing={selected}
-                  onClose={() => setSelected(null)}
+                  editing={editing}
+                  onClose={() => setEditing(null)}
                 />
               </div>
             </div>
@@ -331,9 +332,16 @@ export default function BeneficiariesPage() {
             <BeneficiariesList
               data={beneficiaries}
               isLoading={isLoading}
-              onEdit={(b) => setSelected(b)}
+              onEdit={(b) => {
+                // Ensure delete dialog is closed and delete target cleared
+                setOpenDelete(false);
+                setDeleteTarget(null);
+                setEditing(b);
+              }}
               onDelete={(b) => {
-                setSelected(b);
+                // Ensure edit dialog won't auto-open
+                setEditing(null);
+                setDeleteTarget(b);
                 setOpenDelete(true);
               }}
             />
@@ -342,8 +350,11 @@ export default function BeneficiariesPage() {
 
         <DeleteBeneficiaryDialog
           open={openDelete}
-          beneficiary={selected}
-          onOpenChange={(v) => setOpenDelete(v)}
+          beneficiary={deleteTarget}
+          onOpenChange={(v) => {
+            setOpenDelete(v);
+            if (!v) setDeleteTarget(null);
+          }}
         />
 
         {/* Import CSV Dialog */}
