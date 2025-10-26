@@ -14,16 +14,16 @@ const bodySchema = z.object({
 
 export async function PATCH(
   req: NextRequest,
-  { params }: { params: { id: string } }
+  context: { params: Promise<{ id: string }> }
 ) {
-  const authError = requireAuth(req);
+  const authError = await requireAuth(req);
   if (authError) return authError;
 
   const roleError = requireRole(req, [UserRole.EDITOR, UserRole.SUPERADMIN]);
   if (roleError) return roleError;
 
   try {
-    const { id } = paramsSchema.parse(params);
+    const { id } = paramsSchema.parse(await context.params);
     const json = await req.json();
     const { status } = bodySchema.parse(json);
 

@@ -16,11 +16,13 @@ function validateId(id: string): number {
 
 export async function GET(
   req: NextRequest,
-  { params }: { params: { id: string } }
+  context: { params: Promise<{ id: string }> }
 ) {
   // Add authentication check - was missing before!
-  const authError = requireAuth(req);
+  const authError = await requireAuth(req);
   if (authError) return authError;
+
+  const { id } = await context.params;
 
   const roleError = requireRole(req, [
     UserRole.EDITOR,
@@ -30,7 +32,7 @@ export async function GET(
   if (roleError) return roleError;
 
   try {
-    const memberId = validateId(params.id);
+    const memberId = validateId(id);
 
     const member = await SoftDeleteHelper.findMemberById(memberId);
 
@@ -72,16 +74,18 @@ export async function GET(
 
 export async function PUT(
   req: NextRequest,
-  { params }: { params: { id: string } }
+  context: { params: Promise<{ id: string }> }
 ) {
-  const authError = requireAuth(req);
+  const authError = await requireAuth(req);
   if (authError) return authError;
+
+  const { id } = await context.params;
 
   const roleError = requireRole(req, [UserRole.EDITOR, UserRole.SUPERADMIN]);
   if (roleError) return roleError;
 
   try {
-    const memberId = validateId(params.id);
+    const memberId = validateId(id);
     const body = await req.json();
 
     // Validate input
@@ -136,6 +140,16 @@ export async function PUT(
         status: data.status,
         strukturId: data.strukturId,
         photoUrl: data.photoUrl,
+        // Map extended fields
+        ktpPhotoUrl: (data as any).ktpUrl || undefined,
+        nik: (data as any).nik,
+        ktaNumber: (data as any).ktaNumber,
+        occupation: (data as any).occupation,
+        familyMemberCount:
+          (data as any).familyCount !== undefined
+            ? Number((data as any).familyCount)
+            : undefined,
+        maritalStatus: (data as any).maritalStatus,
         joinDate: data.joinDate ? new Date(data.joinDate) : undefined,
         endDate: data.endDate ? new Date(data.endDate) : undefined,
         gender: data.gender,
@@ -161,16 +175,18 @@ export async function PUT(
 
 export async function DELETE(
   req: NextRequest,
-  { params }: { params: { id: string } }
+  context: { params: Promise<{ id: string }> }
 ) {
-  const authError = requireAuth(req);
+  const authError = await requireAuth(req);
   if (authError) return authError;
 
   const roleError = requireRole(req, [UserRole.EDITOR, UserRole.SUPERADMIN]);
   if (roleError) return roleError;
 
+  const { id } = await context.params;
+
   try {
-    const memberId = validateId(params.id);
+    const memberId = validateId(id);
 
     // Check if member exists
     const existingMember = await SoftDeleteHelper.findMemberById(memberId);

@@ -32,6 +32,7 @@ export type MemberListItem = {
   dateOfBirth?: string | Date | null;
   joinDate?: string | Date | null;
   photoUrl?: string | null;
+  ktpPhotoUrl?: string | null;
   bio?: string | null;
   nik?: string | null;
   ktaNumber?: string | null;
@@ -466,7 +467,9 @@ export function MembersTable({
                       key={header.id}
                       className={cn(
                         "text-left font-semibold px-4 py-3 border-b border-[#E5E7EB] text-xs uppercase tracking-wide",
-                        header.id === "actions" ? "sticky right-0 bg-[#001B55]/5 z-10 min-w-[100px]" : ""
+                        header.id === "actions"
+                          ? "sticky right-0 bg-[#001B55]/5 z-10 min-w-[100px]"
+                          : ""
                       )}
                     >
                       {header.isPlaceholder
@@ -524,7 +527,9 @@ export function MembersTable({
                         key={cell.id}
                         className={cn(
                           "px-4 py-3 border-b border-[#F1F2F4] align-middle",
-                          cell.column.id === "actions" ? "sticky right-0 bg-white z-10 min-w-[100px] shadow-[ -5px 0 5px -5px rgba(0,0,0,0.1)]" : ""
+                          cell.column.id === "actions"
+                            ? "sticky right-0 bg-white z-10 min-w-[100px] shadow-[ -5px 0 5px -5px rgba(0,0,0,0.1)]"
+                            : ""
                         )}
                       >
                         {flexRender(

@@ -7,7 +7,7 @@ import { UserRole } from "@/lib/rbac";
 const MAX_KADER_PER_DPRT = 10;
 
 export async function POST(req: NextRequest) {
-  const authError = requireAuth(req);
+  const authError = await requireAuth(req);
   if (authError) return authError;
   const roleError = requireRole(req, [UserRole.EDITOR, UserRole.SUPERADMIN]);
   if (roleError) return roleError;

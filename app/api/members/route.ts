@@ -39,8 +39,8 @@ const createMemberSchema = z.object({
   gender: z.nativeEnum(GenderEnum).optional(),
   status: z.nativeEnum(MemberStatus).optional(),
   strukturId: z.number().optional(),
-  photoUrl: z.string().url().optional(),
-  ktpUrl: z.string().url().optional(),
+  photoUrl: z.string().optional(),
+  ktpUrl: z.string().optional(),
   joinDate: z.string().optional(),
   endDate: z.string().optional(),
   nik: z.string().optional(),
@@ -150,9 +150,14 @@ export async function GET(req: NextRequest) {
           status: true,
           joinDate: true,
           photoUrl: true,
+          ktpPhotoUrl: true,
           bio: true,
           gender: true,
           dateOfBirth: true,
+          nik: true,
+          ktaNumber: true,
+          maritalStatus: true,
+          familyMemberCount: true,
           struktur: parsed.struktur
             ? {
                 select: {
@@ -170,9 +175,15 @@ export async function GET(req: NextRequest) {
       }),
     ]);
 
+    // Map DB fields to frontend expectations (familyMemberCount -> familyCount)
+    const mapped = data.map((m: any) => ({
+      ...m,
+      familyCount: m.familyMemberCount ?? null,
+    }));
+
     return NextResponse.json({
       success: true,
-      data,
+      data: mapped,
       meta: {
         page,
         pageSize,

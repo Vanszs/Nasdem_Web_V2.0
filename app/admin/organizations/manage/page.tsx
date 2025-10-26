@@ -1,7 +1,15 @@
 "use client";
 
 import * as React from "react";
-import { RefreshCw, Plus, Building2, ImageIcon, Upload, X, CreditCard } from "lucide-react";
+import {
+  RefreshCw,
+  Plus,
+  Building2,
+  ImageIcon,
+  Upload,
+  X,
+  CreditCard,
+} from "lucide-react";
 import { useDebounce } from "@/hooks/use-debounce";
 import { Button } from "@/components/ui/button";
 import { AdminLayout } from "../../components/layout/AdminLayout";
@@ -53,8 +61,8 @@ const addMemberSchema = z.object({
   dateOfBirth: optionalString,
   address: optionalString,
   bio: optionalString,
-  photoUrl: z.union([z.string().url("URL tidak valid"), z.literal("")]),
-  ktpUrl: z.union([z.string().url("URL tidak valid"), z.literal("")]),
+  photoUrl: z.union([z.string(), z.literal("")]),
+  ktpUrl: z.union([z.string(), z.literal("")]),
   joinDate: optionalString,
   nik: optionalString,
   ktaNumber: optionalString,
@@ -197,6 +205,7 @@ export default function ManageOrganizationPage() {
     try {
       const formData = new FormData();
       formData.append("file", file);
+      formData.append("scope", "member");
 
       const response = await fetch("/api/upload", {
         method: "POST",
@@ -408,14 +417,14 @@ export default function ManageOrganizationPage() {
                       className="w-full"
                     >
                       <TabsList className="grid w-full grid-cols-2 h-9 bg-gray-100">
-                        <TabsTrigger 
-                          value="url" 
+                        <TabsTrigger
+                          value="url"
                           className="text-xs data-[state=active]:bg-white data-[state=active]:text-[#001B55] data-[state=active]:shadow-sm"
                         >
                           URL Foto
                         </TabsTrigger>
-                        <TabsTrigger 
-                          value="upload" 
+                        <TabsTrigger
+                          value="upload"
                           className="text-xs data-[state=active]:bg-white data-[state=active]:text-[#001B55] data-[state=active]:shadow-sm"
                         >
                           Unggah File
@@ -437,7 +446,10 @@ export default function ManageOrganizationPage() {
                           </p>
                         )}
                       </TabsContent>
-                      <TabsContent value="upload" className="space-y-2 pt-3 mt-0">
+                      <TabsContent
+                        value="upload"
+                        className="space-y-2 pt-3 mt-0"
+                      >
                         <div className="relative">
                           <input
                             ref={fileInputRef}
@@ -537,14 +549,14 @@ export default function ManageOrganizationPage() {
                       className="w-full"
                     >
                       <TabsList className="grid w-full grid-cols-2 h-9 bg-gray-100">
-                        <TabsTrigger 
-                          value="url" 
+                        <TabsTrigger
+                          value="url"
                           className="text-xs data-[state=active]:bg-white data-[state=active]:text-[#001B55] data-[state=active]:shadow-sm"
                         >
                           URL KTP
                         </TabsTrigger>
-                        <TabsTrigger 
-                          value="upload" 
+                        <TabsTrigger
+                          value="upload"
                           className="text-xs data-[state=active]:bg-white data-[state=active]:text-[#001B55] data-[state=active]:shadow-sm"
                         >
                           Unggah File
@@ -566,7 +578,10 @@ export default function ManageOrganizationPage() {
                           </p>
                         )}
                       </TabsContent>
-                      <TabsContent value="upload" className="space-y-2 pt-3 mt-0">
+                      <TabsContent
+                        value="upload"
+                        className="space-y-2 pt-3 mt-0"
+                      >
                         <div className="relative">
                           <input
                             ref={ktpFileInputRef}
@@ -818,7 +833,15 @@ export default function ManageOrganizationPage() {
             </div>
 
             {/* Footer */}
-            <DialogFooter className="shrink-0 border-t border-gray-200 bg-white/80 backdrop-blur px-5 py-4">
+            <DialogFooter className="shrink-0 border-t border-gray-200 bg-white/80 backdrop-blur px-5 py-4 relative">
+              {createMemberMutation.isPending && (
+                <div className="absolute inset-0 bg-white/60 backdrop-blur-[1px] flex items-center justify-center z-10">
+                  <div className="flex items-center gap-2 text-[#001B55]">
+                    <span className="h-4 w-4 animate-spin rounded-full border-2 border-[#001B55]/40 border-t-[#001B55]" />
+                    <span className="text-sm">Menyimpan...</span>
+                  </div>
+                </div>
+              )}
               <div className="flex w-full gap-3">
                 <Button
                   type="button"

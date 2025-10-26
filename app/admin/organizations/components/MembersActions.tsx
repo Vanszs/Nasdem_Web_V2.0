@@ -146,7 +146,15 @@ export function MembersActions({ member, onChanged }: MembersActionsProps) {
       />
 
       <Dialog open={openStatus} onOpenChange={setOpenStatus}>
-        <DialogContent className="sm:max-w-sm">
+        <DialogContent className="sm:max-w-sm relative">
+          {statusMutation.isPending && (
+            <div className="absolute inset-0 bg-white/60 backdrop-blur-[1px] z-10 flex items-center justify-center">
+              <div className="flex items-center gap-2 text-[#001B55]">
+                <span className="h-4 w-4 animate-spin rounded-full border-2 border-[#001B55]/40 border-t-[#001B55]" />
+                <span className="text-sm">Menyimpan...</span>
+              </div>
+            </div>
+          )}
           <DialogHeader>
             <DialogTitle>Ubah Status</DialogTitle>
             <DialogDescription>
@@ -189,7 +197,15 @@ export function MembersActions({ member, onChanged }: MembersActionsProps) {
       </Dialog>
 
       <Dialog open={openDelete} onOpenChange={setOpenDelete}>
-        <DialogContent className="sm:max-w-sm">
+        <DialogContent className="sm:max-w-sm relative">
+          {deleteMutation.isPending && (
+            <div className="absolute inset-0 bg-white/60 backdrop-blur-[1px] z-10 flex items-center justify-center">
+              <div className="flex items-center gap-2 text-red-700">
+                <span className="h-4 w-4 animate-spin rounded-full border-2 border-red-400/60 border-t-red-600" />
+                <span className="text-sm">Menghapus...</span>
+              </div>
+            </div>
+          )}
           <DialogHeader>
             <DialogTitle>Hapus Member</DialogTitle>
             <DialogDescription>

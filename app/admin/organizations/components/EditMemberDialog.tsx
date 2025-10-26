@@ -50,12 +50,16 @@ const editMemberSchema = z.object({
   address: optionalString,
   bio: optionalString,
   photoUrl: z.union([z.string().url("URL tidak valid"), z.literal("")]),
+  ktpUrl: z
+    .union([z.string().url("URL tidak valid"), z.literal("")])
+    .optional(),
   joinDate: optionalString,
   nik: optionalString,
   ktaNumber: optionalString,
   familyCount: z.union([z.string(), z.number(), z.literal("")]),
   maritalStatus: optionalString,
   useFileUpload: z.boolean().default(false),
+  useKtpFileUpload: z.boolean().default(false),
 });
 
 type EditMemberFormValues = z.infer<typeof editMemberSchema>;
@@ -70,17 +74,20 @@ const defaultEditValues: EditMemberFormValues = {
   address: "",
   bio: "",
   photoUrl: "",
+  ktpUrl: "",
   joinDate: "",
   nik: "",
   ktaNumber: "",
   familyCount: "",
   maritalStatus: "",
   useFileUpload: false,
+  useKtpFileUpload: false,
 };
 
 async function uploadImage(file: File) {
   const formData = new FormData();
   formData.append("file", file);
+  formData.append("scope", "member");
   const response = await fetch("/api/upload", {
     method: "POST",
     body: formData,
@@ -100,7 +107,9 @@ export function EditMemberDialog({
 }: EditMemberDialogProps) {
   const queryClient = useQueryClient();
   const fileInputRef = React.useRef<HTMLInputElement>(null);
+  const ktpFileInputRef = React.useRef<HTMLInputElement>(null);
   const [photoFile, setPhotoFile] = React.useState<File | null>(null);
+  const [ktpFile, setKtpFile] = React.useState<File | null>(null);
 
   const {
     register,
@@ -115,9 +124,11 @@ export function EditMemberDialog({
   });
 
   const useFileUpload = watch("useFileUpload");
+  const useKtpFileUpload = watch("useKtpFileUpload");
   const genderValue = watch("gender");
   const statusValue = watch("status");
   const photoUrlValue = watch("photoUrl");
+  const ktpUrlValue = watch("ktpUrl");
 
   React.useEffect(() => {
     if (open && member) {
@@ -145,18 +156,22 @@ export function EditMemberDialog({
         address: member.address || "",
         bio: member.bio || "",
         photoUrl: member.photoUrl || "",
+        ktpUrl: (member as any).ktpPhotoUrl || "",
         joinDate: toISODate(member.joinDate),
         nik: member.nik || "",
         ktaNumber: member.ktaNumber || "",
         familyCount: member.familyCount?.toString() || "",
         maritalStatus: member.maritalStatus || "",
         useFileUpload: false,
+        useKtpFileUpload: false,
       });
       setPhotoFile(null);
+      setKtpFile(null);
     }
     if (!open) {
       reset(defaultEditValues);
       setPhotoFile(null);
+      setKtpFile(null);
     }
   }, [member, open, reset]);
 
@@ -165,6 +180,12 @@ export function EditMemberDialog({
       setPhotoFile(null);
     }
   }, [useFileUpload]);
+
+  React.useEffect(() => {
+    if (!useKtpFileUpload) {
+      setKtpFile(null);
+    }
+  }, [useKtpFileUpload]);
 
   const updateMemberMutation = useMutation({
     mutationFn: async ({
@@ -202,6 +223,7 @@ export function EditMemberDialog({
     if (!member) return;
 
     let finalPhotoUrl = values.photoUrl;
+    let finalKtpUrl = values.ktpUrl || "";
 
     if (values.useFileUpload) {
       if (!photoFile) {
@@ -216,6 +238,19 @@ export function EditMemberDialog({
       }
     }
 
+    if (values.useKtpFileUpload) {
+      if (!ktpFile) {
+        toast.error("Silakan pilih file KTP");
+        return;
+      }
+      try {
+        finalKtpUrl = await uploadImage(ktpFile);
+      } catch (error) {
+        toast.error((error as Error).message || "Gagal mengunggah KTP");
+        return;
+      }
+    }
+
     const payload = {
       fullName: values.fullName,
       email: values.email ? values.email : undefined,
@@ -226,10 +261,13 @@ export function EditMemberDialog({
       address: values.address ? values.address : undefined,
       bio: values.bio ? values.bio : undefined,
       photoUrl: finalPhotoUrl ? finalPhotoUrl : undefined,
+      ktpUrl: finalKtpUrl ? finalKtpUrl : undefined,
       joinDate: values.joinDate ? values.joinDate : undefined,
       nik: values.nik ? values.nik : undefined,
       ktaNumber: values.ktaNumber ? values.ktaNumber : undefined,
-      familyCount: values.familyCount ? parseInt(values.familyCount.toString()) : undefined,
+      familyCount: values.familyCount
+        ? parseInt(values.familyCount.toString())
+        : undefined,
       maritalStatus: values.maritalStatus ? values.maritalStatus : undefined,
     };
 
@@ -266,7 +304,10 @@ export function EditMemberDialog({
           </div>
         </DialogHeader>
 
-        <div className="flex-1 min-h-0 overflow-y-auto px-5 pb-4 pt-3">
+        <div className="flex-1 min-h-0 overflow-y-auto px-5 pb-4 pt-3 relative">
+          {updateMemberMutation.isPending && (
+            <div className="absolute inset-0 bg-white/50 backdrop-blur-[1px] z-10" />
+          )}
           <form
             onSubmit={onSubmit}
             className="space-y-8 py-2"
@@ -383,6 +424,127 @@ export function EditMemberDialog({
                           size="icon"
                           variant="ghost"
                           onClick={() => setPhotoFile(null)}
+                          className="absolute -right-2 -top-2 h-6 w-6 rounded-full bg-red-100 text-red-600 hover:bg-red-200"
+                        >
+                          <X className="h-3 w-3" />
+                        </Button>
+                      )}
+                    </div>
+                  </TabsContent>
+                </Tabs>
+              </div>
+            </section>
+
+            {/* KTP Attachment Section */}
+            <section className="space-y-4">
+              <div className="flex items-center gap-2">
+                <div className="flex h-8 w-8 items-center justify-center rounded-md bg-blue-500/10 text-blue-600">
+                  <ImageIcon className="h-4 w-4" />
+                </div>
+                <div className="min-w-0">
+                  <h3 className="text-xs font-semibold tracking-wide text-[#001B55] uppercase">
+                    Foto KTP
+                  </h3>
+                  <p className="text-[11px] text-gray-500">
+                    Upload foto identitas KTP
+                  </p>
+                </div>
+              </div>
+              <div className="space-y-3">
+                <div className="flex h-44 w-full items-center justify-center overflow-hidden rounded-lg border-2 border-dashed border-gray-300 bg-gray-50">
+                  {useKtpFileUpload && ktpFile ? (
+                    <img
+                      src={URL.createObjectURL(ktpFile)}
+                      alt="KTP Preview"
+                      className="h-full w-full object-cover"
+                    />
+                  ) : !useKtpFileUpload && ktpUrlValue ? (
+                    <img
+                      src={ktpUrlValue}
+                      alt="KTP Preview"
+                      className="h-full w-full object-cover"
+                      onError={(event) => {
+                        (
+                          event.currentTarget as HTMLImageElement
+                        ).style.display = "none";
+                      }}
+                    />
+                  ) : (
+                    <div className="text-center px-4">
+                      <p className="text-sm font-medium text-gray-600">
+                        Belum ada foto KTP
+                      </p>
+                      <p className="text-[11px] text-gray-500">
+                        Tambahkan foto KTP melalui URL atau unggah file
+                      </p>
+                    </div>
+                  )}
+                </div>
+                <Tabs
+                  value={useKtpFileUpload ? "upload" : "url"}
+                  onValueChange={(value) => {
+                    const shouldUpload = value === "upload";
+                    setValue("useKtpFileUpload", shouldUpload, {
+                      shouldValidate: true,
+                    });
+                    if (shouldUpload) {
+                      setValue("ktpUrl", "");
+                    } else {
+                      setKtpFile(null);
+                    }
+                  }}
+                >
+                  <TabsList className="grid w-full grid-cols-2 h-8">
+                    <TabsTrigger value="url" className="text-[11px]">
+                      URL KTP
+                    </TabsTrigger>
+                    <TabsTrigger value="upload" className="text-[11px]">
+                      Unggah File
+                    </TabsTrigger>
+                  </TabsList>
+                  <TabsContent value="url" className="space-y-2 pt-3">
+                    <Label className="text-[11px] text-gray-600">
+                      Tautan gambar KTP
+                    </Label>
+                    <Input
+                      placeholder="https://domain.com/ktp.jpg"
+                      disabled={useKtpFileUpload}
+                      className="h-8 text-sm"
+                      {...register("ktpUrl")}
+                    />
+                    {errors.ktpUrl && !useKtpFileUpload && (
+                      <p className="text-xs font-medium text-red-600">
+                        {errors.ktpUrl.message as any}
+                      </p>
+                    )}
+                  </TabsContent>
+                  <TabsContent value="upload" className="space-y-2 pt-3">
+                    <div className="relative">
+                      <input
+                        ref={ktpFileInputRef}
+                        type="file"
+                        accept="image/*"
+                        onChange={(event) => {
+                          const file = event.target.files?.[0] || null;
+                          setKtpFile(file);
+                        }}
+                        className="hidden"
+                      />
+                      <Button
+                        type="button"
+                        variant="outline"
+                        onClick={() => ktpFileInputRef.current?.click()}
+                        className="h-8 w-full text-xs justify-center"
+                      >
+                        <Upload className="h-3 w-3 mr-1" />
+                        {ktpFile ? ktpFile.name : "Pilih file KTP"}
+                      </Button>
+                      {ktpFile && (
+                        <Button
+                          type="button"
+                          size="icon"
+                          variant="ghost"
+                          onClick={() => setKtpFile(null)}
                           className="absolute -right-2 -top-2 h-6 w-6 rounded-full bg-red-100 text-red-600 hover:bg-red-200"
                         >
                           <X className="h-3 w-3" />
@@ -527,7 +689,9 @@ export function EditMemberDialog({
                   />
                 </div>
                 <div className="space-y-1.5">
-                  <Label className="text-[11px] text-gray-600">Status Perkawinan</Label>
+                  <Label className="text-[11px] text-gray-600">
+                    Status Perkawinan
+                  </Label>
                   <Select
                     defaultValue=""
                     onValueChange={(value) => setValue("maritalStatus", value)}
@@ -544,7 +708,9 @@ export function EditMemberDialog({
                   </Select>
                 </div>
                 <div className="space-y-1.5">
-                  <Label className="text-[11px] text-gray-600">Jumlah Keluarga</Label>
+                  <Label className="text-[11px] text-gray-600">
+                    Jumlah Keluarga
+                  </Label>
                   <Input
                     type="number"
                     placeholder="1"
@@ -587,6 +753,15 @@ export function EditMemberDialog({
         </div>
 
         <DialogFooter className="shrink-0 border-t border-gray-200 bg-white/80 backdrop-blur px-5 py-4">
+          {/* Pending overlay */}
+          {updateMemberMutation.isPending && (
+            <div className="absolute inset-0 bg-white/60 backdrop-blur-[1px] flex items-center justify-center z-10">
+              <div className="flex items-center gap-2 text-[#001B55]">
+                <span className="h-4 w-4 animate-spin rounded-full border-2 border-[#001B55]/40 border-t-[#001B55]" />
+                <span className="text-sm">Menyimpan...</span>
+              </div>
+            </div>
+          )}
           <div className="flex w-full gap-3">
             <Button
               type="button"
