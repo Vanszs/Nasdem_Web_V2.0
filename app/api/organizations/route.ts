@@ -101,6 +101,8 @@ export async function GET(req: NextRequest) {
         total,
         skip,
         take,
+        levels: LEVELS,
+        positions: POSITIONS,
       },
     });
   } catch (err: any) {

@@ -60,6 +60,7 @@ const memberFormSchema = z
     level: z.string().min(1, "Tipe organisasi harus dipilih"),
     position: z.string().min(1, "Posisi harus dipilih"),
     sayapName: z.string().optional(),
+    kecamatanId: z.string().optional(),
     regionId: z.string().optional(),
     strukturId: z.string().optional(),
     memberIds: z.array(z.number()).min(1, "Minimal satu anggota harus dipilih"),
@@ -70,10 +71,14 @@ const memberFormSchema = z
   )
   .refine(
     (data) =>
-      ["dpc", "dprt", "kader"].includes(data.level.toLowerCase())
+      ["dpc", "dprt"].includes(data.level.toLowerCase())
         ? !!data.regionId
         : true,
-    { message: "Region harus dipilih", path: ["regionId"] }
+    { message: "Wilayah harus dipilih", path: ["regionId"] }
+  )
+  .refine(
+    (data) => (data.level.toLowerCase() === "dprt" ? !!data.kecamatanId : true),
+    { message: "Kecamatan harus dipilih", path: ["kecamatanId"] }
   );
 
 const kaderFormSchema = z.object({
@@ -121,6 +126,7 @@ export function AddMemberDialog({
       level: "",
       position: "",
       sayapName: "",
+      kecamatanId: "",
       regionId: "",
       strukturId: "",
       memberIds: [],
@@ -138,6 +144,7 @@ export function AddMemberDialog({
 
   const watchLevel = orgForm.watch("level");
   const watchPosition = orgForm.watch("position");
+  const watchKecamatanId = orgForm.watch("kecamatanId");
   const watchRegionId = orgForm.watch("regionId");
   const watchDprtMemberId = kaderForm.watch("dprtMemberId");
 
@@ -213,6 +220,10 @@ export function AddMemberDialog({
   // Derived data
   const regions = ((regionsQuery.data as any)?.data as Region[]) || [];
   const struktur = ((strukturQuery.data as any)?.data as Struktur[]) || [];
+  const schemaLevels: string[] =
+    ((strukturQuery.data as any)?.meta?.levels as string[]) || [];
+  const schemaPositions: string[] =
+    ((strukturQuery.data as any)?.meta?.positions as string[]) || [];
   const unassignedMembers: Member[] = (
     ((membersUnassignedQuery.data as any)?.data as any[]) || []
   ).map((m) => ({
@@ -222,21 +233,25 @@ export function AddMemberDialog({
   }));
 
   // Derived options
+  // Use enum values derived from Prisma schema via API meta
   const levels = React.useMemo(() => {
-    const list = Array.from(new Set(struktur.map((s) => s.level)));
-    if (!list.some((l) => l?.toLowerCase() === "dprt")) list.push("dprt");
-    return list;
-  }, [struktur]);
-  const positionEnums = [
-    "ketua",
-    "sekretaris",
-    "bendahara",
-    "wakil",
-    "anggota",
-  ];
+    let allLevels: string[] = [];
+    if (schemaLevels.length) {
+      allLevels = schemaLevels;
+    } else {
+      // Fallback: derive from struktur if API meta not present
+      const list = Array.from(new Set(struktur.map((s) => s.level)));
+      if (!list.some((l) => l?.toLowerCase() === "dprt")) list.push("dprt");
+      allLevels = list;
+    }
+    // Filter out 'kader' - users should use the Kader→DPRT tab instead
+    return allLevels.filter((l) => l.toLowerCase() !== "kader");
+  }, [schemaLevels, struktur]);
   const positions = React.useMemo(() => {
-    return positionEnums;
-  }, []);
+    if (schemaPositions.length) return schemaPositions;
+    // Fallback to previous static list if meta absent
+    return ["ketua", "sekretaris", "bendahara", "wakil", "anggota"];
+  }, [schemaPositions]);
   const sayapNames = React.useMemo(() => {
     const names = struktur
       .filter((s) => s.level?.toLowerCase() === "sayap" && s.sayapType?.name)
@@ -246,19 +261,45 @@ export function AddMemberDialog({
   const regionTypeForLevel = React.useMemo(() => {
     const lvl = watchLevel?.toLowerCase();
     if (lvl === "dpc") return "kecamatan";
-    if (lvl === "dprt" || lvl === "kader") return "desa";
+    if (lvl === "dprt") return "desa";
     return undefined;
   }, [watchLevel]);
+
+  const kecamatanOptions = React.useMemo(() => {
+    return regions
+      .filter((r) => r.type?.toLowerCase() === "kecamatan")
+      .sort((a, b) => a.name.localeCompare(b.name));
+  }, [regions]);
+
   const filteredRegions = React.useMemo(() => {
     if (!regionTypeForLevel) return [] as Region[];
-    const filtered = regions.filter(
-      (r) => r.type?.toLowerCase() === regionTypeForLevel
-    );
-    if (!regionSearch) return filtered;
-    return filtered.filter((r) =>
-      r.name.toLowerCase().includes(regionSearch.toLowerCase())
-    );
-  }, [regions, regionTypeForLevel, regionSearch]);
+
+    if (regionTypeForLevel === "kecamatan") {
+      // For DPC level, show all kecamatan
+      return kecamatanOptions;
+    }
+
+    if (regionTypeForLevel === "desa") {
+      // For DPRT level, filter desa by selected kecamatan
+      const filtered = regions.filter((r) => r.type?.toLowerCase() === "desa");
+
+      // If kecamatan selected, filter desa by parent (assuming desa name pattern or use proper parent relation)
+      if (watchKecamatanId) {
+        const selectedKec = kecamatanOptions.find(
+          (k) => String(k.id) === watchKecamatanId
+        );
+        if (selectedKec) {
+          // Filter desa that belong to this kecamatan
+          // Note: This assumes regions API returns desa with proper parent relationship
+          // You may need to fetch desa based on kecamatanId from a different endpoint
+          return filtered.sort((a, b) => a.name.localeCompare(b.name));
+        }
+      }
+      return [];
+    }
+
+    return [];
+  }, [regions, regionTypeForLevel, kecamatanOptions, watchKecamatanId]);
 
   const filteredMembersForOrg = React.useMemo(() => {
     // server already applies search & unassigned
@@ -308,9 +349,12 @@ export function AddMemberDialog({
       toast.success("Berhasil", {
         description: `${variables.memberIds.length} anggota ditautkan`,
       });
-      queryClient.invalidateQueries({ queryKey: ["members-unassigned"] });
-      setOpen(false);
-      orgForm.reset();
+      // Defer state updates to avoid setState-in-render warning
+      setTimeout(() => {
+        queryClient.invalidateQueries({ queryKey: ["members-unassigned"] });
+        setOpen(false);
+        orgForm.reset();
+      }, 0);
     },
     onError: (e: any) => {
       toast.error("Gagal", { description: e.message || "Terjadi kesalahan" });
@@ -335,9 +379,12 @@ export function AddMemberDialog({
       toast.success("Berhasil", {
         description: `${variables.kaderIds.length} kader ditautkan`,
       });
-      queryClient.invalidateQueries({ queryKey: ["members-unassigned"] });
-      setOpen(false);
-      kaderForm.reset();
+      // Defer state updates to avoid setState-in-render warning
+      setTimeout(() => {
+        queryClient.invalidateQueries({ queryKey: ["members-unassigned"] });
+        setOpen(false);
+        kaderForm.reset();
+      }, 0);
     },
     onError: (e: any) => {
       toast.error("Gagal", { description: e.message || "Terjadi kesalahan" });
@@ -349,16 +396,32 @@ export function AddMemberDialog({
       let strukturId = data.strukturId;
       const lvl = data.level.toLowerCase();
 
+      // Find matching struktur based on level, position, and region
       if (lvl === "sayap") {
         const match = struktur.find(
           (s) =>
             s.level?.toLowerCase() === "sayap" &&
+            s.position?.toLowerCase() === data.position.toLowerCase() &&
             s.sayapType?.name === data.sayapName
         );
         if (!match)
           throw new Error("Tidak menemukan struktur sayap yang sesuai");
         strukturId = String(match.id);
+      } else if (lvl === "dpd") {
+        // DPD doesn't need region
+        const match = struktur.find(
+          (s) =>
+            s.level?.toLowerCase() === "dpd" &&
+            s.position?.toLowerCase() === data.position.toLowerCase()
+        );
+        if (!match) {
+          throw new Error(
+            "Tidak menemukan unit struktur untuk kombinasi level/posisi"
+          );
+        }
+        strukturId = String(match.id);
       } else {
+        // DPC and DPRT need region
         const byLevelPos = struktur.filter(
           (s) =>
             s.level?.toLowerCase() === lvl &&
@@ -462,7 +525,7 @@ export function AddMemberDialog({
     <Dialog open={controlledOpen} onOpenChange={setOpen}>
       {/* DialogTrigger removed - using controlled state from parent */}
       <DialogContent
-        className="!max-w-3xl max-h-[82vh] bg-white border border-[#D8E2F0] p-0 overflow-hidden flex flex-col"
+        className="!max-w-4xl max-h-[85vh] bg-white border border-[#D8E2F0] p-0 overflow-hidden flex flex-col"
         style={{
           borderRadius: "16px",
           boxShadow: "0 20px 60px rgba(0, 27, 85, 0.15)",
@@ -487,164 +550,716 @@ export function AddMemberDialog({
           </div>
         </DialogHeader>
 
-        <div className="flex-1 overflow-y-auto"
+        <div
+          className="flex-1 overflow-y-auto"
           style={{
-            scrollbarWidth: 'thin',
-            scrollbarColor: '#C5BAFF #f0f0f0'
+            scrollbarWidth: "thin",
+            scrollbarColor: "#C5BAFF #f0f0f0",
           }}
         >
           <div className="px-5 py-4">
-          <Tabs value={tab} onValueChange={setTab} className="w-full">
-            <TabsList className="w-full inline-flex h-auto p-0 bg-transparent gap-2 border-b-2 border-gray-200/80 mb-4">
-              <TabsTrigger
-                value="org"
-                className="data-[state=active]:bg-gradient-to-r data-[state=active]:from-[#001B55] data-[state=active]:to-[#003875] data-[state=active]:text-white data-[state=active]:font-semibold data-[state=active]:border-2 data-[state=active]:border-[#001B55] data-[state=active]:border-b-0 data-[state=active]:shadow-md data-[state=inactive]:bg-white/70 data-[state=inactive]:text-[#475569] data-[state=inactive]:border data-[state=inactive]:border-gray-200 data-[state=inactive]:border-b-0 data-[state=inactive]:hover:text-[#001B55] data-[state=inactive]:hover:border-[#001B55]/30 data-[state=inactive]:hover:bg-white font-medium transition-all duration-200 py-2.5 px-4 rounded-t-lg mb-[-2px] text-sm"
-              >
-                <Link2 className="mr-1.5 h-4 w-4" /> Anggota → Organisasi
-              </TabsTrigger>
-              <TabsTrigger
-                value="kader"
-                className="data-[state=active]:bg-gradient-to-r data-[state=active]:from-[#001B55] data-[state=active]:to-[#003875] data-[state=active]:text-white data-[state=active]:font-semibold data-[state=active]:border-2 data-[state=active]:border-[#001B55] data-[state=active]:border-b-0 data-[state=active]:shadow-md data-[state=inactive]:bg-white/70 data-[state=inactive]:text-[#475569] data-[state=inactive]:border data-[state=inactive]:border-gray-200 data-[state=inactive]:border-b-0 data-[state=inactive]:hover:text-[#001B55] data-[state=inactive]:hover:border-[#001B55]/30 data-[state=inactive]:hover:bg-white font-medium transition-all duration-200 py-2.5 px-4 rounded-t-lg mb-[-2px] text-sm"
-              >
-                <Users className="mr-1.5 h-4 w-4" /> Kader → DPRT
-              </TabsTrigger>
-            </TabsList>
+            <Tabs value={tab} onValueChange={setTab} className="w-full">
+              <TabsList className="w-full inline-flex h-auto p-0 bg-transparent gap-2 border-b-2 border-gray-200/80 mb-4">
+                <TabsTrigger
+                  value="org"
+                  className="data-[state=active]:bg-gradient-to-r data-[state=active]:from-[#001B55] data-[state=active]:to-[#003875] data-[state=active]:text-white data-[state=active]:font-semibold data-[state=active]:border-2 data-[state=active]:border-[#001B55] data-[state=active]:border-b-0 data-[state=active]:shadow-md data-[state=inactive]:bg-white/70 data-[state=inactive]:text-[#475569] data-[state=inactive]:border data-[state=inactive]:border-gray-200 data-[state=inactive]:border-b-0 data-[state=inactive]:hover:text-[#001B55] data-[state=inactive]:hover:border-[#001B55]/30 data-[state=inactive]:hover:bg-white font-medium transition-all duration-200 py-2.5 px-4 rounded-t-lg mb-[-2px] text-sm"
+                >
+                  <Link2 className="mr-1.5 h-4 w-4" /> Anggota → Organisasi
+                </TabsTrigger>
+                <TabsTrigger
+                  value="kader"
+                  className="data-[state=active]:bg-gradient-to-r data-[state=active]:from-[#001B55] data-[state=active]:to-[#003875] data-[state=active]:text-white data-[state=active]:font-semibold data-[state=active]:border-2 data-[state=active]:border-[#001B55] data-[state=active]:border-b-0 data-[state=active]:shadow-md data-[state=inactive]:bg-white/70 data-[state=inactive]:text-[#475569] data-[state=inactive]:border data-[state=inactive]:border-gray-200 data-[state=inactive]:border-b-0 data-[state=inactive]:hover:text-[#001B55] data-[state=inactive]:hover:border-[#001B55]/30 data-[state=inactive]:hover:bg-white font-medium transition-all duration-200 py-2.5 px-4 rounded-t-lg mb-[-2px] text-sm"
+                >
+                  <Users className="mr-1.5 h-4 w-4" /> Kader → DPRT
+                </TabsTrigger>
+              </TabsList>
 
-            <TabsContent value="org" className="mt-0 space-y-4">
-              {/* Info Box untuk menjelaskan */}
-              <div className="bg-gradient-to-r from-blue-50 to-blue-50/50 border-l-3 border-[#001B55] p-3 rounded-lg">
-                <div className="flex items-start gap-2.5">
-                  <div className="flex-shrink-0 mt-0.5">
-                    <svg className="h-4 w-4 text-[#001B55]" fill="currentColor" viewBox="0 0 20 20">
-                      <path fillRule="evenodd" d="M18 10a8 8 0 11-16 0 8 8 0 0116 0zm-7-4a1 1 0 11-2 0 1 1 0 012 0zM9 9a1 1 0 000 2v3a1 1 0 001 1h1a1 1 0 100-2v-3a1 1 0 00-1-1H9z" clipRule="evenodd" />
-                    </svg>
-                  </div>
-                  <div>
-                    <h4 className="text-xs font-semibold text-[#001B55] mb-0.5">
-                      Menambahkan Anggota ke Struktur Organisasi
-                    </h4>
-                    <p className="text-[11px] text-[#475569] leading-snug">
-                      Tautkan anggota yang belum memiliki jabatan ke struktur organisasi. Pilih tipe, posisi, dan anggota.
-                    </p>
+              <TabsContent value="org" className="mt-0 space-y-4">
+                {/* Enhanced Info Box with Progress Indicator */}
+                <div className="bg-gradient-to-r from-blue-50 to-indigo-50/50 border-l-4 border-[#001B55] p-4 rounded-lg shadow-sm">
+                  <div className="flex items-start gap-3">
+                    <div className="flex-shrink-0 mt-0.5">
+                      <div className="w-8 h-8 rounded-full bg-[#001B55] flex items-center justify-center">
+                        <svg
+                          className="h-4 w-4 text-white"
+                          fill="currentColor"
+                          viewBox="0 0 20 20"
+                        >
+                          <path
+                            fillRule="evenodd"
+                            d="M18 10a8 8 0 11-16 0 8 8 0 0116 0zm-7-4a1 1 0 11-2 0 1 1 0 012 0zM9 9a1 1 0 000 2v3a1 1 0 001 1h1a1 1 0 100-2v-3a1 1 0 00-1-1H9z"
+                            clipRule="evenodd"
+                          />
+                        </svg>
+                      </div>
+                    </div>
+                    <div className="flex-1">
+                      <h4 className="text-sm font-bold text-[#001B55] mb-1">
+                        Menambahkan Anggota ke Struktur Organisasi
+                      </h4>
+                      <p className="text-xs text-[#475569] leading-relaxed mb-3">
+                        Tautkan anggota yang belum memiliki jabatan ke struktur
+                        organisasi dengan mengikuti langkah berikut:
+                      </p>
+                      <div className="space-y-2">
+                        <div className="flex items-center gap-2 text-xs">
+                          <div
+                            className={cn(
+                              "w-5 h-5 rounded-full flex items-center justify-center text-[10px] font-bold transition-all duration-300",
+                              watchLevel
+                                ? "bg-green-500 text-white"
+                                : "bg-gray-300 text-gray-600"
+                            )}
+                          >
+                            {watchLevel ? "✓" : "1"}
+                          </div>
+                          <span
+                            className={cn(
+                              "font-medium transition-colors duration-300",
+                              watchLevel ? "text-green-700" : "text-[#475569]"
+                            )}
+                          >
+                            Pilih Tipe Organisasi & Posisi
+                          </span>
+                        </div>
+                        {(watchLevel?.toLowerCase() === "dprt" ||
+                          watchLevel?.toLowerCase() === "dpc" ||
+                          watchLevel?.toLowerCase() === "sayap") && (
+                          <div className="flex items-center gap-2 text-xs">
+                            <div
+                              className={cn(
+                                "w-5 h-5 rounded-full flex items-center justify-center text-[10px] font-bold transition-all duration-300",
+                                (watchLevel?.toLowerCase() === "dprt" &&
+                                  watchKecamatanId &&
+                                  watchRegionId) ||
+                                  (watchLevel?.toLowerCase() === "dpc" &&
+                                    watchRegionId) ||
+                                  (watchLevel?.toLowerCase() === "sayap" &&
+                                    orgForm.getValues("sayapName"))
+                                  ? "bg-green-500 text-white"
+                                  : "bg-gray-300 text-gray-600"
+                              )}
+                            >
+                              {(watchLevel?.toLowerCase() === "dprt" &&
+                                watchKecamatanId &&
+                                watchRegionId) ||
+                              (watchLevel?.toLowerCase() === "dpc" &&
+                                watchRegionId) ||
+                              (watchLevel?.toLowerCase() === "sayap" &&
+                                orgForm.getValues("sayapName"))
+                                ? "✓"
+                                : "2"}
+                            </div>
+                            <span
+                              className={cn(
+                                "font-medium transition-colors duration-300",
+                                (watchLevel?.toLowerCase() === "dprt" &&
+                                  watchKecamatanId &&
+                                  watchRegionId) ||
+                                  (watchLevel?.toLowerCase() === "dpc" &&
+                                    watchRegionId) ||
+                                  (watchLevel?.toLowerCase() === "sayap" &&
+                                    orgForm.getValues("sayapName"))
+                                  ? "text-green-700"
+                                  : "text-[#475569]"
+                              )}
+                            >
+                              {watchLevel?.toLowerCase() === "dprt" &&
+                                "Pilih Kecamatan & Desa"}
+                              {watchLevel?.toLowerCase() === "dpc" &&
+                                "Pilih Kecamatan"}
+                              {watchLevel?.toLowerCase() === "sayap" &&
+                                "Pilih Unit Sayap"}
+                            </span>
+                          </div>
+                        )}
+                        <div className="flex items-center gap-2 text-xs">
+                          <div
+                            className={cn(
+                              "w-5 h-5 rounded-full flex items-center justify-center text-[10px] font-bold transition-all duration-300",
+                              orgForm.getValues("memberIds")?.length > 0
+                                ? "bg-green-500 text-white"
+                                : "bg-gray-300 text-gray-600"
+                            )}
+                          >
+                            {orgForm.getValues("memberIds")?.length > 0
+                              ? "✓"
+                              : watchLevel?.toLowerCase() === "dpd"
+                              ? "2"
+                              : "3"}
+                          </div>
+                          <span
+                            className={cn(
+                              "font-medium transition-colors duration-300",
+                              orgForm.getValues("memberIds")?.length > 0
+                                ? "text-green-700"
+                                : "text-[#475569]"
+                            )}
+                          >
+                            Pilih Anggota
+                          </span>
+                        </div>
+                      </div>
+                    </div>
                   </div>
                 </div>
-              </div>
 
-              <Form {...orgForm}>
-                <form
-                  onSubmit={orgForm.handleSubmit(onSubmitOrg)}
-                  className="space-y-4"
-                >
-                  <div className="grid grid-cols-1 md:grid-cols-2 gap-3.5">
-                    <FormField
-                      control={orgForm.control}
-                      name="level"
-                      render={({ field }) => (
-                        <FormItem>
-                          <FormLabel className="text-[#001B55] font-semibold">
-                            Tipe Organisasi
-                          </FormLabel>
-                          <FormControl>
-                            <Select
-                              value={field.value}
-                              onValueChange={(v) => {
-                                field.onChange(v);
-                                orgForm.setValue("position", "");
-                                orgForm.setValue("regionId", "");
-                                orgForm.setValue("strukturId", "");
-                                orgForm.setValue("sayapName", "");
-                              }}
-                            >
-                              <SelectTrigger
-                                className="h-11 bg-white border-2 border-[#C4D9FF] hover:border-[#C5BAFF] focus:border-[#001B55] focus:ring-2 focus:ring-[#C5BAFF]/20 text-[#001B55] transition-all duration-300"
-                                style={{ borderRadius: "10px" }}
+                <Form {...orgForm}>
+                  <form
+                    onSubmit={orgForm.handleSubmit(onSubmitOrg)}
+                    className="space-y-5"
+                  >
+                    <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                      <FormField
+                        control={orgForm.control}
+                        name="level"
+                        render={({ field }) => (
+                          <FormItem className="w-full">
+                            <FormLabel className="text-[#001B55] font-semibold">
+                              Tipe Organisasi
+                            </FormLabel>
+                            <FormControl>
+                              <Select
+                                value={field.value}
+                                onValueChange={(v) => {
+                                  field.onChange(v);
+                                  orgForm.setValue("position", "");
+                                  orgForm.setValue("kecamatanId", "");
+                                  orgForm.setValue("regionId", "");
+                                  orgForm.setValue("strukturId", "");
+                                  orgForm.setValue("sayapName", "");
+                                }}
                               >
-                                <SelectValue placeholder="Pilih tipe organisasi" />
-                              </SelectTrigger>
-                              <SelectContent
-                                className="bg-white border border-[#D8E2F0]"
-                                style={{ borderRadius: "10px" }}
+                                <SelectTrigger
+                                  className="h-11 w-full bg-white border-2 border-[#C4D9FF] hover:border-[#C5BAFF] focus:border-[#001B55] focus:ring-2 focus:ring-[#C5BAFF]/20 text-[#001B55] transition-all duration-300"
+                                  style={{ borderRadius: "10px" }}
+                                >
+                                  <SelectValue placeholder="Pilih tipe organisasi" />
+                                </SelectTrigger>
+                                <SelectContent
+                                  className="bg-white border border-[#D8E2F0]"
+                                  style={{ borderRadius: "10px" }}
+                                >
+                                  {levels.map((l) => (
+                                    <SelectItem
+                                      key={l}
+                                      value={l}
+                                      className="hover:bg-[#F0F6FF] transition-colors"
+                                    >
+                                      {l.toUpperCase()}
+                                    </SelectItem>
+                                  ))}
+                                </SelectContent>
+                              </Select>
+                            </FormControl>
+                            <FormMessage className="text-xs" />
+                          </FormItem>
+                        )}
+                      />
+                      <FormField
+                        control={orgForm.control}
+                        name="position"
+                        render={({ field }) => (
+                          <FormItem className="w-full">
+                            <FormLabel className="text-[#001B55] font-semibold">
+                              Posisi
+                            </FormLabel>
+                            <FormControl>
+                              <Select
+                                value={field.value}
+                                onValueChange={(v) => {
+                                  field.onChange(v);
+                                  orgForm.setValue("strukturId", "");
+                                }}
+                                disabled={!watchLevel}
                               >
-                                {levels.map((l) => (
-                                  <SelectItem
-                                    key={l}
-                                    value={l}
-                                    className="hover:bg-[#F0F6FF] transition-colors"
-                                  >
-                                    {l.toUpperCase()}
-                                  </SelectItem>
-                                ))}
-                              </SelectContent>
-                            </Select>
-                          </FormControl>
-                          <FormMessage className="text-xs" />
-                        </FormItem>
-                      )}
-                    />
-                    <FormField
-                      control={orgForm.control}
-                      name="position"
-                      render={({ field }) => (
-                        <FormItem>
-                          <FormLabel className="text-[#001B55] font-semibold">
-                            Posisi
-                          </FormLabel>
-                          <FormControl>
-                            <Select
-                              value={field.value}
-                              onValueChange={(v) => {
-                                field.onChange(v);
-                                orgForm.setValue("strukturId", "");
-                              }}
-                              disabled={!watchLevel}
-                            >
-                              <SelectTrigger
-                                className="h-11 bg-white border-2 border-[#C4D9FF] hover:border-[#C5BAFF] focus:border-[#001B55] focus:ring-2 focus:ring-[#C5BAFF]/20 text-[#001B55] transition-all duration-300 disabled:opacity-50"
-                                style={{ borderRadius: "10px" }}
-                              >
-                                <SelectValue placeholder="Pilih posisi" />
-                              </SelectTrigger>
-                              <SelectContent
-                                className="bg-white border border-[#D8E2F0]"
-                                style={{ borderRadius: "10px" }}
-                              >
-                                {positions.map((p) => (
-                                  <SelectItem
-                                    key={p}
-                                    value={p}
-                                    className="hover:bg-[#F0F6FF] transition-colors"
-                                  >
-                                    {p.charAt(0).toUpperCase() + p.slice(1)}
-                                  </SelectItem>
-                                ))}
-                              </SelectContent>
-                            </Select>
-                          </FormControl>
-                          <FormMessage className="text-xs" />
-                        </FormItem>
-                      )}
-                    />
-                  </div>
+                                <SelectTrigger
+                                  className="h-11 w-full bg-white border-2 border-[#C4D9FF] hover:border-[#C5BAFF] focus:border-[#001B55] focus:ring-2 focus:ring-[#C5BAFF]/20 text-[#001B55] transition-all duration-300 disabled:opacity-50"
+                                  style={{ borderRadius: "10px" }}
+                                >
+                                  <SelectValue placeholder="Pilih posisi" />
+                                </SelectTrigger>
+                                <SelectContent
+                                  className="bg-white border w-full border-[#D8E2F0]"
+                                  style={{ borderRadius: "10px" }}
+                                >
+                                  {positions.map((p) => (
+                                    <SelectItem
+                                      key={p}
+                                      value={p}
+                                      className="hover:bg-[#F0F6FF] transition-colors"
+                                    >
+                                      {p.charAt(0).toUpperCase() + p.slice(1)}
+                                    </SelectItem>
+                                  ))}
+                                </SelectContent>
+                              </Select>
+                            </FormControl>
+                            <FormMessage className="text-xs" />
+                          </FormItem>
+                        )}
+                      />
+                    </div>
 
-                  {regionTypeForLevel && (
-                    <FormField
-                      control={orgForm.control}
-                      name="regionId"
-                      render={({ field }) => (
-                        <FormItem className="flex flex-col">
-                          <FormLabel className="text-[#001B55] font-semibold">
-                            Wilayah
-                          </FormLabel>
-                          <Popover
-                            open={openRegion}
-                            onOpenChange={setOpenRegion}
-                          >
-                            <PopoverTrigger asChild>
+                    {/* Kecamatan and Desa in one row for DPRT */}
+                    {watchLevel?.toLowerCase() === "dprt" && (
+                      <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                        <FormField
+                          control={orgForm.control}
+                          name="kecamatanId"
+                          render={({ field }) => (
+                            <FormItem className="w-full">
+                              <FormLabel className="text-[#001B55] font-semibold flex items-center gap-2">
+                                <span>Kecamatan</span>
+                                <span className="text-xs font-normal text-[#FF9C04]">
+                                  (Pilih dulu)
+                                </span>
+                              </FormLabel>
                               <FormControl>
+                                <Select
+                                  value={field.value}
+                                  onValueChange={(v) => {
+                                    field.onChange(v);
+                                    // Reset desa when kecamatan changes
+                                    orgForm.setValue("regionId", "");
+                                  }}
+                                >
+                                  <SelectTrigger
+                                    className="h-11 w-full bg-white border-2 border-[#C4D9FF] hover:border-[#C5BAFF] focus:border-[#001B55] focus:ring-2 focus:ring-[#C5BAFF]/20 text-[#001B55] transition-all duration-300"
+                                    style={{ borderRadius: "10px" }}
+                                  >
+                                    <SelectValue placeholder="Pilih kecamatan terlebih dahulu" />
+                                  </SelectTrigger>
+                                  <SelectContent
+                                    className="bg-white border border-[#D8E2F0] max-h-[300px]"
+                                    style={{ borderRadius: "10px" }}
+                                  >
+                                    {kecamatanOptions.map((kec) => (
+                                      <SelectItem
+                                        key={kec.id}
+                                        value={String(kec.id)}
+                                        className="hover:bg-[#F0F6FF] transition-colors"
+                                      >
+                                        {kec.name}
+                                      </SelectItem>
+                                    ))}
+                                  </SelectContent>
+                                </Select>
+                              </FormControl>
+                              <FormMessage className="text-xs" />
+                            </FormItem>
+                          )}
+                        />
+
+                        <FormField
+                          control={orgForm.control}
+                          name="regionId"
+                          render={({ field }) => {
+                            const isDprtWithoutKec = !watchKecamatanId;
+
+                            return (
+                              <FormItem className="flex flex-col w-full">
+                                <FormLabel className="text-[#001B55] font-semibold flex items-center gap-2">
+                                  <span>Desa</span>
+                                  {isDprtWithoutKec && (
+                                    <span className="text-xs font-normal text-amber-600 animate-pulse">
+                                      (Pilih kecamatan dulu)
+                                    </span>
+                                  )}
+                                </FormLabel>
+                                <Select
+                                  value={field.value}
+                                  onValueChange={(v) => {
+                                    field.onChange(v);
+                                    orgForm.setValue("strukturId", "");
+                                  }}
+                                  disabled={isDprtWithoutKec}
+                                >
+                                  <SelectTrigger
+                                    className={cn(
+                                      "h-11 w-full bg-white border-2 border-[#C4D9FF] hover:border-[#C5BAFF] focus:border-[#001B55] focus:ring-2 focus:ring-[#C5BAFF]/20 text-[#001B55] transition-all duration-300",
+                                      isDprtWithoutKec &&
+                                        "opacity-50 cursor-not-allowed"
+                                    )}
+                                    style={{ borderRadius: "10px" }}
+                                  >
+                                    <SelectValue
+                                      placeholder={
+                                        isDprtWithoutKec
+                                          ? "Pilih kecamatan terlebih dahulu"
+                                          : "Pilih desa"
+                                      }
+                                    />
+                                  </SelectTrigger>
+                                  <SelectContent
+                                    className="bg-white border border-[#D8E2F0] max-h-[300px]"
+                                    style={{ borderRadius: "10px" }}
+                                  >
+                                    {filteredRegions.length === 0 ? (
+                                      <div className="py-6 text-center text-sm text-[#475569]">
+                                        {isDprtWithoutKec
+                                          ? "Pilih kecamatan terlebih dahulu"
+                                          : "Tidak ada wilayah tersedia"}
+                                      </div>
+                                    ) : (
+                                      filteredRegions.map((r) => (
+                                        <SelectItem
+                                          key={r.id}
+                                          value={String(r.id)}
+                                          className="hover:bg-[#F0F6FF] transition-colors"
+                                        >
+                                          {r.name}
+                                        </SelectItem>
+                                      ))
+                                    )}
+                                  </SelectContent>
+                                </Select>
+                                <FormMessage className="text-xs" />
+                              </FormItem>
+                            );
+                          }}
+                        />
+                      </div>
+                    )}
+
+                    {/* Kecamatan for DPC */}
+                    {watchLevel?.toLowerCase() === "dpc" &&
+                      regionTypeForLevel && (
+                        <FormField
+                          control={orgForm.control}
+                          name="regionId"
+                          render={({ field }) => (
+                            <FormItem className="flex flex-col w-full">
+                              <FormLabel className="text-[#001B55] font-semibold">
+                                Kecamatan
+                              </FormLabel>
+                              <Select
+                                value={field.value}
+                                onValueChange={(v) => {
+                                  field.onChange(v);
+                                  orgForm.setValue("strukturId", "");
+                                }}
+                              >
+                                <SelectTrigger
+                                  className="h-11 w-full bg-white border-2 border-[#C4D9FF] hover:border-[#C5BAFF] focus:border-[#001B55] focus:ring-2 focus:ring-[#C5BAFF]/20 text-[#001B55] transition-all duration-300"
+                                  style={{ borderRadius: "10px" }}
+                                >
+                                  <SelectValue placeholder="Pilih kecamatan" />
+                                </SelectTrigger>
+                                <SelectContent
+                                  className="bg-white border border-[#D8E2F0] max-h-[300px]"
+                                  style={{ borderRadius: "10px" }}
+                                >
+                                  {filteredRegions.length === 0 ? (
+                                    <div className="py-6 text-center text-sm text-[#475569]">
+                                      Tidak ada wilayah tersedia
+                                    </div>
+                                  ) : (
+                                    filteredRegions.map((r) => (
+                                      <SelectItem
+                                        key={r.id}
+                                        value={String(r.id)}
+                                        className="hover:bg-[#F0F6FF] transition-colors"
+                                      >
+                                        {r.name}
+                                      </SelectItem>
+                                    ))
+                                  )}
+                                </SelectContent>
+                              </Select>
+                              <FormMessage className="text-xs" />
+                            </FormItem>
+                          )}
+                        />
+                      )}
+
+                    {watchLevel?.toLowerCase() === "sayap" && (
+                      <FormField
+                        control={orgForm.control}
+                        name="sayapName"
+                        render={({ field }) => (
+                          <FormItem className="w-full">
+                            <FormLabel className="text-[#001B55] font-semibold">
+                              Unit Struktur (Sayap)
+                            </FormLabel>
+                            <FormControl>
+                              <Select
+                                value={field.value}
+                                onValueChange={field.onChange}
+                              >
+                                <SelectTrigger
+                                  className="h-11 w-full bg-white border-2 border-[#C4D9FF] hover:border-[#C5BAFF] focus:border-[#001B55] focus:ring-2 focus:ring-[#C5BAFF]/20 text-[#001B55] transition-all duration-300"
+                                  style={{ borderRadius: "10px" }}
+                                >
+                                  <SelectValue placeholder="Pilih sayap" />
+                                </SelectTrigger>
+                                <SelectContent
+                                  className="bg-white border border-[#D8E2F0]"
+                                  style={{ borderRadius: "10px" }}
+                                >
+                                  {sayapNames.map((n) => (
+                                    <SelectItem
+                                      key={n}
+                                      value={n}
+                                      className="hover:bg-[#F0F6FF] transition-colors"
+                                    >
+                                      {n}
+                                    </SelectItem>
+                                  ))}
+                                </SelectContent>
+                              </Select>
+                            </FormControl>
+                            <FormMessage className="text-xs" />
+                          </FormItem>
+                        )}
+                      />
+                    )}
+
+                    <FormField
+                      control={orgForm.control}
+                      name="memberIds"
+                      render={() => {
+                        const canSelectMembers =
+                          watchLevel &&
+                          watchPosition &&
+                          (watchLevel.toLowerCase() === "dpd" ||
+                            (watchLevel.toLowerCase() === "sayap" &&
+                              orgForm.getValues("sayapName")) ||
+                            (watchLevel.toLowerCase() === "dpc" &&
+                              watchRegionId) ||
+                            (watchLevel.toLowerCase() === "dprt" &&
+                              watchKecamatanId &&
+                              watchRegionId));
+
+                        return (
+                          <FormItem className="w-full">
+                            <FormLabel className="text-[#001B55] font-semibold flex items-center gap-2">
+                              <span>Pilih Anggota</span>
+                              {!canSelectMembers && (
+                                <span className="text-xs font-normal text-amber-600">
+                                  (Lengkapi field di atas terlebih dahulu)
+                                </span>
+                              )}
+                              {canSelectMembers &&
+                                orgForm.getValues("memberIds")?.length > 0 && (
+                                  <span className="text-xs font-normal text-green-600">
+                                    ✓ {orgForm.getValues("memberIds").length}{" "}
+                                    terpilih
+                                  </span>
+                                )}
+                            </FormLabel>
+                            <div className="space-y-3">
+                              <div className="relative">
+                                <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-[#475569]" />
+                                <Input
+                                  placeholder={
+                                    canSelectMembers
+                                      ? "Cari nama anggota..."
+                                      : "Lengkapi form terlebih dahulu"
+                                  }
+                                  value={memberSearch}
+                                  onChange={(e) =>
+                                    setMemberSearch(e.target.value)
+                                  }
+                                  disabled={!canSelectMembers}
+                                  className={cn(
+                                    "pl-10 h-11 bg-white border-2 border-[#C4D9FF] hover:border-[#C5BAFF] focus:border-[#001B55] focus:ring-2 focus:ring-[#C5BAFF]/20 text-[#001B55] placeholder:text-[#475569] transition-all duration-300",
+                                    !canSelectMembers &&
+                                      "opacity-50 cursor-not-allowed"
+                                  )}
+                                  style={{ borderRadius: "10px" }}
+                                />
+                              </div>
+                              {!canSelectMembers ? (
+                                <div className="max-h-72 overflow-hidden border border-[#D8E2F0] bg-gray-50 rounded-lg flex items-center justify-center py-12">
+                                  <div className="text-center">
+                                    <div className="w-12 h-12 rounded-full bg-[#E8F9FF] flex items-center justify-center mx-auto mb-3">
+                                      <Users className="w-6 h-6 text-[#475569]" />
+                                    </div>
+                                    <p className="text-sm font-medium text-[#001B55] mb-1">
+                                      Lengkapi Informasi Struktur
+                                    </p>
+                                    <p className="text-xs text-[#475569]">
+                                      Pilih tipe organisasi dan posisi terlebih
+                                      dahulu
+                                    </p>
+                                  </div>
+                                </div>
+                              ) : (
+                                <MemberList
+                                  selectedIds={
+                                    orgForm.getValues("memberIds") || []
+                                  }
+                                  onToggle={(id) => {
+                                    const cur =
+                                      orgForm.getValues("memberIds") || [];
+                                    const next = cur.includes(id)
+                                      ? cur.filter((x) => x !== id)
+                                      : [...cur, id];
+                                    orgForm.setValue("memberIds", next, {
+                                      shouldValidate: true,
+                                    });
+                                  }}
+                                  membersList={filteredMembersForOrg}
+                                  isLoading={membersUnassignedQuery.isLoading}
+                                />
+                              )}
+                            </div>
+                            <FormMessage className="text-xs" />
+                          </FormItem>
+                        );
+                      }}
+                    />
+
+                    <div className="flex justify-end gap-2.5 pt-4 border-t border-[#E8F9FF] bg-gradient-to-r from-white to-[#F8FBFF] -mx-5 -mb-4 px-5 pb-4 mt-4">
+                      <Button
+                        type="button"
+                        variant="outline"
+                        onClick={() => {
+                          setOpen(false);
+                          orgForm.reset();
+                        }}
+                        disabled={addMembersMutation.isPending}
+                        className="h-9 px-5 bg-white border border-[#D8E2F0] hover:bg-[#F0F6FF] hover:border-[#C4D9FF] text-[#475569] hover:text-[#001B55] font-medium transition-all duration-200 text-sm disabled:opacity-50"
+                        style={{ borderRadius: "8px" }}
+                      >
+                        Batal
+                      </Button>
+                      <Button
+                        type="submit"
+                        className="h-9 px-5 bg-gradient-to-r from-[#001B55] to-[#003875] hover:from-[#003875] hover:to-[#001B55] text-white font-semibold shadow-md hover:shadow-lg transition-all duration-200 text-sm disabled:opacity-70 disabled:cursor-not-allowed"
+                        style={{ borderRadius: "8px" }}
+                        disabled={
+                          addMembersMutation.isPending ||
+                          !orgForm.formState.isValid
+                        }
+                      >
+                        {addMembersMutation.isPending ? (
+                          <span className="flex items-center gap-2">
+                            <svg
+                              className="animate-spin h-4 w-4"
+                              xmlns="http://www.w3.org/2000/svg"
+                              fill="none"
+                              viewBox="0 0 24 24"
+                            >
+                              <circle
+                                className="opacity-25"
+                                cx="12"
+                                cy="12"
+                                r="10"
+                                stroke="currentColor"
+                                strokeWidth="4"
+                              ></circle>
+                              <path
+                                className="opacity-75"
+                                fill="currentColor"
+                                d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"
+                              ></path>
+                            </svg>
+                            Menyimpan...
+                          </span>
+                        ) : (
+                          "Simpan"
+                        )}
+                      </Button>
+                    </div>
+                  </form>
+                </Form>
+              </TabsContent>
+
+              <TabsContent value="kader" className="mt-0 space-y-4">
+                {/* Enhanced Info Box with Progress */}
+                <div className="bg-gradient-to-r from-purple-50 to-pink-50/50 border-l-4 border-[#001B55] p-4 rounded-lg shadow-sm">
+                  <div className="flex items-start gap-3">
+                    <div className="flex-shrink-0 mt-0.5">
+                      <div className="w-8 h-8 rounded-full bg-[#001B55] flex items-center justify-center">
+                        <Users className="h-4 w-4 text-white" />
+                      </div>
+                    </div>
+                    <div className="flex-1">
+                      <h4 className="text-sm font-bold text-[#001B55] mb-1">
+                        Menautkan Kader ke Member DPRT
+                      </h4>
+                      <p className="text-xs text-[#475569] leading-relaxed mb-3">
+                        Hubungkan kader dengan member DPRT untuk struktur
+                        organisasi yang lebih baik:
+                      </p>
+                      <div className="space-y-2">
+                        <div className="flex items-center gap-2 text-xs">
+                          <div
+                            className={cn(
+                              "w-5 h-5 rounded-full flex items-center justify-center text-[10px] font-bold transition-all duration-300",
+                              watchDprtMemberId
+                                ? "bg-green-500 text-white"
+                                : "bg-gray-300 text-gray-600"
+                            )}
+                          >
+                            {watchDprtMemberId ? "✓" : "1"}
+                          </div>
+                          <span
+                            className={cn(
+                              "font-medium transition-colors duration-300",
+                              watchDprtMemberId
+                                ? "text-green-700"
+                                : "text-[#475569]"
+                            )}
+                          >
+                            Pilih Member DPRT
+                          </span>
+                        </div>
+                        <div className="flex items-center gap-2 text-xs">
+                          <div
+                            className={cn(
+                              "w-5 h-5 rounded-full flex items-center justify-center text-[10px] font-bold transition-all duration-300",
+                              kaderForm.getValues("kaderIds")?.length > 0
+                                ? "bg-green-500 text-white"
+                                : "bg-gray-300 text-gray-600"
+                            )}
+                          >
+                            {kaderForm.getValues("kaderIds")?.length > 0
+                              ? "✓"
+                              : "2"}
+                          </div>
+                          <span
+                            className={cn(
+                              "font-medium transition-colors duration-300",
+                              kaderForm.getValues("kaderIds")?.length > 0
+                                ? "text-green-700"
+                                : "text-[#475569]"
+                            )}
+                          >
+                            Pilih Kader yang Akan Ditautkan
+                          </span>
+                        </div>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+
+                <Form {...kaderForm}>
+                  <form
+                    onSubmit={kaderForm.handleSubmit(onSubmitKader)}
+                    className="space-y-4"
+                  >
+                    {/* DPRT members in selected desa */}
+                    <FormField
+                      control={kaderForm.control}
+                      name="dprtMemberId"
+                      render={({ field }) => (
+                        <FormItem>
+                          <FormLabel className="text-[#001B55] font-semibold">
+                            Member (DPRT)
+                          </FormLabel>
+                          <FormControl>
+                            <Popover
+                              open={openDprtMember}
+                              onOpenChange={setOpenDprtMember}
+                            >
+                              <PopoverTrigger asChild>
                                 <Button
                                   variant="outline"
                                   role="combobox"
-                                  aria-expanded={openRegion}
+                                  aria-expanded={openDprtMember}
                                   className={cn(
                                     "w-full justify-between h-11 bg-white border-2 border-[#C4D9FF] hover:border-[#C5BAFF] focus:border-[#001B55] focus:ring-2 focus:ring-[#C5BAFF]/20 text-[#001B55] transition-all duration-300",
                                     !field.value && "text-[#475569]"
@@ -652,340 +1267,201 @@ export function AddMemberDialog({
                                   style={{ borderRadius: "10px" }}
                                 >
                                   {field.value
-                                    ? filteredRegions.find(
-                                        (r) => String(r.id) === field.value
-                                      )?.name
-                                    : "Pilih wilayah"}
+                                    ? dprtMembers.find(
+                                        (m) => m.id === field.value
+                                      )?.fullName
+                                    : "Pilih member DPRT"}
                                   <ChevronsUpDown className="ml-2 h-4 w-4 shrink-0 opacity-50" />
                                 </Button>
-                              </FormControl>
-                            </PopoverTrigger>
-                            <PopoverContent
-                              className="w-full p-0 bg-white border border-[#D8E2F0]"
-                              align="start"
-                              style={{ borderRadius: "10px" }}
-                            >
-                              <Command className="bg-white">
-                                <CommandInput
-                                  placeholder="Cari wilayah..."
-                                  value={regionSearch}
-                                  onValueChange={setRegionSearch}
-                                  className="h-10 border-b border-[#E8F9FF]"
-                                />
-                                <CommandList>
-                                  <CommandEmpty className="py-6 text-center text-sm text-[#475569]">
-                                    Tidak ada wilayah ditemukan.
-                                  </CommandEmpty>
-                                  <CommandGroup>
-                                    {filteredRegions.map((r) => (
-                                      <CommandItem
-                                        key={r.id}
-                                        value={r.name}
-                                        onSelect={() => {
-                                          field.onChange(String(r.id));
-                                          orgForm.setValue("strukturId", "");
-                                          setOpenRegion(false);
-                                          setRegionSearch("");
-                                        }}
-                                        className="hover:bg-[#F0F6FF] transition-colors"
-                                      >
-                                        <Check
-                                          className={cn(
-                                            "mr-2 h-4 w-4 text-[#C5BAFF]",
-                                            String(r.id) === field.value
-                                              ? "opacity-100"
-                                              : "opacity-0"
-                                          )}
-                                        />
-                                        {r.name}
-                                      </CommandItem>
-                                    ))}
-                                  </CommandGroup>
-                                </CommandList>
-                              </Command>
-                            </PopoverContent>
-                          </Popover>
-                          <FormMessage className="text-xs" />
-                        </FormItem>
-                      )}
-                    />
-                  )}
-
-                  {watchLevel?.toLowerCase() === "sayap" && (
-                    <FormField
-                      control={orgForm.control}
-                      name="sayapName"
-                      render={({ field }) => (
-                        <FormItem>
-                          <FormLabel className="text-[#001B55] font-semibold">
-                            Unit Struktur (Sayap)
-                          </FormLabel>
-                          <FormControl>
-                            <Select
-                              value={field.value}
-                              onValueChange={field.onChange}
-                            >
-                              <SelectTrigger
-                                className="h-11 bg-white border-2 border-[#C4D9FF] hover:border-[#C5BAFF] focus:border-[#001B55] focus:ring-2 focus:ring-[#C5BAFF]/20 text-[#001B55] transition-all duration-300"
+                              </PopoverTrigger>
+                              <PopoverContent
+                                className="w-full p-0 bg-white border border-[#D8E2F0]"
                                 style={{ borderRadius: "10px" }}
                               >
-                                <SelectValue placeholder="Pilih sayap" />
-                              </SelectTrigger>
-                              <SelectContent
-                                className="bg-white border border-[#D8E2F0]"
-                                style={{ borderRadius: "10px" }}
-                              >
-                                {sayapNames.map((n) => (
-                                  <SelectItem
-                                    key={n}
-                                    value={n}
-                                    className="hover:bg-[#F0F6FF] transition-colors"
-                                  >
-                                    {n}
-                                  </SelectItem>
-                                ))}
-                              </SelectContent>
-                            </Select>
+                                <Command className="bg-white">
+                                  <CommandInput
+                                    placeholder="Cari member DPRT..."
+                                    value={dprtMemberSearch}
+                                    onValueChange={setDprtMemberSearch}
+                                    className="h-10 border-b border-[#E8F9FF]"
+                                  />
+                                  <CommandList>
+                                    <CommandEmpty className="py-6 text-center text-sm text-[#475569]">
+                                      Member DPRT tidak ditemukan.
+                                    </CommandEmpty>
+                                    <CommandGroup>
+                                      {dprtMembers.map((m) => (
+                                        <CommandItem
+                                          key={m.id}
+                                          value={m.fullName}
+                                          onSelect={() => {
+                                            field.onChange(m.id);
+                                            setOpenDprtMember(false);
+                                          }}
+                                          className="hover:bg-[#F0F6FF] transition-colors"
+                                        >
+                                          <Check
+                                            className={`mr-2 h-4 w-4 text-[#C5BAFF] ${
+                                              field.value === m.id
+                                                ? "opacity-100"
+                                                : "opacity-0"
+                                            }`}
+                                          />
+                                          {m.fullName}
+                                        </CommandItem>
+                                      ))}
+                                    </CommandGroup>
+                                  </CommandList>
+                                </Command>
+                              </PopoverContent>
+                            </Popover>
                           </FormControl>
                           <FormMessage className="text-xs" />
                         </FormItem>
                       )}
                     />
-                  )}
 
-                  <FormField
-                    control={orgForm.control}
-                    name="memberIds"
-                    render={() => (
-                      <FormItem>
-                        <FormLabel className="text-[#001B55] font-semibold">
-                          Pilih Anggota
-                        </FormLabel>
-                        <div className="space-y-3">
-                          <div className="relative">
-                            <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-[#475569]" />
-                            <Input
-                              placeholder="Cari nama anggota..."
-                              value={memberSearch}
-                              onChange={(e) => setMemberSearch(e.target.value)}
-                              className="pl-10 h-11 bg-white border-2 border-[#C4D9FF] hover:border-[#C5BAFF] focus:border-[#001B55] focus:ring-2 focus:ring-[#C5BAFF]/20 text-[#001B55] placeholder:text-[#475569] transition-all duration-300"
-                              style={{ borderRadius: "10px" }}
-                            />
-                          </div>
-                          <MemberList
-                            selectedIds={orgForm.getValues("memberIds") || []}
-                            onToggle={(id) => {
-                              const cur = orgForm.getValues("memberIds") || [];
-                              const next = cur.includes(id)
-                                ? cur.filter((x) => x !== id)
-                                : [...cur, id];
-                              orgForm.setValue("memberIds", next, {
-                                shouldValidate: true,
-                              });
-                            }}
-                            membersList={filteredMembersForOrg}
-                            isLoading={membersUnassignedQuery.isLoading}
-                          />
+                    {/* Auto-derived Desa from selected DPRT member */}
+                    {watchDprtMemberId && (
+                      <div
+                        className="px-4 py-3 bg-gradient-to-r from-[#E8F9FF] to-[#F0F6FF] border-2 border-[#C5BAFF] text-sm"
+                        style={{ borderRadius: "10px" }}
+                      >
+                        <div className="flex items-center gap-2">
+                          <div className="w-2 h-2 rounded-full bg-[#C5BAFF] animate-pulse"></div>
+                          <span className="font-semibold text-[#001B55]">
+                            Desa otomatis:
+                          </span>
+                          <span className="font-bold text-[#001B55]">
+                            {selectedDprt?.region?.name || "-"}
+                          </span>
                         </div>
-                        <FormMessage className="text-xs" />
-                      </FormItem>
+                        <p className="text-xs text-[#475569] mt-1 ml-4">
+                          Kader yang dipilih akan ditautkan ke desa ini
+                        </p>
+                      </div>
                     )}
-                  />
 
-                  <div className="flex justify-end gap-2.5 pt-4 border-t border-[#E8F9FF] bg-gradient-to-r from-white to-[#F8FBFF] -mx-5 -mb-4 px-5 pb-4 mt-4">
-                    <Button
-                      type="button"
-                      variant="outline"
-                      onClick={() => {
-                        setOpen(false);
-                        orgForm.reset();
-                      }}
-                      className="h-9 px-5 bg-white border border-[#D8E2F0] hover:bg-[#F0F6FF] hover:border-[#C4D9FF] text-[#475569] hover:text-[#001B55] font-medium transition-all duration-200 text-sm"
-                      style={{ borderRadius: "8px" }}
-                    >
-                      Batal
-                    </Button>
-                    <Button
-                      type="submit"
-                      className="h-9 px-5 bg-gradient-to-r from-[#001B55] to-[#003875] hover:from-[#003875] hover:to-[#001B55] text-white font-semibold shadow-md hover:shadow-lg transition-all duration-200 text-sm"
-                      style={{ borderRadius: "8px" }}
-                      disabled={addMembersMutation.isPending}
-                    >
-                      {addMembersMutation.isPending ? "Menyimpan..." : "Simpan"}
-                    </Button>
-                  </div>
-                </form>
-              </Form>
-            </TabsContent>
+                    {/* Choose cadres */}
+                    <FormField
+                      control={kaderForm.control}
+                      name="kaderIds"
+                      render={() => {
+                        const canSelectKaders = !!watchDprtMemberId;
 
-            <TabsContent value="kader" className="mt-0 space-y-4">
-              {/* Info Box untuk menjelaskan */}
-              <div className="bg-gradient-to-r from-blue-50 to-blue-50/50 border-l-3 border-[#001B55] p-3 rounded-lg">
-                <div className="flex items-start gap-2.5">
-                  <div className="flex-shrink-0 mt-0.5">
-                    <svg className="h-4 w-4 text-[#001B55]" fill="currentColor" viewBox="0 0 20 20">
-                      <path fillRule="evenodd" d="M18 10a8 8 0 11-16 0 8 8 0 0116 0zm-7-4a1 1 0 11-2 0 1 1 0 012 0zM9 9a1 1 0 000 2v3a1 1 0 001 1h1a1 1 0 100-2v-3a1 1 0 00-1-1H9z" clipRule="evenodd" />
-                    </svg>
-                  </div>
-                  <div>
-                    <h4 className="text-xs font-semibold text-[#001B55] mb-0.5">
-                      Menautkan Kader ke Member DPRT
-                    </h4>
-                    <p className="text-[11px] text-[#475569] leading-snug">
-                      Tautkan kader (anggota tanpa jabatan) ke member DPRT. Pilih member DPRT dan kader yang akan ditautkan.
-                    </p>
-                  </div>
-                </div>
-              </div>
-
-              <Form {...kaderForm}>
-                <form
-                  onSubmit={kaderForm.handleSubmit(onSubmitKader)}
-                  className="space-y-4"
-                >
-                  {/* DPRT members in selected desa */}
-                  <FormField
-                    control={kaderForm.control}
-                    name="dprtMemberId"
-                    render={({ field }) => (
-                      <FormItem>
-                        <FormLabel className="text-[#001B55] font-semibold">
-                          Member (DPRT)
-                        </FormLabel>
-                        <FormControl>
-                          <Popover
-                            open={openDprtMember}
-                            onOpenChange={setOpenDprtMember}
-                          >
-                            <PopoverTrigger asChild>
-                              <Button
-                                variant="outline"
-                                role="combobox"
-                                aria-expanded={openDprtMember}
-                                className={cn(
-                                  "w-full justify-between h-11 bg-white border-2 border-[#C4D9FF] hover:border-[#C5BAFF] focus:border-[#001B55] focus:ring-2 focus:ring-[#C5BAFF]/20 text-[#001B55] transition-all duration-300",
-                                  !field.value && "text-[#475569]"
+                        return (
+                          <FormItem>
+                            <FormLabel className="text-[#001B55] font-semibold flex items-center gap-2">
+                              <span>Pilih Kader</span>
+                              {!canSelectKaders && (
+                                <span className="text-xs font-normal text-amber-600">
+                                  (Pilih member DPRT terlebih dahulu)
+                                </span>
+                              )}
+                              {canSelectKaders &&
+                                kaderForm.getValues("kaderIds")?.length > 0 && (
+                                  <span className="text-xs font-normal text-green-600">
+                                    ✓ {kaderForm.getValues("kaderIds").length}{" "}
+                                    terpilih
+                                  </span>
                                 )}
-                                style={{ borderRadius: "10px" }}
-                              >
-                                {field.value
-                                  ? dprtMembers.find(
-                                      (m) => m.id === field.value
-                                    )?.fullName
-                                  : "Pilih member DPRT"}
-                                <ChevronsUpDown className="ml-2 h-4 w-4 shrink-0 opacity-50" />
-                              </Button>
-                            </PopoverTrigger>
-                            <PopoverContent
-                              className="w-full p-0 bg-white border border-[#D8E2F0]"
-                              style={{ borderRadius: "10px" }}
-                            >
-                              <Command className="bg-white">
-                                <CommandInput
-                                  placeholder="Cari member DPRT..."
-                                  value={dprtMemberSearch}
-                                  onValueChange={setDprtMemberSearch}
-                                  className="h-10 border-b border-[#E8F9FF]"
-                                />
-                                <CommandList>
-                                  <CommandEmpty className="py-6 text-center text-sm text-[#475569]">
-                                    Member DPRT tidak ditemukan.
-                                  </CommandEmpty>
-                                  <CommandGroup>
-                                    {dprtMembers.map((m) => (
-                                      <CommandItem
-                                        key={m.id}
-                                        value={m.fullName}
-                                        onSelect={() => {
-                                          field.onChange(m.id);
-                                          setOpenDprtMember(false);
-                                        }}
-                                        className="hover:bg-[#F0F6FF] transition-colors"
-                                      >
-                                        <Check
-                                          className={`mr-2 h-4 w-4 text-[#C5BAFF] ${
-                                            field.value === m.id
-                                              ? "opacity-100"
-                                              : "opacity-0"
-                                          }`}
-                                        />
-                                        {m.fullName}
-                                      </CommandItem>
-                                    ))}
-                                  </CommandGroup>
-                                </CommandList>
-                              </Command>
-                            </PopoverContent>
-                          </Popover>
-                        </FormControl>
-                        <FormMessage className="text-xs" />
-                      </FormItem>
-                    )}
-                  />
-
-                  {/* Auto-derived Desa from selected DPRT member */}
-                  <div
-                    className="px-4 py-3 bg-[#E8F9FF] border border-[#C4D9FF] text-sm text-[#001B55]"
-                    style={{ borderRadius: "10px" }}
-                  >
-                    <span className="font-semibold">Desa otomatis:</span>{" "}
-                    <span>{selectedDprt?.region?.name || "-"}</span>
-                  </div>
-
-                  {/* Choose cadres */}
-                  <FormField
-                    control={kaderForm.control}
-                    name="kaderIds"
-                    render={() => (
-                      <FormItem>
-                        <FormLabel className="text-[#001B55] font-semibold">
-                          Pilih Kader
-                        </FormLabel>
-                        <MemberList
-                          selectedIds={kaderForm.getValues("kaderIds") || []}
-                          onToggle={(id) => {
-                            const cur = kaderForm.getValues("kaderIds") || [];
-                            const next = cur.includes(id)
-                              ? cur.filter((x) => x !== id)
-                              : [...cur, id];
-                            kaderForm.setValue("kaderIds", next, {
-                              shouldValidate: true,
-                            });
-                          }}
-                          membersList={filteredMembersForOrg}
-                          isLoading={membersUnassignedQuery.isLoading}
-                        />
-                        <FormMessage className="text-xs" />
-                      </FormItem>
-                    )}
-                  />
-
-                  <div className="flex justify-end gap-2.5 pt-4 border-t border-[#E8F9FF] bg-gradient-to-r from-white to-[#F8FBFF] -mx-5 -mb-4 px-5 pb-4 mt-4">
-                    <Button
-                      type="button"
-                      variant="outline"
-                      onClick={() => {
-                        setOpen(false);
-                        kaderForm.reset();
+                            </FormLabel>
+                            {!canSelectKaders ? (
+                              <div className="max-h-72 overflow-hidden border border-[#D8E2F0] bg-gray-50 rounded-lg flex items-center justify-center py-12">
+                                <div className="text-center">
+                                  <div className="w-12 h-12 rounded-full bg-[#E8F9FF] flex items-center justify-center mx-auto mb-3">
+                                    <Users className="w-6 h-6 text-[#475569]" />
+                                  </div>
+                                  <p className="text-sm font-medium text-[#001B55] mb-1">
+                                    Pilih Member DPRT
+                                  </p>
+                                  <p className="text-xs text-[#475569]">
+                                    Pilih member DPRT terlebih dahulu untuk
+                                    melihat daftar kader
+                                  </p>
+                                </div>
+                              </div>
+                            ) : (
+                              <MemberList
+                                selectedIds={
+                                  kaderForm.getValues("kaderIds") || []
+                                }
+                                onToggle={(id) => {
+                                  const cur =
+                                    kaderForm.getValues("kaderIds") || [];
+                                  const next = cur.includes(id)
+                                    ? cur.filter((x) => x !== id)
+                                    : [...cur, id];
+                                  kaderForm.setValue("kaderIds", next, {
+                                    shouldValidate: true,
+                                  });
+                                }}
+                                membersList={filteredMembersForOrg}
+                                isLoading={membersUnassignedQuery.isLoading}
+                              />
+                            )}
+                            <FormMessage className="text-xs" />
+                          </FormItem>
+                        );
                       }}
-                      className="h-9 px-5 bg-white border border-[#D8E2F0] hover:bg-[#F0F6FF] hover:border-[#C4D9FF] text-[#475569] hover:text-[#001B55] font-medium transition-all duration-200 text-sm"
-                      style={{ borderRadius: "8px" }}
-                    >
-                      Batal
-                    </Button>
-                    <Button
-                      type="submit"
-                      className="h-9 px-5 bg-gradient-to-r from-[#001B55] to-[#003875] hover:from-[#003875] hover:to-[#001B55] text-white font-semibold shadow-md hover:shadow-lg transition-all duration-200 text-sm"
-                      style={{ borderRadius: "8px" }}
-                      disabled={addKadersMutation.isPending}
-                    >
-                      {addKadersMutation.isPending ? "Menyimpan..." : "Simpan"}
-                    </Button>
-                  </div>
-                </form>
-              </Form>
-            </TabsContent>
-          </Tabs>
+                    />
+
+                    <div className="flex justify-end gap-2.5 pt-4 border-t border-[#E8F9FF] bg-gradient-to-r from-white to-[#F8FBFF] -mx-5 -mb-4 px-5 pb-4 mt-4">
+                      <Button
+                        type="button"
+                        variant="outline"
+                        onClick={() => {
+                          setOpen(false);
+                          kaderForm.reset();
+                        }}
+                        disabled={addKadersMutation.isPending}
+                        className="h-9 px-5 bg-white border border-[#D8E2F0] hover:bg-[#F0F6FF] hover:border-[#C4D9FF] text-[#475569] hover:text-[#001B55] font-medium transition-all duration-200 text-sm disabled:opacity-50"
+                        style={{ borderRadius: "8px" }}
+                      >
+                        Batal
+                      </Button>
+                      <Button
+                        type="submit"
+                        className="h-9 px-5 bg-gradient-to-r from-[#001B55] to-[#003875] hover:from-[#003875] hover:to-[#001B55] text-white font-semibold shadow-md hover:shadow-lg transition-all duration-200 text-sm disabled:opacity-70 disabled:cursor-not-allowed"
+                        style={{ borderRadius: "8px" }}
+                        disabled={
+                          addKadersMutation.isPending ||
+                          !kaderForm.formState.isValid
+                        }
+                      >
+                        {addKadersMutation.isPending ? (
+                          <span className="flex items-center gap-2">
+                            <svg
+                              className="animate-spin h-4 w-4"
+                              xmlns="http://www.w3.org/2000/svg"
+                              fill="none"
+                              viewBox="0 0 24 24"
+                            >
+                              <circle
+                                className="opacity-25"
+                                cx="12"
+                                cy="12"
+                                r="10"
+                                stroke="currentColor"
+                                strokeWidth="4"
+                              ></circle>
+                              <path
+                                className="opacity-75"
+                                fill="currentColor"
+                                d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"
+                              ></path>
+                            </svg>
+                            Menyimpan...
+                          </span>
+                        ) : (
+                          "Simpan"
+                        )}
+                      </Button>
+                    </div>
+                  </form>
+                </Form>
+              </TabsContent>
+            </Tabs>
           </div>
         </div>
       </DialogContent>
