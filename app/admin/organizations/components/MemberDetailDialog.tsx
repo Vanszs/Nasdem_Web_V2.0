@@ -822,13 +822,15 @@ export function MemberDetailDialog({
             Tutup
           </Button>
           <div className="flex gap-3">
-            <Button
-              variant="outline"
-              onClick={() => onRequestEdit?.(member)}
-              className="border-gray-300 text-gray-700 hover:bg-gray-50 text-sm h-10 px-4 transition-all duration-300 hover:shadow-sm"
-            >
-              Edit
-            </Button>
+            {onRequestEdit && (
+              <Button
+                variant="outline"
+                onClick={() => onRequestEdit(member)}
+                className="border-gray-300 text-gray-700 hover:bg-gray-50 text-sm h-10 px-4 transition-all duration-300 hover:shadow-sm"
+              >
+                Edit
+              </Button>
+            )}
             <Button
               onClick={handlePrint}
               className="bg-gradient-to-r from-[#001B55] to-[#003875] hover:from-[#003875] hover:to-[#001B55] text-white rounded-lg shadow-md hover:shadow-lg text-sm h-10 px-4 transition-all duration-300 transform hover:scale-105"

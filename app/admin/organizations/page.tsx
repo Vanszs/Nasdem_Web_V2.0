@@ -4,7 +4,6 @@ import { AdminLayout } from "../components/layout/AdminLayout";
 import { MemberCard } from "./components/MemberCard";
 import { AddMemberDialog } from "./components/AddMemberDialog";
 import { MemberDetailDialog } from "./components/MemberDetailDialog";
-import { EditOrgMembershipDialog } from "./components/EditOrgMembershipDialog";
 import { useMembers } from "./hooks/useMembers";
 import { useDebounce } from "../../../hooks/use-debounce";
 import { SimplePagination } from "@/components/ui/pagination";
@@ -163,12 +162,6 @@ export default function Members() {
   const [selectedMember, setSelectedMember] = useState<any | null>(null);
   const [detailOpen, setDetailOpen] = useState(false);
   const [addOpen, setAddOpen] = useState(false);
-  const [editOpen, setEditOpen] = useState(false);
-
-  // Debug effect to log state changes
-  useEffect(() => {
-    console.log("Add dialog open state:", addOpen);
-  }, [addOpen]);
 
   const { data: regionsData } = useRegions();
 
@@ -187,12 +180,7 @@ export default function Members() {
     setDetailOpen(true);
   };
 
-  const handleRequestEdit = (m: any) => {
-    setDetailOpen(false);
-    setSelectedMember(m);
-    // Delay to let close animation finish before opening next dialog
-    setTimeout(() => setEditOpen(true), 200);
-  };
+  // Edit flow removed as requested
 
   // STATUS & LEVEL CONFIG (dipertahankan untuk badge)
   const statusConfig = {
@@ -407,20 +395,9 @@ export default function Members() {
           departmentConfig={departmentConfig}
           getDPRTLeader={() => undefined}
           getKaderCount={() => 0}
-          onRequestEdit={handleRequestEdit}
         />
         <AddMemberDialog open={addOpen} onOpenChange={setAddOpen} />
-        {/* Edit membership dialog */}
-        <EditOrgMembershipDialog
-          open={editOpen}
-          onOpenChange={(v: boolean) => setEditOpen(v)}
-          member={selectedMember}
-          onSaved={() => {
-            setEditOpen(false);
-            refetch();
-          }}
-          key={selectedMember?.id ?? "none"}
-        />
+        {/* Edit membership dialog removed */}
       </div>
     </AdminLayout>
   );

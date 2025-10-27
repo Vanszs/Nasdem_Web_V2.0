@@ -79,7 +79,7 @@ export function TabsFilters(props: Props) {
           </TabsTrigger>
           <TabsTrigger
             value="sayap"
-            className="px-4 py-3 rounded-xl font-medium text-sm transition-all duration-300 border-2 data-[state=active]:!bg-[#001B55] data-[state=active]:!text-white data-[state=active]:!border-[#001B55] data-[state=active]:shadow-lg data-[state=inactive]:border-gray-200/80 data-[state=inactive]:bg-white/50 text-[#6B7280] hover:text-[#001B55] hover:bg-white hover:border-[#001B55]/40"
+            className="px-4 py-3 rounded-xl font-medium text-sm transition-all duration-300 border-2 data-[state=active]:!bg-[#9200a5] data-[state=active]:!text-white data-[state=active]:!border-[#9200a5] data-[state=active]:shadow-lg data-[state=inactive]:border-gray-200/80 data-[state=inactive]:bg-white/50 text-[#6B7280] hover:text-[#9200a5] hover:bg-white hover:border-[#9200a5]/40"
           >
             <Target className="h-4 w-4 mr-1.5" />
             Sayap
