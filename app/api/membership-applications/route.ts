@@ -19,6 +19,7 @@ const listApplicationsSchema = z.object({
 
 const createApplicationSchema = z.object({
   fullName: z.string().min(1),
+  nik: z.string().optional(),
   email: z.string().email().optional(),
   phone: z.string().optional(),
   address: z.string().optional(),
@@ -27,6 +28,8 @@ const createApplicationSchema = z.object({
   occupation: z.string().optional(),
   motivation: z.string().optional(),
   applicationType: z.nativeEnum(ApplicationType),
+  isBeneficiary: z.boolean().optional(),
+  beneficiaryProgramId: z.number().int().positive().optional(),
 });
 
 export async function GET(req: NextRequest) {
@@ -160,6 +163,7 @@ export async function POST(req: NextRequest) {
     const application = await db.membershipApplication.create({
       data: {
         fullName: data.fullName,
+        nik: data.nik || undefined,
         email: data.email || undefined,
         phone: data.phone || undefined,
         address: data.address || undefined,
@@ -168,15 +172,20 @@ export async function POST(req: NextRequest) {
         occupation: data.occupation || undefined,
         motivation: data.motivation || undefined,
         applicationType: data.applicationType,
+        isBeneficiary: data.isBeneficiary ?? false,
+        beneficiaryProgramId: data.beneficiaryProgramId || undefined,
       },
       select: {
         id: true,
         fullName: true,
+        nik: true,
         email: true,
         phone: true,
         applicationType: true,
         status: true,
         submittedAt: true,
+        isBeneficiary: true,
+        beneficiaryProgramId: true,
       },
     });
 

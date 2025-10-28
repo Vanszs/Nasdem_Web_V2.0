@@ -188,6 +188,8 @@ model Program {
   recipients       ProgramBenefitRecipient[]
   // Pendaftar PIP
   pipRegistrations PipRegistration[]
+  // Membership applications with beneficiary program
+  membershipApplications MembershipApplication[] @relation("MembershipBeneficiaryProgram")
 
   @@unique([category, name])
 }
@@ -434,6 +436,7 @@ model PipRegistration {
 model MembershipApplication {
   id              Int               @id @default(autoincrement())
   fullName        String            @db.VarChar(150)
+  nik             String?           @db.VarChar(50) // NIK (Nomor Induk Kependudukan)
   email           String?           @db.VarChar(100)
   phone           String?           @db.VarChar(30)
   address         String?
@@ -447,6 +450,11 @@ model MembershipApplication {
   reviewedAt      DateTime?
   notes           String?
   memberId        Int?
+  
+  // Beneficiary program relation (optional)
+  isBeneficiary         Boolean @default(false)
+  beneficiaryProgramId  Int?
+  beneficiaryProgram    Program? @relation("MembershipBeneficiaryProgram", fields: [beneficiaryProgramId], references: [id], onDelete: SetNull, onUpdate: Cascade)
 
   member Member? @relation(fields: [memberId], references: [id], onDelete: SetNull, onUpdate: Cascade)
 
@@ -454,6 +462,8 @@ model MembershipApplication {
   @@index([status])
   @@index([submittedAt])
   @@index([memberId])
+  @@index([nik])
+  @@index([beneficiaryProgramId])
 }
 
 // ---------------------------

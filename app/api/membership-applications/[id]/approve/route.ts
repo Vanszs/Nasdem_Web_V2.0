@@ -75,7 +75,7 @@ export async function POST(
           address: application.address || undefined,
           dateOfBirth: application.dateOfBirth || undefined,
           gender: application.gender || undefined,
-          nik: undefined, // Can be updated later
+          nik: application.nik || undefined, // Use NIK from application
           occupation: application.occupation || undefined,
           status: MemberStatus.active,
           strukturId: organizationId,

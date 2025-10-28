@@ -37,6 +37,8 @@ import {
   ArrowRight,
   ArrowLeft
 } from "lucide-react";
+import { MembershipApplicationPDF } from "@/components/pdf/MembershipApplicationPDF";
+import { downloadPDF, generateRegistrationNumber } from "@/lib/pdf-utils";
 
 export default function BergabungPage() {
   const router = useRouter();
@@ -94,32 +96,6 @@ export default function BergabungPage() {
     setIsSubmitting(true);
 
     try {
-      // Prepare FormData for file upload if KTP exists
-      const submitData = new FormData();
-      
-      // Add all form fields
-      submitData.append("fullName", formData.fullName);
-      submitData.append("email", formData.email);
-      submitData.append("phone", formData.phone);
-      submitData.append("address", formData.address);
-      submitData.append("dateOfBirth", formData.dateOfBirth);
-      submitData.append("gender", formData.gender);
-      submitData.append("nik", formData.nik);
-      submitData.append("occupation", formData.occupation);
-      submitData.append("motivation", formData.notes || "");
-      submitData.append("applicationType", "REGULAR");
-      
-      // Add KTP file if exists
-      if (ktpFile) {
-        submitData.append("ktpPhoto", ktpFile);
-      }
-
-      // Add beneficiary info if applicable
-      if (formData.isBeneficiary && formData.beneficiaryProgramId) {
-        submitData.append("isBeneficiary", "true");
-        submitData.append("beneficiaryProgramId", formData.beneficiaryProgramId);
-      }
-
       const response = await fetch("/api/membership-applications", {
         method: "POST",
         headers: {
@@ -127,6 +103,7 @@ export default function BergabungPage() {
         },
         body: JSON.stringify({
           fullName: formData.fullName,
+          nik: formData.nik || undefined,
           email: formData.email || undefined,
           phone: formData.phone || undefined,
           address: formData.address || undefined,
@@ -135,6 +112,10 @@ export default function BergabungPage() {
           occupation: formData.occupation || undefined,
           motivation: formData.notes || undefined,
           applicationType: "REGULAR",
+          isBeneficiary: formData.isBeneficiary,
+          beneficiaryProgramId: formData.isBeneficiary && formData.beneficiaryProgramId 
+            ? parseInt(formData.beneficiaryProgramId) 
+            : undefined,
         }),
       });
 
@@ -142,6 +123,40 @@ export default function BergabungPage() {
 
       if (!response.ok || !result.success) {
         throw new Error(result.error || "Gagal mengirim permohonan");
+      }
+
+      // Generate and download PDF receipt
+      try {
+        const registrationNumber = generateRegistrationNumber('NASDEM');
+        const programName = programs.find(p => p.id === formData.beneficiaryProgramId)?.name;
+        
+        const pdfDocument = (
+          <MembershipApplicationPDF
+            data={{
+              fullName: formData.fullName,
+              email: formData.email || undefined,
+              phone: formData.phone || undefined,
+              dateOfBirth: formData.dateOfBirth || undefined,
+              gender: formData.gender || undefined,
+              nik: formData.nik,
+              address: formData.address || undefined,
+              occupation: formData.occupation || undefined,
+              notes: formData.notes || undefined,
+              isBeneficiary: formData.isBeneficiary,
+              beneficiaryProgramName: programName,
+              registrationNumber,
+              submittedAt: new Date(),
+            }}
+          />
+        );
+
+        await downloadPDF(
+          pdfDocument,
+          `Bukti-Pendaftaran-NasDem-${registrationNumber}.pdf`
+        );
+      } catch (pdfError) {
+        console.error('PDF generation error:', pdfError);
+        // Continue to success page even if PDF fails
       }
 
       setSuccess(true);
@@ -162,6 +177,9 @@ export default function BergabungPage() {
   };
 
   const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    e.preventDefault();
+    e.stopPropagation();
+    
     const file = e.target.files?.[0];
     if (file) {
       if (file.size > 5 * 1024 * 1024) {
@@ -184,7 +202,10 @@ export default function BergabungPage() {
     }
   };
 
-  const removeKtpFile = () => {
+  const removeKtpFile = (e?: React.MouseEvent) => {
+    e?.preventDefault();
+    e?.stopPropagation();
+    
     setKtpFile(null);
     setKtpPreview("");
     if (fileInputRef.current) {
@@ -207,11 +228,27 @@ export default function BergabungPage() {
   const isStepValid = () => {
     switch (currentStep) {
       case 1:
-        return formData.fullName && formData.email && formData.phone && formData.nik && formData.dateOfBirth && formData.gender;
+        // Step 1: Personal data - all required
+        return (
+          formData.fullName.trim() !== "" &&
+          formData.email.trim() !== "" &&
+          formData.phone.trim() !== "" &&
+          formData.nik.trim() !== "" &&
+          formData.dateOfBirth !== "" &&
+          formData.gender !== ""
+        );
       case 2:
-        return formData.address && formData.occupation;
+        // Step 2: Address and occupation - required
+        return (
+          formData.address.trim() !== "" &&
+          formData.occupation.trim() !== ""
+        );
       case 3:
-        return true;
+        // Step 3: Notes and beneficiary - optional, but if beneficiary checked, program must be selected
+        if (formData.isBeneficiary) {
+          return formData.beneficiaryProgramId !== "";
+        }
+        return true; // Notes is optional
       default:
         return false;
     }
@@ -608,7 +645,7 @@ export default function BergabungPage() {
                             />
                             <button
                               type="button"
-                              onClick={removeKtpFile}
+                              onClick={(e) => removeKtpFile(e)}
                               className="absolute top-4 right-4 bg-[#C81E1E] text-white p-3 rounded-full hover:bg-[#A01818] transition-all duration-300 shadow-xl hover:scale-110"
                             >
                               <X className="w-5 h-5" />

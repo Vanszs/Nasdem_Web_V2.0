@@ -38,6 +38,8 @@ import {
 } from "lucide-react";
 import { useQuery, useMutation } from "@tanstack/react-query";
 import { toast } from "sonner";
+import { PIPRegistrationPDF } from "@/components/pdf/PIPRegistrationPDF";
+import { downloadPDF, generateRegistrationNumber } from "@/lib/pdf-utils";
 
 interface PipFormData {
   fullName: string;
@@ -50,6 +52,8 @@ interface PipFormData {
   familyMemberCount: string;
   fullAddress: string;
   proposerName: string; // Nama pengusul
+  category: string; // Kategori bantuan (education, health, economy, etc)
+  notes: string; // Keterangan/alasan pengajuan
 }
 
 export default function PendaftaranPipPage() {
@@ -69,6 +73,8 @@ export default function PendaftaranPipPage() {
     familyMemberCount: "",
     fullAddress: "",
     proposerName: "",
+    category: "education", // Default category
+    notes: "",
   });
 
   const totalSteps = 2; // Ubah dari 3 ke 2 (hapus step Dokumen)
@@ -115,7 +121,36 @@ export default function PendaftaranPipPage() {
         throw err;
       }
     },
-    onSuccess: () => {
+    onSuccess: async () => {
+      // Generate and download PDF receipt
+      try {
+        const registrationNumber = generateRegistrationNumber('PIP');
+        
+        const pdfDocument = (
+          <PIPRegistrationPDF
+            data={{
+              fullName: formData.fullName,
+              nik: formData.nik,
+              phone: formData.phone || undefined,
+              address: formData.fullAddress || undefined,
+              proposerName: formData.proposerName || undefined,
+              category: formData.category || 'education',
+              notes: formData.notes || undefined,
+              registrationNumber,
+              submittedAt: new Date(),
+            }}
+          />
+        );
+
+        await downloadPDF(
+          pdfDocument,
+          `Bukti-Pendaftaran-PIP-${registrationNumber}.pdf`
+        );
+      } catch (pdfError) {
+        console.error('PDF generation error:', pdfError);
+        // Continue to success page even if PDF fails
+      }
+
       setSuccess(true);
       toast.success("Pendaftaran berhasil dikirim!");
     },
@@ -150,6 +185,8 @@ export default function PendaftaranPipPage() {
       );
       formDataToSend.append("fullAddress", formData.fullAddress || "");
       formDataToSend.append("proposerName", formData.proposerName || "");
+      formDataToSend.append("category", formData.category || "education");
+      formDataToSend.append("notes", formData.notes || "");
 
       submitMutation.mutate(formDataToSend);
     } catch (err: any) {
@@ -677,6 +714,53 @@ export default function PendaftaranPipPage() {
                               required
                               placeholder="Nama orang yang mengusulkan Anda"
                               className="h-12 rounded-xl border-gray-200 focus:border-[#FF9C04] transition-all"
+                            />
+                          </div>
+
+                          <div className="space-y-3">
+                            <Label
+                              htmlFor="category"
+                              className="flex items-center gap-2 text-[#001B55] font-semibold text-sm"
+                            >
+                              <Award className="w-4 h-4" />
+                              Kategori Bantuan{" "}
+                              <span className="text-red-500">*</span>
+                            </Label>
+                            <Select
+                              value={formData.category}
+                              onValueChange={(value) =>
+                                setFormData({ ...formData, category: value })
+                              }
+                            >
+                              <SelectTrigger className="h-12 rounded-xl border-gray-200 focus:border-[#FF9C04] transition-all">
+                                <SelectValue placeholder="Pilih kategori bantuan" />
+                              </SelectTrigger>
+                              <SelectContent>
+                                <SelectItem value="education">Bantuan Pendidikan</SelectItem>
+                                <SelectItem value="health">Bantuan Kesehatan</SelectItem>
+                                <SelectItem value="economy">Bantuan Ekonomi</SelectItem>
+                                <SelectItem value="infrastructure">Bantuan Infrastruktur</SelectItem>
+                                <SelectItem value="other">Lainnya</SelectItem>
+                              </SelectContent>
+                            </Select>
+                          </div>
+
+                          <div className="space-y-3">
+                            <Label
+                              htmlFor="notes"
+                              className="flex items-center gap-2 text-[#001B55] font-semibold text-sm"
+                            >
+                              <FileText className="w-4 h-4" />
+                              Keterangan / Alasan Pengajuan
+                            </Label>
+                            <Textarea
+                              id="notes"
+                              name="notes"
+                              value={formData.notes}
+                              onChange={handleChange}
+                              rows={4}
+                              placeholder="Jelaskan alasan Anda mengajukan bantuan PIP (opsional)"
+                              className="rounded-xl border-gray-200 focus:border-[#FF9C04] transition-all resize-none"
                             />
                           </div>
                         </div>
