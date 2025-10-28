@@ -20,7 +20,7 @@ export async function GET(
   req: NextRequest,
   { params }: { params: { id: string } }
 ) {
-  const authError = requireAuth(req);
+  const authError = await requireAuth(req);
   if (authError) return authError;
 
   const roleError = requireRole(req, [UserRole.SUPERADMIN]);
@@ -59,7 +59,7 @@ export async function PUT(
   req: NextRequest,
   { params }: { params: { id: string } }
 ) {
-  const authError = requireAuth(req);
+  const authError = await requireAuth(req);
   if (authError) return authError;
 
   const roleError = requireRole(req, [UserRole.SUPERADMIN]);
@@ -153,7 +153,7 @@ export async function DELETE(
   req: NextRequest,
   { params }: { params: { id: string } }
 ) {
-  const authError = requireAuth(req);
+  const authError = await requireAuth(req);
   if (authError) return authError;
 
   const roleError = requireRole(req, [UserRole.SUPERADMIN]);

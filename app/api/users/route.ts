@@ -21,7 +21,7 @@ const createUserSchema = z.object({
 
 // list semua user
 export async function GET(req: NextRequest) {
-  const authError = requireAuth(req);
+  const authError = await requireAuth(req);
   if (authError) return authError;
   const roleError = requireRole(req, [UserRole.SUPERADMIN]);
   if (roleError) return roleError;
@@ -85,7 +85,7 @@ export async function GET(req: NextRequest) {
 
 // create user baru
 export async function POST(req: NextRequest) {
-  const authError = requireAuth(req);
+  const authError = await requireAuth(req);
   if (authError) return authError;
 
   const roleError = requireRole(req, [UserRole.SUPERADMIN]);

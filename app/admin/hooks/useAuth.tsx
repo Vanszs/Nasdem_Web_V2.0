@@ -1,6 +1,6 @@
 "use client";
 
-import { createContext, useContext, useEffect, useState, ReactNode } from "react";
+import { createContext, useContext, ReactNode } from "react";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { UserRole } from "@/lib/rbac";
 
@@ -23,6 +23,7 @@ interface AuthContextType {
 
 const AuthContext = createContext<AuthContextType | undefined>(undefined);
 
+// Fetch user from API - cookies handled automatically by browser
 async function fetchUser() {
   const response = await fetch("/api/auth/me", {
     method: "GET",
@@ -76,7 +77,6 @@ async function logoutRequest() {
 }
 
 export function AuthProvider({ children }: { children: ReactNode }) {
-  const [isInitialized, setIsInitialized] = useState(false);
   const queryClient = useQueryClient();
 
   const {
@@ -88,7 +88,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     queryFn: fetchUser,
     retry: false,
     refetchOnWindowFocus: false,
-    enabled: isInitialized,
+    staleTime: 5 * 60 * 1000, // Cache for 5 minutes
   });
 
   const loginMutation = useMutation({
@@ -107,10 +107,6 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     },
   });
 
-  useEffect(() => {
-    setIsInitialized(true);
-  }, []);
-
   const login = async (email: string, password: string) => {
     await loginMutation.mutateAsync({ email, password });
   };
@@ -121,7 +117,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
 
   const value: AuthContextType = {
     user: user || null,
-    isLoading: isLoading || !isInitialized,
+    isLoading,
     isAuthenticated: !!user,
     login,
     logout,

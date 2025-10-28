@@ -1,4 +1,3 @@
-import { useState, useEffect } from "react";
 import {
   Search,
   Bell,
@@ -28,6 +27,7 @@ import {
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { useRouter } from "next/navigation";
 import { UserRole } from "@/lib/rbac";
+import { useAuth } from "@/app/admin/hooks/useAuth";
 
 interface TopNavbarProps {
   breadcrumbs?: { label: string; href?: string }[];
@@ -39,41 +39,14 @@ export function TopNavbar({
   onToggleSidebar,
 }: TopNavbarProps) {
   const router = useRouter();
-  const [user, setUser] = useState<any>(null);
-
-  // Fetch user data on component mount
-  useEffect(() => {
-    const fetchUserData = async () => {
-      try {
-        const response = await fetch("/api/auth/me", {
-          method: "GET",
-          credentials: "include",
-        });
-
-        if (response.ok) {
-          const data = await response.json();
-          if (data.success) {
-            setUser(data.data);
-          }
-        } else {
-          // If not authenticated, redirect to login
-          router.replace("/");
-        }
-      } catch (error) {
-        console.error("Failed to fetch user data:", error);
-        router.replace("/");
-      }
-    };
-
-    fetchUserData();
-  }, [router]);
+  const { user, logout: authLogout, isLoading } = useAuth();
 
   const handleLogout = async () => {
     try {
-      await fetch("/api/auth/logout", { method: "POST" });
+      await authLogout();
+      router.replace("/");
     } catch (e) {
       console.error("Logout error", e);
-    } finally {
       router.replace("/");
     }
   };
