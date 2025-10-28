@@ -420,6 +420,7 @@ model PipRegistration {
   occupation        String?     @db.VarChar(100)
   familyMemberCount Int?
   fullAddress       String?
+  proposerName      String?     @db.VarChar(150) // Nama pengusul
 
   // Dokumen opsional (bisa diperluas jika perlu)
   ktpPhotoUrl String? @db.VarChar(255)
