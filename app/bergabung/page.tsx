@@ -96,27 +96,37 @@ export default function BergabungPage() {
     setIsSubmitting(true);
 
     try {
+      // Prepare FormData for file upload
+      const formDataToSend = new FormData();
+      
+      // Add all form fields
+      formDataToSend.append("fullName", formData.fullName);
+      formDataToSend.append("nik", formData.nik || "");
+      formDataToSend.append("email", formData.email || "");
+      formDataToSend.append("phone", formData.phone || "");
+      formDataToSend.append("address", formData.address || "");
+      formDataToSend.append("dateOfBirth", formData.dateOfBirth || "");
+      formDataToSend.append("gender", formData.gender || "");
+      formDataToSend.append("occupation", formData.occupation || "");
+      formDataToSend.append("motivation", formData.notes || "");
+      formDataToSend.append("applicationType", "REGULAR");
+      
+      // Add KTP file if exists
+      if (ktpFile) {
+        formDataToSend.append("ktpPhoto", ktpFile);
+      }
+
+      // Add beneficiary info if applicable
+      if (formData.isBeneficiary && formData.beneficiaryProgramId) {
+        formDataToSend.append("isBeneficiary", "true");
+        formDataToSend.append("beneficiaryProgramId", formData.beneficiaryProgramId);
+      } else {
+        formDataToSend.append("isBeneficiary", "false");
+      }
+
       const response = await fetch("/api/membership-applications", {
         method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-        },
-        body: JSON.stringify({
-          fullName: formData.fullName,
-          nik: formData.nik || undefined,
-          email: formData.email || undefined,
-          phone: formData.phone || undefined,
-          address: formData.address || undefined,
-          dateOfBirth: formData.dateOfBirth || undefined,
-          gender: formData.gender || undefined,
-          occupation: formData.occupation || undefined,
-          motivation: formData.notes || undefined,
-          applicationType: "REGULAR",
-          isBeneficiary: formData.isBeneficiary,
-          beneficiaryProgramId: formData.isBeneficiary && formData.beneficiaryProgramId 
-            ? parseInt(formData.beneficiaryProgramId) 
-            : undefined,
-        }),
+        body: formDataToSend, // Send FormData instead of JSON
       });
 
       const result = await response.json();

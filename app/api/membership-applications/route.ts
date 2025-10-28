@@ -1,3 +1,4 @@
+
 import { NextRequest, NextResponse } from "next/server";
 import { db } from "@/lib/db";
 import { requireAuth, requireRole } from "@/lib/jwt-middleware";
@@ -8,6 +9,7 @@ import {
   ApplicationStatus,
   GenderEnum,
 } from "@prisma/client";
+import { uploadFile } from "@/lib/file-upload";
 
 const listApplicationsSchema = z.object({
   page: z.coerce.number().int().min(1).optional(),
@@ -144,8 +146,52 @@ export async function GET(req: NextRequest) {
 
 export async function POST(req: NextRequest) {
   try {
-    const body = await req.json();
-    const parsed = createApplicationSchema.safeParse(body);
+    const contentType = req.headers.get("content-type") || "";
+    let data: any;
+    let ktpPhotoUrl: string | undefined;
+
+    // Handle both JSON and FormData
+    if (contentType.includes("multipart/form-data")) {
+      // FormData with file upload
+      const formData = await req.formData();
+      
+      // Extract file if exists
+      const ktpFile = formData.get("ktpPhoto") as File | null;
+      if (ktpFile && ktpFile.size > 0) {
+        const uploadResult = await uploadFile(ktpFile, "ktp");
+        if (!uploadResult.success) {
+          return NextResponse.json(
+            { success: false, error: uploadResult.error || "File upload failed" },
+            { status: 400 }
+          );
+        }
+        ktpPhotoUrl = uploadResult.url;
+      }
+
+      // Extract form fields
+      data = {
+        fullName: formData.get("fullName") as string,
+        nik: formData.get("nik") as string | null,
+        email: formData.get("email") as string | null,
+        phone: formData.get("phone") as string | null,
+        address: formData.get("address") as string | null,
+        dateOfBirth: formData.get("dateOfBirth") as string | null,
+        gender: formData.get("gender") as string | null,
+        occupation: formData.get("occupation") as string | null,
+        motivation: formData.get("motivation") as string | null,
+        applicationType: formData.get("applicationType") as string || "REGULAR",
+        isBeneficiary: formData.get("isBeneficiary") === "true",
+        beneficiaryProgramId: formData.get("beneficiaryProgramId") 
+          ? parseInt(formData.get("beneficiaryProgramId") as string)
+          : undefined,
+      };
+    } else {
+      // JSON body (backward compatibility)
+      data = await req.json();
+    }
+
+    // Validate data
+    const parsed = createApplicationSchema.safeParse(data);
 
     if (!parsed.success) {
       return NextResponse.json(
@@ -158,22 +204,23 @@ export async function POST(req: NextRequest) {
       );
     }
 
-    const data = parsed.data;
+    const validData = parsed.data;
 
     const application = await db.membershipApplication.create({
       data: {
-        fullName: data.fullName,
-        nik: data.nik || undefined,
-        email: data.email || undefined,
-        phone: data.phone || undefined,
-        address: data.address || undefined,
-        dateOfBirth: data.dateOfBirth ? new Date(data.dateOfBirth) : undefined,
-        gender: data.gender ?? undefined,
-        occupation: data.occupation || undefined,
-        motivation: data.motivation || undefined,
-        applicationType: data.applicationType,
-        isBeneficiary: data.isBeneficiary ?? false,
-        beneficiaryProgramId: data.beneficiaryProgramId || undefined,
+        fullName: validData.fullName,
+        nik: validData.nik || undefined,
+        email: validData.email || undefined,
+        phone: validData.phone || undefined,
+        address: validData.address || undefined,
+        dateOfBirth: validData.dateOfBirth ? new Date(validData.dateOfBirth) : undefined,
+        gender: validData.gender ?? undefined,
+        occupation: validData.occupation || undefined,
+        motivation: validData.motivation || undefined,
+        ktpPhotoUrl: ktpPhotoUrl || undefined,
+        applicationType: validData.applicationType,
+        isBeneficiary: validData.isBeneficiary ?? false,
+        beneficiaryProgramId: validData.beneficiaryProgramId || undefined,
       },
       select: {
         id: true,
@@ -181,6 +228,7 @@ export async function POST(req: NextRequest) {
         nik: true,
         email: true,
         phone: true,
+        ktpPhotoUrl: true,
         applicationType: true,
         status: true,
         submittedAt: true,

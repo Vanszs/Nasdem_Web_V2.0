@@ -444,6 +444,7 @@ model MembershipApplication {
   gender          GenderEnum?
   occupation      String?           @db.VarChar(100)
   motivation      String?
+  ktpPhotoUrl     String?           @db.VarChar(255) // KTP photo file path
   applicationType ApplicationType
   status          ApplicationStatus @default(pending)
   submittedAt     DateTime          @default(now())
