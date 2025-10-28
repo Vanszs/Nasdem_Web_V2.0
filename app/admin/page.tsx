@@ -1,171 +1,25 @@
 "use client";
 
-import { useState } from "react";
-import {
-  FileText,
-  Image,
-  Users,
-  BarChart3,
-  TrendingUp,
-  Eye,
-  Calendar,
-} from "lucide-react";
+import Link from "next/link";
+import { useQuery } from "@tanstack/react-query";
+import { FileText, Image, Users, BarChart3, Eye } from "lucide-react";
 import { AdminLayout } from "./components/layout/AdminLayout";
 import { KPIStat, KPIStatSkeleton } from "@/components/dashboard/kpi-stat";
 import {
   ChartCard,
   ChartCardSkeleton,
 } from "@/components/dashboard/chart-card";
-import {
-  DataTable,
-  DataTableSkeleton,
-  DataTableColumn,
-} from "@/components/dashboard/data-table";
+import { DataTable, DataTableColumn } from "@/components/dashboard/data-table";
 import { StackedBarChart } from "@/components/dashboard/stacked-bar-chart";
 import { LineTrendChart } from "@/components/dashboard/line-trend-chart";
 
-// Sample data - replace with actual API calls
-const kpisData = {
-  totalContent: 512,
-  monthlyViews: 28400,
-  activeMembers: 156,
-  totalGallery: 238,
+// Fallback placeholders used while fetching to minimize layout shift
+const FALLBACK_KPIS = {
+  totalContent: 0,
+  monthlyViews: 0,
+  activeMembers: 0,
+  totalGallery: 0,
 };
-
-const monthlyContentData = [
-  {
-    month: "Januari",
-    Berita: 12,
-    Galeri: 8,
-    Organisasi: 5,
-    Program: 10,
-  },
-  {
-    month: "Februari",
-    Berita: 15,
-    Galeri: 10,
-    Organisasi: 7,
-    Program: 12,
-  },
-  {
-    month: "Maret",
-    Berita: 18,
-    Galeri: 12,
-    Organisasi: 6,
-    Program: 15,
-  },
-  {
-    month: "April",
-    Berita: 20,
-    Galeri: 15,
-    Organisasi: 8,
-    Program: 18,
-  },
-  {
-    month: "Mei",
-    Berita: 22,
-    Galeri: 18,
-    Organisasi: 10,
-    Program: 20,
-  },
-  {
-    month: "Juni",
-    Berita: 25,
-    Galeri: 20,
-    Organisasi: 12,
-    Program: 22,
-  },
-];
-
-const memberGrowthData = [
-  {
-    month: "Januari",
-    "Total Anggota": 120,
-    DPC: 35,
-    DPRT: 45,
-    Kader: 40,
-  },
-  {
-    month: "Februari",
-    "Total Anggota": 135,
-    DPC: 38,
-    DPRT: 52,
-    Kader: 45,
-  },
-  {
-    month: "Maret",
-    "Total Anggota": 148,
-    DPC: 42,
-    DPRT: 58,
-    Kader: 48,
-  },
-  {
-    month: "April",
-    "Total Anggota": 162,
-    DPC: 45,
-    DPRT: 65,
-    Kader: 52,
-  },
-  {
-    month: "Mei",
-    "Total Anggota": 178,
-    DPC: 48,
-    DPRT: 72,
-    Kader: 58,
-  },
-  {
-    month: "Juni",
-    "Total Anggota": 195,
-    DPC: 52,
-    DPRT: 80,
-    Kader: 63,
-  },
-];
-
-const recentContentData = [
-  {
-    month: "Januari",
-    Berita: 12,
-    Galeri: 8,
-    Organisasi: 5,
-    Program: 10,
-  },
-  {
-    month: "Februari",
-    Berita: 15,
-    Galeri: 10,
-    Organisasi: 7,
-    Program: 12,
-  },
-  {
-    month: "Maret",
-    Berita: 18,
-    Galeri: 12,
-    Organisasi: 6,
-    Program: 15,
-  },
-  {
-    month: "April",
-    Berita: 20,
-    Galeri: 15,
-    Organisasi: 8,
-    Program: 18,
-  },
-  {
-    month: "Mei",
-    Berita: 22,
-    Galeri: 18,
-    Organisasi: 10,
-    Program: 20,
-  },
-  {
-    month: "Juni",
-    Berita: 25,
-    Galeri: 20,
-    Organisasi: 12,
-    Program: 22,
-  },
-];
 
 const tableColumns: DataTableColumn[] = [
   { key: "month", label: "Bulan", width: 120 },
@@ -196,7 +50,59 @@ const tableColumns: DataTableColumn[] = [
 ];
 
 export default function AdminDashboard() {
-  const [loading, setLoading] = useState(false);
+  // Queries
+  const kpisQuery = useQuery({
+    queryKey: ["dashboard", "overview"],
+    queryFn: async () => {
+      const res = await fetch("/api/dashboard/overview", {
+        credentials: "include",
+      });
+      if (!res.ok) throw new Error("Gagal memuat overview");
+      const json = await res.json();
+      return json.data as typeof FALLBACK_KPIS;
+    },
+    staleTime: 5 * 60 * 1000,
+    placeholderData: FALLBACK_KPIS,
+  });
+
+  const contentQuery = useQuery({
+    queryKey: ["dashboard", "content"],
+    queryFn: async () => {
+      const res = await fetch("/api/dashboard/content", {
+        credentials: "include",
+      });
+      if (!res.ok) throw new Error("Gagal memuat data konten");
+      const json = await res.json();
+      return json.data as {
+        programChartData: Array<Record<string, number | string>>;
+        recentContentData: Array<Record<string, number | string>>;
+      };
+    },
+    staleTime: 5 * 60 * 1000,
+    placeholderData: { programChartData: [], recentContentData: [] },
+  });
+
+  const membersQuery = useQuery({
+    queryKey: ["dashboard", "members"],
+    queryFn: async () => {
+      const res = await fetch("/api/dashboard/members", {
+        credentials: "include",
+      });
+      if (!res.ok) throw new Error("Gagal memuat data anggota");
+      const json = await res.json();
+      return json.data as Array<Record<string, number | string>>;
+    },
+    staleTime: 5 * 60 * 1000,
+    placeholderData: [],
+  });
+
+  const loading =
+    kpisQuery.isLoading || contentQuery.isLoading || membersQuery.isLoading;
+
+  const kpisData = kpisQuery.data ?? FALLBACK_KPIS;
+  const programChartData = contentQuery.data?.programChartData ?? [];
+  const recentContentData = contentQuery.data?.recentContentData ?? [];
+  const memberGrowthData = membersQuery.data ?? [];
 
   return (
     <AdminLayout>
@@ -234,8 +140,8 @@ export default function AdminDashboard() {
                 }}
               />
               <KPIStat
-                label="Views Bulanan"
-                value={kpisData.monthlyViews}
+                label="Total Program"
+                value={(kpisData as any).totalProgram ?? 0}
                 format={{ type: "number" }}
                 icon={Eye}
                 delta={{
@@ -280,17 +186,17 @@ export default function AdminDashboard() {
           ) : (
             <>
               <ChartCard
-                title="Konten per Kategori"
-                subtitle="Distribusi konten 6 bulan terakhir"
+                title="Program"
+                subtitle="Distribusi status program 6 bulan terakhir"
               >
                 <StackedBarChart
-                  data={monthlyContentData}
+                  data={programChartData}
                   dataKeyX="month"
                   stacks={[
-                    { key: "Berita", color: "#C3A46B" },
-                    { key: "Galeri", color: "#E7B7A5" },
-                    { key: "Organisasi", color: "#6EC4B3" },
-                    { key: "Program", color: "#B7B7F0" },
+                    { key: "pending", color: "#FBBF24" },
+                    { key: "ongoing", color: "#60A5FA" },
+                    { key: "planning", color: "#C5BAFF" },
+                    { key: "completed", color: "#34D399" },
                   ]}
                   height={260}
                   useNumber={true}
@@ -348,7 +254,7 @@ export default function AdminDashboard() {
 
         {/* Quick Actions Section */}
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4 mt-6">
-          <a
+          <Link
             href="/admin/news/create"
             className="group p-5 rounded-xl bg-card border border-border hover:border-brand-accent hover:shadow-md transition-all duration-200"
           >
@@ -361,9 +267,9 @@ export default function AdminDashboard() {
             <p className="text-sm text-text-secondary">
               Tambah artikel berita baru
             </p>
-          </a>
+          </Link>
 
-          <a
+          <Link
             href="/admin/gallery"
             className="group p-5 rounded-xl bg-card border border-border hover:border-brand-accent hover:shadow-md transition-all duration-200"
           >
@@ -374,9 +280,9 @@ export default function AdminDashboard() {
               <h3 className="font-semibold text-text-primary">Kelola Galeri</h3>
             </div>
             <p className="text-sm text-text-secondary">Upload foto dan video</p>
-          </a>
+          </Link>
 
-          <a
+          <Link
             href="/admin/organizations"
             className="group p-5 rounded-xl bg-card border border-border hover:border-brand-accent hover:shadow-md transition-all duration-200"
           >
@@ -389,9 +295,9 @@ export default function AdminDashboard() {
             <p className="text-sm text-text-secondary">
               Kelola struktur organisasi
             </p>
-          </a>
+          </Link>
 
-          <a
+          <Link
             href="/admin/statistik-pemilu"
             className="group p-5 rounded-xl bg-card border border-border hover:border-brand-accent hover:shadow-md transition-all duration-200"
           >
@@ -402,7 +308,7 @@ export default function AdminDashboard() {
               <h3 className="font-semibold text-text-primary">Statistik</h3>
             </div>
             <p className="text-sm text-text-secondary">Data analisis pemilu</p>
-          </a>
+          </Link>
         </div>
       </div>
     </AdminLayout>
