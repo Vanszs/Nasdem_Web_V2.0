@@ -41,11 +41,9 @@ export type MemberListItem = {
 };
 
 export interface MemberTableFilters {
-  name: string;
-  email: string;
+  search: string;
   status: string;
   gender: string;
-  address: string;
   take: number;
   skip: number;
 }
@@ -231,20 +229,8 @@ export function MembersTable({
 
   const activeFilters = React.useMemo(
     () =>
-      [
-        filters.name,
-        filters.email,
-        filters.status,
-        filters.gender,
-        filters.address,
-      ].filter(Boolean).length,
-    [
-      filters.address,
-      filters.email,
-      filters.gender,
-      filters.name,
-      filters.status,
-    ]
+      [filters.search, filters.status, filters.gender].filter(Boolean).length,
+    [filters.search, filters.status, filters.gender]
   );
 
   const currentPage = Math.floor(filters.skip / filters.take) + 1;
@@ -254,26 +240,14 @@ export function MembersTable({
     <div className="space-y-4">
       {/* Filters */}
       <div className="space-y-3">
-        <div className="grid gap-3 md:grid-cols-5">
+        <div className="grid gap-3 md:grid-cols-3">
           <Input
-            placeholder="Cari nama"
-            value={filters.name}
+            placeholder="Cari nama, email, atau alamat"
+            value={filters.search}
             onChange={(e) =>
               onFiltersChange((prev) => ({
                 ...prev,
-                name: e.target.value,
-                skip: 0,
-              }))
-            }
-            className="h-9 border-2 border-gray-300 focus:border-[#001B55] focus:ring-2 focus:ring-[#001B55]/20"
-          />
-          <Input
-            placeholder="Cari email"
-            value={filters.email}
-            onChange={(e) =>
-              onFiltersChange((prev) => ({
-                ...prev,
-                email: e.target.value,
+                search: e.target.value,
                 skip: 0,
               }))
             }
@@ -289,7 +263,7 @@ export function MembersTable({
               }))
             }
           >
-            <SelectTrigger className="h-9 border-2 border-gray-300 focus:border-[#001B55] focus:ring-2 focus:ring-[#001B55]/20">
+            <SelectTrigger className="h-9 w-full border-2 border-gray-300 focus:border-[#001B55] focus:ring-2 focus:ring-[#001B55]/20">
               <SelectValue placeholder="Status" />
             </SelectTrigger>
             <SelectContent>
@@ -309,7 +283,7 @@ export function MembersTable({
               }))
             }
           >
-            <SelectTrigger className="h-9 border-2 border-gray-300 focus:border-[#001B55] focus:ring-2 focus:ring-[#001B55]/20">
+            <SelectTrigger className="h-9 w-full border-2 border-gray-300 focus:border-[#001B55] focus:ring-2 focus:ring-[#001B55]/20">
               <SelectValue placeholder="Gender" />
             </SelectTrigger>
             <SelectContent>
@@ -318,18 +292,6 @@ export function MembersTable({
               <SelectItem value="female">Wanita</SelectItem>
             </SelectContent>
           </Select>
-          <Input
-            placeholder="Cari alamat"
-            value={filters.address}
-            onChange={(e) =>
-              onFiltersChange((prev) => ({
-                ...prev,
-                address: e.target.value,
-                skip: 0,
-              }))
-            }
-            className="h-9 border-2 border-gray-300 focus:border-[#001B55] focus:ring-2 focus:ring-[#001B55]/20"
-          />
         </div>
 
         {activeFilters > 0 && (
@@ -338,27 +300,17 @@ export function MembersTable({
               <Filter className="h-3 w-3" />
               Filter aktif:
             </span>
-            {filters.name && (
+            {filters.search && (
               <Badge variant="secondary" className="text-xs">
-                Nama: {filters.name}
+                Pencarian: {filters.search}
                 <button
                   type="button"
                   onClick={() =>
-                    onFiltersChange((prev) => ({ ...prev, name: "", skip: 0 }))
-                  }
-                  className="ml-1 hover:text-red-600"
-                >
-                  <X className="h-3 w-3" />
-                </button>
-              </Badge>
-            )}
-            {filters.email && (
-              <Badge variant="secondary" className="text-xs">
-                Email: {filters.email}
-                <button
-                  type="button"
-                  onClick={() =>
-                    onFiltersChange((prev) => ({ ...prev, email: "", skip: 0 }))
+                    onFiltersChange((prev) => ({
+                      ...prev,
+                      search: "",
+                      skip: 0,
+                    }))
                   }
                   className="ml-1 hover:text-red-600"
                 >
@@ -393,24 +345,6 @@ export function MembersTable({
                     onFiltersChange((prev) => ({
                       ...prev,
                       gender: "",
-                      skip: 0,
-                    }))
-                  }
-                  className="ml-1 hover:text-red-600"
-                >
-                  <X className="h-3 w-3" />
-                </button>
-              </Badge>
-            )}
-            {filters.address && (
-              <Badge variant="secondary" className="text-xs">
-                Alamat: {filters.address}
-                <button
-                  type="button"
-                  onClick={() =>
-                    onFiltersChange((prev) => ({
-                      ...prev,
-                      address: "",
                       skip: 0,
                     }))
                   }
