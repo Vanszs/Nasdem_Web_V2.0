@@ -94,8 +94,56 @@ export default function BergabungPage() {
     setIsSubmitting(true);
 
     try {
-      // Simulate API call
-      await new Promise(resolve => setTimeout(resolve, 2000));
+      // Prepare FormData for file upload if KTP exists
+      const submitData = new FormData();
+      
+      // Add all form fields
+      submitData.append("fullName", formData.fullName);
+      submitData.append("email", formData.email);
+      submitData.append("phone", formData.phone);
+      submitData.append("address", formData.address);
+      submitData.append("dateOfBirth", formData.dateOfBirth);
+      submitData.append("gender", formData.gender);
+      submitData.append("nik", formData.nik);
+      submitData.append("occupation", formData.occupation);
+      submitData.append("motivation", formData.notes || "");
+      submitData.append("applicationType", "REGULAR");
+      
+      // Add KTP file if exists
+      if (ktpFile) {
+        submitData.append("ktpPhoto", ktpFile);
+      }
+
+      // Add beneficiary info if applicable
+      if (formData.isBeneficiary && formData.beneficiaryProgramId) {
+        submitData.append("isBeneficiary", "true");
+        submitData.append("beneficiaryProgramId", formData.beneficiaryProgramId);
+      }
+
+      const response = await fetch("/api/membership-applications", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({
+          fullName: formData.fullName,
+          email: formData.email || undefined,
+          phone: formData.phone || undefined,
+          address: formData.address || undefined,
+          dateOfBirth: formData.dateOfBirth || undefined,
+          gender: formData.gender || undefined,
+          occupation: formData.occupation || undefined,
+          motivation: formData.notes || undefined,
+          applicationType: "REGULAR",
+        }),
+      });
+
+      const result = await response.json();
+
+      if (!response.ok || !result.success) {
+        throw new Error(result.error || "Gagal mengirim permohonan");
+      }
+
       setSuccess(true);
     } catch (err: any) {
       setError(err.message || "Terjadi kesalahan saat mendaftar");
