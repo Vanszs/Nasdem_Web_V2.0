@@ -97,17 +97,13 @@ const defaultAddValues: AddMemberFormValues = {
 export default function ManageOrganizationPage() {
   const queryClient = useQueryClient();
   const [filters, setFilters] = React.useState<MemberTableFilters>({
-    name: "",
-    email: "",
+    search: "",
     status: "",
     gender: "",
-    address: "",
     take: 10,
     skip: 0,
   });
-  const debouncedName = useDebounce(filters.name, 400);
-  const debouncedEmail = useDebounce(filters.email, 400);
-  const debouncedAddress = useDebounce(filters.address, 400);
+  const debouncedSearch = useDebounce(filters.search, 400);
   const [openAdd, setOpenAdd] = React.useState(false);
   const fileInputRef = React.useRef<HTMLInputElement>(null);
   const ktpFileInputRef = React.useRef<HTMLInputElement>(null);
@@ -167,9 +163,7 @@ export default function ManageOrganizationPage() {
   } = useMembers({
     page,
     pageSize,
-    name: debouncedName || undefined,
-    email: debouncedEmail || undefined,
-    address: debouncedAddress || undefined,
+    search: debouncedSearch || undefined,
     status: filters.status || undefined,
     gender: filters.gender || undefined,
   });

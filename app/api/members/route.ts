@@ -90,6 +90,7 @@ export async function GET(req: NextRequest) {
         OR: [
           { fullName: { contains: parsed.search, mode: "insensitive" } },
           { email: { contains: parsed.search, mode: "insensitive" } },
+          { address: { contains: parsed.search, mode: "insensitive" } },
           { phone: { contains: parsed.search, mode: "insensitive" } },
         ],
       });
