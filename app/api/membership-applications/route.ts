@@ -1,14 +1,9 @@
-
 import { NextRequest, NextResponse } from "next/server";
 import { db } from "@/lib/db";
 import { requireAuth, requireRole } from "@/lib/jwt-middleware";
 import { UserRole } from "@/lib/rbac";
 import { z } from "zod";
-import {
-  ApplicationType,
-  ApplicationStatus,
-  GenderEnum,
-} from "@prisma/client";
+import { ApplicationType, ApplicationStatus, GenderEnum } from "@prisma/client";
 import { uploadFile } from "@/lib/file-upload";
 
 const listApplicationsSchema = z.object({
@@ -35,7 +30,7 @@ const createApplicationSchema = z.object({
 });
 
 export async function GET(req: NextRequest) {
-  const authError = requireAuth(req);
+  const authError = await requireAuth(req);
   if (authError) return authError;
 
   const roleError = requireRole(req, [
@@ -89,7 +84,14 @@ export async function GET(req: NextRequest) {
 
     const where = andConditions.length ? { AND: andConditions } : {};
 
-    const [total, data] = await Promise.all([
+    const [
+      total,
+      data,
+      pendingCount,
+      reviewedCount,
+      approvedCount,
+      rejectedCount,
+    ] = await Promise.all([
       db.membershipApplication.count({ where }),
       db.membershipApplication.findMany({
         where,
@@ -101,6 +103,7 @@ export async function GET(req: NextRequest) {
           fullName: true,
           email: true,
           phone: true,
+          nik: true,
           address: true,
           dateOfBirth: true,
           gender: true,
@@ -112,6 +115,9 @@ export async function GET(req: NextRequest) {
           reviewedAt: true,
           notes: true,
           memberId: true,
+          isBeneficiary: true,
+          beneficiaryProgramId: true,
+          ktpPhotoUrl: true,
           member: {
             select: {
               id: true,
@@ -123,6 +129,18 @@ export async function GET(req: NextRequest) {
           },
         },
       }),
+      db.membershipApplication.count({
+        where: { ...(where as any), status: ApplicationStatus.pending },
+      }),
+      db.membershipApplication.count({
+        where: { ...(where as any), status: ApplicationStatus.reviewed },
+      }),
+      db.membershipApplication.count({
+        where: { ...(where as any), status: ApplicationStatus.approved },
+      }),
+      db.membershipApplication.count({
+        where: { ...(where as any), status: ApplicationStatus.rejected },
+      }),
     ]);
 
     return NextResponse.json({
@@ -133,6 +151,13 @@ export async function GET(req: NextRequest) {
         pageSize,
         total,
         totalPages: Math.ceil(total / pageSize),
+      },
+      summary: {
+        total,
+        pending: pendingCount,
+        reviewed: reviewedCount,
+        approved: approvedCount,
+        rejected: rejectedCount,
       },
     });
   } catch (err: any) {
@@ -154,14 +179,17 @@ export async function POST(req: NextRequest) {
     if (contentType.includes("multipart/form-data")) {
       // FormData with file upload
       const formData = await req.formData();
-      
+
       // Extract file if exists
       const ktpFile = formData.get("ktpPhoto") as File | null;
       if (ktpFile && ktpFile.size > 0) {
         const uploadResult = await uploadFile(ktpFile, "ktp");
         if (!uploadResult.success) {
           return NextResponse.json(
-            { success: false, error: uploadResult.error || "File upload failed" },
+            {
+              success: false,
+              error: uploadResult.error || "File upload failed",
+            },
             { status: 400 }
           );
         }
@@ -179,9 +207,10 @@ export async function POST(req: NextRequest) {
         gender: formData.get("gender") as string | null,
         occupation: formData.get("occupation") as string | null,
         motivation: formData.get("motivation") as string | null,
-        applicationType: formData.get("applicationType") as string || "REGULAR",
+        applicationType:
+          (formData.get("applicationType") as string) || "REGULAR",
         isBeneficiary: formData.get("isBeneficiary") === "true",
-        beneficiaryProgramId: formData.get("beneficiaryProgramId") 
+        beneficiaryProgramId: formData.get("beneficiaryProgramId")
           ? parseInt(formData.get("beneficiaryProgramId") as string)
           : undefined,
       };
@@ -213,7 +242,9 @@ export async function POST(req: NextRequest) {
         email: validData.email || undefined,
         phone: validData.phone || undefined,
         address: validData.address || undefined,
-        dateOfBirth: validData.dateOfBirth ? new Date(validData.dateOfBirth) : undefined,
+        dateOfBirth: validData.dateOfBirth
+          ? new Date(validData.dateOfBirth)
+          : undefined,
         gender: validData.gender ?? undefined,
         occupation: validData.occupation || undefined,
         motivation: validData.motivation || undefined,
@@ -237,7 +268,10 @@ export async function POST(req: NextRequest) {
       },
     });
 
-    return NextResponse.json({ success: true, data: application }, { status: 201 });
+    return NextResponse.json(
+      { success: true, data: application },
+      { status: 201 }
+    );
   } catch (err: any) {
     console.error("Error creating membership application:", err);
     return NextResponse.json(

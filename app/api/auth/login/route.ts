@@ -21,28 +21,37 @@ const loginSchema = z.object({
 export async function POST(req: NextRequest) {
   try {
     // Rate limiting for login attempts
-    const ip = req.headers.get("x-forwarded-for")?.split(",")[0]?.trim() ||
-               req.headers.get("x-real-ip") || "unknown";
-    
+    const ip =
+      req.headers.get("x-forwarded-for")?.split(",")[0]?.trim() ||
+      req.headers.get("x-real-ip") ||
+      "unknown";
+
     const rateLimitResult = rateLimit(`login:${ip}`, 5, 15 * 60 * 1000); // 5 attempts per 15 minutes
     if (rateLimitResult.limited) {
       return NextResponse.json(
-        { success: false, error: "Too many login attempts. Please try again later." },
+        {
+          success: false,
+          error: "Too many login attempts. Please try again later.",
+        },
         { status: 429 }
       );
     }
 
     const body = await req.json();
-    
+
     // Validate input
     const validation = loginSchema.safeParse(body);
     if (!validation.success) {
       return NextResponse.json(
-        { success: false, error: "Invalid input data", details: validation.error.errors },
+        {
+          success: false,
+          error: "Invalid input data",
+          details: validation.error.errors,
+        },
         { status: 400 }
       );
     }
-    
+
     const { email, password } = validation.data;
 
     const user = await db.user.findUnique({
@@ -53,9 +62,11 @@ export async function POST(req: NextRequest) {
         password: true,
         role: true,
         username: true,
-      }
+      },
     });
-    
+
+    console.log(user);
+
     if (!user) {
       // Generic error message to prevent user enumeration
       return NextResponse.json(
@@ -78,7 +89,7 @@ export async function POST(req: NextRequest) {
         userId: user.id,
         role: user.role,
         email: user.email,
-        username: user.username
+        username: user.username,
       },
       JWT_SECRET!,
       {
@@ -96,10 +107,10 @@ export async function POST(req: NextRequest) {
           email: user.email,
           role: user.role as UserRole,
           username: user.username,
-        }
-      }
+        },
+      },
     });
-    
+
     response.cookies.set("token", token, {
       httpOnly: true,
       path: "/",

@@ -40,7 +40,6 @@ import {
 } from "lucide-react";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { toast } from "sonner";
-import Image from "next/image";
 
 export default function PipPage() {
   const [search, setSearch] = useState("");
@@ -57,7 +56,7 @@ export default function PipPage() {
     queryFn: async () => {
       const params = new URLSearchParams();
       if (status !== "all") params.append("status", status);
-      
+
       const res = await fetch(`/api/registrations/pip?${params}`, {
         credentials: "include",
       });
@@ -67,7 +66,7 @@ export default function PipPage() {
   });
 
   const pipApplications = data?.data || [];
-  
+
   // Filter applications based on search
   const filteredApplications = pipApplications.filter((app: any) => {
     if (!search) return true;
@@ -81,14 +80,28 @@ export default function PipPage() {
   });
 
   const total = filteredApplications.length;
-  const pending = filteredApplications.filter((app: any) => app.status === "pending").length;
-  const verified = filteredApplications.filter((app: any) => app.status === "verified").length;
-  const rejected = filteredApplications.filter((app: any) => app.status === "rejected").length;
-  const accepted = filteredApplications.filter((app: any) => app.status === "accepted").length;
+  const pending = filteredApplications.filter(
+    (app: any) => app.status === "pending"
+  ).length;
+  const verified = filteredApplications.filter(
+    (app: any) => app.status === "verified"
+  ).length;
+  const rejected = filteredApplications.filter(
+    (app: any) => app.status === "rejected"
+  ).length;
+  const accepted = filteredApplications.filter(
+    (app: any) => app.status === "accepted"
+  ).length;
 
   // Status update mutation
   const updateStatusMutation = useMutation({
-    mutationFn: async ({ id, newStatus }: { id: number; newStatus: string }) => {
+    mutationFn: async ({
+      id,
+      newStatus,
+    }: {
+      id: number;
+      newStatus: string;
+    }) => {
       const res = await fetch(`/api/registrations/pip/${id}`, {
         method: "PATCH",
         headers: { "Content-Type": "application/json" },
@@ -178,7 +191,9 @@ export default function PipPage() {
   };
 
   return (
-    <AdminLayout breadcrumbs={[{ label: "Pending Request" }, { label: "PIP (Beasiswa)" }]}>
+    <AdminLayout
+      breadcrumbs={[{ label: "Pending Request" }, { label: "PIP (Beasiswa)" }]}
+    >
       <div className="space-y-8">
         {/* KPI Cards */}
         <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
@@ -298,7 +313,13 @@ export default function PipPage() {
 
             {/* Applications Table */}
             <div className="rounded-xl bg-card shadow-sm border border-border overflow-hidden">
-              <div className="overflow-x-auto" style={{ scrollbarWidth: 'thin', scrollbarColor: '#C5BAFF #f0f0f0' }}>
+              <div
+                className="overflow-x-auto"
+                style={{
+                  scrollbarWidth: "thin",
+                  scrollbarColor: "#C5BAFF #f0f0f0",
+                }}
+              >
                 <table className="w-full">
                   <thead className="bg-gray-200 border-b border-border sticky top-0 z-10">
                     <tr>
@@ -361,88 +382,104 @@ export default function PipPage() {
                         </td>
                       </tr>
                     ) : (
-                      filteredApplications.map((application: any, index: number) => (
-                        <tr
-                          key={application.id}
-                          className="hover:bg-muted/50 transition-colors"
-                        >
-                          <td className="px-4 py-3">
-                            <div className="flex items-center gap-2">
-                              <div className="w-2 h-2 bg-[#C5BAFF] rounded-full flex-shrink-0" />
-                              <span className="text-sm font-semibold text-text-primary whitespace-nowrap">
-                                {application.fullName}
+                      filteredApplications.map(
+                        (application: any, index: number) => (
+                          <tr
+                            key={application.id}
+                            className="hover:bg-muted/50 transition-colors"
+                          >
+                            <td className="px-4 py-3">
+                              <div className="flex items-center gap-2">
+                                <div className="w-2 h-2 bg-[#C5BAFF] rounded-full flex-shrink-0" />
+                                <span className="text-sm font-semibold text-text-primary whitespace-nowrap">
+                                  {application.fullName}
+                                </span>
+                              </div>
+                            </td>
+                            <td className="px-4 py-3 text-sm text-text-secondary font-medium whitespace-nowrap">
+                              {application.nik}
+                            </td>
+                            <td className="px-4 py-3">
+                              <div className="space-y-0.5 text-xs">
+                                <div className="flex items-center gap-1.5 text-text-secondary whitespace-nowrap">
+                                  <Mail className="w-3 h-3" />
+                                  <span className="truncate max-w-[180px]">
+                                    {application.email || "-"}
+                                  </span>
+                                </div>
+                                <div className="flex items-center gap-1.5 text-text-secondary whitespace-nowrap">
+                                  <Phone className="w-3 h-3" />
+                                  {application.phone || "-"}
+                                </div>
+                              </div>
+                            </td>
+                            <td className="px-4 py-3 text-sm text-text-secondary whitespace-nowrap">
+                              {application.dateOfBirth
+                                ? new Date(
+                                    application.dateOfBirth
+                                  ).toLocaleDateString("id-ID", {
+                                    day: "numeric",
+                                    month: "short",
+                                    year: "numeric",
+                                  })
+                                : "-"}
+                            </td>
+                            <td className="px-4 py-3 text-sm text-text-secondary whitespace-nowrap">
+                              {application.gender === "male"
+                                ? "Laki-laki"
+                                : application.gender === "female"
+                                ? "Perempuan"
+                                : "-"}
+                            </td>
+                            <td className="px-4 py-3 text-sm text-text-secondary whitespace-nowrap">
+                              {application.occupation || "-"}
+                            </td>
+                            <td className="px-4 py-3 text-sm text-text-secondary text-center whitespace-nowrap">
+                              {application.familyMemberCount || "-"}
+                            </td>
+                            <td className="px-4 py-3 text-sm text-text-secondary whitespace-nowrap">
+                              <span className="font-medium text-text-primary">
+                                {application.proposerName || "-"}
                               </span>
-                            </div>
-                          </td>
-                          <td className="px-4 py-3 text-sm text-text-secondary font-medium whitespace-nowrap">
-                            {application.nik}
-                          </td>
-                          <td className="px-4 py-3">
-                            <div className="space-y-0.5 text-xs">
-                              <div className="flex items-center gap-1.5 text-text-secondary whitespace-nowrap">
-                                <Mail className="w-3 h-3" />
-                                <span className="truncate max-w-[180px]">{application.email || "-"}</span>
-                              </div>
-                              <div className="flex items-center gap-1.5 text-text-secondary whitespace-nowrap">
-                                <Phone className="w-3 h-3" />
-                                {application.phone || "-"}
-                              </div>
-                            </div>
-                          </td>
-                          <td className="px-4 py-3 text-sm text-text-secondary whitespace-nowrap">
-                            {application.dateOfBirth ? new Date(application.dateOfBirth).toLocaleDateString("id-ID", {
-                              day: "numeric",
-                              month: "short",
-                              year: "numeric",
-                            }) : "-"}
-                          </td>
-                          <td className="px-4 py-3 text-sm text-text-secondary whitespace-nowrap">
-                            {application.gender === "male" ? "Laki-laki" : application.gender === "female" ? "Perempuan" : "-"}
-                          </td>
-                          <td className="px-4 py-3 text-sm text-text-secondary whitespace-nowrap">
-                            {application.occupation || "-"}
-                          </td>
-                          <td className="px-4 py-3 text-sm text-text-secondary text-center whitespace-nowrap">
-                            {application.familyMemberCount || "-"}
-                          </td>
-                          <td className="px-4 py-3 text-sm text-text-secondary whitespace-nowrap">
-                            <span className="font-medium text-text-primary">
-                              {application.proposerName || "-"}
-                            </span>
-                          </td>
-                          <td className="px-4 py-3 text-sm text-text-secondary max-w-[200px]">
-                            <span className="truncate block">{application.fullAddress || "-"}</span>
-                          </td>
-                          <td className="px-4 py-3 text-sm text-text-secondary whitespace-nowrap">
-                            <span className="font-medium text-text-primary">
-                              {application.program?.name || "-"}
-                            </span>
-                          </td>
-                          <td className="px-4 py-3 whitespace-nowrap">
-                            {getStatusBadge(application.status)}
-                          </td>
-                          <td className="px-4 py-3 text-sm text-text-secondary whitespace-nowrap">
-                            {new Date(application.submittedAt).toLocaleDateString("id-ID", {
-                              day: "numeric",
-                              month: "short",
-                              year: "numeric",
-                            })}
-                          </td>
-                          <td className="px-4 py-3 text-right sticky right-0 bg-card z-10 shadow-[-2px_0_4px_rgba(0,0,0,0.02)]">
-                            <Button
-                              size="sm"
-                              variant="outline"
-                              onClick={() => {
-                                setSelectedApplication(application);
-                                setShowDetail(true);
-                              }}
-                              className="text-xs h-8 rounded-lg border-border hover:bg-muted hover:border-brand-primary text-brand-primary transition-all"
-                            >
-                              Detail
-                            </Button>
-                          </td>
-                        </tr>
-                      ))
+                            </td>
+                            <td className="px-4 py-3 text-sm text-text-secondary max-w-[200px]">
+                              <span className="truncate block">
+                                {application.fullAddress || "-"}
+                              </span>
+                            </td>
+                            <td className="px-4 py-3 text-sm text-text-secondary whitespace-nowrap">
+                              <span className="font-medium text-text-primary">
+                                {application.program?.name || "-"}
+                              </span>
+                            </td>
+                            <td className="px-4 py-3 whitespace-nowrap">
+                              {getStatusBadge(application.status)}
+                            </td>
+                            <td className="px-4 py-3 text-sm text-text-secondary whitespace-nowrap">
+                              {new Date(
+                                application.submittedAt
+                              ).toLocaleDateString("id-ID", {
+                                day: "numeric",
+                                month: "short",
+                                year: "numeric",
+                              })}
+                            </td>
+                            <td className="px-4 py-3 text-right sticky right-0 bg-card z-10 shadow-[-2px_0_4px_rgba(0,0,0,0.02)]">
+                              <Button
+                                size="sm"
+                                variant="outline"
+                                onClick={() => {
+                                  setSelectedApplication(application);
+                                  setShowDetail(true);
+                                }}
+                                className="text-xs h-8 rounded-lg border-border hover:bg-muted hover:border-brand-primary text-brand-primary transition-all"
+                              >
+                                Detail
+                              </Button>
+                            </td>
+                          </tr>
+                        )
+                      )
                     )}
                   </tbody>
                 </table>
@@ -499,8 +536,8 @@ export default function PipPage() {
                       <Label className="text-xs text-gray-500 uppercase tracking-wide font-semibold mb-2">
                         Ubah Status
                       </Label>
-                      <Select 
-                        value={newStatus} 
+                      <Select
+                        value={newStatus}
                         onValueChange={setNewStatus}
                         disabled={isUpdatingStatus}
                       >
@@ -554,7 +591,9 @@ export default function PipPage() {
 
                   {/* Registration Date */}
                   <div className="mt-4 pt-4 border-t border-gray-200/70">
-                    <span className="text-xs text-gray-500 uppercase tracking-wide font-semibold">Tanggal Pendaftaran</span>
+                    <span className="text-xs text-gray-500 uppercase tracking-wide font-semibold">
+                      Tanggal Pendaftaran
+                    </span>
                     <div className="text-sm font-bold text-[#001B55] mt-1.5">
                       {formatDate(selectedApplication.submittedAt)}
                     </div>
@@ -571,31 +610,47 @@ export default function PipPage() {
                   </div>
                   <div className="p-5">
                     <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                    <div className="space-y-1">
-                      <Label className="text-[10px] text-gray-500 uppercase tracking-wider font-bold">Nama Lengkap</Label>
-                      <p className="text-sm font-semibold text-gray-900 mt-1.5">{selectedApplication.fullName}</p>
+                      <div className="space-y-1">
+                        <Label className="text-[10px] text-gray-500 uppercase tracking-wider font-bold">
+                          Nama Lengkap
+                        </Label>
+                        <p className="text-sm font-semibold text-gray-900 mt-1.5">
+                          {selectedApplication.fullName}
+                        </p>
+                      </div>
+                      <div className="space-y-1">
+                        <Label className="text-[10px] text-gray-500 uppercase tracking-wider font-bold">
+                          NIK
+                        </Label>
+                        <p className="text-sm font-semibold text-gray-900 mt-1.5">
+                          {selectedApplication.nik}
+                        </p>
+                      </div>
+                      <div className="space-y-1">
+                        <Label className="text-[10px] text-gray-500 uppercase tracking-wider font-bold">
+                          Tanggal Lahir
+                        </Label>
+                        <p className="text-sm font-medium text-gray-700 mt-1.5">
+                          {new Date(
+                            selectedApplication.dateOfBirth
+                          ).toLocaleDateString("id-ID", {
+                            day: "numeric",
+                            month: "long",
+                            year: "numeric",
+                          })}
+                        </p>
+                      </div>
+                      <div className="space-y-1">
+                        <Label className="text-[10px] text-gray-500 uppercase tracking-wider font-bold">
+                          Jenis Kelamin
+                        </Label>
+                        <p className="text-sm font-medium text-gray-700 mt-1.5">
+                          {selectedApplication.gender === "male"
+                            ? "Laki-laki"
+                            : "Perempuan"}
+                        </p>
+                      </div>
                     </div>
-                    <div className="space-y-1">
-                      <Label className="text-[10px] text-gray-500 uppercase tracking-wider font-bold">NIK</Label>
-                      <p className="text-sm font-semibold text-gray-900 mt-1.5">{selectedApplication.nik}</p>
-                    </div>
-                    <div className="space-y-1">
-                      <Label className="text-[10px] text-gray-500 uppercase tracking-wider font-bold">Tanggal Lahir</Label>
-                      <p className="text-sm font-medium text-gray-700 mt-1.5">
-                        {new Date(selectedApplication.dateOfBirth).toLocaleDateString("id-ID", {
-                          day: "numeric",
-                          month: "long",
-                          year: "numeric",
-                        })}
-                      </p>
-                    </div>
-                    <div className="space-y-1">
-                      <Label className="text-[10px] text-gray-500 uppercase tracking-wider font-bold">Jenis Kelamin</Label>
-                      <p className="text-sm font-medium text-gray-700 mt-1.5">
-                        {selectedApplication.gender === "male" ? "Laki-laki" : "Perempuan"}
-                      </p>
-                    </div>
-                  </div>
                   </div>
                 </div>
 
@@ -610,21 +665,27 @@ export default function PipPage() {
                   <div className="p-5">
                     <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                       <div className="space-y-1">
-                        <Label className="text-[10px] text-gray-500 uppercase tracking-wider font-bold">Email</Label>
+                        <Label className="text-[10px] text-gray-500 uppercase tracking-wider font-bold">
+                          Email
+                        </Label>
                         <p className="text-sm font-medium text-gray-700 mt-1.5 flex items-center gap-2">
                           <Mail className="w-4 h-4 text-brand-accent" />
                           {selectedApplication.email}
                         </p>
                       </div>
                       <div className="space-y-1">
-                        <Label className="text-[10px] text-gray-500 uppercase tracking-wider font-bold">Telepon</Label>
+                        <Label className="text-[10px] text-gray-500 uppercase tracking-wider font-bold">
+                          Telepon
+                        </Label>
                         <p className="text-sm font-medium text-gray-700 mt-1.5 flex items-center gap-2">
                           <Phone className="w-4 h-4 text-brand-accent" />
                           {selectedApplication.phone}
                         </p>
                       </div>
                       <div className="space-y-1 md:col-span-2">
-                        <Label className="text-[10px] text-gray-500 uppercase tracking-wider font-bold">Alamat Lengkap</Label>
+                        <Label className="text-[10px] text-gray-500 uppercase tracking-wider font-bold">
+                          Alamat Lengkap
+                        </Label>
                         <p className="text-sm font-medium text-gray-700 mt-1.5 flex items-start gap-2 leading-relaxed">
                           <MapPin className="w-4 h-4 text-brand-accent mt-0.5" />
                           {selectedApplication.fullAddress}
@@ -645,16 +706,28 @@ export default function PipPage() {
                   <div className="p-5">
                     <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                       <div className="space-y-1">
-                        <Label className="text-[10px] text-gray-500 uppercase tracking-wider font-bold">Pekerjaan</Label>
-                        <p className="text-sm font-semibold text-gray-900 mt-1.5">{selectedApplication.occupation || "-"}</p>
+                        <Label className="text-[10px] text-gray-500 uppercase tracking-wider font-bold">
+                          Pekerjaan
+                        </Label>
+                        <p className="text-sm font-semibold text-gray-900 mt-1.5">
+                          {selectedApplication.occupation || "-"}
+                        </p>
                       </div>
                       <div className="space-y-1">
-                        <Label className="text-[10px] text-gray-500 uppercase tracking-wider font-bold">Jumlah Anggota Keluarga</Label>
-                        <p className="text-sm font-medium text-gray-700 mt-1.5">{selectedApplication.familyMemberCount || "-"}</p>
+                        <Label className="text-[10px] text-gray-500 uppercase tracking-wider font-bold">
+                          Jumlah Anggota Keluarga
+                        </Label>
+                        <p className="text-sm font-medium text-gray-700 mt-1.5">
+                          {selectedApplication.familyMemberCount || "-"}
+                        </p>
                       </div>
                       <div className="space-y-1 md:col-span-2">
-                        <Label className="text-[10px] text-gray-500 uppercase tracking-wider font-bold">Nama Pengusul</Label>
-                        <p className="text-sm font-semibold text-gray-900 mt-1.5">{selectedApplication.proposerName || "-"}</p>
+                        <Label className="text-[10px] text-gray-500 uppercase tracking-wider font-bold">
+                          Nama Pengusul
+                        </Label>
+                        <p className="text-sm font-semibold text-gray-900 mt-1.5">
+                          {selectedApplication.proposerName || "-"}
+                        </p>
                       </div>
                     </div>
                   </div>
@@ -672,7 +745,9 @@ export default function PipPage() {
                     <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                       {/* KTP Photo */}
                       <div className="space-y-2">
-                        <Label className="text-[10px] text-gray-500 uppercase tracking-wider font-bold">Foto KTP</Label>
+                        <Label className="text-[10px] text-gray-500 uppercase tracking-wider font-bold">
+                          Foto KTP
+                        </Label>
                         {selectedApplication.ktpPhotoUrl ? (
                           <div className="relative group">
                             <img
@@ -691,14 +766,18 @@ export default function PipPage() {
                           </div>
                         ) : (
                           <div className="w-full h-48 bg-gray-100 rounded-lg border-2 border-dashed border-gray-300 flex items-center justify-center">
-                            <p className="text-gray-400 text-sm">Tidak ada foto</p>
+                            <p className="text-gray-400 text-sm">
+                              Tidak ada foto
+                            </p>
                           </div>
                         )}
                       </div>
 
                       {/* KK Photo */}
                       <div className="space-y-2">
-                        <Label className="text-[10px] text-gray-500 uppercase tracking-wider font-bold">Foto Kartu Keluarga</Label>
+                        <Label className="text-[10px] text-gray-500 uppercase tracking-wider font-bold">
+                          Foto Kartu Keluarga
+                        </Label>
                         {selectedApplication.kkPhotoUrl ? (
                           <div className="relative group">
                             <img
@@ -717,7 +796,9 @@ export default function PipPage() {
                           </div>
                         ) : (
                           <div className="w-full h-48 bg-gray-100 rounded-lg border-2 border-dashed border-gray-300 flex items-center justify-center">
-                            <p className="text-gray-400 text-sm">Tidak ada foto</p>
+                            <p className="text-gray-400 text-sm">
+                              Tidak ada foto
+                            </p>
                           </div>
                         )}
                       </div>
@@ -735,8 +816,12 @@ export default function PipPage() {
                   </div>
                   <div className="p-5">
                     <div className="space-y-1">
-                      <Label className="text-[10px] text-gray-500 uppercase tracking-wider font-bold">Nama Program</Label>
-                      <p className="text-sm font-semibold text-gray-900 mt-1.5">{selectedApplication.program?.name || "-"}</p>
+                      <Label className="text-[10px] text-gray-500 uppercase tracking-wider font-bold">
+                        Nama Program
+                      </Label>
+                      <p className="text-sm font-semibold text-gray-900 mt-1.5">
+                        {selectedApplication.program?.name || "-"}
+                      </p>
                     </div>
                   </div>
                 </div>
@@ -770,14 +855,17 @@ export default function PipPage() {
                         <CheckCircle className="w-4 h-4 mr-2" />
                         Verifikasi
                       </Button>
-                      <Button variant="outline" className="flex-1 min-w-[120px] rounded-lg border-red-200 text-red-600 hover:bg-red-50 hover:border-red-300 transition-all">
+                      <Button
+                        variant="outline"
+                        className="flex-1 min-w-[120px] rounded-lg border-red-200 text-red-600 hover:bg-red-50 hover:border-red-300 transition-all"
+                      >
                         <AlertCircle className="w-4 h-4 mr-2" />
                         Tolak
                       </Button>
                     </>
                   )}
-                  <Button 
-                    variant="outline" 
+                  <Button
+                    variant="outline"
                     onClick={() => setShowDetail(false)}
                     className="flex-1 min-w-[120px] rounded-lg border-gray-300 hover:bg-gray-50 hover:border-gray-400 transition-all"
                   >

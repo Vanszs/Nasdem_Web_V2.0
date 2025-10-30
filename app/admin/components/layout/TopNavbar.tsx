@@ -147,7 +147,10 @@ export function TopNavbar({
               >
                 <div className="flex items-center gap-3">
                   <Avatar className="h-8 w-8 ring-2 ring-offset-2 ring-offset-white ring-primary/30 group-hover:ring-primary/50 transition-all duration-300 shadow-sm">
-                    <AvatarImage src="/placeholder-avatar.jpg" alt={user?.username || "Admin"} />
+                    <AvatarImage
+                      src="/placeholder-user.jpg"
+                      alt={user?.username || "Admin"}
+                    />
                     <AvatarFallback className="bg-gradient-to-br from-primary to-primary/80 text-white text-sm font-semibold">
                       {user ? getInitials(user.username) : "AD"}
                     </AvatarFallback>
@@ -171,7 +174,10 @@ export function TopNavbar({
               <DropdownMenuLabel className="px-4 py-3 border-b border-gray-100">
                 <div className="flex items-center gap-3">
                   <Avatar className="h-10 w-10">
-                    <AvatarImage src="/placeholder-avatar.jpg" alt={user?.username || "Admin"} />
+                    <AvatarImage
+                      src="/placeholder-user.jpg"
+                      alt={user?.username || "Admin"}
+                    />
                     <AvatarFallback className="bg-gradient-to-br from-primary to-primary/80 text-white font-semibold">
                       {user ? getInitials(user.username) : "AD"}
                     </AvatarFallback>

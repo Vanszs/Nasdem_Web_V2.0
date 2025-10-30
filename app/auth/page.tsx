@@ -26,6 +26,7 @@ export default function LoginPage() {
   const [showPassword, setShowPassword] = React.useState(false);
   const [serverError, setServerError] = React.useState("");
   const loginMut = useLogin();
+  const isBusy = loginMut.isPending || loginMut.isSuccess; // Disable interactions during login and after success
 
   const form = useForm<LoginInput>({
     resolver: zodResolver(loginSchema),
@@ -36,14 +37,18 @@ export default function LoginPage() {
   const onSubmit = (values: LoginInput) => {
     setServerError("");
     loginMut.mutate(values, {
-      onSuccess: () => {
-        router.replace("/admin");
-      },
       onError: (err: any) => {
         setServerError(err.message || "Login gagal");
       },
     });
   };
+
+  // Immediate redirect as soon as login succeeds, avoiding any lingering on the auth page
+  React.useEffect(() => {
+    if (loginMut.isSuccess) {
+      router.replace("/admin");
+    }
+  }, [loginMut.isSuccess, router]);
 
   return (
     <div className="min-h-screen flex items-center justify-center relative overflow-hidden bg-gradient-to-br from-[#001B55] via-[#002266] to-[#001B55]">
@@ -189,6 +194,7 @@ export default function LoginPage() {
                       autoComplete="email"
                       placeholder="admin@nasdem.local"
                       {...form.register("email")}
+                      disabled={isBusy}
                       className={cn(
                         "pl-12 h-14 bg-gray-50 border-2 border-gray-200 rounded-xl focus:border-[#FF9C04] focus:ring-4 focus:ring-[#FF9C04]/10 transition-all duration-200 placeholder:text-gray-400",
                         form.formState.errors.email &&
@@ -219,6 +225,7 @@ export default function LoginPage() {
                       autoComplete="current-password"
                       placeholder="••••••••••"
                       {...form.register("password")}
+                      disabled={isBusy}
                       className={cn(
                         "pl-12 pr-12 h-14 bg-gray-50 border-2 border-gray-200 rounded-xl focus:border-[#FF9C04] focus:ring-4 focus:ring-[#FF9C04]/10 transition-all duration-200 placeholder:text-gray-400",
                         form.formState.errors.password &&
@@ -227,8 +234,15 @@ export default function LoginPage() {
                     />
                     <button
                       type="button"
-                      onClick={() => setShowPassword(!showPassword)}
-                      className="absolute right-4 top-1/2 -translate-y-1/2 text-gray-400 hover:text-[#001B55] transition-colors"
+                      onClick={() => {
+                        if (!isBusy) setShowPassword((s) => !s);
+                      }}
+                      disabled={isBusy}
+                      className={cn(
+                        "absolute right-4 top-1/2 -translate-y-1/2 text-gray-400 transition-colors",
+                        !isBusy && "hover:text-[#001B55]",
+                        isBusy && "cursor-not-allowed opacity-50"
+                      )}
                     >
                       {showPassword ? (
                         <EyeOff className="w-5 h-5" />
@@ -249,6 +263,7 @@ export default function LoginPage() {
                   <label className="flex items-center gap-2 cursor-pointer group">
                     <input
                       type="checkbox"
+                      disabled={isBusy}
                       className="w-4 h-4 rounded border-2 border-gray-300 text-[#FF9C04] focus:ring-2 focus:ring-[#FF9C04]/20"
                     />
                     <span className="text-gray-600 group-hover:text-[#001B55] transition-colors">
@@ -257,7 +272,13 @@ export default function LoginPage() {
                   </label>
                   <a
                     href="#"
-                    className="text-[#FF9C04] hover:text-[#001B55] font-medium transition-colors"
+                    aria-disabled={isBusy}
+                    className={cn(
+                      "text-[#FF9C04] font-medium transition-colors",
+                      isBusy
+                        ? "pointer-events-none opacity-60"
+                        : "hover:text-[#001B55]"
+                    )}
                   >
                     Forgot password?
                   </a>
@@ -266,13 +287,17 @@ export default function LoginPage() {
                 {/* Submit Button */}
                 <Button
                   type="submit"
-                  disabled={loginMut.isPending}
+                  disabled={isBusy}
                   className="w-full h-14 bg-gradient-to-r from-[#FF9C04] to-[#FF9C04]/90 hover:from-[#001B55] hover:to-[#002266] text-white font-semibold rounded-xl shadow-lg shadow-[#FF9C04]/30 hover:shadow-xl hover:shadow-[#001B55]/40 transition-all duration-300 disabled:opacity-50 disabled:cursor-not-allowed group"
                 >
-                  {loginMut.isPending ? (
+                  {isBusy ? (
                     <div className="flex items-center gap-2">
                       <div className="w-5 h-5 border-2 border-white/30 border-t-white rounded-full animate-spin"></div>
-                      <span>Signing in...</span>
+                      <span>
+                        {loginMut.isSuccess
+                          ? "Redirecting..."
+                          : "Signing in..."}
+                      </span>
                     </div>
                   ) : (
                     <div className="flex items-center gap-2">
