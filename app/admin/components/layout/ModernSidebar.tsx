@@ -7,7 +7,6 @@ import {
   LayoutDashboard,
   FileText,
   Image as ImageIcon,
-  Users,
   Plus,
   BarChart3,
   ChevronRight,
@@ -27,6 +26,7 @@ import {
 
 import { SafeNavLink } from "./SafeNavLink";
 import { UserRole } from "@/lib/rbac";
+import { useAuthStore } from "@/store/auth";
 
 // Define all menu items with their required roles
 const allMenuItems = [
@@ -163,57 +163,35 @@ export function ModernSidebar({
 }: ModernSidebarProps) {
   const currentPath = usePathname() || "/";
   const sidebarRef = useRef<HTMLElement>(null);
-  const [userRole, setUserRole] = useState<UserRole | null>(null);
+  const storeUserRole = useAuthStore(
+    (s) => s.user?.role as UserRole | undefined
+  );
+  const [userRole, setUserRole] = useState<UserRole | null>(
+    storeUserRole || null
+  );
   const [menuItems, setMenuItems] = useState<typeof allMenuItems>(allMenuItems);
   const [isLoading, setIsLoading] = useState(true);
 
-  // Fetch user data and filter menu items based on role
+  // Use hydrated user role from auth store (SSR) and filter menu items
   useEffect(() => {
-    const fetchUserData = async () => {
-      try {
-        const response = await fetch("/api/auth/me", {
-          method: "GET",
-          credentials: "include",
-        });
+    if (!storeUserRole) return;
+    setUserRole(storeUserRole);
 
-        if (response.ok) {
-          const data = await response.json();
-          if (data.success) {
-            const role = data.data.role as UserRole;
-            setUserRole(role);
-            
-            // Filter menu items based on user role
-            const filteredItems = allMenuItems.filter(item => {
-              if (!item.requiredRoles.includes(role)) {
-                return false;
-              }
-              return true;
-            }).map(item => {
-              // Create a deep copy of the item with filtered sub-items
-              const newItem = { ...item };
-              if (newItem.subItems) {
-                newItem.subItems = newItem.subItems.filter(subItem =>
-                  subItem.requiredRoles.includes(role)
-                );
-              }
-              return newItem;
-            });
-            
-            setMenuItems(filteredItems);
-            setIsLoading(false);
-          }
-        } else {
-          // If not authenticated, redirect to login
-          window.location.href = "/";
+    const filteredItems = allMenuItems
+      .filter((item) => item.requiredRoles.includes(storeUserRole))
+      .map((item) => {
+        const newItem = { ...item } as any;
+        if (newItem.subItems) {
+          newItem.subItems = newItem.subItems.filter((subItem: any) =>
+            subItem.requiredRoles.includes(storeUserRole)
+          );
         }
-      } catch (error) {
-        console.error("Failed to fetch user data:", error);
-        window.location.href = "/";
-      }
-    };
+        return newItem;
+      });
 
-    fetchUserData();
-  }, []);
+    setMenuItems(filteredItems as any);
+    setIsLoading(false);
+  }, [storeUserRole]);
 
   const getInitialOpenGroups = () => {
     const groups: string[] = [];
@@ -373,143 +351,145 @@ export function ModernSidebar({
             </div>
           ) : (
             menuItems.map((item: any) => (
-            <div
-              key={item.title}
-              className="relative group/item"
-              role="listitem"
-            >
-              {item.isCollapsible ? (
-                <div className="relative">
-                  <button
-                    onClick={() => !isCollapsed && toggleGroup(item.title)}
-                    className={`w-full group relative flex items-center ${
-                      isCollapsed ? "justify-center px-0" : "gap-3 px-3"
-                    } py-2.5 rounded-lg font-medium transition-all duration-200 focus:outline-none focus:ring-2 focus:ring-[#001B55]/30 focus:ring-offset-1 ${
-                      isGroupActive(item.subItems)
-                        ? "bg-gray-200 text-[#001B55] shadow-sm"
-                        : "text-gray-600 hover:bg-gray-50 hover:text-[#001B55]"
-                    }`}
-                    aria-label={item.ariaLabel}
-                    aria-expanded={openGroups.includes(item.title)}
-                  >
-                    <div
-                      className={`relative z-10 flex items-center ${
-                        isCollapsed ? "" : "gap-3 w-full"
+              <div
+                key={item.title}
+                className="relative group/item"
+                role="listitem"
+              >
+                {item.isCollapsible ? (
+                  <div className="relative">
+                    <button
+                      onClick={() => !isCollapsed && toggleGroup(item.title)}
+                      className={`w-full group relative flex items-center ${
+                        isCollapsed ? "justify-center px-0" : "gap-3 px-3"
+                      } py-2.5 rounded-lg font-medium transition-all duration-200 focus:outline-none focus:ring-2 focus:ring-[#001B55]/30 focus:ring-offset-1 ${
+                        isGroupActive(item.subItems)
+                          ? "bg-gray-200 text-[#001B55] shadow-sm"
+                          : "text-gray-600 hover:bg-gray-50 hover:text-[#001B55]"
                       }`}
+                      aria-label={item.ariaLabel}
+                      aria-expanded={openGroups.includes(item.title)}
                     >
-                      <item.icon
-                        className={`h-5 w-5 flex-shrink-0 transition-colors ${
-                          isGroupActive(item.subItems) ? "text-[#001B55]" : ""
+                      <div
+                        className={`relative z-10 flex items-center ${
+                          isCollapsed ? "" : "gap-3 w-full"
                         }`}
-                        aria-hidden="true"
-                      />
-                      {!isCollapsed && (
-                        <>
-                          <span className="flex-1 text-left text-sm font-semibold">
-                            {item.title}
-                          </span>
-                          <ChevronDown
-                            className={`h-4 w-4 transition-transform duration-200 ${
-                              openGroups.includes(item.title)
-                                ? "rotate-180 text-[#001B55]"
-                                : ""
-                            }`}
-                            aria-hidden="true"
-                          />
-                        </>
-                      )}
-                    </div>
-                  </button>
-
-                  {isCollapsed && (
-                    <div
-                      className="absolute left-full ml-3 top-1/2 -translate-y-1/2 px-3 py-2 bg-white border-2 border-[#001B55] text-[#001B55] text-sm font-semibold rounded-lg shadow-xl opacity-0 invisible group-hover/item:opacity-100 group-hover/item:visible transition-all duration-200 whitespace-nowrap z-50 pointer-events-none"
-                      role="tooltip"
-                    >
-                      {item.title}
-                      <div className="absolute right-full top-1/2 -translate-y-1/2 border-[5px] border-transparent border-r-white drop-shadow-lg"></div>
-                    </div>
-                  )}
-
-                  {!isCollapsed && openGroups.includes(item.title) && (
-                    <div
-                      className="ml-8 mt-1 mb-1 space-y-1 pl-3 border-l border-[#001B55]/20"
-                      role="list"
-                    >
-                      {item.subItems?.map((subItem: any) => {
-                        const SubIcon = subItem.icon;
-                        const subItemActive = isActive(subItem.url);
-                        return (
-                          <SafeNavLink
-                            key={subItem.url}
-                            to={subItem.url}
-                            className={`group relative flex items-center gap-2.5 px-3 py-2 rounded-lg transition-all duration-200 focus:outline-none focus:ring-2 focus:ring-[#001B55]/30 focus:ring-offset-1 ${
-                              subItemActive
-                                ? "bg-white text-[#001B55] font-semibold border-l-2 border-[#001B55]/40"
-                                : "text-gray-600 hover:bg-gray-50 hover:text-[#001B55]"
-                            }`}
-                            aria-label={subItem.ariaLabel}
-                            aria-current={subItemActive ? "page" : undefined}
-                          >
-                            <SubIcon
-                              className={`h-4 w-4 flex-shrink-0 ${
-                                subItemActive ? "text-[#001B55]" : ""
+                      >
+                        <item.icon
+                          className={`h-5 w-5 flex-shrink-0 transition-colors ${
+                            isGroupActive(item.subItems) ? "text-[#001B55]" : ""
+                          }`}
+                          aria-hidden="true"
+                        />
+                        {!isCollapsed && (
+                          <>
+                            <span className="flex-1 text-left text-sm font-semibold">
+                              {item.title}
+                            </span>
+                            <ChevronDown
+                              className={`h-4 w-4 transition-transform duration-200 ${
+                                openGroups.includes(item.title)
+                                  ? "rotate-180 text-[#001B55]"
+                                  : ""
                               }`}
                               aria-hidden="true"
                             />
-                            <span className="text-sm">{subItem.title}</span>
-                          </SafeNavLink>
-                        );
-                      })}
-                    </div>
-                  )}
-                </div>
-              ) : (
-                <>
-                  <SafeNavLink
-                    to={item.url ?? "#"}
-                    className={`group relative flex items-center ${
-                      isCollapsed ? "justify-center px-0" : "gap-3 px-3"
-                    } py-2.5 rounded-lg font-medium transition-all duration-200 focus:outline-none focus:ring-2 focus:ring-[#001B55]/30 focus:ring-offset-1 ${
-                      isActive(item.url ?? "")
-                        ? "bg-gray-200 text-[#001B55] shadow-sm"
-                        : "text-gray-600 hover:bg-gray-50 hover:text-[#001B55]"
-                    }`}
-                    aria-label={item.ariaLabel}
-                    aria-current={isActive(item.url ?? "") ? "page" : undefined}
-                  >
-                    <div
-                      className={`relative z-10 flex items-center ${
-                        isCollapsed ? "" : "gap-3 w-full"
-                      }`}
-                    >
-                      <item.icon
-                        className={`h-5 w-5 flex-shrink-0 ${
-                          isActive(item.url ?? "") ? "text-[#001B55]" : ""
-                        }`}
-                        aria-hidden="true"
-                      />
-                      {!isCollapsed && (
-                        <span className="flex-1 text-left text-sm font-semibold">
-                          {item.title}
-                        </span>
-                      )}
-                    </div>
-                  </SafeNavLink>
+                          </>
+                        )}
+                      </div>
+                    </button>
 
-                  {isCollapsed && (
-                    <div
-                      className="absolute left-full ml-3 top-1/2 -translate-y-1/2 px-3 py-2 bg-white border-2 border-[#001B55] text-[#001B55] text-sm font-semibold rounded-lg shadow-xl opacity-0 invisible group-hover/item:opacity-100 group-hover/item:visible transition-all duration-200 whitespace-nowrap z-50 pointer-events-none"
-                      role="tooltip"
+                    {isCollapsed && (
+                      <div
+                        className="absolute left-full ml-3 top-1/2 -translate-y-1/2 px-3 py-2 bg-white border-2 border-[#001B55] text-[#001B55] text-sm font-semibold rounded-lg shadow-xl opacity-0 invisible group-hover/item:opacity-100 group-hover/item:visible transition-all duration-200 whitespace-nowrap z-50 pointer-events-none"
+                        role="tooltip"
+                      >
+                        {item.title}
+                        <div className="absolute right-full top-1/2 -translate-y-1/2 border-[5px] border-transparent border-r-white drop-shadow-lg"></div>
+                      </div>
+                    )}
+
+                    {!isCollapsed && openGroups.includes(item.title) && (
+                      <div
+                        className="ml-8 mt-1 mb-1 space-y-1 pl-3 border-l border-[#001B55]/20"
+                        role="list"
+                      >
+                        {item.subItems?.map((subItem: any) => {
+                          const SubIcon = subItem.icon;
+                          const subItemActive = isActive(subItem.url);
+                          return (
+                            <SafeNavLink
+                              key={subItem.url}
+                              to={subItem.url}
+                              className={`group relative flex items-center gap-2.5 px-3 py-2 rounded-lg transition-all duration-200 focus:outline-none focus:ring-2 focus:ring-[#001B55]/30 focus:ring-offset-1 ${
+                                subItemActive
+                                  ? "bg-white text-[#001B55] font-semibold border-l-2 border-[#001B55]/40"
+                                  : "text-gray-600 hover:bg-gray-50 hover:text-[#001B55]"
+                              }`}
+                              aria-label={subItem.ariaLabel}
+                              aria-current={subItemActive ? "page" : undefined}
+                            >
+                              <SubIcon
+                                className={`h-4 w-4 flex-shrink-0 ${
+                                  subItemActive ? "text-[#001B55]" : ""
+                                }`}
+                                aria-hidden="true"
+                              />
+                              <span className="text-sm">{subItem.title}</span>
+                            </SafeNavLink>
+                          );
+                        })}
+                      </div>
+                    )}
+                  </div>
+                ) : (
+                  <>
+                    <SafeNavLink
+                      to={item.url ?? "#"}
+                      className={`group relative flex items-center ${
+                        isCollapsed ? "justify-center px-0" : "gap-3 px-3"
+                      } py-2.5 rounded-lg font-medium transition-all duration-200 focus:outline-none focus:ring-2 focus:ring-[#001B55]/30 focus:ring-offset-1 ${
+                        isActive(item.url ?? "")
+                          ? "bg-gray-200 text-[#001B55] shadow-sm"
+                          : "text-gray-600 hover:bg-gray-50 hover:text-[#001B55]"
+                      }`}
+                      aria-label={item.ariaLabel}
+                      aria-current={
+                        isActive(item.url ?? "") ? "page" : undefined
+                      }
                     >
-                      {item.title}
-                      <div className="absolute right-full top-1/2 -translate-y-1/2 border-[5px] border-transparent border-r-white drop-shadow-lg"></div>
-                    </div>
-                  )}
-                </>
-              )}
-            </div>
-))
+                      <div
+                        className={`relative z-10 flex items-center ${
+                          isCollapsed ? "" : "gap-3 w-full"
+                        }`}
+                      >
+                        <item.icon
+                          className={`h-5 w-5 flex-shrink-0 ${
+                            isActive(item.url ?? "") ? "text-[#001B55]" : ""
+                          }`}
+                          aria-hidden="true"
+                        />
+                        {!isCollapsed && (
+                          <span className="flex-1 text-left text-sm font-semibold">
+                            {item.title}
+                          </span>
+                        )}
+                      </div>
+                    </SafeNavLink>
+
+                    {isCollapsed && (
+                      <div
+                        className="absolute left-full ml-3 top-1/2 -translate-y-1/2 px-3 py-2 bg-white border-2 border-[#001B55] text-[#001B55] text-sm font-semibold rounded-lg shadow-xl opacity-0 invisible group-hover/item:opacity-100 group-hover/item:visible transition-all duration-200 whitespace-nowrap z-50 pointer-events-none"
+                        role="tooltip"
+                      >
+                        {item.title}
+                        <div className="absolute right-full top-1/2 -translate-y-1/2 border-[5px] border-transparent border-r-white drop-shadow-lg"></div>
+                      </div>
+                    )}
+                  </>
+                )}
+              </div>
+            ))
           )}
         </div>
       </div>

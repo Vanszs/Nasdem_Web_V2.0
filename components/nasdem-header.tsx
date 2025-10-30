@@ -7,9 +7,18 @@ import { Button, buttonVariants } from "@/components/ui/button";
 import { Menu, X, Users, Phone, MapPin } from "lucide-react";
 import Link from "next/link";
 
+import { useEffect } from "react";
+import { useCmsContactStore } from "@/store/cms-contact";
+
 const NasdemHeader = () => {
   const [isMenuOpen, setIsMenuOpen] = useState(false);
   const pathname = usePathname();
+
+  // Global contact store
+  const { contact, fetchContact } = useCmsContactStore();
+  useEffect(() => {
+    fetchContact();
+  }, [fetchContact]);
 
   // Function to check if a link is active
   const isActiveLink = (href: string) => {
@@ -47,11 +56,14 @@ const NasdemHeader = () => {
           <div className="flex items-center gap-4">
             <div className="flex items-center gap-1.5">
               <MapPin size={12} />
-              <span>Jl. Raya Sidoarjo, Kab. Sidoarjo, Jawa Timur</span>
+              <span>
+                {contact?.address ||
+                  "Jl. Raya Sidoarjo, Kab. Sidoarjo, Jawa Timur"}
+              </span>
             </div>
             <div className="flex items-center gap-1.5">
               <Phone size={12} />
-              <span>(031) 1234-5678</span>
+              <span>{contact?.phone || "(031) 1234-5678"}</span>
             </div>
           </div>
           <div className="flex items-center gap-1.5">
@@ -63,7 +75,7 @@ const NasdemHeader = () => {
         {/* Main navigation */}
         <nav className="flex items-center justify-between py-3">
           {/* Logo */}
-          <div className="flex items-center gap-3">
+          <Link href={"/"} className="flex items-center gap-3">
             <div className="relative w-10 h-10 flex-shrink-0 rounded-lg border-2 border-white/20 p-1 bg-white/5">
               <Image
                 src="/logo-nasdem.png"
@@ -81,7 +93,7 @@ const NasdemHeader = () => {
                 Sidoarjo
               </span>
             </div>
-          </div>
+          </Link>
 
           {/* Desktop Navigation */}
           <ul className="hidden lg:flex items-center gap-8 text-sm font-medium">

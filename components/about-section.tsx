@@ -4,7 +4,7 @@ import { useState } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import ReactPlayer from "react-player";
 import { Button } from "@/components/ui/button";
-import { Target, Heart, Handshake, Award } from "lucide-react";
+import { Target, Heart } from "lucide-react";
 import Image from "next/image";
 import { useQuery } from "@tanstack/react-query";
 
@@ -26,9 +26,25 @@ export function AboutSection() {
       }
     | undefined = data?.data;
 
-  // 🆕 State untuk cinematic mode
   const [expanded, setExpanded] = useState(false);
   const [isPlaying, setIsPlaying] = useState(false);
+
+  const closePlayer = () => {
+    setIsPlaying(false);
+    setExpanded(false);
+  };
+
+  useState(() => {
+    const handleEsc = (e: KeyboardEvent) => {
+      if (e.key === "Escape" && expanded) {
+        closePlayer();
+      }
+    };
+    if (expanded) {
+      window.addEventListener("keydown", handleEsc);
+      return () => window.removeEventListener("keydown", handleEsc);
+    }
+  });
 
   return (
     <section
@@ -111,12 +127,12 @@ export function AboutSection() {
                     <div className="flex-shrink-0 w-12 h-12 bg-nasdem-blue/10 rounded-lg flex items-center justify-center border border-nasdem-blue/20">
                       <Target className="text-nasdem-blue h-6 w-6" />
                     </div>
-                    <div>
+                    <div className="w-full">
                       <h4 className="font-bold text-nasdem-blue mb-2 text-base">
                         Visi
                       </h4>
                       {isLoading ? (
-                        <div className="h-16 bg-gray-100 rounded animate-pulse" />
+                        <div className="h-16 w-full bg-gray-100 rounded animate-pulse" />
                       ) : (
                         <p className="text-gray-600 text-sm leading-relaxed w-full">
                           {about?.vision ||
@@ -132,12 +148,12 @@ export function AboutSection() {
                     <div className="flex-shrink-0 w-12 h-12 bg-nasdem-orange/10 rounded-lg flex items-center justify-center border border-nasdem-orange/20">
                       <Heart className="text-nasdem-orange h-6 w-6" />
                     </div>
-                    <div>
+                    <div className="w-full">
                       <h4 className="font-bold text-nasdem-blue mb-2 text-base">
                         Misi
                       </h4>
                       {isLoading ? (
-                        <div className="h-20 bg-gray-100 rounded animate-pulse" />
+                        <div className="h-20 w-full bg-gray-100 rounded animate-pulse" />
                       ) : (
                         <p className="text-gray-600 text-sm leading-relaxed">
                           {about?.mission ||
@@ -168,14 +184,25 @@ export function AboutSection() {
             animate={{ opacity: 1 }}
             exit={{ opacity: 0 }}
             transition={{ duration: 0.3 }}
-            className="fixed inset-0 z-[999] bg-black/70 backdrop-blur-sm flex items-center justify-center"
+            className="fixed inset-0 z-[999] bg-black/70 backdrop-blur-sm flex items-center justify-center p-4"
+            onClick={closePlayer}
           >
+            {/* Close Button - Outside Video Card */}
+            <button
+              onClick={closePlayer}
+              className="absolute cursor-pointer top-6 right-6 bg-white/90 hover:bg-white text-nasdem-blue text-xl font-bold rounded-full w-10 h-10 flex items-center justify-center transition-all shadow-lg hover:shadow-xl hover:scale-110 z-[1000]"
+              aria-label="Close video"
+            >
+              ✕
+            </button>
+
             <motion.div
               initial={{ scale: 0.8, opacity: 0 }}
               animate={{ scale: 1, opacity: 1 }}
               exit={{ scale: 0.8, opacity: 0 }}
               transition={{ duration: 0.4, type: "spring" }}
               className="relative w-[90vw] h-[70vh] bg-black rounded-xl overflow-hidden shadow-2xl"
+              onClick={(e) => e.stopPropagation()}
             >
               <ReactPlayer
                 src={about?.videoUrl || ""}
@@ -188,15 +215,6 @@ export function AboutSection() {
                   setIsPlaying(true);
                 }}
               />
-              <button
-                onClick={() => {
-                  setIsPlaying(false);
-                  setExpanded(false);
-                }}
-                className="absolute top-4 right-4 bg-white/10 hover:bg-white/20 text-white text-2xl rounded-full px-3 py-1 transition"
-              >
-                ✕
-              </button>
             </motion.div>
           </motion.div>
         )}

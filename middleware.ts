@@ -1,5 +1,6 @@
 import { NextResponse } from "next/server";
 import type { NextRequest } from "next/server";
+import jwt from "jsonwebtoken";
 import { rateLimit } from "@/lib/rate-limit";
 
 export const config = {
@@ -87,7 +88,31 @@ export async function middleware(req: NextRequest) {
    * 🌐 3. Handle API requests
    */
   if (!pathname.startsWith("/api")) {
-    return NextResponse.next();
+    // For non-API routes, verify JWT and inject x-user header for SSR consumption
+    try {
+      const token = req.cookies.get("token")?.value;
+      const headers = new Headers(req.headers);
+      if (token) {
+        const JWT_SECRET = process.env.JWT_SECRET;
+        if (JWT_SECRET) {
+          const decoded = jwt.verify(token, JWT_SECRET) as any;
+          const userPayload = {
+            userId: decoded?.userId,
+            role: decoded?.role,
+            email: decoded?.email,
+            username: decoded?.username,
+          };
+          const encoded = Buffer.from(JSON.stringify(userPayload)).toString(
+            "base64"
+          );
+          headers.set("x-user", encoded);
+        }
+      }
+      return NextResponse.next({ request: { headers } });
+    } catch {
+      // If verification fails, proceed without x-user
+      return NextResponse.next();
+    }
   }
 
   // CORS / Origin enforcement

@@ -65,8 +65,6 @@ export async function POST(req: NextRequest) {
       },
     });
 
-    console.log(user);
-
     if (!user) {
       // Generic error message to prevent user enumeration
       return NextResponse.json(

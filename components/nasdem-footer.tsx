@@ -1,8 +1,25 @@
-import { Button } from "@/components/ui/button"
-import { MapPin, Phone, Mail, Facebook, Instagram, Youtube, Twitter } from "lucide-react"
-import Image from "next/image"
+"use client";
+
+import { Button } from "@/components/ui/button";
+import {
+  MapPin,
+  Phone,
+  Mail,
+  Facebook,
+  Instagram,
+  Youtube,
+  Twitter,
+} from "lucide-react";
+import Image from "next/image";
+import { useEffect } from "react";
+import { useCmsContactStore } from "@/store/cms-contact";
+import Link from "next/link";
 
 const NasdemFooter = () => {
+  const { contact, fetchContact } = useCmsContactStore();
+  useEffect(() => {
+    fetchContact();
+  }, [fetchContact]);
   return (
     <footer className="bg-primary text-primary-foreground">
       {/* Main Footer */}
@@ -20,14 +37,19 @@ const NasdemFooter = () => {
                 />
               </div>
               <div className="flex flex-col">
-                <span className="font-bold text-primary-foreground text-xl">DPD Partai NasDem</span>
-                <span className="text-primary-foreground/80 text-sm">Kabupaten Sidoarjo</span>
+                <span className="font-bold text-primary-foreground text-xl">
+                  DPD Partai NasDem
+                </span>
+                <span className="text-primary-foreground/80 text-sm">
+                  Kabupaten Sidoarjo
+                </span>
               </div>
             </div>
 
             <p className="text-primary-foreground/90 mb-6 leading-relaxed max-w-md">
-              Membangun Indonesia yang lebih baik melalui Gerakan Perubahan dan Restorasi Indonesia. Bersama-sama menuju
-              Sidoarjo yang maju, adil, dan sejahtera.
+              Membangun Indonesia yang lebih baik melalui Gerakan Perubahan dan
+              Restorasi Indonesia. Bersama-sama menuju Sidoarjo yang maju, adil,
+              dan sejahtera.
             </p>
 
             {/* Contact Info */}
@@ -35,99 +57,134 @@ const NasdemFooter = () => {
               <div className="flex items-center gap-3">
                 <MapPin className="text-secondary h-5 w-5 flex-shrink-0" />
                 <span className="text-primary-foreground/90 text-sm">
-                  Jl. Raya Sidoarjo, Kab. Sidoarjo, Jawa Timur 61219
+                  {contact?.address}
                 </span>
               </div>
               <div className="flex items-center gap-3">
                 <Phone className="text-secondary h-5 w-5 flex-shrink-0" />
-                <span className="text-primary-foreground/90 text-sm">(031) 1234-5678</span>
+                <span className="text-primary-foreground/90 text-sm">
+                  {contact?.phone}
+                </span>
               </div>
               <div className="flex items-center gap-3">
                 <Mail className="text-secondary h-5 w-5 flex-shrink-0" />
-                <span className="text-primary-foreground/90 text-sm">dpd.sidoarjo@nasdem.id</span>
+                <span className="text-primary-foreground/90 text-sm">
+                  {contact?.email}
+                </span>
               </div>
             </div>
           </div>
 
           {/* Quick Links */}
           <div>
-            <h4 className="font-bold text-primary-foreground text-lg mb-4">Menu Utama</h4>
+            <h4 className="font-bold text-primary-foreground text-lg mb-4">
+              Menu Utama
+            </h4>
             <ul className="space-y-3">
               <li>
-                <a
-                  href="#beranda"
+                <Link
+                  href="/"
                   className="text-primary-foreground/80 hover:text-secondary transition-colors text-sm"
                 >
                   Beranda
-                </a>
+                </Link>
               </li>
               <li>
-                <a href="#profil" className="text-primary-foreground/80 hover:text-secondary transition-colors text-sm">
+                <Link
+                  href="/#profil"
+                  className="text-primary-foreground/80 hover:text-secondary transition-colors text-sm"
+                >
                   Profil Partai
-                </a>
+                </Link>
               </li>
               <li>
-                <a
-                  href="#program"
+                <Link
+                  href="/program"
                   className="text-primary-foreground/80 hover:text-secondary transition-colors text-sm"
                 >
                   Program Kerja
-                </a>
+                </Link>
               </li>
               <li>
-                <a href="#berita" className="text-primary-foreground/80 hover:text-secondary transition-colors text-sm">
+                <Link
+                  href="/berita"
+                  className="text-primary-foreground/80 hover:text-secondary transition-colors text-sm"
+                >
                   Berita & Kegiatan
-                </a>
+                </Link>
               </li>
               <li>
-                <a href="#galeri" className="text-primary-foreground/80 hover:text-secondary transition-colors text-sm">
+                <Link
+                  href="/galeri"
+                  className="text-primary-foreground/80 hover:text-secondary transition-colors text-sm"
+                >
                   Galeri
-                </a>
+                </Link>
               </li>
               <li>
-                <a
-                  href="#struktur"
+                <Link
+                  href="/struktur"
                   className="text-primary-foreground/80 hover:text-secondary transition-colors text-sm"
                 >
                   Struktur Organisasi
-                </a>
+                </Link>
               </li>
             </ul>
           </div>
 
           {/* Programs */}
           <div>
-            <h4 className="font-bold text-primary-foreground text-lg mb-4">Program Unggulan</h4>
+            <h4 className="font-bold text-primary-foreground text-lg mb-4">
+              Program Unggulan
+            </h4>
             <ul className="space-y-3">
               <li>
-                <a href="#" className="text-primary-foreground/80 hover:text-secondary transition-colors text-sm">
+                <Link
+                  href="/program"
+                  className="text-primary-foreground/80 hover:text-secondary transition-colors text-sm"
+                >
                   NasDem Muda
-                </a>
+                </Link>
               </li>
               <li>
-                <a href="#" className="text-primary-foreground/80 hover:text-secondary transition-colors text-sm">
+                <Link
+                  href="/program"
+                  className="text-primary-foreground/80 hover:text-secondary transition-colors text-sm"
+                >
                   Pemberdayaan UMKM
-                </a>
+                </Link>
               </li>
               <li>
-                <a href="#" className="text-primary-foreground/80 hover:text-secondary transition-colors text-sm">
+                <Link
+                  href="/program"
+                  className="text-primary-foreground/80 hover:text-secondary transition-colors text-sm"
+                >
                   Pendidikan Inklusif
-                </a>
+                </Link>
               </li>
               <li>
-                <a href="#" className="text-primary-foreground/80 hover:text-secondary transition-colors text-sm">
+                <Link
+                  href="/program"
+                  className="text-primary-foreground/80 hover:text-secondary transition-colors text-sm"
+                >
                   Aksi Sosial Kesehatan
-                </a>
+                </Link>
               </li>
               <li>
-                <a href="#" className="text-primary-foreground/80 hover:text-secondary transition-colors text-sm">
+                <Link
+                  href="/program"
+                  className="text-primary-foreground/80 hover:text-secondary transition-colors text-sm"
+                >
                   Advokasi Kebijakan
-                </a>
+                </Link>
               </li>
               <li>
-                <a href="#" className="text-primary-foreground/80 hover:text-secondary transition-colors text-sm">
+                <Link
+                  href="/program"
+                  className="text-primary-foreground/80 hover:text-secondary transition-colors text-sm"
+                >
                   Pelatihan Politik
-                </a>
+                </Link>
               </li>
             </ul>
           </div>
@@ -137,9 +194,12 @@ const NasdemFooter = () => {
         <div className="bg-primary-foreground/5 rounded-2xl p-8 mb-12 border border-primary-foreground/10">
           <div className="grid md:grid-cols-2 gap-6 items-center">
             <div>
-              <h4 className="font-bold text-primary-foreground text-xl mb-2">Dapatkan Update Terbaru</h4>
+              <h4 className="font-bold text-primary-foreground text-xl mb-2">
+                Dapatkan Update Terbaru
+              </h4>
               <p className="text-primary-foreground/80 text-sm">
-                Berlangganan newsletter untuk mendapatkan informasi program dan kegiatan terbaru.
+                Berlangganan newsletter untuk mendapatkan informasi program dan
+                kegiatan terbaru.
               </p>
             </div>
             <div className="flex gap-3">
@@ -148,7 +208,10 @@ const NasdemFooter = () => {
                 placeholder="Masukkan email Anda"
                 className="flex-1 px-4 py-3 rounded-lg bg-card text-foreground text-sm border border-border focus:outline-none focus:ring-2 focus:ring-secondary"
               />
-              <Button variant="secondary" className="font-semibold whitespace-nowrap">
+              <Button
+                variant="secondary"
+                className="font-semibold whitespace-nowrap"
+              >
                 Berlangganan
               </Button>
             </div>
@@ -157,36 +220,38 @@ const NasdemFooter = () => {
 
         {/* Social Media */}
         <div className="text-center">
-          <h4 className="font-bold text-primary-foreground text-lg mb-6">Ikuti Media Sosial Kami</h4>
+          <h4 className="font-bold text-primary-foreground text-lg mb-6">
+            Ikuti Media Sosial Kami
+          </h4>
           <div className="flex justify-center gap-4 mb-8">
-            <a
-              href="https://facebook.com/sidoarjo.nasdem.id"
-              className="w-12 h-12 bg-primary-foreground/10 rounded-full flex items-center justify-center hover:bg-secondary hover:text-primary transition-all hover-scale"
+            <Link
+              href={contact?.facebookUrl || "#"}
+              className="w-12 h-12 bg-primary-foreground/10 rounded-full flex items-center justify-center hover:bg-secondary hover:text-primary transition-all"
               aria-label="Facebook"
             >
               <Facebook className="h-5 w-5" />
-            </a>
-            <a
-              href="https://instagram.com/sidoarjo.nasdem.id"
-              className="w-12 h-12 bg-primary-foreground/10 rounded-full flex items-center justify-center hover:bg-secondary hover:text-primary transition-all hover-scale"
+            </Link>
+            <Link
+              href={contact?.instagramUrl || "#"}
+              className="w-12 h-12 bg-primary-foreground/10 rounded-full flex items-center justify-center hover:bg-secondary hover:text-primary transition-all"
               aria-label="Instagram"
             >
               <Instagram className="h-5 w-5" />
-            </a>
-            <a
-              href="https://youtube.com/@sidoarjonasdem"
-              className="w-12 h-12 bg-primary-foreground/10 rounded-full flex items-center justify-center hover:bg-secondary hover:text-primary transition-all hover-scale"
+            </Link>
+            <Link
+              href={contact?.youtubeUrl || "#"}
+              className="w-12 h-12 bg-primary-foreground/10 rounded-full flex items-center justify-center hover:bg-secondary hover:text-primary transition-all"
               aria-label="YouTube"
             >
               <Youtube className="h-5 w-5" />
-            </a>
-            <a
-              href="https://twitter.com/sidoarjonasdem"
-              className="w-12 h-12 bg-primary-foreground/10 rounded-full flex items-center justify-center hover:bg-secondary hover:text-primary transition-all hover-scale"
+            </Link>
+            <Link
+              href={contact?.twitterUrl || "#"}
+              className="w-12 h-12 bg-primary-foreground/10 rounded-full flex items-center justify-center hover:bg-secondary hover:text-primary transition-all"
               aria-label="Twitter"
             >
               <Twitter className="h-5 w-5" />
-            </a>
+            </Link>
           </div>
         </div>
       </div>
@@ -197,21 +262,24 @@ const NasdemFooter = () => {
           <div className="flex flex-col md:flex-row justify-between items-center gap-4 text-sm text-primary-foreground/80">
             <div>© 2025 DPD Partai NasDem Sidoarjo. Hak Cipta Dilindungi.</div>
             <div className="flex gap-6">
-              <a href="#" className="hover:text-secondary transition-colors">
+              <Link href="#" className="hover:text-secondary transition-colors">
                 Kebijakan Privasi
-              </a>
-              <a href="#" className="hover:text-secondary transition-colors">
+              </Link>
+              <Link href="#" className="hover:text-secondary transition-colors">
                 Syarat & Ketentuan
-              </a>
-              <a href="#kontak" className="hover:text-secondary transition-colors">
+              </Link>
+              <Link
+                href="/kontak"
+                className="hover:text-secondary transition-colors"
+              >
                 Kontak
-              </a>
+              </Link>
             </div>
           </div>
         </div>
       </div>
     </footer>
-  )
-}
+  );
+};
 
-export default NasdemFooter
+export default NasdemFooter;

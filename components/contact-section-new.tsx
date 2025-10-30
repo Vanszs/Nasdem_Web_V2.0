@@ -1,12 +1,10 @@
 "use client";
 
-import { useState } from "react";
 import { motion } from "framer-motion";
-import { Button } from "@/components/ui/button";
+import { Button, buttonVariants } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Input } from "@/components/ui/input";
-import { Label } from "@/components/ui/label";
 import {
   Form,
   FormControl,
@@ -25,7 +23,8 @@ import {
 import { useForm } from "react-hook-form";
 import { z } from "zod";
 import { zodResolver } from "@hookform/resolvers/zod";
-import { useQuery } from "@tanstack/react-query";
+import { useEffect } from "react";
+import { useCmsContactStore } from "@/store/cms-contact";
 import { toast } from "sonner";
 import {
   MapPin,
@@ -44,6 +43,7 @@ import {
   CheckCircle,
   ExternalLink,
 } from "lucide-react";
+import Link from "next/link";
 
 interface ContactInfo {
   type: string;
@@ -55,15 +55,11 @@ interface ContactInfo {
 }
 
 export function ContactSection() {
-  const { data, isLoading } = useQuery({
-    queryKey: ["cms", "contact"],
-    queryFn: async () => {
-      const res = await fetch("/api/cms/contact");
-      if (!res.ok) throw new Error("Gagal memuat kontak");
-      return res.json();
-    },
-  });
-  const contact = data?.data as
+  const { contact, isLoading, fetchContact } = useCmsContactStore();
+  useEffect(() => {
+    fetchContact();
+  }, [fetchContact]);
+  const c = contact as
     | {
         phone?: string | null;
         email?: string | null;
@@ -102,9 +98,7 @@ export function ContactSection() {
     {
       type: "Alamat",
       label: "Alamat Kantor",
-      value:
-        contact?.address ||
-        "Jl. Raya Sidoarjo No. 123, Sidoarjo, Jawa Timur 61215",
+      value: c?.address || "",
       status: "Aktif",
       icon: <MapPin className="w-6 h-6 text-secondary" />,
       description: "Kantor DPD NasDem Sidoarjo",
@@ -112,7 +106,7 @@ export function ContactSection() {
     {
       type: "Telepon",
       label: "Telepon",
-      value: contact?.phone || "(031) 8945678",
+      value: c?.phone || "",
       status: "Aktif",
       icon: <Phone className="w-6 h-6 text-secondary" />,
       description: "Telepon Kantor",
@@ -120,7 +114,7 @@ export function ContactSection() {
     {
       type: "Email",
       label: "Email",
-      value: contact?.email || "info@nasdems.id",
+      value: c?.email || "",
       status: "Aktif",
       icon: <Mail className="w-6 h-6 text-secondary" />,
       description: "Email Resmi",
@@ -128,7 +122,7 @@ export function ContactSection() {
     {
       type: "Jam Operasional",
       label: "Jam Operasional",
-      value: contact?.operationalHours || "Senin - Jumat: 08:00 - 16:00 WIB",
+      value: c?.operationalHours || "",
       status: "Aktif",
       icon: <Clock className="w-6 h-6 text-secondary" />,
       description: "Waktu Pelayanan",
@@ -139,25 +133,25 @@ export function ContactSection() {
     {
       name: "Facebook",
       icon: <Facebook className="w-5 h-5" />,
-      url: contact?.facebookUrl || "#",
+      url: c?.facebookUrl || "#",
       color: "bg-blue-600",
     },
     {
       name: "Instagram",
       icon: <Instagram className="w-5 h-5" />,
-      url: contact?.instagramUrl || "#",
+      url: c?.instagramUrl || "#",
       color: "bg-pink-600",
     },
     {
       name: "Twitter",
       icon: <Twitter className="w-5 h-5" />,
-      url: contact?.twitterUrl || "#",
+      url: c?.twitterUrl || "#",
       color: "bg-blue-400",
     },
     {
       name: "Youtube",
       icon: <Youtube className="w-5 h-5" />,
-      url: contact?.youtubeUrl || "#",
+      url: c?.youtubeUrl || "#",
       color: "bg-red-600",
     },
   ];
@@ -255,7 +249,7 @@ export function ContactSection() {
                     animate={{ opacity: 1, y: 0 }}
                     transition={{ duration: 0.6, delay: index * 0.1 }}
                   >
-                    <Card className="h-full hover:shadow-lg transition-all duration-300 hover:scale-105 border-l-4 border-l-secondary">
+                    <Card className="h-full hover:shadow-lg transition-all duration-300 border-l-4 border-l-secondary">
                       <CardHeader className="text-center pb-4">
                         <div className="w-16 h-16 bg-secondary/10 rounded-full flex items-center justify-center mx-auto mb-3">
                           {info.icon}
@@ -498,7 +492,7 @@ export function ContactSection() {
                       <Button
                         type="submit"
                         size="lg"
-                        className="w-full hover-scale"
+                        className="w-full"
                         variant="default"
                       >
                         <Send className="mr-2 h-5 w-5" />
@@ -563,7 +557,7 @@ export function ContactSection() {
                       <a
                         key={index}
                         href={social.url}
-                        className={`${social.color} text-white rounded-lg p-4 hover:scale-105 transition-transform flex items-center justify-center gap-2 font-medium`}
+                        className={`${social.color} text-white rounded-lg p-4 transition-transform flex items-center justify-center gap-2 font-medium`}
                       >
                         {social.icon}
                         <span>{social.name}</span>
@@ -644,20 +638,25 @@ export function ContactSection() {
               Bersama-sama membangun Sidoarjo yang lebih baik untuk semua
             </p>
             <div className="flex flex-col sm:flex-row gap-4 justify-center">
-              <Button
-                size="lg"
-                variant="secondary"
-                className="hover-scale font-semibold px-8"
+              <Link
+                href={"/bergabung"}
+                className={buttonVariants({
+                  variant: "secondary",
+                  className: "font-semibold px-8",
+                })}
               >
                 Bergabung Sekarang
-              </Button>
-              <Button
-                size="lg"
-                variant="outline"
-                className="border-primary-foreground bg-transparent text-primary-foreground hover:bg-primary-foreground hover:text-primary font-semibold px-8"
+              </Link>
+              <Link
+                href={"/program"}
+                className={buttonVariants({
+                  variant: "outline",
+                  className:
+                    "border-primary-foreground bg-transparent text-primary-foreground hover:bg-primary-foreground hover:text-primary font-semibold px-8",
+                })}
               >
                 Pelajari Program Kami
-              </Button>
+              </Link>
             </div>
           </motion.div>
         </div>

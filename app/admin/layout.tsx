@@ -1,6 +1,8 @@
 import type { Metadata } from "next";
 import { Inter } from "next/font/google";
 import { Providers } from "./providers";
+import { headers } from "next/headers";
+import AuthHydrator from "./components/layout/AuthHydrator";
 
 const inter = Inter({ subsets: ["latin"] });
 
@@ -54,14 +56,30 @@ export const metadata: Metadata = {
   },
 };
 
-export default function RootLayout({
+export default async function RootLayout({
   children,
 }: {
   children: React.ReactNode;
 }) {
+  // Read user from middleware-injected header
+  const hdrs = await headers();
+  const encoded = hdrs.get("x-user");
+  let user: {
+    userId: number;
+    role: string;
+    email?: string;
+    username?: string;
+  } | null = null;
+  if (encoded) {
+    try {
+      user = JSON.parse(Buffer.from(encoded, "base64").toString("utf-8"));
+    } catch {}
+  }
   return (
     <Providers>
       <div className={`${inter.className}`} suppressHydrationWarning>
+        {/* Hydrate auth store from SSR without extra API calls */}
+        <AuthHydrator user={user} />
         {children}
       </div>
     </Providers>
