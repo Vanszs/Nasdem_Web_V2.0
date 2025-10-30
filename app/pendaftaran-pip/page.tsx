@@ -1,13 +1,22 @@
 "use client";
 
-import { useState, useEffect } from "react";
-import { useRouter } from "next/navigation";
-import Image from "next/image";
+import { useState } from "react";
+import { useRouter, useSearchParams } from "next/navigation";
+import { useForm } from "react-hook-form";
+import { zodResolver } from "@hookform/resolvers/zod";
+import { z } from "zod";
 import NasdemHeader from "@/components/nasdem-header";
 import NasdemFooter from "@/components/nasdem-footer";
 import { Button } from "@/components/ui/button";
+import {
+  Form,
+  FormControl,
+  FormField,
+  FormItem,
+  FormLabel,
+  FormMessage,
+} from "@/components/ui/form";
 import { Input } from "@/components/ui/input";
-import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
 import {
   Select,
@@ -16,7 +25,6 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
-import { Alert, AlertDescription } from "@/components/ui/alert";
 import { Card, CardContent } from "@/components/ui/card";
 import {
   GraduationCap,
@@ -38,173 +46,119 @@ import {
 } from "lucide-react";
 import { useQuery, useMutation } from "@tanstack/react-query";
 import { toast } from "sonner";
-import { PIPRegistrationPDF } from "@/components/pdf/PIPRegistrationPDF";
-import { downloadPDF, generateRegistrationNumber } from "@/lib/pdf-utils";
 
-interface PipFormData {
-  fullName: string;
-  email: string;
-  nik: string;
-  phone: string;
-  dateOfBirth: string;
-  gender: string;
-  occupation: string;
-  familyMemberCount: string;
-  fullAddress: string;
-  proposerName: string; // Nama pengusul
-  category: string; // Kategori bantuan (education, health, economy, etc)
-  notes: string; // Keterangan/alasan pengajuan
-}
+// Zod validation schema
+const pipFormSchema = z.object({
+  fullName: z.string().min(3, "Nama lengkap minimal 3 karakter"),
+  email: z.string().email("Email tidak valid"),
+  nik: z.string().length(16, "NIK harus 16 digit"),
+  phone: z.string().min(10, "Nomor telepon minimal 10 digit"),
+  dateOfBirth: z.string().min(1, "Tanggal lahir wajib diisi"),
+  gender: z.enum(["male", "female"], {
+    required_error: "Pilih jenis kelamin",
+  }),
+  occupation: z.string().min(2, "Pekerjaan wajib diisi"),
+  familyMemberCount: z.string().optional(),
+  fullAddress: z.string().min(10, "Alamat lengkap minimal 10 karakter"),
+  proposerName: z.string().min(3, "Nama pengusul minimal 3 karakter"),
+  notes: z.string().optional(),
+});
+
+type PipFormData = z.infer<typeof pipFormSchema>;
 
 export default function PendaftaranPipPage() {
   const router = useRouter();
+  const searchParams = useSearchParams();
   const [currentStep, setCurrentStep] = useState(1);
-  const [error, setError] = useState("");
   const [success, setSuccess] = useState(false);
 
-  const [formData, setFormData] = useState<PipFormData>({
-    fullName: "",
-    email: "",
-    nik: "",
-    phone: "",
-    dateOfBirth: "",
-    gender: "",
-    occupation: "",
-    familyMemberCount: "",
-    fullAddress: "",
-    proposerName: "",
-    category: "education", // Default category
-    notes: "",
-  });
+  // Get programId from URL query params
+  const programIdParam = searchParams.get("programId");
+  const programId = programIdParam ? parseInt(programIdParam, 10) : null;
 
-  const totalSteps = 2; // Ubah dari 3 ke 2 (hapus step Dokumen)
+  const totalSteps = 2;
 
-  // Fetch PIP program
-  const { data: programData, isLoading: loadingProgram } = useQuery({
-    queryKey: ["pip-program"],
-    queryFn: async () => {
-      const res = await fetch("/api/programs?category=pendidikan");
-      if (!res.ok) throw new Error("Gagal memuat program");
-      const json = await res.json();
-      // Find PIP program
-      const pipProgram = json.data?.find(
-        (p: any) =>
-          p.category === "pendidikan" &&
-          (p.name.toLowerCase().includes("pip") ||
-            p.name.toLowerCase().includes("beasiswa"))
-      );
-      return pipProgram;
+  // Initialize React Hook Form with Zod
+  const form = useForm<PipFormData>({
+    resolver: zodResolver(pipFormSchema),
+    defaultValues: {
+      fullName: "",
+      email: "",
+      nik: "",
+      phone: "",
+      dateOfBirth: "",
+      gender: undefined,
+      occupation: "",
+      familyMemberCount: "",
+      fullAddress: "",
+      proposerName: "",
+      notes: "",
     },
-    retry: false, // Don't retry on failure
+    mode: "onChange",
   });
 
   // Mutation untuk submit form
   const submitMutation = useMutation({
-    mutationFn: async (data: FormData) => {
-      try {
-        const res = await fetch("/api/registrations/pip", {
-          method: "POST",
-          body: data,
-        });
-        
-        if (!res.ok) {
-          const error = await res.json();
-          throw new Error(error.error || "Gagal mengirim pendaftaran");
-        }
-        
-        return res.json();
-      } catch (err: any) {
-        // Handle network errors
-        if (err.message === "Failed to fetch") {
-          throw new Error("Tidak dapat terhubung ke server. Pastikan koneksi internet Anda aktif.");
-        }
-        throw err;
+    mutationFn: async (data: PipFormData) => {
+      if (!programId) {
+        throw new Error(
+          "Program ID tidak tersedia. Silakan akses halaman ini dari detail program."
+        );
       }
+
+      const formData = new FormData();
+
+      formData.append("programId", programId.toString());
+      formData.append("fullName", data.fullName);
+      formData.append("email", data.email);
+      formData.append("nik", data.nik);
+      formData.append("phone", data.phone);
+      formData.append("dateOfBirth", data.dateOfBirth);
+      formData.append("gender", data.gender);
+      formData.append("occupation", data.occupation);
+      formData.append("familyMemberCount", data.familyMemberCount || "0");
+      formData.append("fullAddress", data.fullAddress);
+      formData.append("proposerName", data.proposerName);
+      formData.append("notes", data.notes || "");
+
+      const res = await fetch("/api/registrations/pip", {
+        method: "POST",
+        body: formData,
+      });
+
+      if (!res.ok) {
+        const error = await res.json();
+        throw new Error(error.error || "Gagal mengirim pendaftaran");
+      }
+
+      return res.json();
     },
-    onSuccess: async () => {
-      // Generate and download PDF receipt
-      try {
-        const registrationNumber = generateRegistrationNumber('PIP');
-        
-        const pdfDocument = (
-          <PIPRegistrationPDF
-            data={{
-              fullName: formData.fullName,
-              nik: formData.nik,
-              phone: formData.phone || undefined,
-              address: formData.fullAddress || undefined,
-              proposerName: formData.proposerName || undefined,
-              category: formData.category || 'education',
-              notes: formData.notes || undefined,
-              registrationNumber,
-              submittedAt: new Date(),
-            }}
-          />
-        );
-
-        await downloadPDF(
-          pdfDocument,
-          `Bukti-Pendaftaran-PIP-${registrationNumber}.pdf`
-        );
-      } catch (pdfError) {
-        console.error('PDF generation error:', pdfError);
-        // Continue to success page even if PDF fails
-      }
-
+    onSuccess: () => {
       setSuccess(true);
       toast.success("Pendaftaran berhasil dikirim!");
+      form.reset();
     },
     onError: (error: Error) => {
       console.error("❌ Registration error:", error);
-      setError(error.message);
       toast.error(error.message);
     },
   });
 
-  const handleSubmit = async (e: React.FormEvent) => {
-    e.preventDefault();
-    setError("");
-
-    // Temporary: Allow form submission even without program
-    // Remove this check when program is available
-    const tempProgramId = programData?.id || 999; // Use 999 as temp ID for testing
-
-    try {
-      const formDataToSend = new FormData();
-      formDataToSend.append("programId", tempProgramId.toString());
-      formDataToSend.append("fullName", formData.fullName);
-      formDataToSend.append("email", formData.email || "");
-      formDataToSend.append("nik", formData.nik);
-      formDataToSend.append("phone", formData.phone || "");
-      formDataToSend.append("dateOfBirth", formData.dateOfBirth || "");
-      formDataToSend.append("gender", formData.gender || "");
-      formDataToSend.append("occupation", formData.occupation || "");
-      formDataToSend.append(
-        "familyMemberCount",
-        formData.familyMemberCount || "0"
-      );
-      formDataToSend.append("fullAddress", formData.fullAddress || "");
-      formDataToSend.append("proposerName", formData.proposerName || "");
-      formDataToSend.append("category", formData.category || "education");
-      formDataToSend.append("notes", formData.notes || "");
-
-      submitMutation.mutate(formDataToSend);
-    } catch (err: any) {
-      setError(err.message || "Terjadi kesalahan saat mendaftar");
-    }
-  };
-
-  const handleChange = (
-    e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>
-  ) => {
-    setFormData({
-      ...formData,
-      [e.target.name]: e.target.value,
-    });
+  const onSubmit = (data: PipFormData) => {
+    submitMutation.mutate(data);
   };
 
   const nextStep = () => {
-    if (currentStep < totalSteps) {
+    // Validate current step before proceeding
+    if (currentStep === 1) {
+      form
+        .trigger(["fullName", "nik", "email", "phone", "dateOfBirth", "gender"])
+        .then((isValid) => {
+          if (isValid) {
+            setCurrentStep(2);
+          }
+        });
+    } else if (currentStep < totalSteps) {
       setCurrentStep(currentStep + 1);
     }
   };
@@ -212,24 +166,6 @@ export default function PendaftaranPipPage() {
   const prevStep = () => {
     if (currentStep > 1) {
       setCurrentStep(currentStep - 1);
-    }
-  };
-
-  const isStepValid = () => {
-    switch (currentStep) {
-      case 1:
-        return (
-          formData.fullName &&
-          formData.nik &&
-          formData.email &&
-          formData.phone &&
-          formData.dateOfBirth &&
-          formData.gender
-        );
-      case 2:
-        return formData.fullAddress && formData.occupation && formData.proposerName;
-      default:
-        return false;
     }
   };
 
@@ -322,6 +258,113 @@ export default function PendaftaranPipPage() {
     );
   }
 
+  // Fallback UI jika program tidak ditemukan
+  if (!programId) {
+    return (
+      <div className="min-h-screen bg-[#F9FAFB]">
+        <NasdemHeader />
+        <main className="container mx-auto px-4 md:px-6 lg:px-8 py-16 md:py-24">
+          <div className="max-w-3xl mx-auto">
+            <div className="text-center space-y-10">
+              {/* Error Icon */}
+              <div className="relative inline-block">
+                <div className="w-28 h-28 bg-gradient-to-br from-red-500 to-red-600 rounded-full flex items-center justify-center mx-auto shadow-2xl">
+                  <AlertCircle
+                    className="w-16 h-16 text-white"
+                    strokeWidth={2.5}
+                  />
+                </div>
+                <div className="absolute inset-0 bg-red-500 rounded-full blur-3xl opacity-20"></div>
+              </div>
+
+              {/* Error Message */}
+              <div className="space-y-4">
+                <h1 className="text-4xl md:text-5xl font-bold text-[#001B55]">
+                  Program Tidak Ditemukan
+                </h1>
+                <p className="text-lg md:text-xl text-[#6B7280] leading-relaxed max-w-2xl mx-auto">
+                  Silakan akses halaman pendaftaran ini melalui tombol "Daftar
+                  Sekarang" pada detail program yang tersedia di halaman
+                  Program.
+                </p>
+              </div>
+
+              {/* Info Card */}
+              <Card className="border border-gray-100 bg-white shadow-lg rounded-2xl overflow-hidden">
+                <CardContent className="p-8">
+                  <div className="flex items-start gap-4 text-left">
+                    <div className="w-12 h-12 rounded-full bg-[#FF9C04]/10 flex items-center justify-center flex-shrink-0">
+                      <AlertCircle className="w-6 h-6 text-[#FF9C04]" />
+                    </div>
+                    <div className="flex-1">
+                      <h3 className="text-lg font-bold text-[#001B55] mb-2">
+                        Cara Mendaftar Program
+                      </h3>
+                      <ol className="space-y-2 text-[#6B7280]">
+                        <li className="flex items-start gap-2">
+                          <span className="font-bold text-[#FF9C04] mt-0.5">
+                            1.
+                          </span>
+                          <span>
+                            Kunjungi halaman Program untuk melihat daftar
+                            program yang tersedia
+                          </span>
+                        </li>
+                        <li className="flex items-start gap-2">
+                          <span className="font-bold text-[#FF9C04] mt-0.5">
+                            2.
+                          </span>
+                          <span>
+                            Pilih program yang Anda inginkan dan klik "Detail
+                            Program"
+                          </span>
+                        </li>
+                        <li className="flex items-start gap-2">
+                          <span className="font-bold text-[#FF9C04] mt-0.5">
+                            3.
+                          </span>
+                          <span>
+                            Klik tombol "Daftar Sekarang" pada detail program
+                          </span>
+                        </li>
+                        <li className="flex items-start gap-2">
+                          <span className="font-bold text-[#FF9C04] mt-0.5">
+                            4.
+                          </span>
+                          <span>Isi formulir pendaftaran dengan lengkap</span>
+                        </li>
+                      </ol>
+                    </div>
+                  </div>
+                </CardContent>
+              </Card>
+
+              {/* Actions */}
+              <div className="flex flex-col sm:flex-row gap-4 justify-center pt-6">
+                <Button
+                  onClick={() => router.push("/program")}
+                  size="lg"
+                  className="bg-gradient-to-r from-[#FF9C04] to-[#FF9C04]/90 hover:from-[#001B55] hover:to-[#001B55] text-white shadow-lg hover:shadow-xl transition-all duration-300 rounded-xl px-8 py-4 font-semibold"
+                >
+                  Lihat Daftar Program
+                </Button>
+                <Button
+                  onClick={() => router.push("/")}
+                  variant="outline"
+                  size="lg"
+                  className="text-[#6B7280] hover:bg-[#001B55]/5 hover:text-[#001B55] border border-transparent hover:border-[#001B55]/20 transition-all duration-300 rounded-xl px-8 py-4"
+                >
+                  Kembali ke Beranda
+                </Button>
+              </div>
+            </div>
+          </div>
+        </main>
+        <NasdemFooter />
+      </div>
+    );
+  }
+
   return (
     <div className="min-h-screen bg-[#F9FAFB]">
       <NasdemHeader />
@@ -342,8 +385,7 @@ export default function PendaftaranPipPage() {
           </div>
 
           <h1 className="text-4xl md:text-5xl lg:text-6xl font-bold text-white mb-4">
-            Pendaftaran{" "}
-            <span className="text-[#FF9C04]">Beasiswa PIP</span>
+            Pendaftaran <span className="text-[#FF9C04]">Beasiswa PIP</span>
           </h1>
           <p className="text-white/80 max-w-2xl mx-auto text-base md:text-lg leading-relaxed">
             Program Indonesia Pintar dari DPD Partai NasDem Sidoarjo untuk
@@ -434,448 +476,410 @@ export default function PendaftaranPipPage() {
               </div>
             </div>
 
-            {error && (
-              <Alert className="mb-8 border-2 border-red-200 bg-red-50/90 rounded-2xl shadow-lg backdrop-blur-sm">
-                <div className="flex items-start gap-4 p-2">
-                  <div className="w-12 h-12 rounded-full bg-gradient-to-br from-red-500 to-red-600 flex items-center justify-center flex-shrink-0 shadow-md">
-                    <AlertCircle className="h-6 w-6 text-white" strokeWidth={2.5} />
-                  </div>
-                  <div className="flex-1 min-w-0 pt-1">
-                    <h4 className="text-red-800 font-bold text-base mb-1">
-                      Terjadi Kesalahan
-                    </h4>
-                    <AlertDescription className="text-red-700 font-medium text-sm leading-relaxed break-words">
-                      {error}
-                    </AlertDescription>
-                  </div>
+            {/* Step Title Card */}
+            <div className="bg-gradient-to-br from-[#001B55] to-[#001845] rounded-2xl p-6 md:p-8 relative overflow-hidden mb-6 shadow-xl">
+              <div className="absolute top-0 right-0 w-64 h-64 bg-[#FF9C04]/10 rounded-full blur-3xl"></div>
+              <div className="relative z-10 flex items-center gap-4">
+                <div className="w-12 h-12 md:w-14 md:h-14 rounded-full bg-white/10 backdrop-blur-sm flex items-center justify-center flex-shrink-0">
+                  {currentStep === 1 && (
+                    <User className="w-6 h-6 md:w-7 md:h-7 text-[#FF9C04]" />
+                  )}
+                  {currentStep === 2 && (
+                    <MapPin className="w-6 h-6 md:w-7 md:h-7 text-[#FF9C04]" />
+                  )}
                 </div>
-              </Alert>
-            )}
-
-            {/* Loading Program */}
-            {loadingProgram && (
-              <div className="text-center py-8">
-                <div className="w-16 h-16 border-4 border-[#FF9C04]/30 border-t-[#FF9C04] rounded-full animate-spin mx-auto"></div>
-                <p className="text-[#6B7280] mt-4">Memuat program...</p>
+                <div>
+                  <h2 className="text-2xl md:text-3xl font-bold text-white mb-1">
+                    {currentStep === 1 && "Informasi Pribadi"}
+                    {currentStep === 2 && "Informasi Kontak"}
+                  </h2>
+                  <p className="text-white/70 text-sm md:text-base">
+                    {currentStep === 1 &&
+                      "Lengkapi data pribadi Anda dengan benar"}
+                    {currentStep === 2 &&
+                      "Berikan informasi alamat dan pekerjaan"}
+                  </p>
+                </div>
               </div>
-            )}
+            </div>
 
-            {/* Always show form, regardless of program availability */}
-            {!loadingProgram && (
-              <>
-                {/* Step Title Card */}
-                <div className="bg-gradient-to-br from-[#001B55] to-[#001845] rounded-2xl p-6 md:p-8 relative overflow-hidden mb-6 shadow-xl">
-                  <div className="absolute top-0 right-0 w-64 h-64 bg-[#FF9C04]/10 rounded-full blur-3xl"></div>
-                  <div className="relative z-10 flex items-center gap-4">
-                    <div className="w-12 h-12 md:w-14 md:h-14 rounded-full bg-white/10 backdrop-blur-sm flex items-center justify-center flex-shrink-0">
-                      {currentStep === 1 && (
-                        <User className="w-6 h-6 md:w-7 md:h-7 text-[#FF9C04]" />
-                      )}
-                      {currentStep === 2 && (
-                        <MapPin className="w-6 h-6 md:w-7 md:h-7 text-[#FF9C04]" />
-                      )}
-                    </div>
-                    <div>
-                      <h2 className="text-2xl md:text-3xl font-bold text-white mb-1">
-                        {currentStep === 1 && "Informasi Pribadi"}
-                        {currentStep === 2 && "Informasi Kontak"}
-                      </h2>
-                      <p className="text-white/70 text-sm md:text-base">
-                        {currentStep === 1 &&
-                          "Lengkapi data pribadi Anda dengan benar"}
-                        {currentStep === 2 &&
-                          "Berikan informasi alamat dan pekerjaan"}
-                      </p>
-                    </div>
-                  </div>
-                </div>
-
-                {/* Form Card */}
-                <Card className="border border-gray-100 shadow-xl overflow-hidden rounded-2xl bg-white">
-                  <CardContent className="p-8 md:p-10 lg:p-12">
-                    <form onSubmit={handleSubmit} className="space-y-6">
-                      {/* Step 1: Data Pribadi */}
-                      {currentStep === 1 && (
-                        <div className="space-y-8 animate-fade-in">
-                          <div className="grid md:grid-cols-2 gap-6 lg:gap-8">
-                            <div className="space-y-3">
-                              <Label
-                                htmlFor="fullName"
-                                className="flex items-center gap-2 text-[#001B55] font-semibold text-sm"
-                              >
-                                <User className="w-4 h-4" />
-                                Nama Lengkap{" "}
-                                <span className="text-red-500">*</span>
-                              </Label>
-                              <Input
-                                id="fullName"
-                                name="fullName"
-                                value={formData.fullName}
-                                onChange={handleChange}
-                                required
-                                placeholder="Masukkan nama lengkap sesuai KTP"
-                                className="h-12 rounded-xl border-gray-200 focus:border-[#FF9C04] transition-all"
-                              />
-                            </div>
-
-                            <div className="space-y-3">
-                              <Label
-                                htmlFor="nik"
-                                className="flex items-center gap-2 text-[#001B55] font-semibold text-sm"
-                              >
-                                <CreditCard className="w-4 h-4" />
-                                NIK <span className="text-red-500">*</span>
-                              </Label>
-                              <Input
-                                id="nik"
-                                name="nik"
-                                value={formData.nik}
-                                onChange={handleChange}
-                                required
-                                placeholder="16 digit NIK"
-                                maxLength={16}
-                                className="h-12 rounded-xl border-gray-200 focus:border-[#FF9C04] transition-all"
-                              />
-                            </div>
-                          </div>
-
-                          <div className="grid md:grid-cols-2 gap-6 lg:gap-8">
-                            <div className="space-y-3">
-                              <Label
-                                htmlFor="email"
-                                className="flex items-center gap-2 text-[#001B55] font-semibold text-sm"
-                              >
-                                <Mail className="w-4 h-4" />
-                                Email <span className="text-red-500">*</span>
-                              </Label>
-                              <Input
-                                id="email"
-                                name="email"
-                                type="email"
-                                value={formData.email}
-                                onChange={handleChange}
-                                required
-                                placeholder="email@example.com"
-                                className="h-12 rounded-xl border-gray-200 focus:border-[#FF9C04] transition-all"
-                              />
-                            </div>
-
-                            <div className="space-y-3">
-                              <Label
-                                htmlFor="phone"
-                                className="flex items-center gap-2 text-[#001B55] font-semibold text-sm"
-                              >
-                                <Phone className="w-4 h-4" />
-                                Nomor Telepon{" "}
-                                <span className="text-red-500">*</span>
-                              </Label>
-                              <Input
-                                id="phone"
-                                name="phone"
-                                type="tel"
-                                value={formData.phone}
-                                onChange={handleChange}
-                                required
-                                placeholder="08xxxxxxxxxx"
-                                className="h-12 rounded-xl border-gray-200 focus:border-[#FF9C04] transition-all"
-                              />
-                            </div>
-                          </div>
-
-                          <div className="grid md:grid-cols-2 gap-6 lg:gap-8">
-                            <div className="space-y-3">
-                              <Label
-                                htmlFor="dateOfBirth"
-                                className="text-[#001B55] font-semibold text-sm"
-                              >
-                                Tanggal Lahir{" "}
-                                <span className="text-red-500">*</span>
-                              </Label>
-                              <Input
-                                id="dateOfBirth"
-                                name="dateOfBirth"
-                                type="date"
-                                value={formData.dateOfBirth}
-                                onChange={handleChange}
-                                required
-                                className="h-12 rounded-xl border-gray-200 focus:border-[#FF9C04] transition-all"
-                              />
-                            </div>
-
-                            <div className="space-y-3">
-                              <Label
-                                htmlFor="gender"
-                                className="text-[#001B55] font-semibold text-sm"
-                              >
-                                Jenis Kelamin{" "}
-                                <span className="text-red-500">*</span>
-                              </Label>
-                              <Select
-                                value={formData.gender}
-                                onValueChange={(value) =>
-                                  setFormData({ ...formData, gender: value })
-                                }
-                              >
-                                <SelectTrigger className="h-12 rounded-xl border-gray-200 focus:border-[#FF9C04]">
-                                  <SelectValue placeholder="Pilih jenis kelamin" />
-                                </SelectTrigger>
-                                <SelectContent>
-                                  <SelectItem value="male">Laki-laki</SelectItem>
-                                  <SelectItem value="female">
-                                    Perempuan
-                                  </SelectItem>
-                                </SelectContent>
-                              </Select>
-                            </div>
-                          </div>
-                        </div>
-                      )}
-
-                      {/* Step 2: Alamat & Pekerjaan */}
-                      {currentStep === 2 && (
-                        <div className="space-y-8 animate-fade-in">
-                          <div className="space-y-3">
-                            <Label
-                              htmlFor="fullAddress"
-                              className="flex items-center gap-2 text-[#001B55] font-semibold text-sm"
-                            >
-                              <MapPin className="w-4 h-4" />
-                              Alamat Lengkap{" "}
-                              <span className="text-red-500">*</span>
-                            </Label>
-                            <Textarea
-                              id="fullAddress"
-                              name="fullAddress"
-                              value={formData.fullAddress}
-                              onChange={handleChange}
-                              required
-                              rows={5}
-                              placeholder="Masukkan alamat lengkap sesuai KTP&#10;Contoh: Jl. Pahlawan No. 123, RT 02/RW 03, Kelurahan Sidoarjo, Kecamatan Sidoarjo"
-                              className="rounded-xl border-gray-200 focus:border-[#FF9C04] transition-all resize-none"
-                            />
-                          </div>
-
-                          <div className="grid md:grid-cols-2 gap-6 lg:gap-8">
-                            <div className="space-y-3">
-                              <Label
-                                htmlFor="occupation"
-                                className="flex items-center gap-2 text-[#001B55] font-semibold text-sm"
-                              >
-                                <Briefcase className="w-4 h-4" />
-                                Pekerjaan{" "}
-                                <span className="text-red-500">*</span>
-                              </Label>
-                              <Input
-                                id="occupation"
-                                name="occupation"
-                                value={formData.occupation}
-                                onChange={handleChange}
-                                required
-                                placeholder="Contoh: Pelajar, Mahasiswa, dll"
-                                className="h-12 rounded-xl border-gray-200 focus:border-[#FF9C04] transition-all"
-                              />
-                            </div>
-
-                            <div className="space-y-3">
-                              <Label
-                                htmlFor="familyMemberCount"
-                                className="flex items-center gap-2 text-[#001B55] font-semibold text-sm"
-                              >
-                                <Users className="w-4 h-4" />
-                                Jumlah Anggota Keluarga
-                              </Label>
-                              <Input
-                                id="familyMemberCount"
-                                name="familyMemberCount"
-                                type="number"
-                                min="0"
-                                value={formData.familyMemberCount}
-                                onChange={handleChange}
-                                placeholder="Contoh: 5"
-                                className="h-12 rounded-xl border-gray-200 focus:border-[#FF9C04] transition-all"
-                              />
-                            </div>
-                          </div>
-
-                          <div className="space-y-3">
-                            <Label
-                              htmlFor="proposerName"
-                              className="flex items-center gap-2 text-[#001B55] font-semibold text-sm"
-                            >
-                              <User className="w-4 h-4" />
-                              Nama Pengusul{" "}
-                              <span className="text-red-500">*</span>
-                            </Label>
-                            <Input
-                              id="proposerName"
-                              name="proposerName"
-                              value={formData.proposerName}
-                              onChange={handleChange}
-                              required
-                              placeholder="Nama orang yang mengusulkan Anda"
-                              className="h-12 rounded-xl border-gray-200 focus:border-[#FF9C04] transition-all"
-                            />
-                          </div>
-
-                          <div className="space-y-3">
-                            <Label
-                              htmlFor="category"
-                              className="flex items-center gap-2 text-[#001B55] font-semibold text-sm"
-                            >
-                              <Award className="w-4 h-4" />
-                              Kategori Bantuan{" "}
-                              <span className="text-red-500">*</span>
-                            </Label>
-                            <Select
-                              value={formData.category}
-                              onValueChange={(value) =>
-                                setFormData({ ...formData, category: value })
-                              }
-                            >
-                              <SelectTrigger className="h-12 rounded-xl border-gray-200 focus:border-[#FF9C04] transition-all">
-                                <SelectValue placeholder="Pilih kategori bantuan" />
-                              </SelectTrigger>
-                              <SelectContent>
-                                <SelectItem value="education">Bantuan Pendidikan</SelectItem>
-                                <SelectItem value="health">Bantuan Kesehatan</SelectItem>
-                                <SelectItem value="economy">Bantuan Ekonomi</SelectItem>
-                                <SelectItem value="infrastructure">Bantuan Infrastruktur</SelectItem>
-                                <SelectItem value="other">Lainnya</SelectItem>
-                              </SelectContent>
-                            </Select>
-                          </div>
-
-                          <div className="space-y-3">
-                            <Label
-                              htmlFor="notes"
-                              className="flex items-center gap-2 text-[#001B55] font-semibold text-sm"
-                            >
-                              <FileText className="w-4 h-4" />
-                              Keterangan / Alasan Pengajuan
-                            </Label>
-                            <Textarea
-                              id="notes"
-                              name="notes"
-                              value={formData.notes}
-                              onChange={handleChange}
-                              rows={4}
-                              placeholder="Jelaskan alasan Anda mengajukan bantuan PIP (opsional)"
-                              className="rounded-xl border-gray-200 focus:border-[#FF9C04] transition-all resize-none"
-                            />
-                          </div>
-                        </div>
-                      )}
-
-                      {/* Navigation Buttons */}
-                      <div className="flex gap-4 pt-8 mt-8 border-t-2 border-gray-100">
-                        {currentStep > 1 && (
-                          <Button
-                            type="button"
-                            variant="outline"
-                            onClick={prevStep}
-                            className="flex-1 h-14 rounded-xl text-[#6B7280] hover:bg-[#001B55]/5 hover:text-[#001B55] border border-gray-200 hover:border-[#001B55]/20 font-semibold text-base transition-all duration-300"
-                          >
-                            <ArrowLeft className="w-5 h-5 mr-2" />
-                            Sebelumnya
-                          </Button>
-                        )}
-
-                        {currentStep < totalSteps ? (
-                          <Button
-                            type="button"
-                            onClick={nextStep}
-                            disabled={!isStepValid()}
-                            className="flex-1 h-14 rounded-xl bg-gradient-to-r from-[#FF9C04] to-[#FF9C04]/90 hover:from-[#001B55] hover:to-[#001B55] disabled:opacity-40 disabled:cursor-not-allowed font-semibold text-base transition-all duration-300 shadow-lg hover:shadow-xl"
-                          >
-                            Selanjutnya
-                            <ArrowRight className="w-5 h-5 ml-2" />
-                          </Button>
-                        ) : (
-                          <Button
-                            type="submit"
-                            disabled={submitMutation.isPending}
-                            className="flex-1 h-14 rounded-xl bg-gradient-to-r from-[#FF9C04] to-[#FF9C04]/90 hover:from-[#001B55] hover:to-[#001B55] text-white font-semibold text-base shadow-lg hover:shadow-xl transition-all duration-300"
-                          >
-                            {submitMutation.isPending ? (
-                              <div className="flex items-center gap-3">
-                                <div className="w-5 h-5 border-3 border-white/30 border-t-white rounded-full animate-spin"></div>
-                                <span>Mengirim Data...</span>
-                              </div>
-                            ) : (
-                              <div className="flex items-center gap-3">
-                                <CheckCircle className="w-5 h-5" />
-                                <span>Daftar Sekarang</span>
-                              </div>
+            {/* Form Card */}
+            <Card className="border border-gray-100 shadow-xl overflow-hidden rounded-2xl bg-white">
+              <CardContent className="p-8 md:p-10 lg:p-12">
+                <Form {...form}>
+                  <form
+                    onSubmit={form.handleSubmit(onSubmit)}
+                    className="space-y-6"
+                  >
+                    {/* Step 1: Data Pribadi */}
+                    {currentStep === 1 && (
+                      <div className="space-y-8 animate-fade-in">
+                        <div className="grid md:grid-cols-2 gap-6 lg:gap-8">
+                          <FormField
+                            control={form.control}
+                            name="fullName"
+                            render={({ field }) => (
+                              <FormItem>
+                                <FormLabel className="flex items-center gap-2 text-[#001B55] font-semibold text-sm">
+                                  <User className="w-4 h-4" />
+                                  Nama Lengkap{" "}
+                                  <span className="text-red-500">*</span>
+                                </FormLabel>
+                                <FormControl>
+                                  <Input
+                                    {...field}
+                                    placeholder="Masukkan nama lengkap sesuai KTP"
+                                    className="h-12 rounded-xl border-gray-200 focus:border-[#FF9C04] transition-all"
+                                  />
+                                </FormControl>
+                                <FormMessage />
+                              </FormItem>
                             )}
-                          </Button>
-                        )}
-                      </div>
-                    </form>
-                  </CardContent>
-                </Card>
+                          />
 
-                {/* Info Box */}
-                <div className="mt-10 md:mt-12 bg-white shadow-lg rounded-2xl overflow-hidden border border-gray-100">
-                  <div className="bg-gradient-to-r from-[#001B55] to-[#001845] p-6 md:p-7">
-                    <div className="flex items-center gap-3">
-                      <div className="w-10 h-10 rounded-full bg-white/10 backdrop-blur-sm flex items-center justify-center">
-                        <AlertCircle className="w-5 h-5 text-[#FF9C04]" />
+                          <FormField
+                            control={form.control}
+                            name="nik"
+                            render={({ field }) => (
+                              <FormItem>
+                                <FormLabel className="flex items-center gap-2 text-[#001B55] font-semibold text-sm">
+                                  <CreditCard className="w-4 h-4" />
+                                  NIK <span className="text-red-500">*</span>
+                                </FormLabel>
+                                <FormControl>
+                                  <Input
+                                    {...field}
+                                    placeholder="16 digit NIK"
+                                    maxLength={16}
+                                    className="h-12 rounded-xl border-gray-200 focus:border-[#FF9C04] transition-all"
+                                  />
+                                </FormControl>
+                                <FormMessage />
+                              </FormItem>
+                            )}
+                          />
+                        </div>
+
+                        <div className="grid md:grid-cols-2 gap-6 lg:gap-8">
+                          <FormField
+                            control={form.control}
+                            name="email"
+                            render={({ field }) => (
+                              <FormItem>
+                                <FormLabel className="flex items-center gap-2 text-[#001B55] font-semibold text-sm">
+                                  <Mail className="w-4 h-4" />
+                                  Email <span className="text-red-500">*</span>
+                                </FormLabel>
+                                <FormControl>
+                                  <Input
+                                    {...field}
+                                    type="email"
+                                    placeholder="email@example.com"
+                                    className="h-12 rounded-xl border-gray-200 focus:border-[#FF9C04] transition-all"
+                                  />
+                                </FormControl>
+                                <FormMessage />
+                              </FormItem>
+                            )}
+                          />
+
+                          <FormField
+                            control={form.control}
+                            name="phone"
+                            render={({ field }) => (
+                              <FormItem>
+                                <FormLabel className="flex items-center gap-2 text-[#001B55] font-semibold text-sm">
+                                  <Phone className="w-4 h-4" />
+                                  Nomor Telepon{" "}
+                                  <span className="text-red-500">*</span>
+                                </FormLabel>
+                                <FormControl>
+                                  <Input
+                                    {...field}
+                                    type="tel"
+                                    placeholder="08xxxxxxxxxx"
+                                    className="h-12 rounded-xl border-gray-200 focus:border-[#FF9C04] transition-all"
+                                  />
+                                </FormControl>
+                                <FormMessage />
+                              </FormItem>
+                            )}
+                          />
+                        </div>
+
+                        <div className="grid md:grid-cols-2 gap-6 lg:gap-8">
+                          <FormField
+                            control={form.control}
+                            name="dateOfBirth"
+                            render={({ field }) => (
+                              <FormItem>
+                                <FormLabel className="text-[#001B55] font-semibold text-sm">
+                                  Tanggal Lahir{" "}
+                                  <span className="text-red-500">*</span>
+                                </FormLabel>
+                                <FormControl>
+                                  <Input
+                                    {...field}
+                                    type="date"
+                                    className="h-12 rounded-xl border-gray-200 focus:border-[#FF9C04] transition-all"
+                                  />
+                                </FormControl>
+                                <FormMessage />
+                              </FormItem>
+                            )}
+                          />
+
+                          <FormField
+                            control={form.control}
+                            name="gender"
+                            render={({ field }) => (
+                              <FormItem>
+                                <FormLabel className="text-[#001B55] font-semibold text-sm">
+                                  Jenis Kelamin{" "}
+                                  <span className="text-red-500">*</span>
+                                </FormLabel>
+                                <Select
+                                  onValueChange={field.onChange}
+                                  value={field.value}
+                                >
+                                  <FormControl>
+                                    <SelectTrigger className="h-12 rounded-xl border-gray-200 focus:border-[#FF9C04]">
+                                      <SelectValue placeholder="Pilih jenis kelamin" />
+                                    </SelectTrigger>
+                                  </FormControl>
+                                  <SelectContent>
+                                    <SelectItem value="male">
+                                      Laki-laki
+                                    </SelectItem>
+                                    <SelectItem value="female">
+                                      Perempuan
+                                    </SelectItem>
+                                  </SelectContent>
+                                </Select>
+                                <FormMessage />
+                              </FormItem>
+                            )}
+                          />
+                        </div>
                       </div>
-                      <h3 className="font-bold text-white text-lg md:text-xl">
-                        Informasi Penting
-                      </h3>
+                    )}
+
+                    {/* Step 2: Alamat & Pekerjaan */}
+                    {currentStep === 2 && (
+                      <div className="space-y-8 animate-fade-in">
+                        <FormField
+                          control={form.control}
+                          name="fullAddress"
+                          render={({ field }) => (
+                            <FormItem>
+                              <FormLabel className="flex items-center gap-2 text-[#001B55] font-semibold text-sm">
+                                <MapPin className="w-4 h-4" />
+                                Alamat Lengkap{" "}
+                                <span className="text-red-500">*</span>
+                              </FormLabel>
+                              <FormControl>
+                                <Textarea
+                                  {...field}
+                                  rows={5}
+                                  placeholder="Masukkan alamat lengkap sesuai KTP&#10;Contoh: Jl. Pahlawan No. 123, RT 02/RW 03, Kelurahan Sidoarjo, Kecamatan Sidoarjo"
+                                  className="rounded-xl border-gray-200 focus:border-[#FF9C04] transition-all resize-none"
+                                />
+                              </FormControl>
+                              <FormMessage />
+                            </FormItem>
+                          )}
+                        />
+
+                        <div className="grid md:grid-cols-2 gap-6 lg:gap-8">
+                          <FormField
+                            control={form.control}
+                            name="occupation"
+                            render={({ field }) => (
+                              <FormItem>
+                                <FormLabel className="flex items-center gap-2 text-[#001B55] font-semibold text-sm">
+                                  <Briefcase className="w-4 h-4" />
+                                  Pekerjaan{" "}
+                                  <span className="text-red-500">*</span>
+                                </FormLabel>
+                                <FormControl>
+                                  <Input
+                                    {...field}
+                                    placeholder="Contoh: Pelajar, Mahasiswa, dll"
+                                    className="h-12 rounded-xl border-gray-200 focus:border-[#FF9C04] transition-all"
+                                  />
+                                </FormControl>
+                                <FormMessage />
+                              </FormItem>
+                            )}
+                          />
+
+                          <FormField
+                            control={form.control}
+                            name="familyMemberCount"
+                            render={({ field }) => (
+                              <FormItem>
+                                <FormLabel className="flex items-center gap-2 text-[#001B55] font-semibold text-sm">
+                                  <Users className="w-4 h-4" />
+                                  Jumlah Anggota Keluarga
+                                </FormLabel>
+                                <FormControl>
+                                  <Input
+                                    {...field}
+                                    type="number"
+                                    min="0"
+                                    placeholder="Contoh: 5"
+                                    className="h-12 rounded-xl border-gray-200 focus:border-[#FF9C04] transition-all"
+                                  />
+                                </FormControl>
+                                <FormMessage />
+                              </FormItem>
+                            )}
+                          />
+                        </div>
+
+                        <FormField
+                          control={form.control}
+                          name="proposerName"
+                          render={({ field }) => (
+                            <FormItem>
+                              <FormLabel className="flex items-center gap-2 text-[#001B55] font-semibold text-sm">
+                                <User className="w-4 h-4" />
+                                Nama Pengusul{" "}
+                                <span className="text-red-500">*</span>
+                              </FormLabel>
+                              <FormControl>
+                                <Input
+                                  {...field}
+                                  placeholder="Nama orang yang mengusulkan Anda"
+                                  className="h-12 rounded-xl border-gray-200 focus:border-[#FF9C04] transition-all"
+                                />
+                              </FormControl>
+                              <FormMessage />
+                            </FormItem>
+                          )}
+                        />
+
+                        <FormField
+                          control={form.control}
+                          name="notes"
+                          render={({ field }) => (
+                            <FormItem>
+                              <FormLabel className="flex items-center gap-2 text-[#001B55] font-semibold text-sm">
+                                <FileText className="w-4 h-4" />
+                                Keterangan / Alasan Pengajuan
+                              </FormLabel>
+                              <FormControl>
+                                <Textarea
+                                  {...field}
+                                  rows={4}
+                                  placeholder="Jelaskan alasan Anda mengajukan bantuan PIP (opsional)"
+                                  className="rounded-xl border-gray-200 focus:border-[#FF9C04] transition-all resize-none"
+                                />
+                              </FormControl>
+                              <FormMessage />
+                            </FormItem>
+                          )}
+                        />
+                      </div>
+                    )}
+
+                    {/* Navigation Buttons */}
+                    <div className="flex gap-4 pt-8 mt-8 border-t-2 border-gray-100">
+                      {currentStep > 1 && (
+                        <Button
+                          type="button"
+                          variant="outline"
+                          onClick={prevStep}
+                          className="flex-1 h-14 rounded-xl text-[#6B7280] hover:bg-[#001B55]/5 hover:text-[#001B55] border border-gray-200 hover:border-[#001B55]/20 font-semibold text-base transition-all duration-300"
+                        >
+                          <ArrowLeft className="w-5 h-5 mr-2" />
+                          Sebelumnya
+                        </Button>
+                      )}
+
+                      {currentStep < totalSteps ? (
+                        <Button
+                          type="button"
+                          onClick={nextStep}
+                          className="flex-1 h-14 rounded-xl bg-gradient-to-r from-[#FF9C04] to-[#FF9C04]/90 hover:from-[#001B55] hover:to-[#001B55] font-semibold text-base transition-all duration-300 shadow-lg hover:shadow-xl"
+                        >
+                          Selanjutnya
+                          <ArrowRight className="w-5 h-5 ml-2" />
+                        </Button>
+                      ) : (
+                        <Button
+                          type="submit"
+                          disabled={submitMutation.isPending}
+                          className="flex-1 h-14 rounded-xl bg-gradient-to-r from-[#FF9C04] to-[#FF9C04]/90 hover:from-[#001B55] hover:to-[#001B55] text-white font-semibold text-base shadow-lg hover:shadow-xl transition-all duration-300"
+                        >
+                          {submitMutation.isPending ? (
+                            <div className="flex items-center gap-3">
+                              <div className="w-5 h-5 border-3 border-white/30 border-t-white rounded-full animate-spin"></div>
+                              <span>Mengirim Data...</span>
+                            </div>
+                          ) : (
+                            <div className="flex items-center gap-3">
+                              <CheckCircle className="w-5 h-5" />
+                              <span>Daftar Sekarang</span>
+                            </div>
+                          )}
+                        </Button>
+                      )}
                     </div>
+                  </form>
+                </Form>
+              </CardContent>
+            </Card>
+
+            {/* Info Box */}
+            <div className="mt-10 md:mt-12 bg-white shadow-lg rounded-2xl overflow-hidden border border-gray-100">
+              <div className="bg-gradient-to-r from-[#001B55] to-[#001845] p-6 md:p-7">
+                <div className="flex items-center gap-3">
+                  <div className="w-10 h-10 rounded-full bg-white/10 backdrop-blur-sm flex items-center justify-center">
+                    <AlertCircle className="w-5 h-5 text-[#FF9C04]" />
                   </div>
-                  <div className="p-8 md:p-10">
-                    <ul className="space-y-6">
-                      <li className="flex items-start gap-4 group">
-                        <div className="w-10 h-10 rounded-full bg-[#FF9C04] flex items-center justify-center flex-shrink-0 shadow-md group-hover:scale-110 transition-transform duration-300">
-                          <Check
-                            className="w-5 h-5 text-white"
-                            strokeWidth={3}
-                          />
-                        </div>
-                        <span className="text-[#6B7280] pt-2 leading-relaxed">
-                          Data Anda akan kami proses dalam waktu maksimal{" "}
-                          <strong className="text-[#001B55]">
-                            7x24 jam kerja
-                          </strong>
-                        </span>
-                      </li>
-                      <li className="flex items-start gap-4 group">
-                        <div className="w-10 h-10 rounded-full bg-[#FF9C04] flex items-center justify-center flex-shrink-0 shadow-md group-hover:scale-110 transition-transform duration-300">
-                          <Check
-                            className="w-5 h-5 text-white"
-                            strokeWidth={3}
-                          />
-                        </div>
-                        <span className="text-[#6B7280] pt-2 leading-relaxed">
-                          Pastikan{" "}
-                          <strong className="text-[#001B55]">
-                            email dan nomor telepon
-                          </strong>{" "}
-                          yang Anda berikan aktif untuk proses verifikasi
-                        </span>
-                      </li>
-                      <li className="flex items-start gap-4 group">
-                        <div className="w-10 h-10 rounded-full bg-[#FF9C04] flex items-center justify-center flex-shrink-0 shadow-md group-hover:scale-110 transition-transform duration-300">
-                          <Check
-                            className="w-5 h-5 text-white"
-                            strokeWidth={3}
-                          />
-                        </div>
-                        <span className="text-[#6B7280] pt-2 leading-relaxed">
-                          Untuk informasi lebih lanjut, hubungi kami di{" "}
-                          <strong className="text-[#001B55]">
-                            (031) 1234-5678
-                          </strong>
-                        </span>
-                      </li>
-                    </ul>
-                  </div>
+                  <h3 className="font-bold text-white text-lg md:text-xl">
+                    Informasi Penting
+                  </h3>
                 </div>
-              </>
-            )}
+              </div>
+              <div className="p-8 md:p-10">
+                <ul className="space-y-6">
+                  <li className="flex items-start gap-4 group">
+                    <div className="w-10 h-10 rounded-full bg-[#FF9C04] flex items-center justify-center flex-shrink-0 shadow-md group-hover:scale-110 transition-transform duration-300">
+                      <Check className="w-5 h-5 text-white" strokeWidth={3} />
+                    </div>
+                    <span className="text-[#6B7280] pt-2 leading-relaxed">
+                      Data Anda akan kami proses dalam waktu maksimal{" "}
+                      <strong className="text-[#001B55]">7x24 jam kerja</strong>
+                    </span>
+                  </li>
+                  <li className="flex items-start gap-4 group">
+                    <div className="w-10 h-10 rounded-full bg-[#FF9C04] flex items-center justify-center flex-shrink-0 shadow-md group-hover:scale-110 transition-transform duration-300">
+                      <Check className="w-5 h-5 text-white" strokeWidth={3} />
+                    </div>
+                    <span className="text-[#6B7280] pt-2 leading-relaxed">
+                      Pastikan{" "}
+                      <strong className="text-[#001B55]">
+                        email dan nomor telepon
+                      </strong>{" "}
+                      yang Anda berikan aktif untuk proses verifikasi
+                    </span>
+                  </li>
+                  <li className="flex items-start gap-4 group">
+                    <div className="w-10 h-10 rounded-full bg-[#FF9C04] flex items-center justify-center flex-shrink-0 shadow-md group-hover:scale-110 transition-transform duration-300">
+                      <Check className="w-5 h-5 text-white" strokeWidth={3} />
+                    </div>
+                    <span className="text-[#6B7280] pt-2 leading-relaxed">
+                      Untuk informasi lebih lanjut, hubungi kami di{" "}
+                      <strong className="text-[#001B55]">
+                        (031) 1234-5678
+                      </strong>
+                    </span>
+                  </li>
+                </ul>
+              </div>
+            </div>
           </div>
         </div>
       </section>

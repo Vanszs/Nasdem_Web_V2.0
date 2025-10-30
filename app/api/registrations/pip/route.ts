@@ -12,7 +12,11 @@ const pipRegistrationSchema = z.object({
   gender: z.enum(["male", "female"]).optional().or(z.literal("")),
   occupation: z.string().optional().or(z.literal("")),
   familyMemberCount: z.string().optional().or(z.literal("")),
-  fullAddress: z.string().min(10, "Alamat minimal 10 karakter").optional().or(z.literal("")),
+  fullAddress: z
+    .string()
+    .min(10, "Alamat minimal 10 karakter")
+    .optional()
+    .or(z.literal("")),
   proposerName: z.string().min(3, "Nama pengusul minimal 3 karakter"),
 });
 
@@ -34,12 +38,10 @@ export async function POST(req: NextRequest) {
       proposerName: formData.get("proposerName") as string,
     };
 
-    console.log("📝 Received registration data:", data);
-
     // Validate
     const validatedData = pipRegistrationSchema.parse(data);
 
-    // Get programId from form data
+    // Get programId from form data - NOW REQUIRED
     const programIdStr = formData.get("programId") as string;
     if (!programIdStr) {
       return NextResponse.json(
@@ -49,26 +51,21 @@ export async function POST(req: NextRequest) {
     }
 
     const programId = parseInt(programIdStr);
-    
-    console.log("🔍 Looking for program with ID:", programId);
-    
-    // Verify program exists and is education/PIP category
+
+    // Verify program exists
     const program = await db.program.findUnique({
       where: { id: programId },
     });
 
     if (!program) {
-      console.log("❌ Program not found, but proceeding anyway (temporary mode)");
-      // TEMPORARY: Allow registration even without program for testing
-      // Comment this out when real program is available
+      return NextResponse.json(
+        { error: "Program tidak ditemukan" },
+        { status: 404 }
+      );
     }
 
-    // TEMPORARY: Use programId 999 if program doesn't exist
-    // Remove this when real program is available
-    const finalProgramId = program?.id || 999;
-
-    // Optional: Verify it's an education program (skip if no program)
-    if (program && program.category !== "pendidikan") {
+    // Optional: Verify it's an education program
+    if (program.category !== "pendidikan") {
       return NextResponse.json(
         { error: "Program harus dari kategori pendidikan" },
         { status: 400 }
@@ -78,7 +75,7 @@ export async function POST(req: NextRequest) {
     // Check if NIK already registered for this program
     const existingRegistration = await db.pipRegistration.findFirst({
       where: {
-        programId: finalProgramId,
+        programId: programId,
         nik: validatedData.nik,
       },
     });
@@ -93,12 +90,14 @@ export async function POST(req: NextRequest) {
     // Create registration
     const registration = await db.pipRegistration.create({
       data: {
-        programId: finalProgramId,
+        programId: programId,
         fullName: validatedData.fullName,
         email: validatedData.email || null,
         nik: validatedData.nik,
         phone: validatedData.phone || null,
-        dateOfBirth: validatedData.dateOfBirth ? new Date(validatedData.dateOfBirth) : null,
+        dateOfBirth: validatedData.dateOfBirth
+          ? new Date(validatedData.dateOfBirth)
+          : null,
         gender: validatedData.gender as any,
         occupation: validatedData.occupation || null,
         familyMemberCount: validatedData.familyMemberCount

@@ -13,6 +13,11 @@ export async function GET(
   try {
     const program = await db.program.findUnique({
       where: { id: parseInt(params.id) },
+      include: {
+        coordinator: {
+          select: { id: true, fullName: true, photoUrl: true },
+        },
+      },
     });
 
     if (!program) {
