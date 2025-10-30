@@ -167,6 +167,9 @@ importers:
       next-themes:
         specifier: ^0.4.6
         version: 0.4.6(react-dom@19.1.1(react@19.1.1))(react@19.1.1)
+      react-csv-downloader:
+        specifier: ^3.3.0
+        version: 3.3.0(react@19.1.1)
       react-day-picker:
         specifier: 9.11.0
         version: 9.11.0(react@19.1.1)
@@ -1976,6 +1979,9 @@ packages:
     resolution: {integrity: sha512-6rxyATwPCkaFIL3JLqw8qXqMpIZ942pTX/tbQFkRsDGblS8tNGtlUauA/+mt6RUfqn/4MoEr+WDkYoIQbibWuQ==}
     engines: {node: '>=6.0.0'}
 
+  file-saver@2.0.5:
+    resolution: {integrity: sha512-P9bmyZ3h/PRG+Nzga+rbdI4OEpNDzAVyy74uVO9ATgzLK6VtAsYybF/+TOCvrc0MO793d6+42lLyZTw7/ArVzA==}
+
   fontkit@2.0.4:
     resolution: {integrity: sha512-syetQadaUEDNdxdugga9CpEYVaQIxOwk7GlwZWWZ19//qW4zE5bknOKeMBDYAASwnpaSHKJITRLMF9m1fp3s6g==}
 
@@ -2718,6 +2724,12 @@ packages:
 
   rc9@2.1.2:
     resolution: {integrity: sha512-btXCnMmRIBINM2LDZoEmOogIZU7Qe7zn4BpomSKZ/ykbLObuBdvG+mFq11DL6fjH1DRwHhrlgtYWG96bJiC7Cg==}
+
+  react-csv-downloader@3.3.0:
+    resolution: {integrity: sha512-JjaLf3TZBKca4Ap/Wi0PbfV/QFCmHlTnKLBP5PEiUvvHiMhNL0KWBylRdVHva1jTKNeUxUyLisWXG1+JV8oavw==}
+    engines: {npm: '>=7.0.0'}
+    peerDependencies:
+      react: ^16.6.3 || ^17.0.0 || ^18.0.0 || ^19.0.0
 
   react-day-picker@9.11.0:
     resolution: {integrity: sha512-L4FYOaPrr3+AEROeP6IG2mCORZZfxJDkJI2df8mv1jyPrNYeccgmFPZDaHyAuPCBCddQFozkxbikj2NhMEYfDQ==}
@@ -5019,6 +5031,8 @@ snapshots:
 
   fast-equals@5.3.2: {}
 
+  file-saver@2.0.5: {}
+
   fontkit@2.0.4:
     dependencies:
       '@swc/helpers': 0.5.15
@@ -6007,6 +6021,11 @@ snapshots:
     dependencies:
       defu: 6.1.4
       destr: 2.0.5
+
+  react-csv-downloader@3.3.0(react@19.1.1):
+    dependencies:
+      file-saver: 2.0.5
+      react: 19.1.1
 
   react-day-picker@9.11.0(react@19.1.1):
     dependencies:
