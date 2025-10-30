@@ -1,6 +1,7 @@
 "use client";
 
 import { z } from "zod";
+import { useEffect } from "react";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import {
@@ -71,6 +72,25 @@ export function UserFormDialog(props: Props) {
         }
       : { username: "", email: "", password: "", role: "editor" },
   });
+
+  // Ensure form values are populated when opening edit dialog or when user changes
+  const depUserId = isEdit ? (props as EditProps).user?.id : undefined;
+
+  useEffect(() => {
+    if (isEdit && props.open && props.user) {
+      form.reset({
+        username: props.user.username,
+        email: props.user.email,
+        password: "",
+        role: props.user.role,
+      });
+    }
+    if (!props.open && !isEdit) {
+      // Reset to create defaults when closing create dialog
+      form.reset({ username: "", email: "", password: "", role: "editor" });
+    }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [isEdit, props.open, depUserId]);
 
   const handleSubmit = (values: any) => {
     if (isEdit) {
@@ -160,10 +180,7 @@ export function UserFormDialog(props: Props) {
                 render={({ field }) => (
                   <FormItem>
                     <FormLabel>Role</FormLabel>
-                    <Select
-                      onValueChange={field.onChange}
-                      defaultValue={field.value}
-                    >
+                    <Select onValueChange={field.onChange} value={field.value}>
                       <FormControl>
                         <SelectTrigger>
                           <SelectValue placeholder="Pilih role" />

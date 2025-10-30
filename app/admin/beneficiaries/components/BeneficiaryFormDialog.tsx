@@ -249,7 +249,7 @@ export function BeneficiaryFormDialog({
           <Plus className="w-4 h-4 mr-2" /> Tambah Penerima Manfaat
         </Button>
       </DialogTrigger>
-      <DialogContent className="sm:max-w-[900px] max-h-[90vh] overflow-hidden flex flex-col bg-gradient-to-br from-white to-[#F0F6FF] border-2 border-[#C4D9FF]">
+      <DialogContent className="max-w-[95vw] sm:max-w-lg md:max-w-2xl lg:max-w-4xl xl:max-w-6xl max-h-[90vh] overflow-hidden flex flex-col bg-gradient-to-br from-white to-[#F0F6FF] border-2 border-[#C4D9FF]">
         <DialogHeader className="pb-4 border-b border-[#E8F9FF]">
           <div className="flex items-center gap-3">
             <div className="flex h-12 w-12 items-center justify-center rounded-xl bg-gradient-to-br from-[#C5BAFF] to-[#C4D9FF] shadow-lg">

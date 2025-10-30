@@ -56,6 +56,7 @@ export function DataTable<T extends Record<string, any>>({
 
   // Format cell value
   const formatCellValue = (value: any, format?: string) => {
+    console.log(value);
     if (value === null || value === undefined) return "-";
 
     if (format === "currency:USD") {
@@ -162,7 +163,9 @@ export function DataTable<T extends Record<string, any>>({
               <tr
                 key={row[rowKey] || rowIndex}
                 className="hover:bg-blue-100 transition-colors"
-                style={{ backgroundColor: rowIndex % 2 === 0 ? '#ffffff' : '#eff1f3' }}
+                style={{
+                  backgroundColor: rowIndex % 2 === 0 ? "#ffffff" : "#eff1f3",
+                }}
               >
                 {columns.map((column) => (
                   <td

@@ -523,9 +523,8 @@ export function AddMemberDialog({
 
   return (
     <Dialog open={controlledOpen} onOpenChange={setOpen}>
-      {/* DialogTrigger removed - using controlled state from parent */}
       <DialogContent
-        className="!max-w-4xl max-h-[85vh] bg-white border border-[#D8E2F0] p-0 overflow-hidden flex flex-col"
+        className="max-w-[95vw] sm:max-w-lg md:max-w-2xl lg:max-w-4xl xl:max-w-6xl max-h-[90vh] bg-white border border-[#D8E2F0] p-0 overflow-hidden flex flex-col"
         style={{
           borderRadius: "16px",
           boxShadow: "0 20px 60px rgba(0, 27, 85, 0.15)",

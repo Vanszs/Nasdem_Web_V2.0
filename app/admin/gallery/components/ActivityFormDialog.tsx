@@ -399,7 +399,7 @@ export function ActivityFormDialog({ open, onOpenChange, initialData }: Props) {
 
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
-      <DialogContent className="max-w-4xl max-h-[90vh] overflow-y-auto">
+      <DialogContent className="max-w-[95vw] sm:max-w-lg md:max-w-2xl lg:max-w-4xl xl:max-w-6xl max-h-[90vh] overflow-y-auto">
         <DialogHeader className="pb-3 border-b border-gray-200">
           <DialogTitle className="text-xl font-bold text-[#001B55]">
             {isEdit ? "Edit Aktivitas" : "Tambah Aktivitas Baru"}

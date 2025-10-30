@@ -297,7 +297,7 @@ export function ProgramFormDialog({
           Tambah Program
         </Button>
       </DialogTrigger>
-      <DialogContent className="sm:max-w-[760px] max-h-[90vh] overflow-hidden flex flex-col">
+      <DialogContent className="max-w-[95vw] sm:max-w-lg md:max-w-2xl lg:max-w-4xl xl:max-w-6xl max-h-[90vh] overflow-hidden flex flex-col">
         <DialogHeader>
           <DialogTitle className="text-2xl font-bold text-[#001B55]">
             {editingProgram ? "Edit Program" : "Tambah Program Baru"}

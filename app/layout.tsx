@@ -18,18 +18,24 @@ export default async function RootLayout({
 }: Readonly<{
   children: React.ReactNode;
 }>) {
-  const hdrs = await headers();
-  const encoded = hdrs.get("x-user");
   let user: {
     userId: number;
     role: string;
     email?: string;
     username?: string;
   } | null = null;
-  if (encoded) {
-    try {
-      user = JSON.parse(Buffer.from(encoded, "base64").toString("utf-8"));
-    } catch {}
+  try {
+    const hdrs = await headers();
+    const encoded = hdrs.get("x-user");
+    if (encoded) {
+      try {
+        user = JSON.parse(Buffer.from(encoded, "base64").toString("utf-8"));
+      } catch {}
+    }
+  } catch (error) {
+    if (process.env.NODE_ENV === "development") {
+      console.warn("headers() unavailable during prerendering:", error);
+    }
   }
   return (
     <html

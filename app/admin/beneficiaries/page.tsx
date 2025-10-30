@@ -832,7 +832,7 @@ export default function BeneficiariesPage() {
 
         {/* View Detail Dialog */}
         <Dialog open={isViewDialogOpen} onOpenChange={setIsViewDialogOpen}>
-          <DialogContent className="max-w-4xl rounded-xl">
+          <DialogContent className="max-w-[95vw] sm:max-w-lg md:max-w-2xl lg:max-w-4xl xl:max-w-6xl max-h-[90vh] overflow-auto rounded-xl">
             <DialogHeader>
               <DialogTitle className="text-xl font-semibold text-[#001B55] flex items-center gap-3">
                 <div className="w-10 h-10 bg-[#E8F9FF] rounded-lg flex items-center justify-center">
@@ -987,7 +987,7 @@ export default function BeneficiariesPage() {
                   </div>
                 )}
 
-                <div className="flex justify-end gap-3 pt-4 border-t border-[#E8F9FF]">
+                <div className="flex flex-col sm:flex-row justify-end gap-3 pt-4 border-t border-[#E8F9FF]">
                   <Button
                     variant="outline"
                     onClick={() => setIsViewDialogOpen(false)}

@@ -102,7 +102,7 @@ export function MemberDetailDialog({
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
       <DialogContent
-        className="!max-w-5xl max-h-[90vh] overflow-hidden bg-white border-2 border-[#D8E2F0] shadow-2xl p-0 rounded-2xl transition-all duration-300 ease-in-out"
+        className="max-w-[95vw] sm:max-w-lg md:max-w-2xl lg:max-w-4xl xl:max-w-6xl max-h-[90vh] overflow-hidden bg-white border-2 border-[#D8E2F0] shadow-2xl p-0 rounded-2xl transition-all duration-300 ease-in-out"
         showCloseButton={false}
       >
         {/* Accessible title for screen readers */}

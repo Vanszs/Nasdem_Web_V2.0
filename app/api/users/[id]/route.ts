@@ -18,7 +18,7 @@ function validateId(id: string): number {
 // detail user
 export async function GET(
   req: NextRequest,
-  { params }: { params: { id: string } }
+  { params }: { params: Promise<{ id: string }> }
 ) {
   const authError = await requireAuth(req);
   if (authError) return authError;
@@ -27,10 +27,10 @@ export async function GET(
   if (roleError) return roleError;
 
   try {
-    const userId = validateId(params.id);
-    
+    const userId = validateId((await params).id);
+
     const user = await SoftDeleteHelper.findUserById(userId);
-    
+
     if (!user) {
       return NextResponse.json(
         { success: false, error: "User not found" },
@@ -57,7 +57,7 @@ export async function GET(
 // update user
 export async function PUT(
   req: NextRequest,
-  { params }: { params: { id: string } }
+  { params }: { params: Promise<{ id: string }> }
 ) {
   const authError = await requireAuth(req);
   if (authError) return authError;
@@ -66,18 +66,22 @@ export async function PUT(
   if (roleError) return roleError;
 
   try {
-    const userId = validateId(params.id);
+    const userId = validateId((await params).id);
     const body = await req.json();
-    
+
     // Validate input
     const validation = validateRequest(userSchemas.update, body);
     if (!validation.success) {
       return NextResponse.json(
-        { success: false, error: validation.error, details: validation.details },
+        {
+          success: false,
+          error: validation.error,
+          details: validation.details,
+        },
         { status: 400 }
       );
     }
-    
+
     const data = validation.data;
 
     // Check if user exists
@@ -98,11 +102,11 @@ export async function PUT(
             {
               OR: [
                 ...(data.email ? [{ email: data.email }] : []),
-                ...(data.username ? [{ username: data.username }] : [])
-              ]
-            }
-          ]
-        }
+                ...(data.username ? [{ username: data.username }] : []),
+              ],
+            },
+          ],
+        },
       });
 
       if (duplicateUser) {
@@ -117,7 +121,8 @@ export async function PUT(
     if (data.username) updateData.username = data.username;
     if (data.email) updateData.email = data.email;
     if (data.role) updateData.role = data.role;
-    if (data.password) updateData.password = await bcrypt.hash(data.password, 12); // Increased salt rounds
+    if (data.password)
+      updateData.password = await bcrypt.hash(data.password, 12); // Increased salt rounds
 
     const updated = await db.user.update({
       where: { id: userId },
@@ -161,7 +166,7 @@ export async function DELETE(
 
   try {
     const userId = validateId(params.id);
-    
+
     // Prevent self-deletion
     const currentUser = (req as any).user;
     if (currentUser.userId === userId) {
@@ -182,10 +187,10 @@ export async function DELETE(
 
     // Soft delete the user
     await SoftDeleteHelper.softDeleteUser(userId);
-    
+
     return NextResponse.json({
       success: true,
-      message: "User deleted successfully"
+      message: "User deleted successfully",
     });
   } catch (err: any) {
     console.error("Error deleting user:", err);

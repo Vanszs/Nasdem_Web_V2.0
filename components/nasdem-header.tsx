@@ -173,7 +173,7 @@ const NasdemHeader = () => {
             <Button
               variant="secondary"
               size="sm"
-              className="hover-scale font-medium"
+              className="font-medium"
               onClick={() => (window.location.href = "/bergabung")}
             >
               Bergabung
