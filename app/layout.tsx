@@ -2,7 +2,10 @@ import "./globals.css";
 import type { Metadata } from "next";
 import { GeistSans } from "geist/font/sans";
 import { GeistMono } from "geist/font/mono";
-import { Providers } from "./admin/providers";
+import { headers } from "next/headers";
+
+import { Providers } from "../components/providers";
+import AuthHydrator from "../components/AuthHydrator";
 
 export const metadata: Metadata = {
   title: "Nasdem Website",
@@ -10,11 +13,24 @@ export const metadata: Metadata = {
   generator: "Nasdem Website",
 };
 
-export default function RootLayout({
+export default async function RootLayout({
   children,
 }: Readonly<{
   children: React.ReactNode;
 }>) {
+  const hdrs = await headers();
+  const encoded = hdrs.get("x-user");
+  let user: {
+    userId: number;
+    role: string;
+    email?: string;
+    username?: string;
+  } | null = null;
+  if (encoded) {
+    try {
+      user = JSON.parse(Buffer.from(encoded, "base64").toString("utf-8"));
+    } catch {}
+  }
   return (
     <html
       lang="en"
@@ -25,6 +41,7 @@ export default function RootLayout({
         style={{ fontFamily: GeistSans.style.fontFamily }}
         suppressHydrationWarning
       >
+        <AuthHydrator user={user} />
         <Providers>{children}</Providers>
       </body>
     </html>

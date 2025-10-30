@@ -1,3 +1,5 @@
+"use client";
+
 import {
   Search,
   Bell,
@@ -27,7 +29,7 @@ import {
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { useRouter } from "next/navigation";
 import { UserRole } from "@/lib/rbac";
-import { useAuth } from "@/app/admin/hooks/useAuth";
+import { useAuthStore } from "@/store/auth";
 
 interface TopNavbarProps {
   breadcrumbs?: { label: string; href?: string }[];
@@ -39,7 +41,8 @@ export function TopNavbar({
   onToggleSidebar,
 }: TopNavbarProps) {
   const router = useRouter();
-  const { user, logout: authLogout, isLoading } = useAuth();
+  const user = useAuthStore((s) => s.user);
+  const authLogout = useAuthStore((s) => s.logout);
 
   const handleLogout = async () => {
     try {
@@ -51,7 +54,7 @@ export function TopNavbar({
     }
   };
 
-  const getRoleDisplayName = (role: UserRole) => {
+  const getRoleDisplayName = (role: UserRole | string) => {
     switch (role) {
       case UserRole.SUPERADMIN:
         return "Super Admin";
@@ -160,7 +163,9 @@ export function TopNavbar({
                       {user?.username || "Admin User"}
                     </span>
                     <span className="text-xs text-muted-foreground font-medium">
-                      {user ? getRoleDisplayName(user.role) : "Loading..."}
+                      {user
+                        ? getRoleDisplayName(user.role as UserRole)
+                        : "Loading..."}
                     </span>
                   </div>
                   <ChevronDown className="h-4 w-4 text-muted-foreground group-hover:text-foreground transition-all duration-300 group-hover:rotate-180" />

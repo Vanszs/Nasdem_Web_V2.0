@@ -1,31 +1,19 @@
 "use client";
 
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import ReactPlayer from "react-player";
-import { Button } from "@/components/ui/button";
+import { Button, buttonVariants } from "@/components/ui/button";
 import { Target, Heart } from "lucide-react";
 import Image from "next/image";
-import { useQuery } from "@tanstack/react-query";
+import Link from "next/link";
+type About = {
+  vision?: string | null;
+  mission?: string | null;
+  videoUrl?: string | null;
+};
 
-export function AboutSection() {
-  const { data, isLoading } = useQuery({
-    queryKey: ["cms", "about"],
-    queryFn: async () => {
-      const res = await fetch("/api/cms/about");
-      if (!res.ok) throw new Error("Gagal memuat data profil");
-      return res.json();
-    },
-  });
-
-  const about:
-    | {
-        vision?: string | null;
-        mission?: string | null;
-        videoUrl?: string | null;
-      }
-    | undefined = data?.data;
-
+export function AboutSection({ about }: { about?: About | null }) {
   const [expanded, setExpanded] = useState(false);
   const [isPlaying, setIsPlaying] = useState(false);
 
@@ -34,7 +22,7 @@ export function AboutSection() {
     setExpanded(false);
   };
 
-  useState(() => {
+  useEffect(() => {
     const handleEsc = (e: KeyboardEvent) => {
       if (e.key === "Escape" && expanded) {
         closePlayer();
@@ -44,7 +32,7 @@ export function AboutSection() {
       window.addEventListener("keydown", handleEsc);
       return () => window.removeEventListener("keydown", handleEsc);
     }
-  });
+  }, [expanded]);
 
   return (
     <section
@@ -75,9 +63,7 @@ export function AboutSection() {
           {/* Video / Gambar */}
           <div className="relative">
             <div className="relative overflow-hidden rounded-2xl shadow-2xl border-2 border-nasdem-blue/20 hover:border-nasdem-blue/40 hover:shadow-3xl transition-all duration-300">
-              {isLoading ? (
-                <div className="w-full h-[400px] bg-gray-100 animate-pulse" />
-              ) : about?.videoUrl ? (
+              {about?.videoUrl ? (
                 <ReactPlayer
                   src={about.videoUrl}
                   width="100%"
@@ -131,14 +117,10 @@ export function AboutSection() {
                       <h4 className="font-bold text-nasdem-blue mb-2 text-base">
                         Visi
                       </h4>
-                      {isLoading ? (
-                        <div className="h-16 w-full bg-gray-100 rounded animate-pulse" />
-                      ) : (
-                        <p className="text-gray-600 text-sm leading-relaxed w-full">
-                          {about?.vision ||
-                            "Mewujudkan Sidoarjo sebagai daerah yang maju, demokratis, dan berkeadilan sosial melalui gerakan perubahan yang berkelanjutan."}
-                        </p>
-                      )}
+                      <p className="text-gray-600 text-sm leading-relaxed w-full">
+                        {about?.vision ||
+                          "Mewujudkan Sidoarjo sebagai daerah yang maju, demokratis, dan berkeadilan sosial melalui gerakan perubahan yang berkelanjutan."}
+                      </p>
                     </div>
                   </div>
                 </div>
@@ -152,26 +134,26 @@ export function AboutSection() {
                       <h4 className="font-bold text-nasdem-blue mb-2 text-base">
                         Misi
                       </h4>
-                      {isLoading ? (
-                        <div className="h-20 w-full bg-gray-100 rounded animate-pulse" />
-                      ) : (
-                        <p className="text-gray-600 text-sm leading-relaxed">
-                          {about?.mission ||
-                            "Membangun kaderitas yang kuat, melayani masyarakat dengan integritas, dan mengadvokasi kebijakan pro-rakyat."}
-                        </p>
-                      )}
+                      <p className="text-gray-600 text-sm leading-relaxed">
+                        {about?.mission ||
+                          "Membangun kaderitas yang kuat, melayani masyarakat dengan integritas, dan mengadvokasi kebijakan pro-rakyat."}
+                      </p>
                     </div>
                   </div>
                 </div>
               </div>
             </div>
 
-            <Button
-              variant="outline"
-              className="hover-fade-up font-semibold border-nasdem-blue bg-nasdem-blue/5 text-nasdem-blue hover:bg-nasdem-blue hover:text-white px-8 py-3"
+            <Link
+              href={"/program"}
+              className={buttonVariants({
+                variant: "outline",
+                className:
+                  "hover-fade-up font-semibold border-nasdem-blue bg-nasdem-blue/5 text-nasdem-blue hover:bg-nasdem-blue hover:text-white px-8 py-3",
+              })}
             >
-              Pelajari Lebih Lanjut
-            </Button>
+              Lihat Program Kerja
+            </Link>
           </div>
         </div>
       </div>
@@ -180,6 +162,7 @@ export function AboutSection() {
       <AnimatePresence>
         {expanded && (
           <motion.div
+            key="video-overlay"
             initial={{ opacity: 0 }}
             animate={{ opacity: 1 }}
             exit={{ opacity: 0 }}

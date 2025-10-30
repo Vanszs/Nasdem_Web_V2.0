@@ -1,26 +1,17 @@
 "use client";
 
-import { Button } from "@/components/ui/button";
+import { Button, buttonVariants } from "@/components/ui/button";
 import { ArrowRight, Calendar, Users, Trophy } from "lucide-react";
 import Image from "next/image";
-import { useQuery } from "@tanstack/react-query";
 import { Swiper, SwiperSlide } from "swiper/react";
 import { Autoplay, EffectFade } from "swiper/modules";
 import "swiper/css";
 import "swiper/css/effect-fade";
+import Link from "next/link";
 
-const NasdemHero = () => {
-  const { data, isLoading } = useQuery({
-    queryKey: ["cms", "hero-banners"],
-    queryFn: async () => {
-      const res = await fetch("/api/cms/hero-banners");
-      if (!res.ok) throw new Error("Gagal memuat hero banner");
-      return res.json();
-    },
-    staleTime: 60 * 1000,
-  });
-  const banners: Array<{ id: number; imageUrl: string }> = data?.data || [];
+type Banner = { id: number; imageUrl: string };
 
+const NasdemHero = ({ banners = [] as Banner[] }: { banners?: Banner[] }) => {
   return (
     <section
       id="beranda"
@@ -28,7 +19,7 @@ const NasdemHero = () => {
     >
       {/* Background Image */}
       <div className="absolute inset-0">
-        {banners.length > 0 ? (
+        {banners && banners.length > 0 ? (
           <Swiper
             modules={[Autoplay, EffectFade]}
             autoplay={{ delay: 5000, disableOnInteraction: false }}
@@ -47,7 +38,7 @@ const NasdemHero = () => {
                     fill
                     priority
                     sizes="100vw"
-                    className="object-cover transition-transform duration-700 scale-100 group-hover:scale-105"
+                    className="object-cover transition-transform duration-700"
                   />
                   <div className="absolute inset-0 bg-gradient-to-r from-primary/95 via-primary/80 to-primary/60" />
                 </div>
@@ -101,22 +92,29 @@ const NasdemHero = () => {
             </p>
 
             <div className="flex flex-col sm:flex-row gap-2 md:gap-3 pt-2 md:pt-3">
-              <Button
-                size="lg"
-                variant="secondary"
-                className="hover-scale group font-semibold bg-secondary text-primary hover:bg-secondary/90"
-                onClick={() => (window.location.href = "/bergabung")}
+              <Link
+                href={"/bergabung"}
+                className={buttonVariants({
+                  size: "lg",
+                  variant: "secondary",
+                  className:
+                    "group font-semibold bg-secondary text-primary hover:bg-secondary/90",
+                })}
               >
                 <span>Bergabung dengan Kami</span>
                 <ArrowRight className="ml-2 h-4 w-4 group-hover:translate-x-1 transition-transform" />
-              </Button>
-              <Button
-                size="lg"
-                variant="outline"
-                className="border-primary-foreground bg-primary-foreground/10 text-primary-foreground hover:bg-primary-foreground hover:text-primary font-semibold backdrop-blur-sm"
+              </Link>
+              <Link
+                href={"/program"}
+                className={buttonVariants({
+                  size: "lg",
+                  variant: "outline",
+                  className:
+                    "border-primary-foreground bg-primary-foreground/10 text-primary-foreground hover:bg-primary-foreground hover:text-primary font-semibold backdrop-blur-sm",
+                })}
               >
                 Lihat Program Kerja
-              </Button>
+              </Link>
             </div>
           </div>
 

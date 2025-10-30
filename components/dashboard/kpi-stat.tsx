@@ -1,9 +1,9 @@
 "use client";
 
-import { LucideIcon } from "lucide-react";
 import { TrendingUp, TrendingDown } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { formatCurrency, formatNumber } from "@/lib/design-system";
+import { ReactElement, isValidElement, cloneElement } from "react";
 
 interface KPIStatProps {
   label: string;
@@ -13,7 +13,7 @@ interface KPIStatProps {
     currency?: "USD" | "IDR";
     locale?: string;
   };
-  icon?: LucideIcon;
+  icon?: ReactElement;
   delta?: {
     value: number;
     direction: "up" | "down";
@@ -26,7 +26,7 @@ export function KPIStat({
   label,
   value,
   format = { type: "number" },
-  icon: Icon,
+  icon,
   delta,
   className,
 }: KPIStatProps) {
@@ -57,12 +57,12 @@ export function KPIStat({
     >
       {/* Header with label and icon */}
       <div className="flex items-center justify-between">
-        <span className="text-sm text-text-secondary font-medium">
-          {label}
-        </span>
-        {Icon && (
+        <span className="text-sm text-text-secondary font-medium">{label}</span>
+        {icon && isValidElement<{ className?: string }>(icon) && (
           <div className="w-10 h-10 rounded-lg bg-muted flex items-center justify-center">
-            <Icon className="w-5 h-5 text-brand-primary" />
+            {cloneElement(icon, {
+              className: cn("w-5 h-5 text-brand-primary", icon.props.className),
+            })}
           </div>
         )}
       </div>

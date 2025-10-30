@@ -166,15 +166,32 @@ export function ModernSidebar({
   const storeUserRole = useAuthStore(
     (s) => s.user?.role as UserRole | undefined
   );
+  const user = useAuthStore((s) => s.user);
+  const fetchUser = useAuthStore((s) => s.fetchUser);
+  const storeIsLoading = useAuthStore((s) => s.isLoading);
   const [userRole, setUserRole] = useState<UserRole | null>(
     storeUserRole || null
   );
   const [menuItems, setMenuItems] = useState<typeof allMenuItems>(allMenuItems);
   const [isLoading, setIsLoading] = useState(true);
 
+  // If user not available yet, try to fetch it (fallback to API)
+  useEffect(() => {
+    if (!user && !storeIsLoading) {
+      fetchUser().catch(() => {
+        /* noop */
+      });
+    }
+  }, [user, storeIsLoading, fetchUser]);
+
   // Use hydrated user role from auth store (SSR) and filter menu items
   useEffect(() => {
-    if (!storeUserRole) return;
+    if (!storeUserRole) {
+      // If role hasn't hydrated yet, stop showing infinite spinner
+      setIsLoading(false);
+      setMenuItems([] as any);
+      return;
+    }
     setUserRole(storeUserRole);
 
     const filteredItems = allMenuItems
@@ -309,7 +326,7 @@ export function ModernSidebar({
           {!isCollapsed && (
             <button
               onClick={onToggle}
-              className="p-2 rounded-lg hover:bg-gray-100 transition-all duration-200 focus:outline-none focus:ring-2 focus:ring-[#001B55]/30 focus:ring-offset-1"
+              className="p-2 cursor-pointer rounded-lg hover:bg-gray-100 transition-all duration-200 focus:outline-none focus:ring-2 focus:ring-[#001B55]/30 focus:ring-offset-1"
               aria-label="Tutup sidebar"
               aria-expanded={!isCollapsed}
             >
@@ -510,7 +527,7 @@ export function ModernSidebar({
 
             <SafeNavLink to="/admin/news/create">
               <button
-                className="w-full flex items-center justify-center gap-2 px-4 py-2.5 bg-white border border-[#001B55]/30 text-[#001B55] hover:bg-[#001B55]/5 rounded-lg font-semibold text-sm transition-all hover:scale-[1.02] focus:outline-none focus:ring-2 focus:ring-[#001B55]/30 focus:ring-offset-2"
+                className="w-full cursor-pointer flex items-center justify-center gap-2 px-4 py-2.5 bg-white border border-[#001B55]/30 text-[#001B55] hover:bg-[#001B55]/5 rounded-lg font-semibold text-sm transition-all focus:outline-none focus:ring-2 focus:ring-[#001B55]/30 focus:ring-offset-2"
                 aria-label="Buat konten baru"
               >
                 <Plus className="w-4 h-4" />
@@ -525,7 +542,7 @@ export function ModernSidebar({
         <div className="p-3 flex justify-center border-t border-[#001B55]/10">
           <SafeNavLink to="/admin/news/create">
             <button
-              className="w-12 h-12 rounded-lg flex items-center justify-center bg-white border border-[#001B55]/30 text-[#001B55] hover:bg-[#001B55]/5 transition-all hover:scale-110 focus:outline-none focus:ring-2 focus:ring-[#001B55]/30 focus:ring-offset-1"
+              className="w-12 h-12 rounded-lg flex items-center justify-center bg-white border border-[#001B55]/30 text-[#001B55] hover:bg-[#001B55]/5 transition-all focus:outline-none focus:ring-2 focus:ring-[#001B55]/30 focus:ring-offset-1"
               aria-label="Buat konten baru"
             >
               <Plus className="w-5 h-5" />
@@ -537,7 +554,7 @@ export function ModernSidebar({
       {isCollapsed && (
         <button
           onClick={onToggle}
-          className="absolute -right-3 top-20 w-7 h-7 rounded-full flex items-center justify-center bg-white border-2 border-[#001B55]/20 shadow-md hover:shadow-lg hover:border-[#001B55] hover:scale-110 transition-all focus:outline-none focus:ring-2 focus:ring-[#001B55]/30"
+          className="absolute cursor-pointer -right-3 top-20 w-7 h-7 rounded-full flex items-center justify-center bg-white border-2 border-[#001B55]/20 shadow-md hover:shadow-lg hover:border-[#001B55] transition-all focus:outline-none focus:ring-2 focus:ring-[#001B55]/30"
           aria-label="Buka sidebar"
           aria-expanded={!isCollapsed}
         >

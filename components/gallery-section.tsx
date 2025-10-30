@@ -3,38 +3,30 @@
 import { useState, useMemo } from "react";
 import { Card } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
-import { useQuery } from "@tanstack/react-query";
 import Image from "next/image";
 
-export function GallerySection() {
+type Activity = {
+  id: number;
+  title: string;
+  description?: string | null;
+  category?: string | null;
+  media: Array<{
+    id: number;
+    type: "image" | "video";
+    url: string;
+    caption?: string | null;
+  }>;
+};
+
+export function GallerySection({
+  activities = [] as Activity[],
+}: {
+  activities?: Activity[];
+}) {
   const [activeTab, setActiveTab] = useState("foto");
 
-  const { data, isLoading } = useQuery({
-    queryKey: ["gallery", "homepage"],
-    queryFn: async () => {
-      const res = await fetch(`/api/galleries`);
-      if (!res.ok) throw new Error("Gagal memuat galeri");
-      const json = await res.json();
-      return json?.data ?? [];
-    },
-    staleTime: 60 * 1000,
-  });
-
-  type Activity = {
-    id: number;
-    title: string;
-    description?: string | null;
-    category?: string | null;
-    media: Array<{
-      id: number;
-      type: "image" | "video";
-      url: string;
-      caption?: string | null;
-    }>;
-  };
-
   const { photos, videos } = useMemo(() => {
-    const items = (data as Activity[]) || [];
+    const items = (activities as Activity[]) || [];
     const media = items.flatMap((a) =>
       a.media.map((m) => ({ ...m, activityTitle: a.title }))
     );
@@ -42,7 +34,7 @@ export function GallerySection() {
       photos: media.filter((m) => m.type === "image").slice(0, 6),
       videos: media.filter((m) => m.type === "video").slice(0, 4),
     };
-  }, [data]);
+  }, [activities]);
 
   return (
     <section
@@ -73,8 +65,8 @@ export function GallerySection() {
                 onClick={() => setActiveTab("foto")}
                 className={`px-8 py-3 rounded-xl font-semibold transition-all duration-300 min-w-[120px] ${
                   activeTab === "foto"
-                    ? "bg-gradient-to-r from-[#FF9C04] to-[#FF9C04]/90 hover:from-[#001B55] hover:to-[#001B55] text-white shadow-lg hover:shadow-xl"
-                    : "text-[#6B7280] hover:bg-[#001B55]/5 hover:text-[#001B55] border border-transparent hover:border-[#001B55]/20"
+                    ? "bg-gradient-to-r from-[#FF9C04] to-[#FF9C04]/90 text-white shadow-lg hover:shadow-xl"
+                    : "text-[#6B7280] hover:text-[#001B55] border border-transparent"
                 }`}
               >
                 Foto
@@ -84,8 +76,8 @@ export function GallerySection() {
                 onClick={() => setActiveTab("video")}
                 className={`px-8 py-3 rounded-xl font-semibold transition-all duration-300 min-w-[120px] ${
                   activeTab === "video"
-                    ? "bg-gradient-to-r from-[#FF9C04] to-[#FF9C04]/90 hover:from-[#001B55] hover:to-[#001B55] text-white shadow-lg hover:shadow-xl"
-                    : "text-[#6B7280] hover:bg-[#001B55]/5 hover:text-[#001B55] border border-transparent hover:border-[#001B55]/20"
+                    ? "bg-gradient-to-r from-[#FF9C04] to-[#FF9C04]/90 text-white shadow-lg hover:shadow-xl"
+                    : "text-[#6B7280] hover:text-[#001B55] border border-transparent"
                 }`}
               >
                 Video
@@ -96,16 +88,7 @@ export function GallerySection() {
 
         {activeTab === "foto" && (
           <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-6 md:gap-8 mb-16">
-            {isLoading ? (
-              Array.from({ length: 6 }).map((_, i) => (
-                <Card
-                  key={i}
-                  className="overflow-hidden rounded-2xl border-2 border-nasdem-blue/20"
-                >
-                  <div className="w-full h-64 bg-gray-100 animate-pulse" />
-                </Card>
-              ))
-            ) : photos.length === 0 ? (
+            {photos.length === 0 ? (
               <div className="col-span-full text-center text-[#6B7280]">
                 Belum ada foto.
               </div>
@@ -142,16 +125,7 @@ export function GallerySection() {
 
         {activeTab === "video" && (
           <div className="grid md:grid-cols-2 gap-6 md:gap-8 mb-16">
-            {isLoading ? (
-              Array.from({ length: 4 }).map((_, i) => (
-                <Card
-                  key={i}
-                  className="overflow-hidden rounded-2xl border-2 border-nasdem-blue/20"
-                >
-                  <div className="w-full h-64 bg-gray-100 animate-pulse" />
-                </Card>
-              ))
-            ) : videos.length === 0 ? (
+            {videos.length === 0 ? (
               <div className="col-span-full text-center text-[#6B7280]">
                 Belum ada video.
               </div>

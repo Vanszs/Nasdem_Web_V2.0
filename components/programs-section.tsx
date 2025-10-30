@@ -11,52 +11,39 @@ import {
 } from "lucide-react";
 import Link from "next/link";
 
-const programs = [
-  {
-    icon: GraduationCap,
-    title: "Pendidikan Inklusif",
-    description:
-      "Fasilitasi beasiswa PIP/KIP dan pelatihan keterampilan untuk generasi muda Sidoarjo.",
-    highlight: "709 ton benih padi disalurkan",
-  },
-  {
-    icon: Sprout,
-    title: "Ekonomi Kerakyatan",
-    description:
-      "Pemberdayaan UMKM, urban farming, dan dukungan kepada 103 kelompok tani.",
-    highlight: "103 kelompok tani dibina",
-  },
-  {
-    icon: Heart,
-    title: "Aksi Sosial Kesehatan",
-    description:
-      "Program fogging pencegahan DBD dan pembagian sembako untuk masyarakat.",
-    highlight: "Fokus kesehatan masyarakat",
-  },
-  {
-    icon: Building,
-    title: "Advokasi Kebijakan",
-    description:
-      "Mengawal RPJMD Sidoarjo 2025-2029 untuk pembangunan yang berkelanjutan.",
-    highlight: "Pengawalan kebijakan daerah",
-  },
-  {
-    icon: Users,
-    title: "NasDem Muda",
-    description:
-      "Platform generasi muda 17-30 tahun untuk edukasi politik dan kepemimpinan.",
-    highlight: "Kaderisasi generasi muda",
-  },
-  {
-    icon: Briefcase,
-    title: "Pelatihan Politik",
-    description:
-      "Laboratorium Gerakan Perubahan (LAGA) dan bimbingan teknis organisasi.",
-    highlight: "Penguatan kapasitas kader",
-  },
-];
+type Program = {
+  id: number;
+  name: string;
+  description?: string | null;
+  category?: string | null;
+  status?: string | null;
+  photoUrl?: string | null;
+};
 
-export function ProgramsSection() {
+function categoryIcon(category?: string | null) {
+  const c = (category || "").toLowerCase();
+  if (c.includes("didik") || c.includes("sekol") || c.includes("pip"))
+    return GraduationCap;
+  if (
+    c.includes("tani") ||
+    c.includes("umkm") ||
+    c.includes("ekonomi") ||
+    c.includes("farming")
+  )
+    return Sprout;
+  if (c.includes("sosial") || c.includes("kesehat")) return Heart;
+  if (c.includes("kebijakan") || c.includes("advokasi")) return Building;
+  if (c.includes("pelatihan") || c.includes("politik") || c.includes("laga"))
+    return Briefcase;
+  if (c.includes("muda") || c.includes("kader")) return Users;
+  return Users;
+}
+
+export function ProgramsSection({
+  programs = [] as Program[],
+}: {
+  programs?: Program[];
+}) {
   return (
     <section
       id="program"
@@ -83,7 +70,7 @@ export function ProgramsSection() {
         {/* Programs Grid */}
         <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-6 md:gap-8 mb-12">
           {programs.map((program, index) => {
-            const IconComponent = program.icon;
+            const IconComponent = categoryIcon(program.category);
             return (
               <div
                 key={index}
@@ -95,16 +82,20 @@ export function ProgramsSection() {
                   </div>
                   <div className="flex-1">
                     <h3 className="text-xl font-bold text-nasdem-blue mb-2 group-hover:text-nasdem-blue transition-colors">
-                      {program.title}
+                      {program.name}
                     </h3>
-                    <div className="inline-block bg-nasdem-orange/10 text-nasdem-orange text-xs font-medium px-2 py-1 rounded-full mb-3">
-                      {program.highlight}
-                    </div>
+                    {program.category && (
+                      <div className="inline-block bg-nasdem-orange/10 text-nasdem-orange text-xs font-medium px-2 py-1 rounded-full mb-3">
+                        {program.category}
+                      </div>
+                    )}
                   </div>
                 </div>
-                <p className="text-gray-600 text-sm leading-relaxed mb-4">
-                  {program.description}
-                </p>
+                {program.description && (
+                  <p className="text-gray-600 text-sm leading-relaxed mb-4">
+                    {program.description}
+                  </p>
+                )}
                 <Link
                   href={"/program"}
                   className={buttonVariants({
