@@ -44,7 +44,7 @@ import {
   BookOpen,
   Award,
 } from "lucide-react";
-import { useQuery, useMutation } from "@tanstack/react-query";
+import { useMutation } from "@tanstack/react-query";
 import { toast } from "sonner";
 
 // Zod validation schema

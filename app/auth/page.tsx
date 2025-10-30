@@ -2,15 +2,7 @@
 
 import * as React from "react";
 import Image from "next/image";
-import {
-  Eye,
-  EyeOff,
-  ArrowRight,
-  Shield,
-  Lock,
-  Mail,
-  Sparkles,
-} from "lucide-react";
+import { Eye, EyeOff, ArrowRight, Lock, Mail } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";

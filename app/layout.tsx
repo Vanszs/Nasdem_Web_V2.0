@@ -6,6 +6,8 @@ import { headers } from "next/headers";
 
 import { Providers } from "../components/providers";
 import AuthHydrator from "../components/AuthHydrator";
+import NasdemHeader from "@/components/nasdem-header";
+import NasdemFooter from "@/components/nasdem-footer";
 
 export const metadata: Metadata = {
   title: "Nasdem Website",
@@ -48,7 +50,11 @@ export default async function RootLayout({
         suppressHydrationWarning
       >
         <AuthHydrator user={user} />
-        <Providers>{children}</Providers>
+        <Providers>
+          <NasdemHeader />
+          {children}
+          <NasdemFooter />
+        </Providers>
       </body>
     </html>
   );

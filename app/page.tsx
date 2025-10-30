@@ -52,7 +52,6 @@ export default async function HomePage() {
 
   return (
     <div className="min-h-screen bg-background">
-      <NasdemHeader />
       <Suspense fallback={<LoadingFallback />}>
         <main>
           <NasdemHero banners={heroBanners} />
@@ -61,7 +60,6 @@ export default async function HomePage() {
           <GallerySection activities={activities} />
         </main>
       </Suspense>
-      <NasdemFooter />
     </div>
   );
 }

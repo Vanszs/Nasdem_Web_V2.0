@@ -6,7 +6,7 @@ import { Users, MapPin, Phone, Mail } from "lucide-react";
 import OrganizationStructure from "@/components/organization-structure";
 import Image from "next/image";
 import { db } from "@/lib/db";
-// Remove Supabase dependency: provide mock data with same shape
+
 type Kader = {
   id: string;
   full_name: string;
