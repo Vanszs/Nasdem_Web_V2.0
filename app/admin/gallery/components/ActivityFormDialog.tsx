@@ -368,7 +368,6 @@ export function ActivityFormDialog({ open, onOpenChange, initialData }: Props) {
   });
 
   const onSubmit = (values: FormValues) => {
-    console.log("Submitting form with values:", values);
     mutation.mutate(values);
   };
 
@@ -453,7 +452,6 @@ export function ActivityFormDialog({ open, onOpenChange, initialData }: Props) {
         <Form {...form}>
           <form
             onSubmit={form.handleSubmit(onSubmit, (errors) => {
-              console.log("Validation errors:", errors);
               toast.error(
                 "Form belum valid, periksa kembali field yang wajib diisi"
               );

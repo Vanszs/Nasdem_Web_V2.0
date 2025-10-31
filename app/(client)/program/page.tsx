@@ -14,10 +14,10 @@ import {
 } from "lucide-react";
 import NasdemHeader from "@/components/nasdem-header";
 import NasdemFooter from "@/components/nasdem-footer";
-import { ProgramFilters } from "@/app/program/components/ProgramFilters";
-import { ProgramCard } from "@/app/program/components/ProgramCard";
-import { JoinProgramDialog as JoinDialog } from "@/app/program/components/JoinProgramDialog";
-import { ProgramDetailDialog } from "@/app/program/components/ProgramDetailDialog";
+import { ProgramFilters } from "@/app/(client)/program/components/ProgramFilters";
+import { ProgramCard } from "@/app/(client)/program/components/ProgramCard";
+import { JoinProgramDialog as JoinDialog } from "@/app/(client)/program/components/JoinProgramDialog";
+import { ProgramDetailDialog } from "@/app/(client)/program/components/ProgramDetailDialog";
 import { SimplePagination } from "@/components/ui/pagination";
 import { toast } from "sonner";
 import { useDebounce } from "@/hooks/use-debounce";

@@ -56,7 +56,6 @@ export function DataTable<T extends Record<string, any>>({
 
   // Format cell value
   const formatCellValue = (value: any, format?: string) => {
-    console.log(value);
     if (value === null || value === undefined) return "-";
 
     if (format === "currency:USD") {

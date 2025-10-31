@@ -28,6 +28,18 @@ const ALLOWED_ORIGINS = (
 
 const INTERNAL_KEY = process.env.INTERNAL_API_KEY;
 
+function encodeBase64(value: string) {
+  if (typeof Buffer !== "undefined") {
+    return Buffer.from(value).toString("base64");
+  }
+  const bytes = new TextEncoder().encode(value);
+  let binary = "";
+  for (let i = 0; i < bytes.length; i += 1) {
+    binary += String.fromCharCode(bytes[i]);
+  }
+  return btoa(binary);
+}
+
 function getClientIp(req: NextRequest) {
   return (
     req.headers.get("x-forwarded-for")?.split(",")[0]?.trim() ||
@@ -92,6 +104,7 @@ export async function middleware(req: NextRequest) {
     try {
       const token = req.cookies.get("token")?.value;
       const headers = new Headers(req.headers);
+      // Mark admin routes so the root layout can conditionally render site chrome
       if (token) {
         const JWT_SECRET = process.env.JWT_SECRET;
         if (JWT_SECRET) {
@@ -102,9 +115,7 @@ export async function middleware(req: NextRequest) {
             email: decoded?.email,
             username: decoded?.username,
           };
-          const encoded = Buffer.from(JSON.stringify(userPayload)).toString(
-            "base64"
-          );
+          const encoded = encodeBase64(JSON.stringify(userPayload));
           headers.set("x-user", encoded);
         }
       }

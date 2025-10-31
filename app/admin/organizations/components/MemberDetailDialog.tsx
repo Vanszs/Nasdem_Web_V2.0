@@ -56,19 +56,10 @@ export function MemberDetailDialog({
   // DEBUG: Log when dialog opens to validate assumptions
   React.useEffect(() => {
     if (open && member) {
-      console.log("MemberDetailDialog opened:", {
-        memberName: member.name,
-        department: member.department,
-        hasPhoto: !!member.photo,
-        hasKtpPhoto: !!member.ktpPhotoUrl,
-        hasBenefits: member.benefits && member.benefits.length > 0,
-        hasAchievements: member.achievements && member.achievements.length > 0,
-      });
     }
   }, [open, member]);
 
   const handlePrint = () => {
-    console.log("PDF generation triggered");
     // Dynamically import only when needed to avoid SSR issues
     import("@react-pdf/renderer").then(async ({ pdf }) => {
       const { default: MemberPDF } = await import("./MemberPDF");

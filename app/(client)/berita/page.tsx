@@ -73,7 +73,6 @@ export default function NewsPage() {
         cache: "no-store",
       });
       const json = await res.json();
-      console.log(json);
       if (!res.ok || !json.success)
         throw new Error(json.error || "Gagal memuat berita");
       return json;

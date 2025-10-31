@@ -6,8 +6,6 @@ import { headers } from "next/headers";
 
 import { Providers } from "../components/providers";
 import AuthHydrator from "../components/AuthHydrator";
-import NasdemHeader from "@/components/nasdem-header";
-import NasdemFooter from "@/components/nasdem-footer";
 
 export const metadata: Metadata = {
   title: "Nasdem Website",
@@ -26,9 +24,14 @@ export default async function RootLayout({
     email?: string;
     username?: string;
   } | null = null;
+  let isAdminRoute = false;
   try {
     const hdrs = await headers();
     const encoded = hdrs.get("x-user");
+    const adminFlag = hdrs.get("x-admin-route");
+    if (adminFlag === "1") {
+      isAdminRoute = true;
+    }
     if (encoded) {
       try {
         user = JSON.parse(Buffer.from(encoded, "base64").toString("utf-8"));
@@ -50,11 +53,7 @@ export default async function RootLayout({
         suppressHydrationWarning
       >
         <AuthHydrator user={user} />
-        <Providers>
-          <NasdemHeader />
-          {children}
-          <NasdemFooter />
-        </Providers>
+        <Providers>{children}</Providers>
       </body>
     </html>
   );
