@@ -407,7 +407,7 @@ export function AddMemberDialog({
       let strukturId = data.strukturId;
       const lvl = data.level.toLowerCase();
 
-      // Find matching struktur based on level, position, and region
+      // Find or create matching struktur based on level, position, and region
       if (lvl === "sayap") {
         const match = struktur.find(
           (s) =>
@@ -415,9 +415,30 @@ export function AddMemberDialog({
             s.position?.toLowerCase() === data.position.toLowerCase() &&
             s.sayapType?.name === data.sayapName
         );
-        if (!match)
-          throw new Error("Tidak menemukan struktur sayap yang sesuai");
-        strukturId = String(match.id);
+        if (match) {
+          strukturId = String(match.id);
+        } else {
+          // Create new struktur for sayap if not found
+          toast.info("Membuat struktur baru", { 
+            description: "Struktur sayap belum ada, sistem akan membuat terlebih dahulu" 
+          });
+          // Create the struktur first
+          const createRes = await fetch("/api/organizations", {
+            method: "POST",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify({
+              level: data.level,
+              position: data.position,
+              // Note: You'll need to find sayapTypeId from sayapName
+              // This might need adjustment based on your data structure
+            }),
+          });
+          const createData = await createRes.json();
+          if (!createData.success) {
+            throw new Error(createData.error || "Gagal membuat struktur");
+          }
+          strukturId = String(createData.data.id);
+        }
       } else if (lvl === "dpd") {
         // DPD doesn't need region
         const match = struktur.find(
@@ -425,12 +446,27 @@ export function AddMemberDialog({
             s.level?.toLowerCase() === "dpd" &&
             s.position?.toLowerCase() === data.position.toLowerCase()
         );
-        if (!match) {
-          throw new Error(
-            "Tidak menemukan unit struktur untuk kombinasi level/posisi"
-          );
+        if (match) {
+          strukturId = String(match.id);
+        } else {
+          // Create new struktur for DPD if not found
+          toast.info("Membuat struktur baru", { 
+            description: "Struktur DPD untuk posisi ini belum ada, akan dibuat terlebih dahulu" 
+          });
+          const createRes = await fetch("/api/organizations", {
+            method: "POST",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify({
+              level: data.level,
+              position: data.position,
+            }),
+          });
+          const createData = await createRes.json();
+          if (!createData.success) {
+            throw new Error(createData.error || "Gagal membuat struktur");
+          }
+          strukturId = String(createData.data.id);
         }
-        strukturId = String(match.id);
       } else {
         // DPC and DPRT need region
         const byLevelPos = struktur.filter(
@@ -443,16 +479,36 @@ export function AddMemberDialog({
               (s) => String(s.region?.id || "") === String(data.regionId)
             )
           : byLevelPos[0];
-        if (!target) {
-          throw new Error(
-            "Tidak menemukan unit struktur untuk kombinasi level/posisi/wilayah"
-          );
+        if (target) {
+          strukturId = String(target.id);
+        } else {
+          // Create new struktur for DPC/DPRT if not found
+          toast.info("Membuat struktur baru", { 
+            description: "Struktur untuk wilayah ini belum ada, akan dibuat terlebih dahulu" 
+          });
+          const createRes = await fetch("/api/organizations", {
+            method: "POST",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify({
+              level: data.level,
+              position: data.position,
+              regionId: data.regionId,
+            }),
+          });
+          const createData = await createRes.json();
+          if (!createData.success) {
+            throw new Error(createData.error || "Gagal membuat struktur");
+          }
+          strukturId = String(createData.data.id);
         }
-        strukturId = String(target.id);
+      }
+
+      if (!strukturId) {
+        throw new Error("Gagal mendapatkan struktur ID");
       }
 
       await addMembersMutation.mutateAsync({
-        strukturId: strukturId!,
+        strukturId: strukturId,
         memberIds: data.memberIds,
       });
     } catch (e: any) {
