@@ -28,7 +28,6 @@ import {
   X,
 } from "lucide-react";
 import { Member } from "../types";
-import { useRouter } from "next/navigation";
 
 interface Props {
   open: boolean;
@@ -51,16 +50,12 @@ export function MemberDetailDialog({
   getKaderCount,
   onRequestEdit,
 }: Props) {
-  const router = useRouter();
-
-  // DEBUG: Log when dialog opens to validate assumptions
   React.useEffect(() => {
     if (open && member) {
     }
   }, [open, member]);
 
   const handlePrint = () => {
-    // Dynamically import only when needed to avoid SSR issues
     import("@react-pdf/renderer").then(async ({ pdf }) => {
       const { default: MemberPDF } = await import("./MemberPDF");
       if (!member) return;
@@ -71,7 +66,6 @@ export function MemberDetailDialog({
         const url = URL.createObjectURL(blob);
         const win = window.open(url, "_blank");
         if (!win) {
-          // Fallback to download if popup blocked
           const a = document.createElement("a");
           a.href = url;
           a.download = `biodata-${member.name}.pdf`;
@@ -79,7 +73,6 @@ export function MemberDetailDialog({
           a.click();
           a.remove();
         }
-        // Revoke when window closed or after a delay
         setTimeout(() => URL.revokeObjectURL(url), 60_000);
       } catch (e) {
         console.error("Failed to generate PDF, falling back to print", e);
@@ -93,7 +86,7 @@ export function MemberDetailDialog({
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
       <DialogContent
-        className="max-w-[95vw] sm:max-w-lg md:max-w-2xl lg:max-w-4xl xl:max-w-6xl max-h-[90vh] overflow-hidden bg-white border-2 border-[#D8E2F0] shadow-2xl p-0 rounded-2xl transition-all duration-300 ease-in-out"
+        className="max-w-[95vw] sm:max-w-lg md:max-w-2xl lg:max-w-4xl xl:max-w-6xl max-h-[90vh] overflow-hidden bg-white border-2 border-[#D8E2F0] shadow-2xl p-0 rounded-2xl transition-all duration-300 ease-in-out flex flex-col"
         showCloseButton={false}
       >
         {/* Accessible title for screen readers */}
@@ -387,7 +380,7 @@ export function MemberDetailDialog({
         </div>
 
         {/* Scrollable Content - Compact */}
-        <div className="overflow-y-auto max-h-[calc(90vh-160px)] scrollbar-thin print-area">
+        <div className="flex-1 min-h-0 overflow-y-auto scrollbar-thin print-area">
           <div className="p-6 space-y-5 print-onepage">
             {/* Print Profile Header - Simple */}
             <div className="hidden print:block mb-4 pb-4 border-b border-gray-300">
