@@ -5,6 +5,7 @@ export interface Member {
   department: "dpd" | "dpc" | "dprt" | "sayap" | "kader";
   subDepartment?: string;
   region?: string;
+  regionId?: number;
   photo: string;
   email: string;
   phone: string;

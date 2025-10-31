@@ -22,15 +22,7 @@ import {
   FormLabel,
   FormMessage,
 } from "@/components/ui/form";
-import {
-  Plus,
-  Users,
-  UserPlus,
-  Link2,
-  Search,
-  Check,
-  ChevronsUpDown,
-} from "lucide-react";
+import { Plus, Users, UserPlus, Link2, Search } from "lucide-react";
 import * as React from "react";
 import { toast } from "sonner";
 //
@@ -38,20 +30,9 @@ import { useForm } from "react-hook-form";
 import { z } from "zod";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import {
-  Command,
-  CommandEmpty,
-  CommandGroup,
-  CommandInput,
-  CommandItem,
-  CommandList,
-} from "@/components/ui/command";
-import {
-  Popover,
-  PopoverContent,
-  PopoverTrigger,
-} from "@/components/ui/popover";
+// Removed Command/Popover combobox for DPRT selection in favor of Select dropdown
 import { cn } from "@/lib/utils";
+import { Skeleton } from "@/components/ui/skeleton";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 
 // Define form schema with Zod
@@ -149,14 +130,13 @@ export function AddMemberDialog({
   const watchDprtMemberId = kaderForm.watch("dprtMemberId");
 
   // Search states
-  const [regionSearch, setRegionSearch] = React.useState("");
   const [memberSearch, setMemberSearch] = React.useState("");
-  const [dprtMemberSearch, setDprtMemberSearch] = React.useState("");
-  const [openRegion, setOpenRegion] = React.useState(false);
-  const [openMember, setOpenMember] = React.useState(false);
-  const [openDprtMember, setOpenDprtMember] = React.useState(false);
+  // Simple Select dropdowns – no popovers/combobox state needed
 
   // Queries (moved after states to use latest values)
+  const isOrgTab = tab === "org";
+  const isKaderTab = tab === "kader";
+
   const regionsQuery = useQuery<any>({
     queryKey: ["regions"],
     queryFn: async () => {
@@ -165,20 +145,38 @@ export function AddMemberDialog({
       if (!json.success) throw new Error(json.error || "Gagal memuat wilayah");
       return json;
     },
-    enabled: controlledOpen,
+    enabled: controlledOpen && isOrgTab,
     staleTime: 60_000,
   });
   const strukturQuery = useQuery<any>({
-    queryKey: ["struktur"],
+    queryKey: ["struktur", { take: 500 }],
     queryFn: async () => {
-      const res = await fetch(`/api/organizations`);
+      const params = new URLSearchParams();
+      params.set("take", "500");
+      const res = await fetch(`/api/organizations?${params.toString()}`);
       const json = await res.json();
       if (!json.success) throw new Error(json.error || "Gagal memuat struktur");
       return json;
     },
-    enabled: controlledOpen,
+    enabled: controlledOpen && isOrgTab,
     staleTime: 60_000,
   });
+  // Gate member fetching by tab and readiness of form selections
+  const canSelectMembersGlobal = React.useMemo(() => {
+    return (
+      !!watchLevel &&
+      !!watchPosition &&
+      (watchLevel.toLowerCase() === "dpd" ||
+        (watchLevel.toLowerCase() === "sayap" &&
+          !!orgForm.getValues("sayapName")) ||
+        (watchLevel.toLowerCase() === "dpc" && !!watchRegionId) ||
+        (watchLevel.toLowerCase() === "dprt" &&
+          !!watchKecamatanId &&
+          !!watchRegionId))
+    );
+  }, [watchLevel, watchPosition, watchRegionId, watchKecamatanId, orgForm]);
+  const canSelectKadersGlobal = !!watchDprtMemberId;
+
   const membersUnassignedQuery = useQuery<any>({
     queryKey: [
       "members-unassigned",
@@ -196,26 +194,32 @@ export function AddMemberDialog({
       if (!json.success) throw new Error(json.error || "Gagal memuat anggota");
       return json;
     },
-    enabled: controlledOpen,
+    enabled:
+      controlledOpen &&
+      ((isOrgTab && canSelectMembersGlobal) ||
+        (isKaderTab && canSelectKadersGlobal)),
   });
   const dprtMembersQuery = useQuery<any>({
-    queryKey: ["members-dprt", { search: dprtMemberSearch }],
+    queryKey: ["members-dprt"],
     queryFn: async () => {
       const params = new URLSearchParams();
       params.set("page", "1");
       params.set("pageSize", "100");
       params.set("struktur", "true");
       params.set("level", "dprt");
-      if (dprtMemberSearch) params.set("search", dprtMemberSearch);
       const res = await fetch(`/api/members?${params.toString()}`);
       const json = await res.json();
       if (!json.success)
         throw new Error(json.error || "Gagal memuat member DPRT");
       return json;
     },
-    enabled: controlledOpen,
+    enabled: controlledOpen && isKaderTab,
     staleTime: 60_000,
   });
+
+  // Loading flags for option sources
+  const strukturLoading = strukturQuery.isLoading && !strukturQuery.data;
+  const regionsLoading = regionsQuery.isLoading && !regionsQuery.data;
 
   // Derived data
   const regions = ((regionsQuery.data as any)?.data as Region[]) || [];
@@ -393,6 +397,13 @@ export function AddMemberDialog({
 
   const onSubmitOrg = async (data: z.infer<typeof memberFormSchema>) => {
     try {
+      // Ensure struktur data is loaded to avoid false negatives when resolving IDs
+      if (strukturLoading || !struktur.length) {
+        toast.error("Data struktur belum siap", {
+          description: "Mohon tunggu sebentar, opsi struktur sedang dimuat.",
+        });
+        return;
+      }
       let strukturId = data.strukturId;
       const lvl = data.level.toLowerCase();
 
@@ -524,7 +535,7 @@ export function AddMemberDialog({
   return (
     <Dialog open={controlledOpen} onOpenChange={setOpen}>
       <DialogContent
-        className="max-w-[95vw] sm:max-w-lg md:max-w-2xl lg:max-w-4xl xl:max-w-6xl max-h-[90vh] bg-white border border-[#D8E2F0] p-0 overflow-hidden flex flex-col"
+        className="max-w-[95vw] sm:max-w-lg md:max-w-2xl lg:max-w-3xl max-h-[90vh] bg-white border border-[#D8E2F0] p-0 overflow-hidden flex flex-col"
         style={{
           borderRadius: "16px",
           boxShadow: "0 20px 60px rgba(0, 27, 85, 0.15)",
@@ -728,12 +739,19 @@ export function AddMemberDialog({
                                   orgForm.setValue("strukturId", "");
                                   orgForm.setValue("sayapName", "");
                                 }}
+                                disabled={strukturLoading}
                               >
                                 <SelectTrigger
                                   className="h-11 w-full bg-white border-2 border-[#C4D9FF] hover:border-[#C5BAFF] focus:border-[#001B55] focus:ring-2 focus:ring-[#C5BAFF]/20 text-[#001B55] transition-all duration-300"
                                   style={{ borderRadius: "10px" }}
                                 >
-                                  <SelectValue placeholder="Pilih tipe organisasi" />
+                                  <SelectValue
+                                    placeholder={
+                                      strukturLoading
+                                        ? "Memuat tipe organisasi..."
+                                        : "Pilih tipe organisasi"
+                                    }
+                                  />
                                 </SelectTrigger>
                                 <SelectContent
                                   className="bg-white border border-[#D8E2F0]"
@@ -770,13 +788,19 @@ export function AddMemberDialog({
                                   field.onChange(v);
                                   orgForm.setValue("strukturId", "");
                                 }}
-                                disabled={!watchLevel}
+                                disabled={!watchLevel || strukturLoading}
                               >
                                 <SelectTrigger
                                   className="h-11 w-full bg-white border-2 border-[#C4D9FF] hover:border-[#C5BAFF] focus:border-[#001B55] focus:ring-2 focus:ring-[#C5BAFF]/20 text-[#001B55] transition-all duration-300 disabled:opacity-50"
                                   style={{ borderRadius: "10px" }}
                                 >
-                                  <SelectValue placeholder="Pilih posisi" />
+                                  <SelectValue
+                                    placeholder={
+                                      strukturLoading
+                                        ? "Memuat posisi..."
+                                        : "Pilih posisi"
+                                    }
+                                  />
                                 </SelectTrigger>
                                 <SelectContent
                                   className="bg-white border w-full border-[#D8E2F0]"
@@ -822,26 +846,39 @@ export function AddMemberDialog({
                                     // Reset desa when kecamatan changes
                                     orgForm.setValue("regionId", "");
                                   }}
+                                  disabled={regionsLoading}
                                 >
                                   <SelectTrigger
                                     className="h-11 w-full bg-white border-2 border-[#C4D9FF] hover:border-[#C5BAFF] focus:border-[#001B55] focus:ring-2 focus:ring-[#C5BAFF]/20 text-[#001B55] transition-all duration-300"
                                     style={{ borderRadius: "10px" }}
                                   >
-                                    <SelectValue placeholder="Pilih kecamatan terlebih dahulu" />
+                                    <SelectValue
+                                      placeholder={
+                                        regionsLoading
+                                          ? "Memuat kecamatan..."
+                                          : "Pilih kecamatan terlebih dahulu"
+                                      }
+                                    />
                                   </SelectTrigger>
                                   <SelectContent
                                     className="bg-white border border-[#D8E2F0] max-h-[300px]"
                                     style={{ borderRadius: "10px" }}
                                   >
-                                    {kecamatanOptions.map((kec) => (
-                                      <SelectItem
-                                        key={kec.id}
-                                        value={String(kec.id)}
-                                        className="hover:bg-[#F0F6FF] transition-colors"
-                                      >
-                                        {kec.name}
-                                      </SelectItem>
-                                    ))}
+                                    {regionsLoading ? (
+                                      <div className="py-6 text-center text-sm text-[#475569]">
+                                        Memuat kecamatan...
+                                      </div>
+                                    ) : (
+                                      kecamatanOptions.map((kec) => (
+                                        <SelectItem
+                                          key={kec.id}
+                                          value={String(kec.id)}
+                                          className="hover:bg-[#F0F6FF] transition-colors"
+                                        >
+                                          {kec.name}
+                                        </SelectItem>
+                                      ))
+                                    )}
                                   </SelectContent>
                                 </Select>
                               </FormControl>
@@ -872,7 +909,7 @@ export function AddMemberDialog({
                                     field.onChange(v);
                                     orgForm.setValue("strukturId", "");
                                   }}
-                                  disabled={isDprtWithoutKec}
+                                  disabled={isDprtWithoutKec || regionsLoading}
                                 >
                                   <SelectTrigger
                                     className={cn(
@@ -884,7 +921,9 @@ export function AddMemberDialog({
                                   >
                                     <SelectValue
                                       placeholder={
-                                        isDprtWithoutKec
+                                        regionsLoading
+                                          ? "Memuat desa..."
+                                          : isDprtWithoutKec
                                           ? "Pilih kecamatan terlebih dahulu"
                                           : "Pilih desa"
                                       }
@@ -894,7 +933,11 @@ export function AddMemberDialog({
                                     className="bg-white border border-[#D8E2F0] max-h-[300px]"
                                     style={{ borderRadius: "10px" }}
                                   >
-                                    {filteredRegions.length === 0 ? (
+                                    {regionsLoading ? (
+                                      <div className="py-6 text-center text-sm text-[#475569]">
+                                        Memuat desa...
+                                      </div>
+                                    ) : filteredRegions.length === 0 ? (
                                       <div className="py-6 text-center text-sm text-[#475569]">
                                         {isDprtWithoutKec
                                           ? "Pilih kecamatan terlebih dahulu"
@@ -938,18 +981,29 @@ export function AddMemberDialog({
                                   field.onChange(v);
                                   orgForm.setValue("strukturId", "");
                                 }}
+                                disabled={regionsLoading}
                               >
                                 <SelectTrigger
                                   className="h-11 w-full bg-white border-2 border-[#C4D9FF] hover:border-[#C5BAFF] focus:border-[#001B55] focus:ring-2 focus:ring-[#C5BAFF]/20 text-[#001B55] transition-all duration-300"
                                   style={{ borderRadius: "10px" }}
                                 >
-                                  <SelectValue placeholder="Pilih kecamatan" />
+                                  <SelectValue
+                                    placeholder={
+                                      regionsLoading
+                                        ? "Memuat kecamatan..."
+                                        : "Pilih kecamatan"
+                                    }
+                                  />
                                 </SelectTrigger>
                                 <SelectContent
                                   className="bg-white border border-[#D8E2F0] max-h-[300px]"
                                   style={{ borderRadius: "10px" }}
                                 >
-                                  {filteredRegions.length === 0 ? (
+                                  {regionsLoading ? (
+                                    <div className="py-6 text-center text-sm text-[#475569]">
+                                      Memuat kecamatan...
+                                    </div>
+                                  ) : filteredRegions.length === 0 ? (
                                     <div className="py-6 text-center text-sm text-[#475569]">
                                       Tidak ada wilayah tersedia
                                     </div>
@@ -985,12 +1039,19 @@ export function AddMemberDialog({
                               <Select
                                 value={field.value}
                                 onValueChange={field.onChange}
+                                disabled={strukturLoading}
                               >
                                 <SelectTrigger
                                   className="h-11 w-full bg-white border-2 border-[#C4D9FF] hover:border-[#C5BAFF] focus:border-[#001B55] focus:ring-2 focus:ring-[#C5BAFF]/20 text-[#001B55] transition-all duration-300"
                                   style={{ borderRadius: "10px" }}
                                 >
-                                  <SelectValue placeholder="Pilih sayap" />
+                                  <SelectValue
+                                    placeholder={
+                                      strukturLoading
+                                        ? "Memuat unit sayap..."
+                                        : "Pilih sayap"
+                                    }
+                                  />
                                 </SelectTrigger>
                                 <SelectContent
                                   className="bg-white border border-[#D8E2F0]"
@@ -1100,7 +1161,10 @@ export function AddMemberDialog({
                                     });
                                   }}
                                   membersList={filteredMembersForOrg}
-                                  isLoading={membersUnassignedQuery.isLoading}
+                                  isLoading={
+                                    membersUnassignedQuery.isLoading ||
+                                    membersUnassignedQuery.isFetching
+                                  }
                                 />
                               )}
                             </div>
@@ -1130,7 +1194,11 @@ export function AddMemberDialog({
                         style={{ borderRadius: "8px" }}
                         disabled={
                           addMembersMutation.isPending ||
-                          !orgForm.formState.isValid
+                          !orgForm.formState.isValid ||
+                          strukturLoading ||
+                          ((watchLevel?.toLowerCase() === "dpc" ||
+                            watchLevel?.toLowerCase() === "dprt") &&
+                            regionsLoading)
                         }
                       >
                         {addMembersMutation.isPending ? (
@@ -1250,70 +1318,58 @@ export function AddMemberDialog({
                             Member (DPRT)
                           </FormLabel>
                           <FormControl>
-                            <Popover
-                              open={openDprtMember}
-                              onOpenChange={setOpenDprtMember}
+                            <Select
+                              value={field.value ? String(field.value) : ""}
+                              onValueChange={(v) => field.onChange(Number(v))}
+                              disabled={dprtMembersQuery.isLoading}
                             >
-                              <PopoverTrigger asChild>
-                                <Button
-                                  variant="outline"
-                                  role="combobox"
-                                  aria-expanded={openDprtMember}
-                                  className={cn(
-                                    "w-full justify-between h-11 bg-white border-2 border-[#C4D9FF] hover:border-[#C5BAFF] focus:border-[#001B55] focus:ring-2 focus:ring-[#C5BAFF]/20 text-[#001B55] transition-all duration-300",
-                                    !field.value && "text-[#475569]"
-                                  )}
-                                  style={{ borderRadius: "10px" }}
-                                >
-                                  {field.value
-                                    ? dprtMembers.find(
-                                        (m) => m.id === field.value
-                                      )?.fullName
-                                    : "Pilih member DPRT"}
-                                  <ChevronsUpDown className="ml-2 h-4 w-4 shrink-0 opacity-50" />
-                                </Button>
-                              </PopoverTrigger>
-                              <PopoverContent
-                                className="w-full p-0 bg-white border border-[#D8E2F0]"
+                              <SelectTrigger
+                                className={cn(
+                                  "h-11 w-full bg-white border-2 border-[#C4D9FF] hover:border-[#C5BAFF] focus:border-[#001B55] focus:ring-2 focus:ring-[#C5BAFF]/20 text-[#001B55] transition-all duration-300",
+                                  !field.value && "text-[#475569]"
+                                )}
                                 style={{ borderRadius: "10px" }}
                               >
-                                <Command className="bg-white">
-                                  <CommandInput
-                                    placeholder="Cari member DPRT..."
-                                    value={dprtMemberSearch}
-                                    onValueChange={setDprtMemberSearch}
-                                    className="h-10 border-b border-[#E8F9FF]"
-                                  />
-                                  <CommandList>
-                                    <CommandEmpty className="py-6 text-center text-sm text-[#475569]">
-                                      Member DPRT tidak ditemukan.
-                                    </CommandEmpty>
-                                    <CommandGroup>
-                                      {dprtMembers.map((m) => (
-                                        <CommandItem
-                                          key={m.id}
-                                          value={m.fullName}
-                                          onSelect={() => {
-                                            field.onChange(m.id);
-                                            setOpenDprtMember(false);
-                                          }}
-                                          className="hover:bg-[#F0F6FF] transition-colors"
-                                        >
-                                          <Check
-                                            className={`mr-2 h-4 w-4 text-[#C5BAFF] ${
-                                              field.value === m.id
-                                                ? "opacity-100"
-                                                : "opacity-0"
-                                            }`}
-                                          />
+                                <SelectValue
+                                  placeholder={
+                                    dprtMembersQuery.isLoading
+                                      ? "Memuat member DPRT..."
+                                      : "Pilih member DPRT"
+                                  }
+                                />
+                              </SelectTrigger>
+                              <SelectContent
+                                className="bg-white border border-[#D8E2F0] max-h-[300px]"
+                                style={{ borderRadius: "10px" }}
+                              >
+                                {dprtMembers.length === 0 ? (
+                                  <div className="py-6 text-center text-sm text-[#475569]">
+                                    {dprtMembersQuery.isLoading
+                                      ? "Memuat..."
+                                      : "Member DPRT tidak ditemukan."}
+                                  </div>
+                                ) : (
+                                  dprtMembers.map((m) => (
+                                    <SelectItem
+                                      key={m.id}
+                                      value={String(m.id)}
+                                      className="hover:bg-[#F0F6FF] transition-colors"
+                                    >
+                                      <div className="flex flex-col">
+                                        <span className="text-sm font-medium text-[#001B55]">
                                           {m.fullName}
-                                        </CommandItem>
-                                      ))}
-                                    </CommandGroup>
-                                  </CommandList>
-                                </Command>
-                              </PopoverContent>
-                            </Popover>
+                                        </span>
+                                        {m.region?.name && (
+                                          <span className="text-xs text-[#475569]">
+                                            {m.region.name}
+                                          </span>
+                                        )}
+                                      </div>
+                                    </SelectItem>
+                                  ))
+                                )}
+                              </SelectContent>
+                            </Select>
                           </FormControl>
                           <FormMessage className="text-xs" />
                         </FormItem>
@@ -1396,7 +1452,10 @@ export function AddMemberDialog({
                                   });
                                 }}
                                 membersList={filteredMembersForOrg}
-                                isLoading={membersUnassignedQuery.isLoading}
+                                isLoading={
+                                  membersUnassignedQuery.isLoading ||
+                                  membersUnassignedQuery.isFetching
+                                }
                               />
                             )}
                             <FormMessage className="text-xs" />

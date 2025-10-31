@@ -9,6 +9,7 @@ import {
   SelectValue,
 } from "@/components/ui/select";
 import { Users, Target, Building, Map, Search } from "lucide-react";
+import { useSayapTypesLookup } from "../hooks/useLookups";
 import {
   ActiveTab,
   DpdFilters,
@@ -59,6 +60,9 @@ export function TabsFilters(props: Props) {
     desaByKecamatan[dprtFilters.regionFilter] || [
       { value: "all", label: "Semua Desa" },
     ];
+
+  // Fetch sayap types from API for the Sayap filter
+  const { data: sayapTypes, isLoading: sayapLoading } = useSayapTypesLookup();
 
   return (
     <div className="bg-white/80 backdrop-blur-sm border-2 border-gray-200/80 rounded-2xl p-4 shadow-sm">
@@ -148,15 +152,17 @@ export function TabsFilters(props: Props) {
               </SelectTrigger>
               <SelectContent>
                 <SelectItem value="all">Semua Sayap</SelectItem>
-                <SelectItem value="Perempuan">Perempuan NasDem</SelectItem>
-                <SelectItem value="Pemuda">Pemuda NasDem</SelectItem>
-                <SelectItem value="Ulama">Ulama NasDem</SelectItem>
-                <SelectItem value="Profesional">Profesional NasDem</SelectItem>
-                <SelectItem value="Pengusaha">Pengusaha NasDem</SelectItem>
-                <SelectItem value="Guru">Guru NasDem</SelectItem>
-                <SelectItem value="Tenaga Kesehatan">
-                  Tenaga Kesehatan NasDem
-                </SelectItem>
+                {sayapLoading ? (
+                  <div className="py-2 px-3 text-sm text-[#6B7280]">
+                    Memuat daftar sayap...
+                  </div>
+                ) : (
+                  (sayapTypes || []).map((s) => (
+                    <SelectItem key={s.id} value={s.name}>
+                      {s.name}
+                    </SelectItem>
+                  ))
+                )}
               </SelectContent>
             </Select>
           </div>

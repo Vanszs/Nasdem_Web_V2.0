@@ -1,5 +1,6 @@
 "use client";
 import { useState, useMemo, useEffect } from "react";
+import { usePathname, useRouter, useSearchParams } from "next/navigation";
 import { AdminLayout } from "../components/layout/AdminLayout";
 import { MemberCard } from "./components/MemberCard";
 import { AddMemberDialog } from "./components/AddMemberDialog";
@@ -11,6 +12,7 @@ import { useRegions } from "./hooks/useRegions";
 import { TabsFilters } from "./components/TabsFilters";
 import { Button } from "@/components/ui/button";
 import { Plus } from "lucide-react";
+import { Skeleton } from "@/components/ui/skeleton";
 import {
   Select,
   SelectContent,
@@ -29,6 +31,25 @@ import {
 export default function Members() {
   // TAB STATE
   const [activeTab, setActiveTab] = useState<ActiveTab>("dpd");
+  const router = useRouter();
+  const pathname = usePathname();
+  const searchParams = useSearchParams();
+
+  // Sync from query param on mount and when it changes externally
+  useEffect(() => {
+    const org = (searchParams.get("organization") || "").toLowerCase();
+    const allowed = new Set(["dpd", "sayap", "dpc", "dprt"]);
+    if (allowed.has(org)) {
+      setActiveTab(org as ActiveTab);
+    } else {
+      // Ensure default dpd appears in URL if missing/invalid
+      const params = new URLSearchParams(Array.from(searchParams.entries()));
+      params.set("organization", "dpd");
+      router.replace(`${pathname}?${params.toString()}`);
+      setActiveTab("dpd");
+    }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [searchParams]);
 
   // FILTER STATES PER TAB (mengikuti struktur lama TabsFilters)
   const [dpdFilters, setDpdFilters] = useState<DpdFilters>({ searchTerm: "" });
@@ -121,7 +142,7 @@ export default function Members() {
   ]);
 
   // QUERY MEMBERS
-  const { data, isLoading, isError, error, refetch } = useMembers({
+  const { data, isLoading, isFetching, isError, error, refetch } = useMembers({
     page,
     pageSize,
     search: debouncedSearch || undefined,
@@ -136,7 +157,19 @@ export default function Members() {
   const members = useMemo(() => {
     if (!data?.data) return [];
     return data.data.map((m: any) => {
-      const so = m.StrukturOrganisasi;
+      // Support both API shapes: `struktur` (current) and legacy `StrukturOrganisasi`
+      const so = m.struktur || m.StrukturOrganisasi;
+      // Normalize region/subDepartment for display
+      let regionLabel: string | undefined =
+        so?.region?.name || so?.Region?.name || undefined;
+      const regionId: number | undefined =
+        so?.region?.id || so?.Region?.id || undefined;
+      let subDepartment: string | undefined = undefined;
+      if (so?.level?.toLowerCase() === "dprt") {
+        // For DPRT, the region is desa; map it to subDepartment
+        subDepartment = regionLabel;
+        regionLabel = undefined; // kecamatan unknown without parent relation
+      }
       return {
         id: String(m.id),
         name: m.fullName,
@@ -148,8 +181,9 @@ export default function Members() {
         photo: m.photoUrl || "/placeholder.png",
         department: so?.level || levelParam || "dpd",
         position: so?.position || "anggota",
-        region: so?.Region?.name || undefined,
-        subDepartment: undefined,
+        region: regionLabel,
+        regionId,
+        subDepartment,
         description: m.bio || "",
         gender: m.gender || undefined,
         ktpPhotoUrl: m.ktpPhotoUrl || undefined,
@@ -235,8 +269,15 @@ export default function Members() {
         <TabsFilters
           activeTab={activeTab}
           setActiveTab={(t) => {
+            // update state
             setActiveTab(t);
             setPage(1);
+            // update URL query parameter
+            const params = new URLSearchParams(
+              Array.from(searchParams.entries())
+            );
+            params.set("organization", t);
+            router.replace(`${pathname}?${params.toString()}`);
           }}
           dpdFilters={dpdFilters}
           sayapFilters={sayapFilters}
@@ -278,12 +319,42 @@ export default function Members() {
 
         {/* LIST DATA */}
         <div className="bg-white rounded-2xl border border-[#E5E7EB] p-4 space-y-4">
-          {isLoading && (
-            <div className="py-16 flex flex-col items-center justify-center">
-              <div className="w-12 h-12 border-4 border-[#C5BAFF] border-t-[#001B55] rounded-full animate-spin mb-4"></div>
-              <p className="text-sm font-medium text-[#475569]">
-                Memuat data...
-              </p>
+          {(isLoading || isFetching) && (
+            <div className="space-y-6">
+              {/* header skeleton for count and size picker */}
+              <div className="flex items-center justify-between">
+                <div className="h-4 w-48">
+                  <Skeleton className="h-4 w-48" />
+                </div>
+                <div className="h-8 w-16">
+                  <Skeleton className="h-8 w-16" />
+                </div>
+              </div>
+              {/* grid skeletons */}
+              <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 gap-5">
+                {Array.from({ length: 10 }).map((_, i) => (
+                  <div
+                    key={i}
+                    className="bg-white border border-[#E5E7EB] rounded-2xl p-4"
+                  >
+                    <div className="flex items-center gap-3">
+                      <Skeleton className="h-12 w-12 rounded-xl" />
+                      <div className="flex-1 space-y-2">
+                        <Skeleton className="h-4 w-3/4" />
+                        <Skeleton className="h-3 w-1/2" />
+                      </div>
+                    </div>
+                    <div className="mt-4 space-y-2">
+                      <Skeleton className="h-3 w-full" />
+                      <Skeleton className="h-3 w-5/6" />
+                    </div>
+                    <div className="mt-4 flex gap-2">
+                      <Skeleton className="h-7 w-16 rounded-lg" />
+                      <Skeleton className="h-7 w-10 rounded-lg" />
+                    </div>
+                  </div>
+                ))}
+              </div>
             </div>
           )}
           {isError && (
@@ -311,7 +382,7 @@ export default function Members() {
               </p>
             </div>
           )}
-          {!isLoading && !isError && members.length === 0 && (
+          {!isLoading && !isFetching && !isError && members.length === 0 && (
             <div className="py-16 flex flex-col items-center justify-center">
               <div className="w-16 h-16 rounded-full bg-[#E8F9FF] flex items-center justify-center mb-4">
                 <svg
@@ -337,20 +408,22 @@ export default function Members() {
             </div>
           )}
 
-          <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 gap-5">
-            {members.map((m: any) => (
-              <MemberCard
-                key={m.id}
-                member={m}
-                onClick={() => openDetail(m)}
-                statusConfig={statusConfig}
-                departmentConfig={departmentConfig}
-                getDPRTLeader={() => undefined}
-                getKaderCount={() => 0}
-                onRemoved={() => refetch()}
-              />
-            ))}
-          </div>
+          {!isLoading && !isFetching && (
+            <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 gap-5">
+              {members.map((m: any) => (
+                <MemberCard
+                  key={m.id}
+                  member={m}
+                  onClick={() => openDetail(m)}
+                  statusConfig={statusConfig}
+                  departmentConfig={departmentConfig}
+                  getDPRTLeader={() => undefined}
+                  getKaderCount={() => 0}
+                  onRemoved={() => refetch()}
+                />
+              ))}
+            </div>
+          )}
 
           <div className="mt-8 flex flex-col sm:flex-row gap-4 items-center justify-between">
             <div className="flex items-center gap-2 text-sm text-gray-600">

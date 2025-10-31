@@ -28,6 +28,7 @@ import {
   X,
 } from "lucide-react";
 import { Member } from "../types";
+import { useQuery } from "@tanstack/react-query";
 
 interface Props {
   open: boolean;
@@ -50,6 +51,28 @@ export function MemberDetailDialog({
   getKaderCount,
   onRequestEdit,
 }: Props) {
+  // Fetch kader list for a DPRT member (by desa regionId)
+  const kaderListQuery = useQuery({
+    queryKey: ["kaders-by-desa", member?.regionId],
+    enabled: open && member?.department === "dprt" && !!member?.regionId,
+    queryFn: async () => {
+      const params = new URLSearchParams();
+      params.set("page", "1");
+      params.set("pageSize", "100");
+      params.set("struktur", "1");
+      params.set("level", "kader");
+      if (member?.regionId) params.set("regionId", String(member.regionId));
+      const res = await fetch(`/api/members?${params.toString()}`);
+      const json = await res.json();
+      if (!json.success) throw new Error(json.error || "Gagal memuat kader");
+      return (json.data as any[]).map((m) => ({
+        id: m.id as number,
+        name: m.fullName as string,
+      }));
+    },
+    staleTime: 60_000,
+  });
+
   React.useEffect(() => {
     if (open && member) {
     }
@@ -137,7 +160,6 @@ export function MemberDetailDialog({
               --print-margin: 12mm;
               --content-w: calc(var(--page-w) - (2 * var(--print-margin)));
               --content-h: calc(var(--page-h) - (2 * var(--print-margin)));
-              /* Tweak this scale if still overflowing; lower value = smaller content */
               --print-scale: 0.8;
             }
 
@@ -173,7 +195,6 @@ export function MemberDetailDialog({
 
             /* Force content to fit a single page by scaling */
             .print-onepage {
-              transform: scale(var(--print-scale));
               transform-origin: top left;
               /* Expand width so that after scaling it matches printable width */
               width: calc(var(--content-w) / var(--print-scale)) !important;
@@ -313,7 +334,7 @@ export function MemberDetailDialog({
                   <Avatar className="relative w-16 h-16 ring-2 ring-[#E8F9FF] ring-offset-2 transition-all duration-300 group-hover:ring-[#C5BAFF]">
                     <AvatarImage
                       src={member.photo}
-                      className="object-cover transition-transform duration-300 group-hover:scale-105"
+                      className="object-cover transition-transform duration-300"
                     />
                     <AvatarFallback className="bg-gradient-to-br from-[#001B55] to-[#003875] text-white text-lg font-bold">
                       {member.name
@@ -551,6 +572,41 @@ export function MemberDetailDialog({
 
               {/* Right Column */}
               <div className="space-y-3">
+                {(member.department === "dpc" ||
+                  member.department === "dprt") && (
+                  <div className="bg-white rounded-xl border border-gray-200 overflow-hidden print-card print-compact shadow-sm hover:shadow-md transition-all duration-300">
+                    <div className="bg-gradient-to-r from-[#E8F9FF] to-[#F0F6FF] px-4 py-3 border-b border-gray-200">
+                      <h3 className="font-semibold text-[#001B55] text-sm flex items-center gap-2">
+                        <MapPin className="w-4 h-4 text-[#001B55]" />
+                        Penugasan Wilayah
+                      </h3>
+                    </div>
+                    <div className="p-4 space-y-2">
+                      {member.department === "dpc" && (
+                        <div className="flex items-center gap-2">
+                          <span className="text-[10px] font-medium text-gray-500 w-24">
+                            Kecamatan
+                          </span>
+                          <span className="text-xs font-semibold text-[#001B55]">
+                            {member.region || "-"}
+                          </span>
+                        </div>
+                      )}
+                      {member.department === "dprt" && (
+                        <>
+                          <div className="flex items-center gap-2">
+                            <span className="text-[10px] font-medium text-gray-500 w-24">
+                              Desa
+                            </span>
+                            <span className="text-xs font-semibold text-[#001B55]">
+                              {member.subDepartment || "-"}
+                            </span>
+                          </div>
+                        </>
+                      )}
+                    </div>
+                  </div>
+                )}
                 {/* Biodata & Deskripsi - Compact */}
                 <div className="bg-white rounded-xl border border-gray-200 overflow-hidden print-card print-compact shadow-sm hover:shadow-md transition-all duration-300">
                   <div className="bg-gradient-to-r from-[#E8F9FF] to-[#F0F6FF] px-4 py-3 border-b border-gray-200">
@@ -762,34 +818,39 @@ export function MemberDetailDialog({
                       Kader Dibawahi
                     </h3>
                   </div>
-                  <div className="p-4">
-                    {(() => {
-                      const kaderCount = members.filter(
-                        (m) =>
-                          m.department === "kader" &&
-                          m.region === member.region &&
-                          m.subDepartment === member.subDepartment
-                      ).length;
-                      return (
-                        <div className="flex items-center justify-between p-3 bg-amber-50 rounded-lg">
-                          <div className="min-w-0 flex-1">
-                            <p className="text-amber-900 font-bold text-sm truncate">
-                              {kaderCount > 0 ? (
-                                <>{kaderCount} kader aktif</>
-                              ) : (
-                                <>Belum ada kader yang diawasi</>
-                              )}
-                            </p>
-                            <p className="text-xs text-amber-700 mt-0.5 truncate">
-                              Desa {member.subDepartment}, Kec. {member.region}
-                            </p>
-                          </div>
-                          <Badge className="bg-amber-500 text-white hover:bg-amber-600 px-3 py-1 text-sm">
-                            {kaderCount}
-                          </Badge>
-                        </div>
-                      );
-                    })()}
+                  <div className="p-4 space-y-3">
+                    <div className="flex items-center justify-between p-3 bg-amber-50 rounded-lg">
+                      <div className="min-w-0 flex-1">
+                        <p className="text-amber-900 font-bold text-sm truncate">
+                          {kaderListQuery.isLoading
+                            ? "Memuat kader..."
+                            : kaderListQuery.data &&
+                              kaderListQuery.data.length > 0
+                            ? `${kaderListQuery.data.length} kader aktif`
+                            : "Belum ada kader yang diawasi"}
+                        </p>
+                        <p className="text-xs text-amber-700 mt-0.5 truncate">
+                          Desa {member.subDepartment}
+                        </p>
+                      </div>
+                      <Badge className="bg-amber-500 text-white hover:bg-amber-600 px-3 py-1 text-sm">
+                        {kaderListQuery.data?.length || 0}
+                      </Badge>
+                    </div>
+
+                    {/* List nama kader */}
+                    {kaderListQuery.data && kaderListQuery.data.length > 0 && (
+                      <div className="flex flex-wrap gap-2">
+                        {kaderListQuery.data.map((k) => (
+                          <span
+                            key={k.id}
+                            className="px-2 py-1 text-xs bg-[#E8F9FF] text-[#001B55] rounded-md border border-[#C4D9FF]"
+                          >
+                            {k.name}
+                          </span>
+                        ))}
+                      </div>
+                    )}
                   </div>
                 </div>
               )}
@@ -817,7 +878,7 @@ export function MemberDetailDialog({
             )}
             <Button
               onClick={handlePrint}
-              className="bg-gradient-to-r from-[#001B55] to-[#003875] hover:from-[#003875] hover:to-[#001B55] text-white rounded-lg shadow-md hover:shadow-lg text-sm h-10 px-4 transition-all duration-300 transform hover:scale-105"
+              className="bg-gradient-to-r from-[#001B55] to-[#003875] hover:from-[#003875] hover:to-[#001B55] text-white rounded-lg shadow-md hover:shadow-lg text-sm h-10 px-4 transition-all duration-300 transform"
             >
               <Printer className="w-4 h-4 mr-2" />
               Cetak PDF
