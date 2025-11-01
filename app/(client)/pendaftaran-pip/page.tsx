@@ -5,8 +5,6 @@ import { useRouter, useSearchParams } from "next/navigation";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { z } from "zod";
-import NasdemHeader from "@/components/nasdem-header";
-import NasdemFooter from "@/components/nasdem-footer";
 import { Button } from "@/components/ui/button";
 import {
   Form,
@@ -499,7 +497,6 @@ export default function PendaftaranPipPage() {
   if (success) {
     return (
       <div className="min-h-screen bg-[#F9FAFB]">
-        <NasdemHeader />
         <main className="container mx-auto px-4 md:px-6 lg:px-8 py-16 md:py-24">
           <div className="max-w-3xl mx-auto">
             <div className="text-center space-y-10 animate-fade-in">
@@ -547,7 +544,6 @@ export default function PendaftaranPipPage() {
             </div>
           </div>
         </main>
-        <NasdemFooter />
       </div>
     );
   }
@@ -556,7 +552,6 @@ export default function PendaftaranPipPage() {
   if (!programId) {
     return (
       <div className="min-h-screen bg-[#F9FAFB]">
-        <NasdemHeader />
         <main className="container mx-auto px-4 md:px-6 lg:px-8 py-16 md:py-24">
           <div className="max-w-3xl mx-auto">
             <div className="text-center space-y-10">
@@ -604,14 +599,12 @@ export default function PendaftaranPipPage() {
             </div>
           </div>
         </main>
-        <NasdemFooter />
       </div>
     );
   }
 
   return (
     <div className="min-h-screen bg-[#F9FAFB]">
-      <NasdemHeader />
 
       {/* Hero Section */}
       <section className="relative bg-gradient-to-br from-[#001B55] via-[#001B55] to-[#001845] py-16 md:py-20 overflow-hidden">
@@ -1850,7 +1843,6 @@ export default function PendaftaranPipPage() {
         </div>
       </section>
 
-      <NasdemFooter />
     </div>
   );
 }

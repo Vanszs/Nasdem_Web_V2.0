@@ -1,5 +1,3 @@
-import NasdemHeader from "@/components/nasdem-header";
-import NasdemFooter from "@/components/nasdem-footer";
 import NasdemHero from "@/components/nasdem-hero";
 import { AboutSection } from "@/components/about-section";
 import { ProgramsSection } from "@/components/programs-section";

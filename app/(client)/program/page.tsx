@@ -14,8 +14,6 @@ import {
   Briefcase,
   Target,
 } from "lucide-react";
-import NasdemHeader from "@/components/nasdem-header";
-import NasdemFooter from "@/components/nasdem-footer";
 import { ProgramFilters } from "@/app/(client)/program/components/ProgramFilters";
 import { ProgramCard } from "@/app/(client)/program/components/ProgramCard";
 import { JoinProgramDialog as JoinDialog } from "@/app/(client)/program/components/JoinProgramDialog";
@@ -114,8 +112,6 @@ export default function ProgramPage() {
 
   return (
     <div className="min-h-screen bg-nasdem-light-gray text-foreground">
-      <NasdemHeader />
-
       <main className="py-16 md:py-24">
         <div className="container mx-auto px-4">
           {/* Page Header */}
@@ -222,8 +218,6 @@ export default function ProgramPage() {
           />
         </div>
       </main>
-
-      <NasdemFooter />
     </div>
   );
 }

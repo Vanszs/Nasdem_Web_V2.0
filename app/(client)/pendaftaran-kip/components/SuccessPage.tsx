@@ -1,15 +1,12 @@
 import { useRouter } from "next/navigation";
 import { Button } from "@/components/ui/button";
 import { CheckCircle } from "lucide-react";
-import NasdemHeader from "@/components/nasdem-header";
-import NasdemFooter from "@/components/nasdem-footer";
 
 export function SuccessPage() {
   const router = useRouter();
 
   return (
     <div className="min-h-screen bg-[#F9FAFB]">
-      <NasdemHeader />
       <main className="container mx-auto px-4 md:px-6 lg:px-8 py-16 md:py-24">
         <div className="max-w-3xl mx-auto">
           <div className="text-center space-y-10 animate-fade-in">
@@ -57,7 +54,6 @@ export function SuccessPage() {
           </div>
         </div>
       </main>
-      <NasdemFooter />
     </div>
   );
 }

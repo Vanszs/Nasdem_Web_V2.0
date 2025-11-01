@@ -1,7 +1,5 @@
 "use client";
 
-import NasdemHeader from "@/components/nasdem-header";
-import NasdemFooter from "@/components/nasdem-footer";
 import { Button } from "@/components/ui/button";
 import { ChevronLeft, ChevronRight, Eye } from "lucide-react";
 import Image from "next/image";
@@ -144,7 +142,6 @@ export default function GaleriPage() {
 
   return (
     <div className="min-h-screen bg-background">
-      <NasdemHeader />
 
       {/* Header */}
       <section className="bg-nasdem-blue text-white py-16">
@@ -309,7 +306,6 @@ export default function GaleriPage() {
         />
       )}
 
-      <NasdemFooter />
     </div>
   );
 }

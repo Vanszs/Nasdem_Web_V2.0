@@ -7,8 +7,6 @@ import { zodResolver } from "@hookform/resolvers/zod";
 import { useMutation } from "@tanstack/react-query";
 import { toast } from "sonner";
 import { useDebounce } from "@/hooks/use-debounce";
-import NasdemHeader from "@/components/nasdem-header";
-import NasdemFooter from "@/components/nasdem-footer";
 import { Form } from "@/components/ui/form";
 import { Card, CardContent } from "@/components/ui/card";
 import { kipFormSchema, KipFormData } from "./schema";
@@ -240,7 +238,6 @@ export default function PendaftaranKipPage() {
 
   return (
     <div className="min-h-screen bg-[#F9FAFB]">
-      <NasdemHeader />
 
       {/* Hero Section */}
       <KipHeroSection />
@@ -296,7 +293,6 @@ export default function PendaftaranKipPage() {
         </div>
       </section>
 
-      <NasdemFooter />
     </div>
   );
 }
