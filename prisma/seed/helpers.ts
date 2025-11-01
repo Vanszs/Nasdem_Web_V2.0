@@ -3,7 +3,12 @@ import { PrismaClient } from "@prisma/client";
 export async function clearAll(db: PrismaClient) {
   console.log("🧹 Clearing old data...");
 
-  //   await db.programBenefitRecipient.deleteMany();
+  // Clear KIP registrations
+  await db.kipRegistration.deleteMany();
+  await db.pipRegistration.deleteMany();
+  await db.membershipApplication.deleteMany();
+  await db.programBenefitRecipient.deleteMany();
+  await db.program.deleteMany();
   //   await db.dprdCalegResult.deleteMany();
   //   await db.dprdPartyResult.deleteMany();
   //   await db.dprdElectionAnalysis.deleteMany();
@@ -16,7 +21,6 @@ export async function clearAll(db: PrismaClient) {
   //   await (db as any).activityMedia.deleteMany();
   //   await (db as any).activity.deleteMany();
   //   await db.news.deleteMany();
-  //   await db.program.deleteMany();
   await db.member.deleteMany();
   await db.strukturOrganisasi.deleteMany();
   await db.region.deleteMany();

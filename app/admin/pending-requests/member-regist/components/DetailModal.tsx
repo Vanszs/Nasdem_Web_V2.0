@@ -1,18 +1,16 @@
 "use client";
 
-import React from "react";
+import React, { useState, useEffect } from "react";
 import Image from "next/image";
 import { Button } from "@/components/ui/button";
 import { Label } from "@/components/ui/label";
 import {
   AlertCircle,
-  Briefcase,
   CheckCircle,
   Clock,
-  FileText,
-  HandHeart,
-  MapPin,
   UserCheck,
+  XCircle,
+  Building2,
 } from "lucide-react";
 import { MemberRegistration } from "../hooks/useMemberRegistrations";
 import {
@@ -22,34 +20,42 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
+import { useQuery } from "@tanstack/react-query";
+import { toast } from "sonner";
+
+// Fetch organizations for dropdown
+function useOrganizations() {
+  return useQuery({
+    queryKey: ["organizations"],
+    queryFn: async () => {
+      const res = await fetch("/api/organizations");
+      if (!res.ok) throw new Error("Failed to fetch organizations");
+      const json = await res.json();
+      return json.data || [];
+    },
+  });
+}
 
 export function getStatusBadge(status: string) {
   switch (status) {
     case "pending":
       return (
-        <span className="inline-flex items-center gap-1 px-2.5 py-0.5 rounded-full text-xs font-medium bg-yellow-100 text-yellow-800">
-          <Clock className="w-3 h-3" />
-          Menunggu
+        <span className="inline-flex items-center gap-1 px-3 py-1 rounded-full text-xs font-semibold bg-yellow-100 text-yellow-800 border border-yellow-300">
+          <Clock className="w-3.5 h-3.5" />
+          Menunggu Verifikasi
         </span>
       );
-    case "reviewed":
+    case "accepted":
       return (
-        <span className="inline-flex items-center gap-1 px-2.5 py-0.5 rounded-full text-xs font-medium bg-blue-100 text-blue-800">
-          <FileText className="w-3 h-3" />
-          Ditinjau
-        </span>
-      );
-    case "approved":
-      return (
-        <span className="inline-flex items-center gap-1 px-2.5 py-0.5 rounded-full text-xs font-medium bg-green-100 text-green-800">
-          <CheckCircle className="w-3 h-3" />
-          Disetujui
+        <span className="inline-flex items-center gap-1 px-3 py-1 rounded-full text-xs font-semibold bg-green-100 text-green-800 border border-green-300">
+          <CheckCircle className="w-3.5 h-3.5" />
+          Diterima
         </span>
       );
     case "rejected":
       return (
-        <span className="inline-flex items-center gap-1 px-2.5 py-0.5 rounded-full text-xs font-medium bg-red-100 text-red-800">
-          <AlertCircle className="w-3 h-3" />
+        <span className="inline-flex items-center gap-1 px-3 py-1 rounded-full text-xs font-semibold bg-red-100 text-red-800 border border-red-300">
+          <XCircle className="w-3.5 h-3.5" />
           Ditolak
         </span>
       );
@@ -69,16 +75,15 @@ export function DetailModal({
   open: boolean;
   onClose: () => void;
   data: MemberRegistration | null;
-  onUpdateStatus: (
-    status: "pending" | "reviewed" | "approved" | "rejected"
-  ) => void;
+  onUpdateStatus: (status: "accepted" | "rejected", organizationId?: number) => void;
   isUpdating?: boolean;
   getProgramName: (id?: number | null) => string;
 }) {
-  const [newStatus, setNewStatus] = React.useState<string>("");
+  const [selectedOrganization, setSelectedOrganization] = useState<string>("");
+  const { data: organizations, isLoading: loadingOrgs } = useOrganizations();
 
-  React.useEffect(() => {
-    setNewStatus("");
+  useEffect(() => {
+    setSelectedOrganization("");
   }, [data]);
 
   if (!open || !data) return null;
@@ -93,6 +98,22 @@ export function DetailModal({
           minute: "2-digit",
         })
       : "-";
+
+  const handleAccept = () => {
+    if (!selectedOrganization) {
+      toast.error("Silakan pilih organisasi terlebih dahulu");
+      return;
+    }
+    onUpdateStatus("accepted", parseInt(selectedOrganization));
+  };
+
+  const handleReject = () => {
+    if (confirm("Apakah Anda yakin ingin menolak pendaftaran ini?")) {
+      onUpdateStatus("rejected");
+    }
+  };
+
+  const isPending = data.status === "pending";
 
   return (
     <div className="fixed inset-0 bg-black/40 backdrop-blur-sm flex items-center justify-center z-50 p-4 animate-in fade-in duration-200">
@@ -122,63 +143,111 @@ export function DetailModal({
         </div>
 
         <div className="flex-1 overflow-y-auto p-6 space-y-5">
-          {/* Status Update */}
-          <div className="bg-gradient-to-br from-gray-50 to-gray-100/50 rounded-xl p-5 border border-gray-200/50">
-            <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+          {/* Status & Organization Selection */}
+          <div className="bg-gradient-to-br from-blue-50 to-blue-100/30 rounded-xl p-5 border border-blue-200/50">
+            <div className="grid grid-cols-1 gap-4">
+              {/* Current Status */}
               <div>
-                <span className="text-xs text-gray-500 uppercase tracking-wide font-semibold block mb-2">
+                <span className="text-xs text-gray-600 uppercase tracking-wide font-semibold block mb-2">
                   Status Saat Ini
                 </span>
                 <div>{getStatusBadge(data.status)}</div>
               </div>
-              <div>
-                <Label className="text-xs text-gray-500 uppercase tracking-wide font-semibold mb-2">
-                  Ubah Status
-                </Label>
-                <Select
-                  value={newStatus}
-                  onValueChange={setNewStatus}
-                  disabled={isUpdating}
-                >
-                  <SelectTrigger className="h-10 rounded-lg border-[#C4D9FF] focus:border-[#C5BAFF] bg-white transition-all">
-                    <SelectValue placeholder="Pilih status baru..." />
-                  </SelectTrigger>
-                  <SelectContent>
-                    <SelectItem value="pending">Menunggu</SelectItem>
-                    <SelectItem value="reviewed">Ditinjau</SelectItem>
-                    <SelectItem value="approved">Disetujui</SelectItem>
-                    <SelectItem value="rejected">Ditolak</SelectItem>
-                  </SelectContent>
-                </Select>
-              </div>
-              <div className="flex items-end">
-                <Button
-                  onClick={() => newStatus && onUpdateStatus(newStatus as any)}
-                  disabled={!newStatus || isUpdating}
-                  className="w-full h-10 rounded-lg bg-[#001B55] hover:bg-[#001B55]/90 text-white transition-all disabled:opacity-50 disabled:cursor-not-allowed"
-                >
-                  {isUpdating ? (
-                    <>
-                      <div className="w-4 h-4 border-2 border-white/30 border-t-white rounded-full animate-spin mr-2" />
-                      Memperbarui...
-                    </>
-                  ) : (
-                    <>
-                      <CheckCircle className="w-4 h-4 mr-2" />
-                      Update Status
-                    </>
-                  )}
-                </Button>
-              </div>
+
+              {/* Organization Selection (only for pending) */}
+              {isPending && (
+                <div>
+                  <Label className="text-xs text-gray-600 uppercase tracking-wide font-semibold mb-2 flex items-center gap-2">
+                    <Building2 className="w-4 h-4" />
+                    Pilih Organisasi
+                  </Label>
+                  <Select
+                    value={selectedOrganization}
+                    onValueChange={setSelectedOrganization}
+                    disabled={isUpdating || loadingOrgs}
+                  >
+                    <SelectTrigger className="h-11 rounded-lg border-blue-300 focus:border-green-500 bg-white transition-all">
+                      <SelectValue placeholder="Pilih organisasi untuk member..." />
+                    </SelectTrigger>
+                    <SelectContent>
+                      {loadingOrgs ? (
+                        <SelectItem value="loading" disabled>
+                          Loading...
+                        </SelectItem>
+                      ) : (
+                        organizations?.map((org: any) => (
+                          <SelectItem key={org.id} value={org.id.toString()}>
+                            {org.name} - {org.level}
+                          </SelectItem>
+                        ))
+                      )}
+                    </SelectContent>
+                  </Select>
+                  <p className="text-xs text-gray-500 mt-2">
+                    Member akan ditambahkan ke organisasi yang dipilih
+                  </p>
+                </div>
+              )}
+
+              {/* Action Buttons (only for pending) */}
+              {isPending && (
+                <div className="flex gap-3 pt-2">
+                  <Button
+                    onClick={handleAccept}
+                    disabled={!selectedOrganization || isUpdating}
+                    className="flex-1 h-11 rounded-lg bg-green-600 hover:bg-green-700 text-white font-semibold transition-all disabled:opacity-50"
+                  >
+                    {isUpdating ? (
+                      <>
+                        <div className="w-4 h-4 border-2 border-white/30 border-t-white rounded-full animate-spin mr-2" />
+                        Memproses...
+                      </>
+                    ) : (
+                      <>
+                        <CheckCircle className="w-4 h-4 mr-2" />
+                        Terima
+                      </>
+                    )}
+                  </Button>
+                  <Button
+                    onClick={handleReject}
+                    disabled={isUpdating}
+                    variant="destructive"
+                    className="flex-1 h-11 rounded-lg font-semibold transition-all"
+                  >
+                    {isUpdating ? (
+                      <>
+                        <div className="w-4 h-4 border-2 border-white/30 border-t-white rounded-full animate-spin mr-2" />
+                        Memproses...
+                      </>
+                    ) : (
+                      <>
+                        <XCircle className="w-4 h-4 mr-2" />
+                        Tolak
+                      </>
+                    )}
+                  </Button>
+                </div>
+              )}
             </div>
 
-            <div className="mt-4 pt-4 border-t border-gray-200/70">
-              <span className="text-xs text-gray-500 uppercase tracking-wide font-semibold">
+            <div className="mt-4 pt-4 border-t border-blue-200/70">
+              <span className="text-xs text-gray-600 uppercase tracking-wide font-semibold">
                 Tanggal Pendaftaran
               </span>
               <div className="text-sm font-bold text-[#001B55] mt-1.5">
                 {formatDateTime(data.submittedAt)}
               </div>
+              {data.reviewedAt && (
+                <>
+                  <span className="text-xs text-gray-600 uppercase tracking-wide font-semibold block mt-3">
+                    Tanggal Review
+                  </span>
+                  <div className="text-sm font-bold text-[#001B55] mt-1.5">
+                    {formatDateTime(data.reviewedAt)}
+                  </div>
+                </>
+              )}
             </div>
           </div>
 

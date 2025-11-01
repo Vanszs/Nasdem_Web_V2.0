@@ -47,8 +47,7 @@ export function FiltersBar({
         <SelectContent>
           <SelectItem value="all">Semua Status</SelectItem>
           <SelectItem value="pending">Menunggu</SelectItem>
-          <SelectItem value="reviewed">Ditinjau</SelectItem>
-          <SelectItem value="approved">Disetujui</SelectItem>
+          <SelectItem value="accepted">Diterima</SelectItem>
           <SelectItem value="rejected">Ditolak</SelectItem>
         </SelectContent>
       </Select>

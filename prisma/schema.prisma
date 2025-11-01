@@ -60,8 +60,7 @@ enum ApplicationType {
 
 enum ApplicationStatus {
   pending
-  reviewed
-  approved
+  accepted
   rejected
 }
 
@@ -188,6 +187,8 @@ model Program {
   recipients       ProgramBenefitRecipient[]
   // Pendaftar PIP
   pipRegistrations PipRegistration[]
+  // Pendaftar KIP
+  kipRegistrations KipRegistration[]
   // Membership applications with beneficiary program
   membershipApplications MembershipApplication[] @relation("MembershipBeneficiaryProgram")
 
@@ -486,6 +487,58 @@ model PipRegistration {
   @@index([status])
   @@index([educationLevel])
   @@index([nisn])
+}
+
+// ==========================================
+// 📝 KIP REGISTRATION MODEL (Kartu Indonesia Pintar)
+// ==========================================
+model KipRegistration {
+  id Int @id @default(autoincrement())
+
+  programId Int
+  program   Program @relation(fields: [programId], references: [id], onDelete: Cascade)
+
+  submittedAt   DateTime              @default(now())
+  reviewedAt    DateTime?
+  status        PipRegistrationStatus @default(pending) // Reuse same status enum
+  reviewerNotes String?
+
+  // 📚 DATA MAHASISWA
+  studentName    String         @db.VarChar(150)
+  homeAddress    String?        @db.Text // Alamat Rumah Lengkap
+  phoneNumber    String?        @db.VarChar(30) // Nomor HP/WA
+  nik            String?        @db.VarChar(50) // NIK
+  birthPlace     String?        @db.VarChar(100) // Tempat Lahir
+  dateOfBirth    DateTime? // Tanggal Lahir
+  gender         GenderEnum?
+  nisn           String?        @db.VarChar(50) // NISN (Nomor Induk Siswa Nasional)
+  npsn           String?        @db.VarChar(50) // NPSN (Nomor Pokok Sekolah Nasional)
+  nim            String?        @db.VarChar(50) // NIM (Nomor Induk Mahasiswa)
+  universityName String?        @db.VarChar(200) // Nama Perguruan Tinggi
+  universityStatus String?      @db.VarChar(50) // Status PT (Negeri/Swasta)
+  studyProgram   String?        @db.VarChar(150) // Program Studi
+  yearLevel      String?        @db.VarChar(50) // Tahun Angkatan
+
+  // 👨‍👩‍👧 DATA ORANG TUA SISWA
+  fatherName     String?  @db.VarChar(150) // Nama Ayah/Wali
+  motherName     String?  @db.VarChar(150) // Nama Ibu
+  parentPhone    String?  @db.VarChar(30) // Nomor Hp/WA Orang Tua
+  parentAddress  String?  @db.Text // Alamat Orang Tua
+
+  // 📝 DATA PENGUSUL
+  proposerName          String?           @db.VarChar(150)
+  proposerStatus        ProposerStatus?
+  proposerStatusOther   String?           @db.VarChar(100) // Jika status = lainnya
+  proposerPhone         String?           @db.VarChar(30) // Nomor HP/WA
+  proposerAddress       String?           @db.Text
+  proposerRelation      StudentRelation?
+  proposerRelationOther String?           @db.VarChar(100) // Jika hubungan = lainnya
+
+  @@index([programId])
+  @@index([status])
+  @@index([nik])
+  @@index([nisn])
+  @@index([nim])
 }
 
 model MembershipApplication {

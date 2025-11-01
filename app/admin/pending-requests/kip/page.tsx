@@ -20,7 +20,7 @@ import {
   SelectValue,
 } from "@/components/ui/select";
 import {
-  GraduationCap,
+  BookOpen,
   Search,
   Filter,
   Download,
@@ -28,20 +28,17 @@ import {
   CheckCircle,
   Clock,
   User,
-  Mail,
   Phone,
   MapPin,
-  CreditCard,
   FileText,
   AlertCircle,
-  Eye,
-  X,
-  ThumbsDown,
+  GraduationCap,
+  Building2,
 } from "lucide-react";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { toast } from "sonner";
 
-export default function PipPage() {
+export default function KipPage() {
   const [search, setSearch] = useState("");
   const [status, setStatus] = useState<string>("all");
   const [selectedApplication, setSelectedApplication] = useState<any>(null);
@@ -50,14 +47,14 @@ export default function PipPage() {
   const [newStatus, setNewStatus] = useState<string>("");
   const queryClient = useQueryClient();
 
-  // Fetch PIP registrations from API
+  // Fetch KIP registrations from API
   const { data, isLoading, error } = useQuery({
-    queryKey: ["pip-registrations", status],
+    queryKey: ["kip-registrations", status],
     queryFn: async () => {
       const params = new URLSearchParams();
       if (status !== "all") params.append("status", status);
 
-      const res = await fetch(`/api/registrations/pip?${params}`, {
+      const res = await fetch(`/api/registrations/kip?${params}`, {
         credentials: "include",
       });
       if (!res.ok) throw new Error("Gagal memuat data");
@@ -65,29 +62,20 @@ export default function PipPage() {
     },
   });
 
-  const pipApplications = data?.data || [];
+  const kipApplications = data?.data || [];
 
   // Filter applications based on search
-  const filteredApplications = pipApplications.filter((app: any) => {
+  const filteredApplications = kipApplications.filter((app: any) => {
     if (!search) return true;
     const searchLower = search.toLowerCase();
-    
-    // Build full address string for searching
-    const fullAddress = [
-      app.parentProvince,
-      app.parentCity,
-      app.parentDistrict,
-      app.parentVillage,
-      app.parentRtRw,
-      app.parentAddress
-    ].filter(Boolean).join(" ").toLowerCase();
     
     return (
       app.studentName?.toLowerCase().includes(searchLower) ||
       app.nisn?.toLowerCase().includes(searchLower) ||
-      app.schoolName?.toLowerCase().includes(searchLower) ||
+      app.nim?.toLowerCase().includes(searchLower) ||
+      app.universityName?.toLowerCase().includes(searchLower) ||
       app.proposerName?.toLowerCase().includes(searchLower) ||
-      fullAddress.includes(searchLower)
+      app.homeAddress?.toLowerCase().includes(searchLower)
     );
   });
 
@@ -111,7 +99,7 @@ export default function PipPage() {
       id: number;
       newStatus: string;
     }) => {
-      const res = await fetch(`/api/registrations/pip/${id}`, {
+      const res = await fetch(`/api/registrations/kip/${id}`, {
         method: "PATCH",
         headers: { "Content-Type": "application/json" },
         credentials: "include",
@@ -121,7 +109,7 @@ export default function PipPage() {
       return res.json();
     },
     onSuccess: (data) => {
-      queryClient.invalidateQueries({ queryKey: ["pip-registrations"] });
+      queryClient.invalidateQueries({ queryKey: ["kip-registrations"] });
       
       if (data.data?.status === "accepted") {
         toast.success("Pendaftar Diterima!", {
@@ -192,29 +180,14 @@ export default function PipPage() {
     });
   };
 
-  const getStatusLabel = (status: string) => {
-    switch (status) {
-      case "pending":
-        return "Menunggu";
-      case "verified":
-        return "Terverifikasi";
-      case "rejected":
-        return "Ditolak";
-      case "accepted":
-        return "Diterima";
-      default:
-        return status;
-    }
-  };
-
   return (
     <AdminLayout
-      breadcrumbs={[{ label: "Pending Request" }, { label: "PIP (Beasiswa)" }]}
+      breadcrumbs={[{ label: "Pending Request" }, { label: "KIP (Kuliah)" }]}
     >
       <div className="space-y-8">
         {/* KPI Cards */}
         <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
-          <div className="rounded-xl bg-white border-2 border-gray-100 shadow-sm hover:shadow-[#FF9C04]/10 transition-all duration-200 flex flex-col gap-3">
+          <div className="rounded-xl bg-white border-2 border-gray-100 shadow-sm hover:shadow-[#FF9C04]/10 transition-all duration-200 flex flex-col gap-3 p-5">
             <div className="flex items-center justify-between">
               <span className="text-sm text-[#6B7280] font-medium">
                 Total Pendaftar
@@ -228,7 +201,7 @@ export default function PipPage() {
             </div>
           </div>
 
-          <div className="rounded-xl bg-white border-2 border-gray-100 shadow-sm hover:shadow-[#FF9C04]/10 transition-all duration-200 flex flex-col gap-3">
+          <div className="rounded-xl bg-white border-2 border-gray-100 shadow-sm hover:shadow-[#FF9C04]/10 transition-all duration-200 flex flex-col gap-3 p-5">
             <div className="flex items-center justify-between">
               <span className="text-sm text-[#6B7280] font-medium">
                 Menunggu
@@ -242,7 +215,7 @@ export default function PipPage() {
             </div>
           </div>
 
-          <div className="rounded-xl bg-white border-2 border-gray-100 shadow-sm hover:shadow-[#FF9C04]/10 transition-all duration-200 flex flex-col gap-3">
+          <div className="rounded-xl bg-white border-2 border-gray-100 shadow-sm hover:shadow-[#FF9C04]/10 transition-all duration-200 flex flex-col gap-3 p-5">
             <div className="flex items-center justify-between">
               <span className="text-sm text-[#6B7280] font-medium">
                 Ditolak
@@ -256,7 +229,7 @@ export default function PipPage() {
             </div>
           </div>
 
-          <div className="rounded-xl bg-white border-2 border-gray-100 shadow-sm hover:shadow-[#FF9C04]/10 transition-all duration-200 flex flex-col gap-3">
+          <div className="rounded-xl bg-white border-2 border-gray-100 shadow-sm hover:shadow-[#FF9C04]/10 transition-all duration-200 flex flex-col gap-3 p-5">
             <div className="flex items-center justify-between">
               <span className="text-sm text-[#6B7280] font-medium">
                 Diterima
@@ -271,40 +244,40 @@ export default function PipPage() {
           </div>
         </div>
 
-      {/* Applications List */}
-      <Card className="rounded-xl border-2 border-gray-100 bg-white shadow-sm hover:shadow-[#FF9C04]/10 transition-all">
-        <CardHeader className="bg-gradient-to-r from-[#FFFFFF] to-[#F0F0F0]/30 border-b border-gray-100">
-          <div className="flex flex-col lg:flex-row lg:items-center lg:justify-between gap-4">
-            <div className="flex items-center gap-3">
-              <div className="w-10 h-10 rounded-lg bg-[#001B55]/10 flex items-center justify-center">
-                <GraduationCap className="w-5 h-5 text-[#001B55]" />
+        {/* Applications List */}
+        <Card className="rounded-xl border-2 border-gray-100 bg-white shadow-sm hover:shadow-[#FF9C04]/10 transition-all">
+          <CardHeader className="bg-gradient-to-r from-[#FFFFFF] to-[#F0F0F0]/30 border-b border-gray-100">
+            <div className="flex flex-col lg:flex-row lg:items-center lg:justify-between gap-4">
+              <div className="flex items-center gap-3">
+                <div className="w-10 h-10 rounded-lg bg-[#001B55]/10 flex items-center justify-center">
+                  <BookOpen className="w-5 h-5 text-[#001B55]" />
+                </div>
+                <div>
+                  <CardTitle className="text-xl font-semibold text-[#001B55]">
+                    Daftar Pendaftar Beasiswa KIP Kuliah
+                  </CardTitle>
+                  <CardDescription className="text-sm text-[#6B7280]">
+                    {total} pendaftar beasiswa ditemukan
+                  </CardDescription>
+                </div>
               </div>
-              <div>
-                <CardTitle className="text-xl font-semibold text-[#001B55]">
-                  Daftar Pendaftar Beasiswa PIP
-                </CardTitle>
-                <CardDescription className="text-sm text-[#6B7280]">
-                  {total} pendaftar beasiswa ditemukan
-                </CardDescription>
+
+              <div className="flex flex-wrap items-center gap-3">
+                <Button variant="outline" size="sm" className="gap-2 border-gray-200 hover:border-[#FF9C04] hover:text-[#FF9C04] transition-all">
+                  <Download className="w-4 h-4" />
+                  Export
+                </Button>
               </div>
             </div>
+          </CardHeader>
 
-            <div className="flex flex-wrap items-center gap-3">
-              <Button variant="outline" size="sm" className="gap-2 border-gray-200 hover:border-[#FF9C04] hover:text-[#FF9C04] transition-all">
-                <Download className="w-4 h-4" />
-                Export
-              </Button>
-            </div>
-          </div>
-        </CardHeader>
-
-          <CardContent className="space-y-6">
+          <CardContent className="space-y-6 p-6">
             {/* Filters */}
             <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
               <div className="relative">
                 <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-400" />
                 <Input
-                  placeholder="Cari nama siswa, NISN, sekolah, pengusul, alamat..."
+                  placeholder="Cari nama mahasiswa, NISN, NIM, universitas, pengusul..."
                   value={search}
                   onChange={(e) => setSearch(e.target.value)}
                   className="pl-10 h-10 rounded-lg border border-[#C4D9FF] focus:border-[#C5BAFF] transition-all"
@@ -340,31 +313,31 @@ export default function PipPage() {
                   <thead className="bg-gradient-to-r from-[#F0F0F0] to-[#E5E7EB] border-b border-gray-100 sticky top-0 z-10">
                     <tr>
                       <th className="px-4 py-3 text-sm font-bold text-[#001B55] text-left whitespace-nowrap">
-                        Nama Siswa
+                        Nama Mahasiswa
+                      </th>
+                      <th className="px-4 py-3 text-sm font-bold text-[#001B55] text-left whitespace-nowrap">
+                        NIK
                       </th>
                       <th className="px-4 py-3 text-sm font-bold text-[#001B55] text-left whitespace-nowrap">
                         NISN
                       </th>
                       <th className="px-4 py-3 text-sm font-bold text-[#001B55] text-left whitespace-nowrap">
-                        Jenjang
+                        NIM
                       </th>
                       <th className="px-4 py-3 text-sm font-bold text-[#001B55] text-left whitespace-nowrap">
-                        Kelas
+                        Universitas
                       </th>
                       <th className="px-4 py-3 text-sm font-bold text-[#001B55] text-left whitespace-nowrap">
-                        Nama Sekolah
+                        Program Studi
                       </th>
                       <th className="px-4 py-3 text-sm font-bold text-[#001B55] text-left whitespace-nowrap">
-                        Alamat (Kec/Desa)
+                        Angkatan
                       </th>
                       <th className="px-4 py-3 text-sm font-bold text-[#001B55] text-left whitespace-nowrap">
-                        Kontak Siswa
+                        Kontak
                       </th>
                       <th className="px-4 py-3 text-sm font-bold text-[#001B55] text-left whitespace-nowrap">
-                        Nama Pengusul
-                      </th>
-                      <th className="px-4 py-3 text-sm font-bold text-[#001B55] text-left whitespace-nowrap">
-                        Status Pengusul
+                        Pengusul
                       </th>
                       <th className="px-4 py-3 text-sm font-bold text-[#001B55] text-left whitespace-nowrap">
                         Program
@@ -394,12 +367,12 @@ export default function PipPage() {
                           colSpan={13}
                           className="text-center py-8 text-[#9CA3AF]"
                         >
-                          Tidak ada data pendaftar beasiswa PIP
+                          Tidak ada data pendaftar beasiswa KIP Kuliah
                         </td>
                       </tr>
                     ) : (
                       filteredApplications.map(
-                        (application: any, index: number) => (
+                        (application: any) => (
                           <tr
                             key={application.id}
                             className="hover:bg-[#F0F0F0]/50 transition-colors"
@@ -413,50 +386,35 @@ export default function PipPage() {
                               </div>
                             </td>
                             <td className="px-4 py-3 text-sm text-[#6B7280] font-medium whitespace-nowrap">
+                              {application.nik || "-"}
+                            </td>
+                            <td className="px-4 py-3 text-sm text-[#6B7280] font-medium whitespace-nowrap">
                               {application.nisn || "-"}
                             </td>
-                            <td className="px-4 py-3 text-sm text-[#6B7280] whitespace-nowrap">
-                              <span className="inline-flex items-center px-2 py-0.5 rounded-full text-xs font-medium bg-[#001B55]/10 text-[#001B55] border border-[#001B55]/20 uppercase">
-                                {application.educationLevel || "-"}
-                              </span>
-                            </td>
-                            <td className="px-4 py-3 text-sm text-[#6B7280] whitespace-nowrap">
-                              {application.studentClass || "-"}
+                            <td className="px-4 py-3 text-sm text-[#6B7280] font-medium whitespace-nowrap">
+                              {application.nim || "-"}
                             </td>
                             <td className="px-4 py-3 text-sm text-[#6B7280] font-medium max-w-[200px]">
                               <span className="truncate block">
-                                {application.schoolName || "-"}
+                                {application.universityName || "-"}
                               </span>
                             </td>
                             <td className="px-4 py-3 text-sm text-[#6B7280] max-w-[180px]">
-                              <div className="space-y-0.5">
-                                <div className="text-xs font-medium text-[#001B55]">
-                                  {application.parentDistrict || "-"}
-                                </div>
-                                <div className="text-xs text-[#9CA3AF] truncate">
-                                  {application.parentVillage || "-"}
-                                </div>
-                              </div>
+                              <span className="truncate block">
+                                {application.studyProgram || "-"}
+                              </span>
+                            </td>
+                            <td className="px-4 py-3 text-sm text-[#6B7280] whitespace-nowrap">
+                              {application.yearLevel || "-"}
                             </td>
                             <td className="px-4 py-3">
                               <div className="flex items-center gap-1.5 text-xs text-[#6B7280] whitespace-nowrap">
                                 <Phone className="w-3 h-3 text-[#FF9C04]" />
-                                {application.studentPhone || "-"}
+                                {application.phoneNumber || "-"}
                               </div>
                             </td>
                             <td className="px-4 py-3 text-sm text-[#6B7280] font-medium whitespace-nowrap">
                               {application.proposerName || "-"}
-                            </td>
-                            <td className="px-4 py-3 text-sm text-[#6B7280] whitespace-nowrap">
-                              {application.proposerStatus ? (
-                                <span className="inline-flex items-center px-2 py-0.5 rounded-full text-xs font-medium bg-[#001B55]/10 text-[#001B55] border border-[#001B55]/20 uppercase">
-                                  {application.proposerStatus === "dpd" ? "DPD" :
-                                   application.proposerStatus === "dpc" ? "DPC" :
-                                   application.proposerStatus === "dprt" ? "DPRT" :
-                                   application.proposerStatus === "kordes" ? "KORDES" :
-                                   application.proposerStatusOther || "Lainnya"}
-                                </span>
-                              ) : "-"}
                             </td>
                             <td className="px-4 py-3 text-sm text-[#6B7280] whitespace-nowrap">
                               <span className="font-medium text-[#001B55]">
@@ -508,14 +466,14 @@ export default function PipPage() {
                 <div className="flex items-center justify-between">
                   <div className="flex items-center gap-3">
                     <div className="w-12 h-12 rounded-xl bg-white/10 backdrop-blur-sm flex items-center justify-center">
-                      <GraduationCap className="w-6 h-6 text-white" />
+                      <BookOpen className="w-6 h-6 text-white" />
                     </div>
                     <div>
                       <h3 className="text-xl font-semibold">
-                        Detail Pendaftar Beasiswa PIP
+                        Detail Pendaftar Beasiswa KIP Kuliah
                       </h3>
                       <p className="text-sm text-white/80">
-                        {selectedApplication.fullName}
+                        {selectedApplication.studentName}
                       </p>
                     </div>
                   </div>
@@ -611,32 +569,30 @@ export default function PipPage() {
                   </div>
                 </div>
 
-                {/* 📚 Data Siswa */}
+                {/* 📚 Data Mahasiswa */}
                 <div className="bg-white rounded-xl border-2 border-gray-100 shadow-sm hover:shadow-[#FF9C04]/10 transition-all overflow-hidden">
                   <div className="bg-gradient-to-r from-[#001B55]/5 to-[#001B55]/10 px-5 py-3 border-b border-gray-100">
-                    <h4 className="text-base font-bold text-white flex items-center gap-2">
+                    <h4 className="text-base font-bold text-[#001B55] flex items-center gap-2">
                       <GraduationCap className="w-4.5 h-4.5" />
-                      📚 Data Siswa
+                      📚 Data Mahasiswa
                     </h4>
                   </div>
                   <div className="p-5">
                     <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                       <div className="space-y-1">
                         <Label className="text-[10px] text-gray-500 uppercase tracking-wider font-bold">
-                          Jenjang Pendidikan
+                          Nama Mahasiswa
                         </Label>
                         <p className="text-sm font-semibold text-gray-900 mt-1.5">
-                          <span className="inline-flex items-center px-2.5 py-1 rounded-full text-xs font-bold bg-blue-100 text-blue-800 uppercase">
-                            {selectedApplication.educationLevel || "-"}
-                          </span>
+                          {selectedApplication.studentName || "-"}
                         </p>
                       </div>
                       <div className="space-y-1">
                         <Label className="text-[10px] text-gray-500 uppercase tracking-wider font-bold">
-                          Nama Siswa
+                          NIK
                         </Label>
                         <p className="text-sm font-semibold text-gray-900 mt-1.5">
-                          {selectedApplication.studentName || "-"}
+                          {selectedApplication.nik || "-"}
                         </p>
                       </div>
                       <div className="space-y-1">
@@ -685,41 +641,50 @@ export default function PipPage() {
                       </div>
                       <div className="space-y-1">
                         <Label className="text-[10px] text-gray-500 uppercase tracking-wider font-bold">
-                          Kelas
+                          NIM
                         </Label>
-                        <p className="text-sm font-medium text-gray-700 mt-1.5">
-                          {selectedApplication.studentClass || "-"}
+                        <p className="text-sm font-semibold text-gray-900 mt-1.5">
+                          {selectedApplication.nim || "-"}
                         </p>
                       </div>
                       <div className="space-y-1">
                         <Label className="text-[10px] text-gray-500 uppercase tracking-wider font-bold">
-                          Nomor HP/WA Siswa
+                          Nomor HP/WA
                         </Label>
                         <p className="text-sm font-medium text-gray-700 mt-1.5 flex items-center gap-2">
-                          <Phone className="w-4 h-4 text-brand-accent" />
-                          {selectedApplication.studentPhone || "-"}
+                          <Phone className="w-4 h-4 text-[#FF9C04]" />
+                          {selectedApplication.phoneNumber || "-"}
+                        </p>
+                      </div>
+                      <div className="space-y-1 md:col-span-2">
+                        <Label className="text-[10px] text-gray-500 uppercase tracking-wider font-bold">
+                          Alamat Rumah
+                        </Label>
+                        <p className="text-sm font-medium text-gray-700 mt-1.5 flex items-start gap-2 leading-relaxed">
+                          <MapPin className="w-4 h-4 text-[#FF9C04] mt-0.5" />
+                          {selectedApplication.homeAddress || "-"}
                         </p>
                       </div>
                     </div>
                   </div>
                 </div>
 
-                {/* 🏫 Data Sekolah */}
+                {/* 🏫 Data Universitas */}
                 <div className="bg-white rounded-xl border-2 border-gray-100 shadow-sm hover:shadow-[#FF9C04]/10 transition-all overflow-hidden">
                   <div className="bg-gradient-to-r from-[#FF9C04]/5 to-[#FF9C04]/10 px-5 py-3 border-b border-gray-100">
-                    <h4 className="text-base font-bold text-white flex items-center gap-2">
-                      <GraduationCap className="w-4.5 h-4.5" />
-                      🏫 Data Sekolah
+                    <h4 className="text-base font-bold text-[#001B55] flex items-center gap-2">
+                      <Building2 className="w-4.5 h-4.5" />
+                      🏫 Data Universitas
                     </h4>
                   </div>
                   <div className="p-5">
                     <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                       <div className="space-y-1">
                         <Label className="text-[10px] text-gray-500 uppercase tracking-wider font-bold">
-                          Nama Sekolah
+                          Nama Universitas
                         </Label>
                         <p className="text-sm font-semibold text-gray-900 mt-1.5">
-                          {selectedApplication.schoolName || "-"}
+                          {selectedApplication.universityName || "-"}
                         </p>
                       </div>
                       <div className="space-y-1">
@@ -732,46 +697,30 @@ export default function PipPage() {
                       </div>
                       <div className="space-y-1">
                         <Label className="text-[10px] text-gray-500 uppercase tracking-wider font-bold">
-                          Status Sekolah
+                          Status Perguruan Tinggi
                         </Label>
                         <p className="text-sm font-medium text-gray-700 mt-1.5">
-                          {selectedApplication.schoolStatus ? (
+                          {selectedApplication.universityStatus ? (
                             <span className="inline-flex items-center px-2.5 py-1 rounded-full text-xs font-bold bg-green-100 text-green-800 uppercase">
-                              {selectedApplication.schoolStatus}
+                              {selectedApplication.universityStatus}
                             </span>
                           ) : "-"}
                         </p>
                       </div>
                       <div className="space-y-1">
                         <Label className="text-[10px] text-gray-500 uppercase tracking-wider font-bold">
-                          Kelurahan/Desa
+                          Program Studi
                         </Label>
                         <p className="text-sm font-medium text-gray-700 mt-1.5">
-                          {selectedApplication.schoolVillage || "-"}
+                          {selectedApplication.studyProgram || "-"}
                         </p>
                       </div>
                       <div className="space-y-1">
                         <Label className="text-[10px] text-gray-500 uppercase tracking-wider font-bold">
-                          Kecamatan
+                          Tahun Angkatan
                         </Label>
                         <p className="text-sm font-medium text-gray-700 mt-1.5">
-                          {selectedApplication.schoolDistrict || "-"}
-                        </p>
-                      </div>
-                      <div className="space-y-1">
-                        <Label className="text-[10px] text-gray-500 uppercase tracking-wider font-bold">
-                          Kabupaten/Kota
-                        </Label>
-                        <p className="text-sm font-medium text-gray-700 mt-1.5">
-                          {selectedApplication.schoolCity || "-"}
-                        </p>
-                      </div>
-                      <div className="space-y-1">
-                        <Label className="text-[10px] text-gray-500 uppercase tracking-wider font-bold">
-                          Provinsi
-                        </Label>
-                        <p className="text-sm font-medium text-gray-700 mt-1.5">
-                          {selectedApplication.schoolProvince || "-"}
+                          {selectedApplication.yearLevel || "-"}
                         </p>
                       </div>
                     </div>
@@ -781,7 +730,7 @@ export default function PipPage() {
                 {/* 👨‍👩‍👧 Data Orang Tua */}
                 <div className="bg-white rounded-xl border-2 border-gray-100 shadow-sm hover:shadow-[#FF9C04]/10 transition-all overflow-hidden">
                   <div className="bg-gradient-to-r from-[#001B55]/5 to-[#001B55]/10 px-5 py-3 border-b border-gray-100">
-                    <h4 className="text-base font-bold text-white flex items-center gap-2">
+                    <h4 className="text-base font-bold text-[#001B55] flex items-center gap-2">
                       <Users className="w-4.5 h-4.5" />
                       👨‍👩‍👧 Data Orang Tua Siswa
                     </h4>
@@ -799,28 +748,19 @@ export default function PipPage() {
                       </div>
                       <div className="space-y-1">
                         <Label className="text-[10px] text-gray-500 uppercase tracking-wider font-bold">
-                          Nomor HP/WA Ayah
-                        </Label>
-                        <p className="text-sm font-medium text-gray-700 mt-1.5 flex items-center gap-2">
-                          <Phone className="w-4 h-4 text-brand-accent" />
-                          {selectedApplication.fatherPhone || "-"}
-                        </p>
-                      </div>
-                      <div className="space-y-1">
-                        <Label className="text-[10px] text-gray-500 uppercase tracking-wider font-bold">
                           Nama Ibu
                         </Label>
                         <p className="text-sm font-semibold text-gray-900 mt-1.5">
                           {selectedApplication.motherName || "-"}
                         </p>
                       </div>
-                      <div className="space-y-1">
+                      <div className="space-y-1 md:col-span-2">
                         <Label className="text-[10px] text-gray-500 uppercase tracking-wider font-bold">
-                          Nomor HP/WA Ibu
+                          Nomor HP/WA Orang Tua
                         </Label>
                         <p className="text-sm font-medium text-gray-700 mt-1.5 flex items-center gap-2">
-                          <Phone className="w-4 h-4 text-brand-accent" />
-                          {selectedApplication.motherPhone || "-"}
+                          <Phone className="w-4 h-4 text-[#FF9C04]" />
+                          {selectedApplication.parentPhone || "-"}
                         </p>
                       </div>
                     </div>
@@ -829,69 +769,12 @@ export default function PipPage() {
                     <div className="border-t border-gray-200 pt-4">
                       <Label className="text-[10px] text-gray-500 uppercase tracking-wider font-bold mb-3 block">
                         <MapPin className="w-3.5 h-3.5 inline mr-1" />
-                        Alamat Lengkap Orang Tua
+                        Alamat Orang Tua
                       </Label>
-                      <div className="bg-gradient-to-br from-gray-50 to-gray-100/30 p-4 rounded-lg border border-gray-200/50 space-y-2">
-                        <div className="grid grid-cols-2 md:grid-cols-4 gap-2 text-xs">
-                          <div>
-                            <span className="text-gray-500 font-semibold">Provinsi:</span>
-                            <p className="text-gray-900 font-medium">{selectedApplication.parentProvince || "-"}</p>
-                          </div>
-                          <div>
-                            <span className="text-gray-500 font-semibold">Kota/Kab:</span>
-                            <p className="text-gray-900 font-medium">{selectedApplication.parentCity || "-"}</p>
-                          </div>
-                          <div>
-                            <span className="text-gray-500 font-semibold">Kecamatan:</span>
-                            <p className="text-gray-900 font-medium">{selectedApplication.parentDistrict || "-"}</p>
-                          </div>
-                          <div>
-                            <span className="text-gray-500 font-semibold">Desa/Kel:</span>
-                            <p className="text-gray-900 font-medium">{selectedApplication.parentVillage || "-"}</p>
-                          </div>
-                        </div>
-                        <div className="border-t border-gray-200/70 pt-2 mt-2">
-                          <span className="text-xs text-gray-500 font-semibold">RT/RW:</span>
-                          <p className="text-sm text-gray-900 font-medium">{selectedApplication.parentRtRw || "-"}</p>
-                        </div>
-                        <div className="border-t border-gray-200/70 pt-2 mt-2">
-                          <span className="text-xs text-gray-500 font-semibold">Alamat Detail:</span>
-                          <p className="text-sm text-gray-700 leading-relaxed mt-1">
-                            {selectedApplication.parentAddress || "-"}
-                          </p>
-                        </div>
-                      </div>
-                    </div>
-
-                    {/* Kesediaan Bergabung Nasdem */}
-                    <div className="border-t border-gray-200 pt-4">
-                      <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                        <div className="space-y-1">
-                          <Label className="text-[10px] text-gray-500 uppercase tracking-wider font-bold">
-                            Bersedia Bergabung di Partai NasDem
-                          </Label>
-                          <p className="text-sm font-semibold text-gray-900 mt-1.5">
-                            {selectedApplication.parentWillingJoinNasdem ? (
-                              <span className="inline-flex items-center px-2.5 py-1 rounded-full text-xs font-bold bg-green-100 text-green-800">
-                                ✓ YA, BERSEDIA
-                              </span>
-                            ) : (
-                              <span className="inline-flex items-center px-2.5 py-1 rounded-full text-xs font-bold bg-gray-100 text-gray-600">
-                                TIDAK BERSEDIA
-                              </span>
-                            )}
-                          </p>
-                        </div>
-                        {selectedApplication.parentJoinReason && (
-                          <div className="space-y-1 md:col-span-2">
-                            <Label className="text-[10px] text-gray-500 uppercase tracking-wider font-bold">
-                              Alasan
-                            </Label>
-                            <p className="text-sm font-medium text-gray-700 mt-1.5 bg-blue-50/50 p-3 rounded-lg border border-blue-100">
-                              {selectedApplication.parentJoinReason}
-                            </p>
-                          </div>
-                        )}
+                      <div className="bg-gradient-to-br from-gray-50 to-gray-100/30 p-4 rounded-lg border border-gray-200/50">
+                        <p className="text-sm text-gray-700 leading-relaxed">
+                          {selectedApplication.parentAddress || "-"}
+                        </p>
                       </div>
                     </div>
                   </div>
@@ -900,7 +783,7 @@ export default function PipPage() {
                 {/* 📝 Data Pengusul */}
                 <div className="bg-white rounded-xl border-2 border-gray-100 shadow-sm hover:shadow-[#FF9C04]/10 transition-all overflow-hidden">
                   <div className="bg-gradient-to-r from-[#FF9C04]/5 to-[#FF9C04]/10 px-5 py-3 border-b border-gray-100">
-                    <h4 className="text-base font-bold text-white flex items-center gap-2">
+                    <h4 className="text-base font-bold text-[#001B55] flex items-center gap-2">
                       <User className="w-4.5 h-4.5" />
                       📝 Data Pengusul
                     </h4>
@@ -922,10 +805,12 @@ export default function PipPage() {
                         <p className="text-sm font-medium text-gray-700 mt-1.5">
                           {selectedApplication.proposerStatus ? (
                             <span className="inline-flex items-center px-2.5 py-1 rounded-full text-xs font-bold bg-purple-100 text-purple-800 uppercase">
-                              {selectedApplication.proposerStatus === "dpd" ? "DPD" : 
-                               selectedApplication.proposerStatus === "dpc" ? "DPC" :
-                               selectedApplication.proposerStatus === "dprt" ? "DPRT" :
+                              {selectedApplication.proposerStatus === "korcam" ? "KORCAM" :
+                               selectedApplication.proposerStatus === "korkel" ? "KORKEL" :
                                selectedApplication.proposerStatus === "kordes" ? "KORDES" :
+                               selectedApplication.proposerStatus === "kortps" ? "KORTPS" :
+                               selectedApplication.proposerStatus === "partai" ? "PARTAI" :
+                               selectedApplication.proposerStatus === "relawan" ? "RELAWAN" :
                                selectedApplication.proposerStatusOther || "Lainnya"}
                             </span>
                           ) : "-"}
@@ -936,19 +821,20 @@ export default function PipPage() {
                           Nomor HP/WA Pengusul
                         </Label>
                         <p className="text-sm font-medium text-gray-700 mt-1.5 flex items-center gap-2">
-                          <Phone className="w-4 h-4 text-brand-accent" />
+                          <Phone className="w-4 h-4 text-[#FF9C04]" />
                           {selectedApplication.proposerPhone || "-"}
                         </p>
                       </div>
                       <div className="space-y-1">
                         <Label className="text-[10px] text-gray-500 uppercase tracking-wider font-bold">
-                          Hubungan dengan Siswa
+                          Hubungan Anak yang Diusulkan
                         </Label>
                         <p className="text-sm font-medium text-gray-700 mt-1.5">
                           {selectedApplication.proposerRelation ? (
                             <span className="inline-flex items-center px-2.5 py-1 rounded-full text-xs font-bold bg-blue-100 text-blue-800">
                               {selectedApplication.proposerRelation === "anak" ? "Anak" :
                                selectedApplication.proposerRelation === "saudara" ? "Saudara" :
+                               selectedApplication.proposerRelation === "kerabat" ? "Kerabat" :
                                selectedApplication.proposerRelation === "tetangga" ? "Tetangga" :
                                selectedApplication.proposerRelationOther || "Lainnya"}
                             </span>
@@ -960,7 +846,7 @@ export default function PipPage() {
                           Alamat Pengusul
                         </Label>
                         <p className="text-sm font-medium text-gray-700 mt-1.5 flex items-start gap-2 leading-relaxed">
-                          <MapPin className="w-4 h-4 text-brand-accent mt-0.5" />
+                          <MapPin className="w-4 h-4 text-[#FF9C04] mt-0.5" />
                           {selectedApplication.proposerAddress || "-"}
                         </p>
                       </div>
@@ -969,10 +855,10 @@ export default function PipPage() {
                 </div>
 
                 {/* Program Information */}
-                <div className="bg-white rounded-xl border border-gray-200/70 overflow-hidden transition-all hover:border-gray-300">
-                  <div className="bg-gradient-to-r from-gray-50 to-gray-100/50 px-5 py-3 border-b border-gray-200/70">
+                <div className="bg-white rounded-xl border-2 border-gray-100 shadow-sm hover:shadow-[#FF9C04]/10 transition-all overflow-hidden">
+                  <div className="bg-gradient-to-r from-gray-50 to-gray-100/50 px-5 py-3 border-b border-gray-100">
                     <h4 className="text-base font-bold text-[#001B55] flex items-center gap-2">
-                      <GraduationCap className="w-4.5 h-4.5" />
+                      <BookOpen className="w-4.5 h-4.5" />
                       Program
                     </h4>
                   </div>
@@ -990,8 +876,8 @@ export default function PipPage() {
 
                 {/* Reviewer Notes */}
                 {selectedApplication.reviewerNotes && (
-                  <div className="bg-white rounded-xl border border-gray-200/70 overflow-hidden transition-all hover:border-gray-300">
-                    <div className="bg-gradient-to-r from-gray-50 to-gray-100/50 px-5 py-3 border-b border-gray-200/70">
+                  <div className="bg-white rounded-xl border-2 border-gray-100 shadow-sm hover:shadow-[#FF9C04]/10 transition-all overflow-hidden">
+                    <div className="bg-gradient-to-r from-gray-50 to-gray-100/50 px-5 py-3 border-b border-gray-100">
                       <h4 className="text-base font-bold text-[#001B55] flex items-center gap-2">
                         <FileText className="w-4.5 h-4.5" />
                         Catatan Reviewer

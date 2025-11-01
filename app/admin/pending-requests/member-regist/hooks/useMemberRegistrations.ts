@@ -26,6 +26,7 @@ export interface MemberRegistration {
   notes?: string | null;
   status: ApplicationStatus;
   submittedAt: string;
+  reviewedAt?: string | null;
   ktpPhotoUrl?: string | null;
 }
 
@@ -74,11 +75,20 @@ export function useMemberRegistrations(params: {
 export function useUpdateApplicationStatus() {
   const qc = useQueryClient();
   return useMutation({
-    mutationFn: async (payload: { id: number; status: ApplicationStatus }) => {
-      const res = await fetch(`/api/membership-applications/${payload.id}`, {
+    mutationFn: async (payload: { 
+      id: number; 
+      status: "accepted" | "rejected";
+      organizationId?: number;
+      notes?: string;
+    }) => {
+      const res = await fetch(`/api/membership-applications/${payload.id}/status`, {
         method: "PATCH",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ status: payload.status }),
+        body: JSON.stringify({ 
+          status: payload.status,
+          organizationId: payload.organizationId,
+          notes: payload.notes,
+        }),
       });
       const json = await res.json();
       if (!res.ok || !json.success)

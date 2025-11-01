@@ -48,6 +48,7 @@ import {
 } from "./hooks/useMemberRegistrations";
 import { SimplePagination } from "@/components/ui/pagination";
 import { useDebounce } from "@/hooks/use-debounce";
+import { toast } from "sonner";
 
 // Programs lookup for beneficiary program name
 function useProgramsLookup() {
@@ -106,14 +107,30 @@ export default function MemberRegistPage() {
     if (!programId) return "-";
     return programsMap.get(programId) || "-";
   };
+  
   const handleStatusUpdate = (
-    newStatus: "pending" | "reviewed" | "approved" | "rejected"
+    newStatus: "accepted" | "rejected",
+    organizationId?: number
   ) => {
     if (!selectedRegistration) return;
     updateMut.mutate(
-      { id: selectedRegistration.id, status: newStatus },
+      { 
+        id: selectedRegistration.id, 
+        status: newStatus,
+        organizationId: organizationId,
+      },
       {
-        onSuccess: () => setShowDetail(false),
+        onSuccess: (data) => {
+          setShowDetail(false);
+          if (newStatus === "accepted") {
+            toast.success("Pendaftaran berhasil diterima dan member telah ditambahkan ke organisasi");
+          } else {
+            toast.success("Pendaftaran berhasil ditolak");
+          }
+        },
+        onError: (error: any) => {
+          toast.error(error.message || "Gagal memperbarui status");
+        },
       }
     );
   };

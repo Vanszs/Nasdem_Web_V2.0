@@ -8,14 +8,13 @@ export function KpiCards({
   summary?: {
     total: number;
     pending: number;
-    reviewed: number;
-    approved: number;
+    accepted: number;
     rejected: number;
   };
 }) {
   const total = summary?.total ?? 0;
   const pending = summary?.pending ?? 0;
-  const approved = summary?.approved ?? 0;
+  const accepted = summary?.accepted ?? 0;
   const rejected = summary?.rejected ?? 0;
 
   return (
@@ -47,13 +46,13 @@ export function KpiCards({
       <div className="rounded-xl bg-card shadow-sm p-5 border border-border hover:shadow-md transition-all duration-200 flex flex-col gap-3">
         <div className="flex items-center justify-between">
           <span className="text-sm text-text-secondary font-medium">
-            Disetujui
+            Diterima
           </span>
           <div className="w-10 h-10 rounded-lg bg-green-100 flex items-center justify-center">
             <CheckCircle className="w-5 h-5 text-green-600" />
           </div>
         </div>
-        <div className="text-num font-semibold text-green-600">{approved}</div>
+        <div className="text-num font-semibold text-green-600">{accepted}</div>
       </div>
 
       <div className="rounded-xl bg-card shadow-sm p-5 border border-border hover:shadow-md transition-all duration-200 flex flex-col gap-3">

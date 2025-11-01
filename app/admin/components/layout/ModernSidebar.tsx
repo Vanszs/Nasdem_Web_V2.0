@@ -22,6 +22,7 @@ import {
   Clock,
   GraduationCap,
   UserCheck,
+  BookOpen,
 } from "lucide-react";
 
 import { SafeNavLink } from "./SafeNavLink";
@@ -132,6 +133,13 @@ const allMenuItems = [
         url: "/admin/pending-requests/pip",
         icon: GraduationCap,
         ariaLabel: "Kelola pendaftaran beasiswa PIP",
+        requiredRoles: [UserRole.SUPERADMIN],
+      },
+      {
+        title: "KIP Kuliah",
+        url: "/admin/pending-requests/kip",
+        icon: BookOpen,
+        ariaLabel: "Kelola pendaftaran KIP Kuliah",
         requiredRoles: [UserRole.SUPERADMIN],
       },
       {

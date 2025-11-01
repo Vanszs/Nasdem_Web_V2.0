@@ -2,6 +2,8 @@
 
 import { useState } from "react";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
+import Link from "next/link";
+import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader } from "@/components/ui/card";
 import {
   GraduationCap,
@@ -53,6 +55,8 @@ const categoryIconMap: Record<string, any> = {
   sosial: Heart,
   advokasi: Building,
   organisasi: Users,
+  pip: GraduationCap,  // Program Indonesia Pintar
+  kip: GraduationCap,  // Kartu Indonesia Pintar Kuliah
 };
 
 // form moved to components/programs/JoinProgramDialog
@@ -171,18 +175,23 @@ export default function ProgramPage() {
               programs.map((program: any, index: number) => {
                 const IconComponent =
                   categoryIconMap[program.category?.toLowerCase?.()] || Target;
-                const isPip =
-                  (program.category || "").toLowerCase() === "pendidikan" &&
-                  (program.name || "")
-                    .toLowerCase()
-                    .includes("pendidikan inklusif");
+                
+                // Check if program is PIP (by category)
+                const isPip = (program.category || "").toLowerCase() === "pip";
+                
+                // Check if program is KIP (by category)
+                const isKip = (program.category || "").toLowerCase() === "kip";
+                
+                // Show join button for PIP or KIP
+                const showJoin = isPip || isKip;
+                
                 return (
                   <ProgramCard
                     key={program.id ?? index}
                     program={program}
                     IconComponent={IconComponent}
                     DetailDialog={<ProgramDetailDialog program={program} />}
-                    showJoin={isPip}
+                    showJoin={showJoin}
                     JoinDialog={
                       isPip ? (
                         <JoinDialog
@@ -190,6 +199,12 @@ export default function ProgramPage() {
                           isSubmitting={joinMutation.isPending}
                           onSubmit={(fd) => joinMutation.mutate(fd)}
                         />
+                      ) : isKip ? (
+                        <Link href={`/pendaftaran-kip?programId=${program.id}`}>
+                          <Button className="w-full bg-gradient-to-r from-[#FF9C04] to-[#FF9C04]/90 hover:from-[#001B55] hover:to-[#001B55]/90 text-white shadow-[#FF9C04]/30 hover:shadow-[#001B55]/30 transition-all">
+                            Daftar KIP
+                          </Button>
+                        </Link>
                       ) : undefined
                     }
                   />

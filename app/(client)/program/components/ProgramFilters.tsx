@@ -41,6 +41,8 @@ export function ProgramFilters({
             </SelectTrigger>
             <SelectContent>
               <SelectItem value="all">Semua Program</SelectItem>
+              <SelectItem value="pip">Program Indonesia Pintar (PIP)</SelectItem>
+              <SelectItem value="kip">Kartu Indonesia Pintar Kuliah (KIP)</SelectItem>
               <SelectItem value="pendidikan">Pendidikan</SelectItem>
               <SelectItem value="ekonomi">Ekonomi</SelectItem>
               <SelectItem value="pertanian">Pertanian</SelectItem>

@@ -88,8 +88,7 @@ export async function GET(req: NextRequest) {
       total,
       data,
       pendingCount,
-      reviewedCount,
-      approvedCount,
+      acceptedCount,
       rejectedCount,
     ] = await Promise.all([
       db.membershipApplication.count({ where }),
@@ -130,13 +129,10 @@ export async function GET(req: NextRequest) {
         },
       }),
       db.membershipApplication.count({
-        where: { ...(where as any), status: ApplicationStatus.pending },
+        where: { ...(where as any), status: "pending" as any },
       }),
       db.membershipApplication.count({
-        where: { ...(where as any), status: ApplicationStatus.reviewed },
-      }),
-      db.membershipApplication.count({
-        where: { ...(where as any), status: ApplicationStatus.approved },
+        where: { ...(where as any), status: "accepted" as any },
       }),
       db.membershipApplication.count({
         where: { ...(where as any), status: ApplicationStatus.rejected },
@@ -155,8 +151,7 @@ export async function GET(req: NextRequest) {
       summary: {
         total,
         pending: pendingCount,
-        reviewed: reviewedCount,
-        approved: approvedCount,
+        accepted: acceptedCount,
         rejected: rejectedCount,
       },
     });

@@ -53,11 +53,11 @@ export function ProgramDetailDialog({ program }: { program: any }) {
       })
     : "-";
 
-  // Check if this is PIP program
-  const isPipProgram =
-    (program.category || "").toLowerCase() === "pendidikan" &&
-    ((program.name || "").toLowerCase().includes("beasiswa") ||
-      (program.name || "").toLowerCase().includes("pip"));
+  // Check if this is PIP program (by category)
+  const isPipProgram = (program.category || "").toLowerCase() === "pip";
+  
+  // Check if this is KIP program (by category)
+  const isKipProgram = (program.category || "").toLowerCase() === "kip";
 
   const statusConfig: Record<
     string,
@@ -269,6 +269,32 @@ export function ProgramDetailDialog({ program }: { program: any }) {
                   <Button className="bg-gradient-to-r from-[#FF9C04] to-[#FF9C04]/90 hover:from-[#001B55] hover:to-[#001B55] text-white shadow-lg hover:shadow-xl transition-all duration-300 rounded-xl font-semibold">
                     <ExternalLink className="w-4 h-4 mr-2" />
                     Daftar Sekarang
+                  </Button>
+                </Link>
+              </div>
+            </div>
+          </div>
+        )}
+
+        {/* KIP Registration Button */}
+        {isKipProgram && (
+          <div className="bg-gradient-to-r from-[#FF9C04]/10 to-[#FF9C04]/5 rounded-xl border-2 border-[#FF9C04]/30 p-6">
+            <div className="flex items-start gap-4">
+              <div className="w-12 h-12 rounded-full bg-[#FF9C04] flex items-center justify-center flex-shrink-0">
+                <Award className="w-6 h-6 text-white" />
+              </div>
+              <div className="flex-1">
+                <h3 className="text-lg font-bold text-[#001B55] mb-2">
+                  Tertarik Mengikuti Program Ini?
+                </h3>
+                <p className="text-sm text-gray-700 mb-4 leading-relaxed">
+                  Daftarkan diri Anda sekarang untuk mendapatkan kesempatan
+                  menerima beasiswa KIP Kuliah dari DPD Partai NasDem Sidoarjo.
+                </p>
+                <Link href={`/pendaftaran-kip?programId=${program.id}`}>
+                  <Button className="bg-gradient-to-r from-[#FF9C04] to-[#FF9C04]/90 hover:from-[#001B55] hover:to-[#001B55] text-white shadow-lg hover:shadow-xl transition-all duration-300 rounded-xl font-semibold">
+                    <ExternalLink className="w-4 h-4 mr-2" />
+                    Daftar KIP Sekarang
                   </Button>
                 </Link>
               </div>
