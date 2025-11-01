@@ -7,10 +7,17 @@ import {
   getCoreRowModel,
   useReactTable,
 } from "@tanstack/react-table";
-import { Mail, Phone } from "lucide-react";
+import { Mail, Phone, CheckSquare } from "lucide-react";
 import { Button } from "@/components/ui/button";
+import { cn } from "@/lib/utils";
 import { MemberRegistration } from "../hooks/useMemberRegistrations";
 import { getStatusBadge } from "./DetailModal";
+import { useState } from "react";
+import { useBatchSelection } from "@/hooks/use-batch-selection";
+import { BatchActionBar } from "@/components/ui/batch-action-bar";
+import { Checkbox } from "@/components/ui/checkbox";
+import { BatchConfirmationDialog } from "@/components/ui/batch-confirmation-dialog";
+import { toast } from "sonner";
 
 export function RegistrationsTable({
   data,
@@ -25,8 +32,100 @@ export function RegistrationsTable({
   error?: string;
   getProgramName: (id?: number | null) => string;
 }) {
+  const [confirmDialogOpen, setConfirmDialogOpen] = useState(false);
+  const [pendingAction, setPendingAction] = useState<string | null>(null);
+  const [isSelectMode, setIsSelectMode] = useState(false);
+
+  // Initialize batch selection
+  const batchSelection = useBatchSelection({
+    data,
+    idField: "id",
+    persistKey: "registrations-batch-selection",
+    enablePersistence: false,
+    enableSelectionMode: true,
+    onBatchAction: async (action, selectedIds) => {
+      if (action === "approve" || action === "reject") {
+        setPendingAction(action);
+        setConfirmDialogOpen(true);
+      }
+    },
+  });
+
+  // Toggle selection mode
+  const toggleSelectMode = () => {
+    if (isSelectMode) {
+      batchSelection.clearSelection();
+      setIsSelectMode(false);
+    } else {
+      setIsSelectMode(true);
+    }
+  };
+
+  // Handle batch approve/reject confirmation
+  const handleBatchAction = async () => {
+    if (!batchSelection.selectedIds.length || !pendingAction) return;
+
+    const isApprove = pendingAction === "approve";
+    const endpoint = isApprove
+      ? "/api/membership-applications/batch-approve"
+      : "/api/membership-applications/batch-reject";
+    const successMessage = isApprove
+      ? `Berhasil menyetujui ${batchSelection.selectedIds.length} pendaftaran`
+      : `Berhasil menolak ${batchSelection.selectedIds.length} pendaftaran`;
+    const errorMessage = isApprove
+      ? "Gagal menyetujui pendaftaran"
+      : "Gagal menolak pendaftaran";
+
+    try {
+      const response = await fetch(endpoint, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ ids: batchSelection.selectedIds }),
+      });
+
+      if (!response.ok) throw new Error(errorMessage);
+
+      toast.success(successMessage);
+      batchSelection.clearSelection();
+      setConfirmDialogOpen(false);
+      window.location.reload();
+    } catch (err) {
+      toast.error(errorMessage, {
+        description: (err as Error).message,
+      });
+    }
+  };
   const columns = React.useMemo<ColumnDef<MemberRegistration>[]>(
-    () => [
+    () => {
+      const baseColumns: ColumnDef<MemberRegistration>[] = [];
+
+      // Conditionally add select column
+      if (isSelectMode) {
+        baseColumns.push({
+          id: "select",
+          header: () => (
+            <div className="flex items-center justify-center">
+              <Checkbox
+                checked={batchSelection.isAllSelected}
+                onCheckedChange={batchSelection.toggleAllSelection}
+                aria-label="Pilih semua pendaftaran"
+              />
+            </div>
+          ),
+          cell: ({ row }) => (
+            <div className="flex items-center justify-center">
+              <Checkbox
+                checked={batchSelection.isRowSelected(row.original.id)}
+                onCheckedChange={() => batchSelection.toggleRowSelection(row.original.id)}
+                aria-label={`Pilih pendaftaran ${row.original.fullName}`}
+              />
+            </div>
+          ),
+          size: 50,
+        });
+      }
+
+      baseColumns.push(
       {
         header: "Nama Lengkap",
         accessorKey: "fullName",
@@ -157,9 +256,11 @@ export function RegistrationsTable({
             </Button>
           </div>
         ),
-      },
-    ],
-    [onDetail]
+      });
+
+      return baseColumns;
+    },
+    [onDetail, getProgramName, batchSelection, isSelectMode]
   );
 
   const table = useReactTable({
@@ -187,7 +288,88 @@ export function RegistrationsTable({
   }
 
   return (
-    <div className="rounded-xl bg-card shadow-sm border border-border overflow-hidden">
+    <div className="space-y-4">
+      {/* Toggle Selection Mode Button */}
+      <div className="flex items-center gap-3 mb-4">
+        <Button
+          variant={isSelectMode ? "default" : "outline"}
+          size="sm"
+          onClick={toggleSelectMode}
+          className={cn(
+            "transition-all duration-200",
+            isSelectMode
+              ? "bg-[#001B55] text-white hover:bg-[#001B55]/90 shadow-md"
+              : "border-[#C4D9FF] hover:bg-[#E8F9FF] hover:border-[#001B55]/30 text-[#001B55]"
+          )}
+          aria-label={isSelectMode ? "Nonaktifkan mode pemilihan" : "Aktifkan mode pemilihan"}
+        >
+          <CheckSquare className={cn("h-4 w-4 mr-2", isSelectMode && "animate-pulse")} />
+          {isSelectMode ? "Keluar Mode Pilih" : "Mode Pilih"}
+        </Button>
+        
+        {isSelectMode && (
+          <div className="text-sm text-muted-foreground animate-in fade-in slide-in-from-left-2 duration-300">
+            Pilih pendaftaran untuk disetujui atau ditolak
+          </div>
+        )}
+      </div>
+
+      {/* Batch Actions - Only show when selection mode is active */}
+      {isSelectMode && batchSelection.selectedCount > 0 && (
+        <div className="flex items-center justify-between p-4 bg-[#E8F9FF] border border-[#C4D9FF] rounded-lg">
+          <div className="flex items-center gap-3">
+            <span className="text-sm font-medium text-[#001B55]">
+              {batchSelection.selectedCount} dari {data.length} terpilih
+            </span>
+            <Button
+              variant="ghost"
+              size="sm"
+              onClick={batchSelection.clearSelection}
+              className="text-xs text-muted-foreground hover:text-[#001B55]"
+            >
+              Batal Pilih
+            </Button>
+          </div>
+          <div className="flex gap-2">
+            <Button
+              variant="default"
+              size="sm"
+              onClick={() => batchSelection.executeBatchAction("approve")}
+              className="bg-green-600 hover:bg-green-700 text-white"
+            >
+              Setujui ({batchSelection.selectedCount})
+            </Button>
+            <Button
+              variant="destructive"
+              size="sm"
+              onClick={() => batchSelection.executeBatchAction("reject")}
+            >
+              Tolak ({batchSelection.selectedCount})
+            </Button>
+          </div>
+        </div>
+      )}
+
+      {/* Batch Confirmation Dialog */}
+      <BatchConfirmationDialog
+        open={confirmDialogOpen}
+        onOpenChange={setConfirmDialogOpen}
+        title={pendingAction === "approve" ? "Setujui Pendaftaran Terpilih" : "Tolak Pendaftaran Terpilih"}
+        description={`Apakah Anda yakin ingin ${pendingAction === "approve" ? "menyetujui" : "menolak"} ${batchSelection.selectedCount} pendaftaran yang dipilih?`}
+        action={pendingAction === "approve" ? "approve" : "reject"}
+        itemCount={batchSelection.selectedCount}
+        itemDetails={[
+          { label: "Jumlah Pendaftaran", value: batchSelection.selectedCount },
+          { label: "Total Data", value: data.length },
+        ]}
+        onConfirm={handleBatchAction}
+        onCancel={() => setConfirmDialogOpen(false)}
+        loading={batchSelection.actionState.loading}
+        progress={batchSelection.actionState.progress}
+        error={batchSelection.actionState.error}
+      />
+
+      <div className="rounded-xl bg-card shadow-sm border border-border overflow-hidden">
       <div
         className="overflow-x-auto"
         style={{ scrollbarWidth: "thin", scrollbarColor: "#C5BAFF #f0f0f0" }}
@@ -246,6 +428,7 @@ export function RegistrationsTable({
             )}
           </tbody>
         </table>
+      </div>
       </div>
     </div>
   );

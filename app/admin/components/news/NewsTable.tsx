@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useMemo, useState } from "react";
+import { useEffect, useMemo, useState, useCallback } from "react";
 import { format } from "date-fns";
 import { id } from "date-fns/locale";
 import {
@@ -59,6 +59,12 @@ import {
 } from "@/components/ui/dropdown-menu";
 import { toast } from "sonner";
 import { useRouter } from "next/navigation";
+import { useBatchSelection } from "@/hooks/use-batch-selection";
+import { BatchActionBar } from "@/components/ui/batch-action-bar";
+import { Checkbox } from "@/components/ui/checkbox";
+import { BatchConfirmationDialog } from "@/components/ui/batch-confirmation-dialog";
+import { CheckSquare } from "lucide-react";
+import { cn } from "@/lib/utils";
 
 const statusConfig = {
   DRAFT: {
@@ -120,6 +126,12 @@ export function NewsTable() {
   const [searchTerm, setSearchTerm] = useState("");
   const [debouncedSearch, setDebouncedSearch] = useState("");
   const [statusFilter, setStatusFilter] = useState<NewsStatusFilter>("all");
+  const [deleteDialogOpen, setDeleteDialogOpen] = useState(false);
+  const [confirmDialogOpen, setConfirmDialogOpen] = useState(false);
+  const [pendingAction, setPendingAction] = useState<string | null>(null);
+  
+  // Selection Mode State
+  const [isSelectMode, setIsSelectMode] = useState(false);
 
   // Schedule dialog state
   const [scheduleDialog, setScheduleDialog] = useState<{
@@ -160,6 +172,60 @@ export function NewsTable() {
   const meta = query.data?.meta;
   const totalPages = meta?.totalPages ?? 1;
   const totalItems = meta?.total ?? 0;
+
+  // Initialize batch selection hook
+  const batchSelection = useBatchSelection({
+    data: items,
+    idField: "id",
+    persistKey: "news-batch-selection",
+    enablePersistence: false, // Disable persistence for cleaner UX
+    enableSelectionMode: true,
+    onBatchAction: async (action, selectedIds) => {
+      if (action === "delete") {
+        setPendingAction("delete");
+        setConfirmDialogOpen(true);
+      }
+    },
+  });
+
+  // Toggle selection mode
+  const toggleSelectMode = useCallback(() => {
+    if (isSelectMode) {
+      // Exiting select mode - clear selections
+      batchSelection.clearSelection();
+      setIsSelectMode(false);
+    } else {
+      // Entering select mode
+      setIsSelectMode(true);
+    }
+  }, [isSelectMode, batchSelection]);
+
+  // Handle batch delete confirmation
+  const handleBatchDelete = async () => {
+    if (!batchSelection.selectedIds.length) return;
+
+    try {
+      // Call batch delete API
+      const response = await fetch("/api/news/batch-delete", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ ids: batchSelection.selectedIds }),
+      });
+
+      if (!response.ok) {
+        throw new Error("Gagal menghapus berita");
+      }
+
+      toast.success(`Berhasil menghapus ${batchSelection.selectedIds.length} berita`);
+      query.refetch();
+      batchSelection.clearSelection();
+      setConfirmDialogOpen(false);
+    } catch (error) {
+      toast.error("Gagal menghapus berita", {
+        description: (error as Error).message,
+      });
+    }
+  };
 
   const tableRows = useMemo(() => {
     return items.map((item) => {
@@ -287,6 +353,64 @@ export function NewsTable() {
 
   return (
     <div className="space-y-4">
+      {/* Toggle Selection Mode Button */}
+      <div className="flex items-center justify-between mb-4">
+        <div className="flex items-center gap-3">
+          <Button
+            variant={isSelectMode ? "default" : "outline"}
+            size="sm"
+            onClick={toggleSelectMode}
+            className={cn(
+              "transition-all duration-200",
+              isSelectMode
+                ? "bg-[#001B55] text-white hover:bg-[#001B55]/90 shadow-md"
+                : "border-[#C4D9FF] hover:bg-[#E8F9FF] hover:border-[#001B55]/30 text-[#001B55]"
+            )}
+            aria-label={isSelectMode ? "Nonaktifkan mode pemilihan" : "Aktifkan mode pemilihan"}
+          >
+            <CheckSquare className={cn("h-4 w-4 mr-2", isSelectMode && "animate-pulse")} />
+            {isSelectMode ? "Keluar Mode Pilih" : "Mode Pilih"}
+          </Button>
+          
+          {isSelectMode && (
+            <div className="text-sm text-muted-foreground animate-in fade-in slide-in-from-left-2 duration-300">
+              Pilih berita yang ingin Anda kelola (Mode: {isSelectMode ? "AKTIF" : "NONAKTIF"})
+            </div>
+          )}
+        </div>
+      </div>
+
+      {/* Batch Actions Bar - Only show when selection mode is active */}
+      {isSelectMode && (
+        <BatchActionBar
+          selectedCount={batchSelection.selectedCount}
+          totalCount={items.length}
+          isAllSelected={batchSelection.isAllSelected}
+          onSelectAll={batchSelection.toggleAllSelection}
+          onClearSelection={batchSelection.clearSelection}
+          onDelete={() => batchSelection.executeBatchAction("delete")}
+        />
+      )}
+
+      {/* Batch Confirmation Dialog */}
+      <BatchConfirmationDialog
+        open={confirmDialogOpen}
+        onOpenChange={setConfirmDialogOpen}
+        title="Hapus Berita Terpilih"
+        description={`Apakah Anda yakin ingin menghapus ${batchSelection.selectedCount} berita yang dipilih?`}
+        action="delete"
+        itemCount={batchSelection.selectedCount}
+        itemDetails={[
+          { label: "Jumlah Berita", value: batchSelection.selectedCount },
+          { label: "Total Item", value: items.length },
+        ]}
+        onConfirm={handleBatchDelete}
+        onCancel={() => setConfirmDialogOpen(false)}
+        loading={batchSelection.actionState.loading}
+        progress={batchSelection.actionState.progress}
+        error={batchSelection.actionState.error}
+      />
+
       <div className="flex flex-col gap-3 md:flex-row md:items-center md:justify-between">
         <div className="flex items-center gap-2">
           <Filter className="h-4 w-4 text-muted-foreground" />
@@ -326,8 +450,19 @@ export function NewsTable() {
           <Table>
             <TableHeader className="bg-muted/30">
               <TableRow>
+                {isSelectMode && (
+                  <TableHead className="w-[50px] bg-[#E8F9FF] border-r border-[#C4D9FF]">
+                    <div className="flex items-center justify-center">
+                      <Checkbox
+                        checked={batchSelection.isAllSelected}
+                        onCheckedChange={batchSelection.toggleAllSelection}
+                        aria-label="Pilih semua berita"
+                      />
+                    </div>
+                  </TableHead>
+                )}
                 <TableHead className="w-[12%]">Sampul</TableHead>
-                <TableHead className="w-[32%]">Judul Berita</TableHead>
+                <TableHead className="w-[28%]">Judul Berita</TableHead>
                 <TableHead>Status</TableHead>
                 <TableHead>Penulis</TableHead>
                 <TableHead>Tanggal Publikasi</TableHead>
@@ -340,7 +475,7 @@ export function NewsTable() {
             <TableBody>
               {query.isLoading && (
                 <TableRow>
-                  <TableCell colSpan={5} className="py-10 text-center text-sm">
+                  <TableCell colSpan={isSelectMode ? 8 : 7} className="py-10 text-center text-sm">
                     Memuat data berita...
                   </TableCell>
                 </TableRow>
@@ -349,7 +484,7 @@ export function NewsTable() {
               {query.isError && !query.isLoading && (
                 <TableRow>
                   <TableCell
-                    colSpan={5}
+                    colSpan={isSelectMode ? 8 : 7}
                     className="py-10 text-center text-sm text-red-600"
                   >
                     {(query.error as Error)?.message ||
@@ -361,7 +496,7 @@ export function NewsTable() {
               {isEmpty && (
                 <TableRow>
                   <TableCell
-                    colSpan={5}
+                    colSpan={isSelectMode ? 8 : 7}
                     className="py-10 text-center text-sm text-muted-foreground"
                   >
                     Tidak ada berita yang cocok dengan filter.
@@ -373,6 +508,17 @@ export function NewsTable() {
                 !query.isError &&
                 tableRows.map((row) => (
                   <TableRow key={row.id} className="hover:bg-muted/40">
+                    {isSelectMode && (
+                      <TableCell className="w-[50px] bg-[#E8F9FF]/30 border-r border-[#C4D9FF]">
+                        <div className="flex items-center justify-center py-2">
+                          <Checkbox
+                            checked={batchSelection.isRowSelected(row.id)}
+                            onCheckedChange={() => batchSelection.toggleRowSelection(row.id)}
+                            aria-label={`Pilih berita ${row.title}`}
+                          />
+                        </div>
+                      </TableCell>
+                    )}
                     <TableCell>
                       {row.thumbnailUrl ? (
                         // eslint-disable-next-line @next/next/no-img-element

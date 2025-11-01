@@ -5,6 +5,7 @@ import { AdminLayout } from "../components/layout/AdminLayout";
 import { MemberCard } from "./components/MemberCard";
 import { AddMemberDialog } from "./components/AddMemberDialog";
 import { MemberDetailDialog } from "./components/MemberDetailDialog";
+import { MembersTable } from "./components/MembersTable";
 import { useMembers } from "./hooks/useMembers";
 import { useDebounce } from "../../../hooks/use-debounce";
 import { SimplePagination } from "@/components/ui/pagination";
@@ -13,6 +14,7 @@ import { TabsFilters } from "./components/TabsFilters";
 import { Button } from "@/components/ui/button";
 import { Plus } from "lucide-react";
 import { Skeleton } from "@/components/ui/skeleton";
+import { toast } from "sonner";
 import {
   Select,
   SelectContent,
@@ -470,6 +472,41 @@ export default function Members() {
           getKaderCount={() => 0}
         />
         <AddMemberDialog open={addOpen} onOpenChange={setAddOpen} />
+        <MembersTable
+          data={members}
+          totalData={data?.meta.total || 0}
+          loading={isLoading || isFetching}
+          fetching={isFetching}
+          error={error}
+          isError={isError}
+          onRefresh={() => refetch()}
+          filters={{
+            search: debouncedSearch,
+            status: statusFilter,
+            gender: genderFilter,
+            take: pageSize,
+            skip: (page - 1) * pageSize,
+          }}
+          onFiltersChange={(newFilters: any) => {
+            setPage(1);
+            setDpdFilters((prev) => ({ ...prev, ...newFilters }));
+            setSayapFilters((prev) => ({ ...prev, ...newFilters }));
+            setDpcFilters((prev) => ({ ...prev, ...newFilters }));
+            setDprtFilters((prev) => ({ ...prev, ...newFilters }));
+          }}
+          onBatchAction={(action: "delete" | "export", selectedIds: number[]) => {
+            if (action === 'delete') {
+              // Handle batch delete - this would call your delete API
+              console.log('Batch delete:', selectedIds);
+              toast.success(`Berhasil menghapus ${selectedIds.length} anggota`);
+              refetch();
+            } else if (action === 'export') {
+              // Handle batch export
+              console.log('Batch export:', selectedIds);
+              toast.success(`Berhasil mengekspor ${selectedIds.length} anggota`);
+            }
+          }}
+        />
         {/* Edit membership dialog removed */}
       </div>
     </AdminLayout>

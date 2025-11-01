@@ -7,8 +7,9 @@ import {
   getCoreRowModel,
   useReactTable,
 } from "@tanstack/react-table";
-import { ImageIcon, Filter, X } from "lucide-react";
+import { ImageIcon, Filter, X, CheckSquare } from "lucide-react";
 import { Input } from "@/components/ui/input";
+import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import {
   Select,
@@ -20,6 +21,12 @@ import {
 import { SimplePagination } from "@/components/ui/pagination";
 import { cn } from "@/lib/utils";
 import { MembersActions } from "./MembersActions";
+import { toast } from "sonner";
+import { useState } from "react";
+import { useBatchSelection } from "@/hooks/use-batch-selection";
+import { BatchActionBar } from "@/components/ui/batch-action-bar";
+import { Checkbox } from "@/components/ui/checkbox";
+import { BatchConfirmationDialog } from "@/components/ui/batch-confirmation-dialog";
 
 export type MemberListItem = {
   id: number;
@@ -62,6 +69,7 @@ interface MembersTableProps {
       | MemberTableFilters
       | ((prev: MemberTableFilters) => MemberTableFilters)
   ) => void;
+  onBatchAction?: (action: 'delete' | 'export', selectedIds: number[]) => void;
 }
 
 const statusStyles: Record<string, string> = {
@@ -85,9 +93,95 @@ export function MembersTable({
   onRefresh,
   filters,
   onFiltersChange,
+  onBatchAction,
 }: MembersTableProps) {
+  const [confirmDialogOpen, setConfirmDialogOpen] = useState(false);
+  const [pendingAction, setPendingAction] = useState<string | null>(null);
+  const [isSelectMode, setIsSelectMode] = useState(false);
+
+  // Initialize batch selection
+  const batchSelection = useBatchSelection({
+    data,
+    idField: "id",
+    persistKey: "members-batch-selection",
+    enablePersistence: false,
+    enableSelectionMode: true,
+    onBatchAction: async (action, selectedIds) => {
+      if (action === "delete") {
+        setPendingAction("delete");
+        setConfirmDialogOpen(true);
+      } else if (action === "export") {
+        onBatchAction?.(action, selectedIds);
+      }
+    },
+  });
+
+  // Toggle selection mode
+  const toggleSelectMode = () => {
+    if (isSelectMode) {
+      batchSelection.clearSelection();
+      setIsSelectMode(false);
+    } else {
+      setIsSelectMode(true);
+    }
+  };
+
+  // Handle batch delete confirmation
+  const handleBatchDelete = async () => {
+    if (!batchSelection.selectedIds.length) return;
+
+    try {
+      const response = await fetch("/api/members/batch-delete", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ ids: batchSelection.selectedIds }),
+      });
+
+      if (!response.ok) {
+        throw new Error("Gagal menghapus anggota");
+      }
+
+      toast.success(`Berhasil menghapus ${batchSelection.selectedIds.length} anggota`);
+      batchSelection.clearSelection();
+      setConfirmDialogOpen(false);
+      onRefresh();
+    } catch (err) {
+      toast.error("Gagal menghapus anggota", {
+        description: (err as Error).message,
+      });
+    }
+  };
   const columns = React.useMemo<ColumnDef<MemberListItem>[]>(
-    () => [
+    () => {
+      const baseColumns: ColumnDef<MemberListItem>[] = [];
+
+      // Conditionally add select column
+      if (isSelectMode) {
+        baseColumns.push({
+          id: "select",
+          header: () => (
+            <div className="flex items-center justify-center">
+              <Checkbox
+                checked={batchSelection.isAllSelected}
+                onCheckedChange={batchSelection.toggleAllSelection}
+                aria-label="Pilih semua anggota"
+              />
+            </div>
+          ),
+          cell: ({ row }) => (
+            <div className="flex items-center justify-center">
+              <Checkbox
+                checked={batchSelection.isRowSelected(row.original.id)}
+                onCheckedChange={() => batchSelection.toggleRowSelection(row.original.id)}
+                aria-label={`Pilih anggota ${row.original.fullName}`}
+              />
+            </div>
+          ),
+          size: 50,
+        });
+      }
+
+      baseColumns.push(
       {
         id: "photo",
         header: "Foto",
@@ -210,13 +304,15 @@ export function MembersTable({
         id: "actions",
         header: "",
         cell: ({ row }) => (
-          <div className="sticky right-0 bg-white z-10 min-w-[100px] shadow-[ -5px 0 5px -5px rgba(0,0,0,0.1)]">
+          <div className="sticky right-0 bg-white z-10 min-w-[100px] shadow-[-5px 0 5px -5px rgba(0,0,0,0.1)]">
             <MembersActions member={row.original} onChanged={onRefresh} />
           </div>
         ),
-      },
-    ],
-    [onRefresh]
+      });
+
+      return baseColumns;
+    },
+    [onRefresh, batchSelection, isSelectMode]
   );
 
   const table = useReactTable({
@@ -238,6 +334,62 @@ export function MembersTable({
 
   return (
     <div className="space-y-4">
+      {/* Toggle Selection Mode Button */}
+      <div className="flex items-center gap-3 mb-4">
+        <Button
+          variant={isSelectMode ? "default" : "outline"}
+          size="sm"
+          onClick={toggleSelectMode}
+          className={cn(
+            "transition-all duration-200",
+            isSelectMode
+              ? "bg-[#001B55] text-white hover:bg-[#001B55]/90 shadow-md"
+              : "border-[#C4D9FF] hover:bg-[#E8F9FF] hover:border-[#001B55]/30 text-[#001B55]"
+          )}
+          aria-label={isSelectMode ? "Nonaktifkan mode pemilihan" : "Aktifkan mode pemilihan"}
+        >
+          <CheckSquare className={cn("h-4 w-4 mr-2", isSelectMode && "animate-pulse")} />
+          {isSelectMode ? "Keluar Mode Pilih" : "Mode Pilih"}
+        </Button>
+        
+        {isSelectMode && (
+          <div className="text-sm text-muted-foreground animate-in fade-in slide-in-from-left-2 duration-300">
+            Pilih anggota yang ingin Anda kelola
+          </div>
+        )}
+      </div>
+
+      {/* Batch Actions Bar - Only show when selection mode is active */}
+      {isSelectMode && (
+        <BatchActionBar
+          selectedCount={batchSelection.selectedCount}
+          totalCount={data.length}
+          isAllSelected={batchSelection.isAllSelected}
+          onSelectAll={batchSelection.toggleAllSelection}
+          onClearSelection={batchSelection.clearSelection}
+          onDelete={() => batchSelection.executeBatchAction("delete")}
+        />
+      )}
+
+      {/* Batch Confirmation Dialog */}
+      <BatchConfirmationDialog
+        open={confirmDialogOpen}
+        onOpenChange={setConfirmDialogOpen}
+        title="Hapus Anggota Terpilih"
+        description={`Apakah Anda yakin ingin menghapus ${batchSelection.selectedCount} anggota yang dipilih?`}
+        action="delete"
+        itemCount={batchSelection.selectedCount}
+        itemDetails={[
+          { label: "Jumlah Anggota", value: batchSelection.selectedCount },
+          { label: "Total Data", value: data.length },
+        ]}
+        onConfirm={handleBatchDelete}
+        onCancel={() => setConfirmDialogOpen(false)}
+        loading={batchSelection.actionState.loading}
+        progress={batchSelection.actionState.progress}
+        error={batchSelection.actionState.error}
+      />
+
       {/* Filters */}
       <div className="space-y-3">
         <div className="grid gap-3 md:grid-cols-3">
