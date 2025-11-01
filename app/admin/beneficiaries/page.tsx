@@ -65,6 +65,7 @@ import { toast } from "sonner";
 import CsvDownloader from "react-csv-downloader";
 import { BeneficiaryFormDialog } from "./components/BeneficiaryFormDialog";
 import { DeleteBeneficiaryDialog } from "./components/DeleteBeneficiaryDialog";
+import { PipBeneficiaryDetailModal } from "./components/PipBeneficiaryDetailModal";
 import type {
   Beneficiary as ApiBeneficiary,
   CreateBeneficiaryInput,
@@ -86,7 +87,6 @@ interface Beneficiary {
   category: string; // gunakan program.category
   familyCount: number;
   proposerName: string;
-  status: "Menunggu" | "Selesai";
   registeredAt: string;
   updatedAt: string;
   notes?: string;
@@ -126,6 +126,8 @@ export default function BeneficiariesPage() {
   const [isDeleteDialogOpen, setIsDeleteDialogOpen] = useState(false);
   const [beneficiaryToDelete, setBeneficiaryToDelete] =
     useState<Beneficiary | null>(null);
+  const [pipData, setPipData] = useState<any>(null);
+  const [isPipBeneficiary, setIsPipBeneficiary] = useState(false);
 
   // Edit state via reusable dialog
   const [editing, setEditing] = useState<ApiBeneficiary | null>(null);
@@ -185,8 +187,6 @@ export default function BeneficiariesPage() {
     const api: ApiBeneficiary[] = beneficiariesRes?.data ?? [];
     const mapGender = (g?: string | null) =>
       g === "female" ? "Perempuan" : "Laki-laki";
-    const mapStatus = (s: string) =>
-      s === "completed" ? "Selesai" : "Menunggu";
     return api.map((b) => ({
       id: b.id,
       fullName: b.fullName,
@@ -202,7 +202,6 @@ export default function BeneficiariesPage() {
       category: b.program?.category ?? "",
       familyCount: b.familyMemberCount ?? 0,
       proposerName: b.proposerName ?? "",
-      status: mapStatus(b.status) as any,
       registeredAt: b.receivedAt,
       updatedAt: b.receivedAt,
       notes: b.notes ?? "",
@@ -218,26 +217,39 @@ export default function BeneficiariesPage() {
 
   const stats = {
     total: beneficiaries.length,
-    waiting: beneficiaries.filter((b) => b.status === "Menunggu").length,
-    completed: beneficiaries.filter((b) => b.status === "Selesai").length,
     totalFamily,
     potentialVotes,
   };
 
-  const getStatusBadge = (status: Beneficiary["status"]) => {
-    const colors = {
-      Aktif: "bg-[#001B55]/10 text-[#001B55] border border-[#001B55]/20",
-      Menunggu: "bg-[#FF9C04]/10 text-[#FF9C04] border border-[#FF9C04]/20",
-      Selesai: "bg-green-500/10 text-green-700 border border-green-500/20",
-      Ditolak: "bg-[#C81E1E]/10 text-[#C81E1E] border border-[#C81E1E]/20",
-    };
-    return (
-      <Badge className={`${colors[status]} font-semibold`}>{status}</Badge>
-    );
-  };
-
-  const handleView = (beneficiary: Beneficiary) => {
+  const handleView = async (beneficiary: Beneficiary) => {
     setSelectedBeneficiary(beneficiary);
+    
+    // Check if this is a PIP beneficiary by checking notes
+    const isPip = beneficiary.notes?.startsWith("Program PIP") ?? false;
+    setIsPipBeneficiary(isPip);
+    
+    if (isPip && beneficiary.nik) {
+      // Fetch original PIP registration data
+      try {
+        const res = await fetch(`/api/registrations/pip/by-nisn/${beneficiary.nik}`, {
+          credentials: "include",
+        });
+        
+        if (res.ok) {
+          const data = await res.json();
+          setPipData(data.data);
+        } else {
+          console.warn("Could not fetch PIP data, showing standard view");
+          setPipData(null);
+        }
+      } catch (error) {
+        console.error("Error fetching PIP data:", error);
+        setPipData(null);
+      }
+    } else {
+      setPipData(null);
+    }
+    
     setIsViewDialogOpen(true);
   };
 
@@ -258,7 +270,6 @@ export default function BeneficiariesPage() {
       proposerName: beneficiary.proposerName,
       fullAddress: beneficiary.address,
       notes: beneficiary.notes,
-      status: beneficiary.status === "Selesai" ? "completed" : "pending",
     });
   };
 
@@ -410,7 +421,6 @@ export default function BeneficiariesPage() {
             proposerName: proposerName || null,
             fullAddress: fullAddress || null,
             notes: notes || null,
-            status,
           });
         }
 
@@ -448,10 +458,6 @@ export default function BeneficiariesPage() {
   ];
 
   const exportRows = useMemo(() => {
-    const mapStatusToEnum = (s: Beneficiary["status"]) => {
-      if (s === "Selesai") return "completed";
-      return "pending";
-    };
     const mapGender = (g: Beneficiary["gender"]) =>
       g === "Perempuan" ? "female" : "male";
 
@@ -468,7 +474,6 @@ export default function BeneficiariesPage() {
       occupation: b.occupation,
       familyMemberCount: b.familyCount,
       proposerName: b.proposerName,
-      status: mapStatusToEnum(b.status),
       receivedAt: b.registeredAt?.slice(0, 10),
       notes: b.notes || "",
     }));
@@ -500,42 +505,6 @@ export default function BeneficiariesPage() {
             </div>
             <div className="text-num font-semibold text-text-primary">
               {stats.total}
-            </div>
-          </div>
-
-          <div
-            role="status"
-            aria-label="KPI Menunggu"
-            className="rounded-xl bg-card shadow-sm p-5 border border-border hover:shadow-md transition-all duration-200 flex flex-col gap-3"
-          >
-            <div className="flex items-center justify-between">
-              <span className="text-sm text-text-secondary font-medium">
-                Menunggu
-              </span>
-              <div className="w-10 h-10 rounded-lg bg-[#FF9C04]/10 flex items-center justify-center">
-                <Clock className="w-5 h-5 text-[#FF9C04]" />
-              </div>
-            </div>
-            <div className="text-num font-semibold text-[#FF9C04]">
-              {stats.waiting}
-            </div>
-          </div>
-
-          <div
-            role="status"
-            aria-label="KPI Selesai"
-            className="rounded-xl bg-card shadow-sm p-5 border border-border hover:shadow-md transition-all duration-200 flex flex-col gap-3"
-          >
-            <div className="flex items-center justify-between">
-              <span className="text-sm text-text-secondary font-medium">
-                Selesai
-              </span>
-              <div className="w-10 h-10 rounded-lg bg-brand-success/10 flex items-center justify-center">
-                <TrendingUp className="w-5 h-5 text-brand-success" />
-              </div>
-            </div>
-            <div className="text-num font-semibold text-brand-success">
-              {stats.completed}
             </div>
           </div>
 
@@ -779,9 +748,6 @@ export default function BeneficiariesPage() {
                           <TableCell className="text-gray-600 text-sm">
                             {beneficiary.proposerName}
                           </TableCell>
-                          <TableCell>
-                            {getStatusBadge(beneficiary.status)}
-                          </TableCell>
                           <TableCell className="text-gray-600 text-sm">
                             {new Date(
                               beneficiary.registeredAt
@@ -837,11 +803,42 @@ export default function BeneficiariesPage() {
                 <div className="w-10 h-10 bg-[#E8F9FF] rounded-lg flex items-center justify-center">
                   <Eye className="w-5 h-5 text-[#001B55]" />
                 </div>
-                Detail Penerima Manfaat
+                Detail Penerima Manfaat {isPipBeneficiary && pipData && "(Program PIP)"}
               </DialogTitle>
             </DialogHeader>
 
             {selectedBeneficiary && (
+              <>
+                {/* Show PIP Detail Modal if it's a PIP beneficiary with data */}
+                {isPipBeneficiary && pipData ? (
+                  <div className="py-4">
+                    <PipBeneficiaryDetailModal
+                      pipData={pipData}
+                      programName={selectedBeneficiary.program}
+                    />
+                    
+                    <div className="flex flex-col sm:flex-row justify-end gap-3 pt-6 mt-6 border-t border-[#E8F9FF]">
+                      <Button
+                        variant="outline"
+                        onClick={() => setIsViewDialogOpen(false)}
+                        className="rounded-lg border-[#C4D9FF] hover:bg-[#E8F9FF] text-[#001B55]"
+                      >
+                        Tutup
+                      </Button>
+                      <Button
+                        onClick={() => {
+                          setIsViewDialogOpen(false);
+                          handleEdit(selectedBeneficiary);
+                        }}
+                        className="rounded-lg bg-[#001B55] hover:bg-[#001B55]/90 text-white font-semibold"
+                      >
+                        <Edit className="w-4 h-4 mr-2" />
+                        Edit Data
+                      </Button>
+                    </div>
+                  </div>
+                ) : (
+                  /* Standard beneficiary detail view */
               <div className="space-y-6 py-4">
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                   <div className="space-y-4">
@@ -967,13 +964,6 @@ export default function BeneficiariesPage() {
                         {selectedBeneficiary.proposerName}
                       </p>
                     </div>
-
-                    <div>
-                      <Label className="text-gray-600 text-sm font-medium mb-1 block">
-                        Status
-                      </Label>
-                      {getStatusBadge(selectedBeneficiary.status)}
-                    </div>
                   </div>
                 </div>
 
@@ -1006,6 +996,8 @@ export default function BeneficiariesPage() {
                   </Button>
                 </div>
               </div>
+                )}
+              </>
             )}
           </DialogContent>
         </Dialog>
@@ -1118,10 +1110,6 @@ export default function BeneficiariesPage() {
                 proposerName: beneficiaryToDelete.proposerName || null,
                 fullAddress: beneficiaryToDelete.address || null,
                 notes: beneficiaryToDelete.notes || null,
-                status:
-                  beneficiaryToDelete.status === "Selesai"
-                    ? "completed"
-                    : ("pending" as any),
                 program: undefined,
               }
             : null

@@ -1,6 +1,7 @@
 import Link from "next/link";
 import { FileText, Image, Users, BarChart3, Eye } from "lucide-react";
 import { AdminLayout } from "./components/layout/AdminLayout";
+import { AuthGuard } from "./components/auth/AuthGuard";
 import { KPIStat, KPIStatSkeleton } from "@/components/dashboard/kpi-stat";
 import {
   ChartCard,
@@ -59,6 +60,7 @@ type DashboardData = {
 
 async function getDashboardData(): Promise<DashboardData> {
   const token = (await cookies()).get("token")?.value;
+  console.log("🔍 [AdminPage] Fetching dashboard data, token exists:", !!token);
   const baseUrl = process.env.NEXT_PUBLIC_BASE_URL || "http://localhost:3000";
   const res = await fetch(`${baseUrl}/api/dashboard`, {
     headers: { Cookie: `token=${token}` },
@@ -66,7 +68,11 @@ async function getDashboardData(): Promise<DashboardData> {
     credentials: "include",
   });
 
-  if (!res.ok) throw new Error("Gagal memuat dashboard");
+  console.log("📊 [AdminPage] Dashboard response status:", res.status);
+  if (!res.ok) {
+    console.log("❌ [AdminPage] Dashboard fetch failed:", res.status, res.statusText);
+    throw new Error("Gagal memuat dashboard");
+  }
   const json = await res.json();
   return json.data as DashboardData;
 }
@@ -206,115 +212,126 @@ export default async function AdminDashboard() {
   const dataPromise = getDashboardData();
 
   return (
-    <AdminLayout>
-      <div className="max-w-container mx-auto space-y-6">
-        {/* Page Header */}
-        <div className="mb-8">
-          <h1 className="text-xxl font-bold text-text-primary mb-2">
-            Dashboard Admin
-          </h1>
-          <p className="text-md text-text-secondary">
-            Ringkasan aktivitas dan statistik DPD NasDem Sidoarjo
-          </p>
+    <AuthGuard
+      fallback={
+        <div className="flex items-center justify-center min-h-screen">
+          <div className="text-center">
+            <div className="animate-spin rounded-full h-12 w-12 border-b-4 border-[#001B55] mx-auto mb-4"></div>
+            <p className="text-gray-600">Memeriksa autentikasi...</p>
+          </div>
         </div>
-
-        {/* KPI Section */}
-        <Suspense
-          fallback={
-            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
-              <KPIStatSkeleton />
-              <KPIStatSkeleton />
-              <KPIStatSkeleton />
-              <KPIStatSkeleton />
-            </div>
-          }
-        >
-          <KPIsSection dataPromise={dataPromise} />
-        </Suspense>
-
-        {/* Charts Section */}
-        <Suspense
-          fallback={
-            <div className="grid grid-cols-1 lg:grid-cols-2 gap-4">
-              <ChartCardSkeleton />
-              <ChartCardSkeleton />
-            </div>
-          }
-        >
-          <ChartsSection dataPromise={dataPromise} />
-        </Suspense>
-
-        {/* Data Table Section */}
-        <Suspense
-          fallback={
-            <div className="mt-6">
-              <div className="h-8 w-64 bg-gray-200 rounded mb-2"></div>
-              <div className="h-48 bg-white border rounded-xl"></div>
-            </div>
-          }
-        >
-          <TableSection dataPromise={dataPromise} />
-        </Suspense>
-
-        {/* Quick Actions Section */}
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4 mt-6">
-          <Link
-            href="/admin/news/create"
-            className="group p-5 rounded-xl bg-card border border-border hover:border-brand-accent hover:shadow-md transition-all duration-200"
-          >
-            <div className="flex items-center gap-3 mb-3">
-              <div className="w-10 h-10 rounded-lg bg-brand-primary/10 flex items-center justify-center group-hover:bg-brand-accent/10 transition-colors">
-                <FileText className="w-5 h-5 text-brand-primary group-hover:text-brand-accent" />
-              </div>
-              <h3 className="font-semibold text-text-primary">Buat Berita</h3>
-            </div>
-            <p className="text-sm text-text-secondary">
-              Tambah artikel berita baru
+      }
+    >
+      <AdminLayout>
+        <div className="max-w-container mx-auto space-y-6">
+          {/* Page Header */}
+          <div className="mb-8">
+            <h1 className="text-xxl font-bold text-text-primary mb-2">
+              Dashboard Admin
+            </h1>
+            <p className="text-md text-text-secondary">
+              Ringkasan aktivitas dan statistik DPD NasDem Sidoarjo
             </p>
-          </Link>
+          </div>
 
-          <Link
-            href="/admin/gallery"
-            className="group p-5 rounded-xl bg-card border border-border hover:border-brand-accent hover:shadow-md transition-all duration-200"
-          >
-            <div className="flex items-center gap-3 mb-3">
-              <div className="w-10 h-10 rounded-lg bg-brand-primary/10 flex items-center justify-center group-hover:bg-brand-accent/10 transition-colors">
-                <Image className="w-5 h-5 text-brand-primary group-hover:text-brand-accent" />
+          {/* KPI Section */}
+          <Suspense
+            fallback={
+              <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
+                <KPIStatSkeleton />
+                <KPIStatSkeleton />
+                <KPIStatSkeleton />
+                <KPIStatSkeleton />
               </div>
-              <h3 className="font-semibold text-text-primary">Kelola Galeri</h3>
-            </div>
-            <p className="text-sm text-text-secondary">Upload foto dan video</p>
-          </Link>
+            }
+          >
+            <KPIsSection dataPromise={dataPromise} />
+          </Suspense>
 
-          <Link
-            href="/admin/organizations"
-            className="group p-5 rounded-xl bg-card border border-border hover:border-brand-accent hover:shadow-md transition-all duration-200"
-          >
-            <div className="flex items-center gap-3 mb-3">
-              <div className="w-10 h-10 rounded-lg bg-brand-primary/10 flex items-center justify-center group-hover:bg-brand-accent/10 transition-colors">
-                <Users className="w-5 h-5 text-brand-primary group-hover:text-brand-accent" />
+          {/* Charts Section */}
+          <Suspense
+            fallback={
+              <div className="grid grid-cols-1 lg:grid-cols-2 gap-4">
+                <ChartCardSkeleton />
+                <ChartCardSkeleton />
               </div>
-              <h3 className="font-semibold text-text-primary">Struktur</h3>
-            </div>
-            <p className="text-sm text-text-secondary">
-              Kelola struktur organisasi
-            </p>
-          </Link>
+            }
+          >
+            <ChartsSection dataPromise={dataPromise} />
+          </Suspense>
 
-          <Link
-            href="/admin/statistik-pemilu"
-            className="group p-5 rounded-xl bg-card border border-border hover:border-brand-accent hover:shadow-md transition-all duration-200"
-          >
-            <div className="flex items-center gap-3 mb-3">
-              <div className="w-10 h-10 rounded-lg bg-brand-primary/10 flex items-center justify-center group-hover:bg-brand-accent/10 transition-colors">
-                <BarChart3 className="w-5 h-5 text-brand-primary group-hover:text-brand-accent" />
+          {/* Data Table Section */}
+          <Suspense
+            fallback={
+              <div className="mt-6">
+                <div className="h-8 w-64 bg-gray-200 rounded mb-2"></div>
+                <div className="h-48 bg-white border rounded-xl"></div>
               </div>
-              <h3 className="font-semibold text-text-primary">Statistik</h3>
-            </div>
-            <p className="text-sm text-text-secondary">Data analisis pemilu</p>
-          </Link>
+            }
+          >
+            <TableSection dataPromise={dataPromise} />
+          </Suspense>
+
+          {/* Quick Actions Section */}
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4 mt-6">
+            <Link
+              href="/admin/news/create"
+              className="group p-5 rounded-xl bg-card border border-border hover:border-brand-accent hover:shadow-md transition-all duration-200"
+            >
+              <div className="flex items-center gap-3 mb-3">
+                <div className="w-10 h-10 rounded-lg bg-brand-primary/10 flex items-center justify-center group-hover:bg-brand-accent/10 transition-colors">
+                  <FileText className="w-5 h-5 text-brand-primary group-hover:text-brand-accent" />
+                </div>
+                <h3 className="font-semibold text-text-primary">Buat Berita</h3>
+              </div>
+              <p className="text-sm text-text-secondary">
+                Tambah artikel berita baru
+              </p>
+            </Link>
+
+            <Link
+              href="/admin/gallery"
+              className="group p-5 rounded-xl bg-card border border-border hover:border-brand-accent hover:shadow-md transition-all duration-200"
+            >
+              <div className="flex items-center gap-3 mb-3">
+                <div className="w-10 h-10 rounded-lg bg-brand-primary/10 flex items-center justify-center group-hover:bg-brand-accent/10 transition-colors">
+                  <Image className="w-5 h-5 text-brand-primary group-hover:text-brand-accent" />
+                </div>
+                <h3 className="font-semibold text-text-primary">Kelola Galeri</h3>
+              </div>
+              <p className="text-sm text-text-secondary">Upload foto dan video</p>
+            </Link>
+
+            <Link
+              href="/admin/organizations"
+              className="group p-5 rounded-xl bg-card border border-border hover:border-brand-accent hover:shadow-md transition-all duration-200"
+            >
+              <div className="flex items-center gap-3 mb-3">
+                <div className="w-10 h-10 rounded-lg bg-brand-primary/10 flex items-center justify-center group-hover:bg-brand-accent/10 transition-colors">
+                  <Users className="w-5 h-5 text-brand-primary group-hover:text-brand-accent" />
+                </div>
+                <h3 className="font-semibold text-text-primary">Struktur</h3>
+              </div>
+              <p className="text-sm text-text-secondary">
+                Kelola struktur organisasi
+              </p>
+            </Link>
+
+            <Link
+              href="/admin/statistik-pemilu"
+              className="group p-5 rounded-xl bg-card border border-border hover:border-brand-accent hover:shadow-md transition-all duration-200"
+            >
+              <div className="flex items-center gap-3 mb-3">
+                <div className="w-10 h-10 rounded-lg bg-brand-primary/10 flex items-center justify-center group-hover:bg-brand-accent/10 transition-colors">
+                  <BarChart3 className="w-5 h-5 text-brand-primary group-hover:text-brand-accent" />
+                </div>
+                <h3 className="font-semibold text-text-primary">Statistik</h3>
+              </div>
+              <p className="text-sm text-text-secondary">Data analisis pemilu</p>
+            </Link>
+          </div>
         </div>
-      </div>
-    </AdminLayout>
+      </AdminLayout>
+    </AuthGuard>
   );
 }

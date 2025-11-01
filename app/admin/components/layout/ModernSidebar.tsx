@@ -1,7 +1,7 @@
 "use client";
 
 import { useState, useEffect, useRef, KeyboardEvent } from "react";
-import { usePathname } from "next/navigation";
+import { usePathname, useRouter } from "next/navigation";
 import Image from "next/image";
 import {
   LayoutDashboard,
@@ -161,6 +161,7 @@ export function ModernSidebar({
   isCollapsed = false,
   onToggle,
 }: ModernSidebarProps) {
+  const router = useRouter();
   const currentPath = usePathname() || "/";
   const sidebarRef = useRef<HTMLElement>(null);
   const storeUserRole = useAuthStore(
@@ -169,20 +170,33 @@ export function ModernSidebar({
   const user = useAuthStore((s) => s.user);
   const fetchUser = useAuthStore((s) => s.fetchUser);
   const storeIsLoading = useAuthStore((s) => s.isLoading);
+  const lastFetchedAt = useAuthStore((s) => s.lastFetchedAt);
   const [userRole, setUserRole] = useState<UserRole | null>(
     storeUserRole || null
   );
   const [menuItems, setMenuItems] = useState<typeof allMenuItems>(allMenuItems);
   const [isLoading, setIsLoading] = useState(true);
+  const [authCheckDone, setAuthCheckDone] = useState(false);
 
-  // If user not available yet, try to fetch it (fallback to API)
+  // Initial auth check - only once on mount
   useEffect(() => {
-    if (!user && !storeIsLoading) {
-      fetchUser().catch(() => {
-        /* noop */
+    if (!authCheckDone) {
+      console.log("🔍 [ModernSidebar] Starting initial auth check...");
+      fetchUser().finally(() => {
+        console.log("✅ [ModernSidebar] Auth check completed");
+        setAuthCheckDone(true);
       });
     }
-  }, [user, storeIsLoading, fetchUser]);
+  }, [authCheckDone, fetchUser]);
+
+  // Redirect to login if auth check done and user is null
+  useEffect(() => {
+    if (authCheckDone && !user && !storeIsLoading && lastFetchedAt) {
+      // User is definitely not authenticated, redirect to login
+      console.log("⚠️  No authenticated user, redirecting to login...");
+      router.push("/auth");
+    }
+  }, [authCheckDone, user, storeIsLoading, lastFetchedAt, router]);
 
   // Use hydrated user role from auth store (SSR) and filter menu items
   useEffect(() => {

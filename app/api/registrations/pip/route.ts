@@ -30,6 +30,11 @@ const pipRegistrationSchema = z.object({
   fatherPhone: z.string().optional().or(z.literal("")),
   motherName: z.string().optional().or(z.literal("")),
   motherPhone: z.string().optional().or(z.literal("")),
+  parentProvince: z.string().optional().or(z.literal("")),
+  parentCity: z.string().optional().or(z.literal("")),
+  parentDistrict: z.string().optional().or(z.literal("")),
+  parentVillage: z.string().optional().or(z.literal("")),
+  parentRtRw: z.string().optional().or(z.literal("")),
   parentAddress: z.string().optional().or(z.literal("")),
   parentWillingJoinNasdem: z.boolean().optional(),
   parentJoinReason: z.string().optional().or(z.literal("")),
@@ -74,6 +79,11 @@ export async function POST(req: NextRequest) {
       fatherPhone: formData.get("fatherPhone") as string,
       motherName: formData.get("motherName") as string,
       motherPhone: formData.get("motherPhone") as string,
+      parentProvince: formData.get("parentProvince") as string,
+      parentCity: formData.get("parentCity") as string,
+      parentDistrict: formData.get("parentDistrict") as string,
+      parentVillage: formData.get("parentVillage") as string,
+      parentRtRw: formData.get("parentRtRw") as string,
       parentAddress: formData.get("parentAddress") as string,
       parentWillingJoinNasdem: formData.get("parentWillingJoinNasdem") === "true",
       parentJoinReason: formData.get("parentJoinReason") as string,
@@ -122,12 +132,12 @@ export async function POST(req: NextRequest) {
       );
     }
 
-    // Check if NISN already registered for this program (if NISN provided)
-    if (validatedData.nisn) {
+    // Check if NISN already registered for this program (if NISN provided and not empty)
+    if (validatedData.nisn && validatedData.nisn.trim() !== "") {
       const existingRegistration = await db.pipRegistration.findFirst({
         where: {
           programId: programId,
-          nisn: validatedData.nisn,
+          nisn: validatedData.nisn.trim(),
         },
       });
 
@@ -168,6 +178,11 @@ export async function POST(req: NextRequest) {
         fatherPhone: validatedData.fatherPhone || null,
         motherName: validatedData.motherName || null,
         motherPhone: validatedData.motherPhone || null,
+        parentProvince: validatedData.parentProvince || null,
+        parentCity: validatedData.parentCity || null,
+        parentDistrict: validatedData.parentDistrict || null,
+        parentVillage: validatedData.parentVillage || null,
+        parentRtRw: validatedData.parentRtRw || null,
         parentAddress: validatedData.parentAddress || null,
         parentWillingJoinNasdem: validatedData.parentWillingJoinNasdem || false,
         parentJoinReason: validatedData.parentJoinReason || null,

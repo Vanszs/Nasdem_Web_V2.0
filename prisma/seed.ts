@@ -16,8 +16,9 @@ const db = new PrismaClient();
 async function main() {
   await clearAll(db);
 
-  // // 1. Users
-  // const { superadmin } = await seedUsers(db);
+  // 1. Users - ADMIN ACCOUNTS
+  const { superadmin, editor, analyst } = await seedUsers(db);
+  console.log("✅ Seeded admin users:", { superadmin: superadmin.email, editor: editor.email, analyst: analyst.email });
 
   // // 2. Parties
   // await seedParties(db);

@@ -72,7 +72,7 @@ enum ProgramStatus {
   planning
 }
 
-enum BenefitStatus {
+enum MemberBenefitStatus {
   pending
   completed
 }
@@ -216,14 +216,14 @@ model Benefit {
 }
 
 model MemberBenefit {
-  id        Int           @id @default(autoincrement())
+  id        Int                  @id @default(autoincrement())
   memberId  Int
   benefitId Int
-  status    BenefitStatus
+  status    MemberBenefitStatus
   grantedAt DateTime?
   notes     String?
-  createdAt DateTime      @default(now())
-  updatedAt DateTime      @updatedAt
+  createdAt DateTime             @default(now())
+  updatedAt DateTime             @updatedAt
 
   // Relations
   member  Member  @relation(fields: [memberId], references: [id], onDelete: Cascade, onUpdate: Cascade)
@@ -387,10 +387,10 @@ model ProgramBenefitRecipient {
   proposerName      String?       @db.VarChar(150)
   fullAddress       String?
   notes             String?
-  status            BenefitStatus
 
   @@unique([programId, nik])
   @@index([programId])
+  @@index([nik])
 }
 
 // ---------------------------
@@ -398,7 +398,6 @@ model ProgramBenefitRecipient {
 // ---------------------------
 enum PipRegistrationStatus {
   pending
-  verified
   rejected
   accepted
 }
@@ -465,7 +464,12 @@ model PipRegistration {
   fatherPhone              String?  @db.VarChar(30) // Nomor HP/WA Ayah
   motherName               String?  @db.VarChar(150) // Nama Ibu
   motherPhone              String?  @db.VarChar(30) // Nomor HP/WA Ibu
-  parentAddress            String?  @db.Text // Alamat Orang Tua
+  parentProvince           String?  @db.VarChar(100) // Provinsi orang tua
+  parentCity               String?  @db.VarChar(100) // Kota/Kabupaten orang tua
+  parentDistrict           String?  @db.VarChar(100) // Kecamatan orang tua
+  parentVillage            String?  @db.VarChar(100) // Desa/Kelurahan orang tua
+  parentRtRw               String?  @db.VarChar(20) // RT/RW (format: "001/002")
+  parentAddress            String?  @db.Text // Alamat detail (jalan, gang, no rumah)
   parentWillingJoinNasdem  Boolean? @default(false) // Bersedia bergabung di Partai Nasdem
   parentJoinReason         String?  @db.Text // Alasan Bergabung/Tidak Bergabung
 
@@ -478,7 +482,6 @@ model PipRegistration {
   proposerRelation       StudentRelation?
   proposerRelationOther  String?           @db.VarChar(100) // Jika hubungan = lainnya
 
-  @@unique([programId, nisn])
   @@index([programId])
   @@index([status])
   @@index([educationLevel])

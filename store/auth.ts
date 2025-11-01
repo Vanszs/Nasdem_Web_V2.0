@@ -32,21 +32,35 @@ export const useAuthStore = create<AuthState>((set, get) => ({
   setUser: (user) => set({ user }),
 
   fetchUser: async (opts) => {
-    const { lastFetchedAt, user, cacheTTL, isLoading } = get();
+    const { lastFetchedAt, user, cacheTTL, isLoading, error } = get();
     const force = opts?.force ?? false;
 
     const fresh = lastFetchedAt && Date.now() - lastFetchedAt < cacheTTL;
     if (!force && fresh && user && !isLoading) return;
 
+    // Prevent excessive polling when already getting 401 errors
+    if (error && error.includes("401") && Date.now() - (lastFetchedAt || 0) < 5000) {
+      console.log("⏸️ [AuthStore] Skipping auth check due to recent 401 error");
+      return;
+    }
+
     try {
+      console.log("🔍 [AuthStore] Fetching user data...");
       set({ isLoading: true, error: null });
       const response = await fetch("/api/auth/me", {
         method: "GET",
         credentials: "include",
       });
+      console.log("📊 [AuthStore] Auth response status:", response.status);
       if (!response.ok) {
         // Not authenticated
-        set({ user: null, isLoading: false, lastFetchedAt: Date.now() });
+        console.log("❌ [AuthStore] Authentication failed with status:", response.status);
+        set({
+          user: null,
+          isLoading: false,
+          lastFetchedAt: Date.now(),
+          error: `Authentication failed: ${response.status}`
+        });
         return;
       }
       const data = await response.json();

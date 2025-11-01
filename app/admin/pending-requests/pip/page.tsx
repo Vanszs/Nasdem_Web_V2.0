@@ -71,20 +71,29 @@ export default function PipPage() {
   const filteredApplications = pipApplications.filter((app: any) => {
     if (!search) return true;
     const searchLower = search.toLowerCase();
+    
+    // Build full address string for searching
+    const fullAddress = [
+      app.parentProvince,
+      app.parentCity,
+      app.parentDistrict,
+      app.parentVillage,
+      app.parentRtRw,
+      app.parentAddress
+    ].filter(Boolean).join(" ").toLowerCase();
+    
     return (
-      app.fullName?.toLowerCase().includes(searchLower) ||
-      app.email?.toLowerCase().includes(searchLower) ||
-      app.phone?.includes(search) ||
-      app.nik?.includes(search)
+      app.studentName?.toLowerCase().includes(searchLower) ||
+      app.nisn?.toLowerCase().includes(searchLower) ||
+      app.schoolName?.toLowerCase().includes(searchLower) ||
+      app.proposerName?.toLowerCase().includes(searchLower) ||
+      fullAddress.includes(searchLower)
     );
   });
 
   const total = filteredApplications.length;
   const pending = filteredApplications.filter(
     (app: any) => app.status === "pending"
-  ).length;
-  const verified = filteredApplications.filter(
-    (app: any) => app.status === "verified"
   ).length;
   const rejected = filteredApplications.filter(
     (app: any) => app.status === "rejected"
@@ -111,14 +120,28 @@ export default function PipPage() {
       if (!res.ok) throw new Error("Gagal update status");
       return res.json();
     },
-    onSuccess: () => {
+    onSuccess: (data) => {
       queryClient.invalidateQueries({ queryKey: ["pip-registrations"] });
-      toast.success("Status berhasil diupdate");
+      
+      if (data.data?.status === "accepted") {
+        toast.success("Pendaftar Diterima!", {
+          description: "Data berhasil ditambahkan ke penerima manfaat",
+        });
+      } else if (data.data?.status === "rejected") {
+        toast.error("Pendaftar Ditolak", {
+          description: "Pendaftaran telah ditolak",
+        });
+      } else {
+        toast.success("Status berhasil diupdate");
+      }
+      
       setNewStatus("");
+      setIsUpdatingStatus(false);
       setShowDetail(false);
     },
     onError: (error: Error) => {
       toast.error(error.message || "Gagal update status");
+      setIsUpdatingStatus(false);
     },
   });
 
@@ -129,13 +152,6 @@ export default function PipPage() {
           <span className="inline-flex items-center gap-1 px-2.5 py-0.5 rounded-full text-xs font-medium bg-yellow-100 text-yellow-800">
             <Clock className="w-3 h-3" />
             Menunggu
-          </span>
-        );
-      case "verified":
-        return (
-          <span className="inline-flex items-center gap-1 px-2.5 py-0.5 rounded-full text-xs font-medium bg-blue-100 text-blue-800">
-            <CheckCircle className="w-3 h-3" />
-            Terverifikasi
           </span>
         );
       case "rejected":
@@ -169,6 +185,7 @@ export default function PipPage() {
 
   const handleStatusUpdate = () => {
     if (!newStatus || !selectedApplication) return;
+    setIsUpdatingStatus(true);
     updateStatusMutation.mutate({
       id: selectedApplication.id,
       newStatus,
@@ -223,38 +240,38 @@ export default function PipPage() {
             <div className="text-num font-semibold text-[#FF9C04]">
               {pending}
             </div>
-          </div>
+        </div>
 
-          <div className="rounded-xl bg-card shadow-sm p-5 border border-border hover:shadow-md transition-all duration-200 flex flex-col gap-3">
-            <div className="flex items-center justify-between">
-              <span className="text-sm text-text-secondary font-medium">
-                Terverifikasi
-              </span>
-              <div className="w-10 h-10 rounded-lg bg-blue-100 flex items-center justify-center">
-                <CheckCircle className="w-5 h-5 text-blue-600" />
-              </div>
-            </div>
-            <div className="text-num font-semibold text-blue-600">
-              {verified}
+        <div className="rounded-xl bg-card shadow-sm p-5 border border-border hover:shadow-md transition-all duration-200 flex flex-col gap-3">
+          <div className="flex items-center justify-between">
+            <span className="text-sm text-text-secondary font-medium">
+              Ditolak
+            </span>
+            <div className="w-10 h-10 rounded-lg bg-red-100 flex items-center justify-center">
+              <AlertCircle className="w-5 h-5 text-red-600" />
             </div>
           </div>
-
-          <div className="rounded-xl bg-card shadow-sm p-5 border border-border hover:shadow-md transition-all duration-200 flex flex-col gap-3">
-            <div className="flex items-center justify-between">
-              <span className="text-sm text-text-secondary font-medium">
-                Ditolak
-              </span>
-              <div className="w-10 h-10 rounded-lg bg-red-100 flex items-center justify-center">
-                <AlertCircle className="w-5 h-5 text-red-600" />
-              </div>
-            </div>
-            <div className="text-num font-semibold text-red-600">
-              {rejected}
-            </div>
+          <div className="text-num font-semibold text-red-600">
+            {rejected}
           </div>
         </div>
 
-        {/* Applications List */}
+        <div className="rounded-xl bg-card shadow-sm p-5 border border-border hover:shadow-md transition-all duration-200 flex flex-col gap-3">
+          <div className="flex items-center justify-between">
+            <span className="text-sm text-text-secondary font-medium">
+              Diterima
+            </span>
+            <div className="w-10 h-10 rounded-lg bg-green-100 flex items-center justify-center">
+              <CheckCircle className="w-5 h-5 text-green-600" />
+            </div>
+          </div>
+          <div className="text-num font-semibold text-green-600">
+            {accepted}
+          </div>
+        </div>
+      </div>
+
+      {/* Applications List */}
         <Card className="rounded-xl border border-[#E8F9FF] shadow-sm">
           <CardHeader>
             <div className="flex flex-col lg:flex-row lg:items-center lg:justify-between gap-4">
@@ -287,7 +304,7 @@ export default function PipPage() {
               <div className="relative">
                 <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-400" />
                 <Input
-                  placeholder="Cari nama, email, telepon..."
+                  placeholder="Cari nama siswa, NISN, sekolah, pengusul, alamat..."
                   value={search}
                   onChange={(e) => setSearch(e.target.value)}
                   className="pl-10 h-10 rounded-lg border border-[#C4D9FF] focus:border-[#C5BAFF] transition-all"
@@ -304,7 +321,6 @@ export default function PipPage() {
                 <SelectContent>
                   <SelectItem value="all">Semua Status</SelectItem>
                   <SelectItem value="pending">Menunggu</SelectItem>
-                  <SelectItem value="verified">Terverifikasi</SelectItem>
                   <SelectItem value="accepted">Diterima</SelectItem>
                   <SelectItem value="rejected">Ditolak</SelectItem>
                 </SelectContent>
@@ -324,31 +340,31 @@ export default function PipPage() {
                   <thead className="bg-gray-200 border-b border-border sticky top-0 z-10">
                     <tr>
                       <th className="px-4 py-3 text-sm font-bold text-[#001B55] text-left whitespace-nowrap">
-                        Nama Lengkap
+                        Nama Siswa
                       </th>
                       <th className="px-4 py-3 text-sm font-bold text-[#001B55] text-left whitespace-nowrap">
-                        NIK
+                        NISN
                       </th>
                       <th className="px-4 py-3 text-sm font-bold text-[#001B55] text-left whitespace-nowrap">
-                        Kontak
+                        Jenjang
                       </th>
                       <th className="px-4 py-3 text-sm font-bold text-[#001B55] text-left whitespace-nowrap">
-                        Tanggal Lahir
+                        Kelas
                       </th>
                       <th className="px-4 py-3 text-sm font-bold text-[#001B55] text-left whitespace-nowrap">
-                        Jenis Kelamin
+                        Nama Sekolah
                       </th>
                       <th className="px-4 py-3 text-sm font-bold text-[#001B55] text-left whitespace-nowrap">
-                        Pekerjaan
+                        Alamat (Kec/Desa)
                       </th>
                       <th className="px-4 py-3 text-sm font-bold text-[#001B55] text-left whitespace-nowrap">
-                        Jumlah Keluarga
+                        Kontak Siswa
                       </th>
                       <th className="px-4 py-3 text-sm font-bold text-[#001B55] text-left whitespace-nowrap">
-                        Pengusul
+                        Nama Pengusul
                       </th>
                       <th className="px-4 py-3 text-sm font-bold text-[#001B55] text-left whitespace-nowrap">
-                        Alamat
+                        Status Pengusul
                       </th>
                       <th className="px-4 py-3 text-sm font-bold text-[#001B55] text-left whitespace-nowrap">
                         Program
@@ -392,60 +408,55 @@ export default function PipPage() {
                               <div className="flex items-center gap-2">
                                 <div className="w-2 h-2 bg-[#C5BAFF] rounded-full flex-shrink-0" />
                                 <span className="text-sm font-semibold text-text-primary whitespace-nowrap">
-                                  {application.fullName}
+                                  {application.studentName || "-"}
                                 </span>
                               </div>
                             </td>
                             <td className="px-4 py-3 text-sm text-text-secondary font-medium whitespace-nowrap">
-                              {application.nik}
+                              {application.nisn || "-"}
                             </td>
-                            <td className="px-4 py-3">
-                              <div className="space-y-0.5 text-xs">
-                                <div className="flex items-center gap-1.5 text-text-secondary whitespace-nowrap">
-                                  <Mail className="w-3 h-3" />
-                                  <span className="truncate max-w-[180px]">
-                                    {application.email || "-"}
-                                  </span>
+                            <td className="px-4 py-3 text-sm text-text-secondary whitespace-nowrap">
+                              <span className="inline-flex items-center px-2 py-0.5 rounded-full text-xs font-medium bg-blue-100 text-blue-800 uppercase">
+                                {application.educationLevel || "-"}
+                              </span>
+                            </td>
+                            <td className="px-4 py-3 text-sm text-text-secondary whitespace-nowrap">
+                              {application.studentClass || "-"}
+                            </td>
+                            <td className="px-4 py-3 text-sm text-text-secondary font-medium max-w-[200px]">
+                              <span className="truncate block">
+                                {application.schoolName || "-"}
+                              </span>
+                            </td>
+                            <td className="px-4 py-3 text-sm text-text-secondary max-w-[180px]">
+                              <div className="space-y-0.5">
+                                <div className="text-xs font-medium text-gray-900">
+                                  {application.parentDistrict || "-"}
                                 </div>
-                                <div className="flex items-center gap-1.5 text-text-secondary whitespace-nowrap">
-                                  <Phone className="w-3 h-3" />
-                                  {application.phone || "-"}
+                                <div className="text-xs text-gray-500 truncate">
+                                  {application.parentVillage || "-"}
                                 </div>
                               </div>
                             </td>
-                            <td className="px-4 py-3 text-sm text-text-secondary whitespace-nowrap">
-                              {application.dateOfBirth
-                                ? new Date(
-                                    application.dateOfBirth
-                                  ).toLocaleDateString("id-ID", {
-                                    day: "numeric",
-                                    month: "short",
-                                    year: "numeric",
-                                  })
-                                : "-"}
+                            <td className="px-4 py-3">
+                              <div className="flex items-center gap-1.5 text-xs text-text-secondary whitespace-nowrap">
+                                <Phone className="w-3 h-3" />
+                                {application.studentPhone || "-"}
+                              </div>
+                            </td>
+                            <td className="px-4 py-3 text-sm text-text-secondary font-medium whitespace-nowrap">
+                              {application.proposerName || "-"}
                             </td>
                             <td className="px-4 py-3 text-sm text-text-secondary whitespace-nowrap">
-                              {application.gender === "male"
-                                ? "Laki-laki"
-                                : application.gender === "female"
-                                ? "Perempuan"
-                                : "-"}
-                            </td>
-                            <td className="px-4 py-3 text-sm text-text-secondary whitespace-nowrap">
-                              {application.occupation || "-"}
-                            </td>
-                            <td className="px-4 py-3 text-sm text-text-secondary text-center whitespace-nowrap">
-                              {application.familyMemberCount || "-"}
-                            </td>
-                            <td className="px-4 py-3 text-sm text-text-secondary whitespace-nowrap">
-                              <span className="font-medium text-text-primary">
-                                {application.proposerName || "-"}
-                              </span>
-                            </td>
-                            <td className="px-4 py-3 text-sm text-text-secondary max-w-[200px]">
-                              <span className="truncate block">
-                                {application.fullAddress || "-"}
-                              </span>
+                              {application.proposerStatus ? (
+                                <span className="inline-flex items-center px-2 py-0.5 rounded-full text-xs font-medium bg-purple-100 text-purple-800 uppercase">
+                                  {application.proposerStatus === "dpd" ? "DPD" : 
+                                   application.proposerStatus === "dpc" ? "DPC" :
+                                   application.proposerStatus === "dprt" ? "DPRT" :
+                                   application.proposerStatus === "kordes" ? "KORDES" :
+                                   application.proposerStatusOther || "Lainnya"}
+                                </span>
+                              ) : "-"}
                             </td>
                             <td className="px-4 py-3 text-sm text-text-secondary whitespace-nowrap">
                               <span className="font-medium text-text-primary">
@@ -551,10 +562,10 @@ export default function PipPage() {
                               <span>Menunggu</span>
                             </div>
                           </SelectItem>
-                          <SelectItem value="verified">
+                          <SelectItem value="accepted">
                             <div className="flex items-center gap-2">
-                              <CheckCircle className="w-4 h-4 text-blue-600" />
-                              <span>Terverifikasi</span>
+                              <CheckCircle className="w-4 h-4 text-green-600" />
+                              <span>Diterima</span>
                             </div>
                           </SelectItem>
                           <SelectItem value="rejected">
@@ -600,30 +611,40 @@ export default function PipPage() {
                   </div>
                 </div>
 
-                {/* Personal Information */}
+                {/* 📚 Data Siswa */}
                 <div className="bg-white rounded-xl border border-gray-200/70 overflow-hidden transition-all hover:border-gray-300">
-                  <div className="bg-gradient-to-r from-gray-50 to-gray-100/50 px-5 py-3 border-b border-gray-200/70">
+                  <div className="bg-gradient-to-r from-blue-50 to-blue-100/50 px-5 py-3 border-b border-gray-200/70">
                     <h4 className="text-base font-bold text-[#001B55] flex items-center gap-2">
-                      <User className="w-4.5 h-4.5" />
-                      Data Pribadi
+                      <GraduationCap className="w-4.5 h-4.5" />
+                      📚 Data Siswa
                     </h4>
                   </div>
                   <div className="p-5">
                     <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                       <div className="space-y-1">
                         <Label className="text-[10px] text-gray-500 uppercase tracking-wider font-bold">
-                          Nama Lengkap
+                          Jenjang Pendidikan
                         </Label>
                         <p className="text-sm font-semibold text-gray-900 mt-1.5">
-                          {selectedApplication.fullName}
+                          <span className="inline-flex items-center px-2.5 py-1 rounded-full text-xs font-bold bg-blue-100 text-blue-800 uppercase">
+                            {selectedApplication.educationLevel || "-"}
+                          </span>
                         </p>
                       </div>
                       <div className="space-y-1">
                         <Label className="text-[10px] text-gray-500 uppercase tracking-wider font-bold">
-                          NIK
+                          Nama Siswa
                         </Label>
                         <p className="text-sm font-semibold text-gray-900 mt-1.5">
-                          {selectedApplication.nik}
+                          {selectedApplication.studentName || "-"}
+                        </p>
+                      </div>
+                      <div className="space-y-1">
+                        <Label className="text-[10px] text-gray-500 uppercase tracking-wider font-bold">
+                          Tempat Lahir
+                        </Label>
+                        <p className="text-sm font-medium text-gray-700 mt-1.5">
+                          {selectedApplication.birthPlace || "-"}
                         </p>
                       </div>
                       <div className="space-y-1">
@@ -631,13 +652,15 @@ export default function PipPage() {
                           Tanggal Lahir
                         </Label>
                         <p className="text-sm font-medium text-gray-700 mt-1.5">
-                          {new Date(
-                            selectedApplication.dateOfBirth
-                          ).toLocaleDateString("id-ID", {
-                            day: "numeric",
-                            month: "long",
-                            year: "numeric",
-                          })}
+                          {selectedApplication.dateOfBirth
+                            ? new Date(
+                                selectedApplication.dateOfBirth
+                              ).toLocaleDateString("id-ID", {
+                                day: "numeric",
+                                month: "long",
+                                year: "numeric",
+                              })
+                            : "-"}
                         </p>
                       </div>
                       <div className="space-y-1">
@@ -647,81 +670,244 @@ export default function PipPage() {
                         <p className="text-sm font-medium text-gray-700 mt-1.5">
                           {selectedApplication.gender === "male"
                             ? "Laki-laki"
-                            : "Perempuan"}
+                            : selectedApplication.gender === "female"
+                            ? "Perempuan"
+                            : "-"}
                         </p>
                       </div>
-                    </div>
-                  </div>
-                </div>
-
-                {/* Contact Information */}
-                <div className="bg-white rounded-xl border border-gray-200/70 overflow-hidden transition-all hover:border-gray-300">
-                  <div className="bg-gradient-to-r from-gray-50 to-gray-100/50 px-5 py-3 border-b border-gray-200/70">
-                    <h4 className="text-base font-bold text-[#001B55] flex items-center gap-2">
-                      <Phone className="w-4.5 h-4.5" />
-                      Kontak & Alamat
-                    </h4>
-                  </div>
-                  <div className="p-5">
-                    <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                       <div className="space-y-1">
                         <Label className="text-[10px] text-gray-500 uppercase tracking-wider font-bold">
-                          Email
+                          NISN
                         </Label>
-                        <p className="text-sm font-medium text-gray-700 mt-1.5 flex items-center gap-2">
-                          <Mail className="w-4 h-4 text-brand-accent" />
-                          {selectedApplication.email}
+                        <p className="text-sm font-semibold text-gray-900 mt-1.5">
+                          {selectedApplication.nisn || "-"}
                         </p>
                       </div>
                       <div className="space-y-1">
                         <Label className="text-[10px] text-gray-500 uppercase tracking-wider font-bold">
-                          Telepon
+                          Kelas
+                        </Label>
+                        <p className="text-sm font-medium text-gray-700 mt-1.5">
+                          {selectedApplication.studentClass || "-"}
+                        </p>
+                      </div>
+                      <div className="space-y-1">
+                        <Label className="text-[10px] text-gray-500 uppercase tracking-wider font-bold">
+                          Nomor HP/WA Siswa
                         </Label>
                         <p className="text-sm font-medium text-gray-700 mt-1.5 flex items-center gap-2">
                           <Phone className="w-4 h-4 text-brand-accent" />
-                          {selectedApplication.phone}
-                        </p>
-                      </div>
-                      <div className="space-y-1 md:col-span-2">
-                        <Label className="text-[10px] text-gray-500 uppercase tracking-wider font-bold">
-                          Alamat Lengkap
-                        </Label>
-                        <p className="text-sm font-medium text-gray-700 mt-1.5 flex items-start gap-2 leading-relaxed">
-                          <MapPin className="w-4 h-4 text-brand-accent mt-0.5" />
-                          {selectedApplication.fullAddress}
+                          {selectedApplication.studentPhone || "-"}
                         </p>
                       </div>
                     </div>
                   </div>
                 </div>
 
-                {/* School Information */}
+                {/* 🏫 Data Sekolah */}
                 <div className="bg-white rounded-xl border border-gray-200/70 overflow-hidden transition-all hover:border-gray-300">
-                  <div className="bg-gradient-to-r from-gray-50 to-gray-100/50 px-5 py-3 border-b border-gray-200/70">
+                  <div className="bg-gradient-to-r from-green-50 to-green-100/50 px-5 py-3 border-b border-gray-200/70">
                     <h4 className="text-base font-bold text-[#001B55] flex items-center gap-2">
                       <GraduationCap className="w-4.5 h-4.5" />
-                      Informasi Tambahan
+                      🏫 Data Sekolah
                     </h4>
                   </div>
                   <div className="p-5">
                     <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                       <div className="space-y-1">
                         <Label className="text-[10px] text-gray-500 uppercase tracking-wider font-bold">
-                          Pekerjaan
+                          Nama Sekolah
                         </Label>
                         <p className="text-sm font-semibold text-gray-900 mt-1.5">
-                          {selectedApplication.occupation || "-"}
+                          {selectedApplication.schoolName || "-"}
                         </p>
                       </div>
                       <div className="space-y-1">
                         <Label className="text-[10px] text-gray-500 uppercase tracking-wider font-bold">
-                          Jumlah Anggota Keluarga
+                          NPSN
                         </Label>
                         <p className="text-sm font-medium text-gray-700 mt-1.5">
-                          {selectedApplication.familyMemberCount || "-"}
+                          {selectedApplication.npsn || "-"}
                         </p>
                       </div>
-                      <div className="space-y-1 md:col-span-2">
+                      <div className="space-y-1">
+                        <Label className="text-[10px] text-gray-500 uppercase tracking-wider font-bold">
+                          Status Sekolah
+                        </Label>
+                        <p className="text-sm font-medium text-gray-700 mt-1.5">
+                          {selectedApplication.schoolStatus ? (
+                            <span className="inline-flex items-center px-2.5 py-1 rounded-full text-xs font-bold bg-green-100 text-green-800 uppercase">
+                              {selectedApplication.schoolStatus}
+                            </span>
+                          ) : "-"}
+                        </p>
+                      </div>
+                      <div className="space-y-1">
+                        <Label className="text-[10px] text-gray-500 uppercase tracking-wider font-bold">
+                          Kelurahan/Desa
+                        </Label>
+                        <p className="text-sm font-medium text-gray-700 mt-1.5">
+                          {selectedApplication.schoolVillage || "-"}
+                        </p>
+                      </div>
+                      <div className="space-y-1">
+                        <Label className="text-[10px] text-gray-500 uppercase tracking-wider font-bold">
+                          Kecamatan
+                        </Label>
+                        <p className="text-sm font-medium text-gray-700 mt-1.5">
+                          {selectedApplication.schoolDistrict || "-"}
+                        </p>
+                      </div>
+                      <div className="space-y-1">
+                        <Label className="text-[10px] text-gray-500 uppercase tracking-wider font-bold">
+                          Kabupaten/Kota
+                        </Label>
+                        <p className="text-sm font-medium text-gray-700 mt-1.5">
+                          {selectedApplication.schoolCity || "-"}
+                        </p>
+                      </div>
+                      <div className="space-y-1">
+                        <Label className="text-[10px] text-gray-500 uppercase tracking-wider font-bold">
+                          Provinsi
+                        </Label>
+                        <p className="text-sm font-medium text-gray-700 mt-1.5">
+                          {selectedApplication.schoolProvince || "-"}
+                        </p>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+
+                {/* 👨‍👩‍👧 Data Orang Tua */}
+                <div className="bg-white rounded-xl border border-gray-200/70 overflow-hidden transition-all hover:border-gray-300">
+                  <div className="bg-gradient-to-r from-purple-50 to-purple-100/50 px-5 py-3 border-b border-gray-200/70">
+                    <h4 className="text-base font-bold text-[#001B55] flex items-center gap-2">
+                      <Users className="w-4.5 h-4.5" />
+                      👨‍👩‍👧 Data Orang Tua Siswa
+                    </h4>
+                  </div>
+                  <div className="p-5 space-y-5">
+                    {/* Data Ayah & Ibu */}
+                    <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                      <div className="space-y-1">
+                        <Label className="text-[10px] text-gray-500 uppercase tracking-wider font-bold">
+                          Nama Ayah/Wali
+                        </Label>
+                        <p className="text-sm font-semibold text-gray-900 mt-1.5">
+                          {selectedApplication.fatherName || "-"}
+                        </p>
+                      </div>
+                      <div className="space-y-1">
+                        <Label className="text-[10px] text-gray-500 uppercase tracking-wider font-bold">
+                          Nomor HP/WA Ayah
+                        </Label>
+                        <p className="text-sm font-medium text-gray-700 mt-1.5 flex items-center gap-2">
+                          <Phone className="w-4 h-4 text-brand-accent" />
+                          {selectedApplication.fatherPhone || "-"}
+                        </p>
+                      </div>
+                      <div className="space-y-1">
+                        <Label className="text-[10px] text-gray-500 uppercase tracking-wider font-bold">
+                          Nama Ibu
+                        </Label>
+                        <p className="text-sm font-semibold text-gray-900 mt-1.5">
+                          {selectedApplication.motherName || "-"}
+                        </p>
+                      </div>
+                      <div className="space-y-1">
+                        <Label className="text-[10px] text-gray-500 uppercase tracking-wider font-bold">
+                          Nomor HP/WA Ibu
+                        </Label>
+                        <p className="text-sm font-medium text-gray-700 mt-1.5 flex items-center gap-2">
+                          <Phone className="w-4 h-4 text-brand-accent" />
+                          {selectedApplication.motherPhone || "-"}
+                        </p>
+                      </div>
+                    </div>
+
+                    {/* Alamat Lengkap */}
+                    <div className="border-t border-gray-200 pt-4">
+                      <Label className="text-[10px] text-gray-500 uppercase tracking-wider font-bold mb-3 block">
+                        <MapPin className="w-3.5 h-3.5 inline mr-1" />
+                        Alamat Lengkap Orang Tua
+                      </Label>
+                      <div className="bg-gradient-to-br from-gray-50 to-gray-100/30 p-4 rounded-lg border border-gray-200/50 space-y-2">
+                        <div className="grid grid-cols-2 md:grid-cols-4 gap-2 text-xs">
+                          <div>
+                            <span className="text-gray-500 font-semibold">Provinsi:</span>
+                            <p className="text-gray-900 font-medium">{selectedApplication.parentProvince || "-"}</p>
+                          </div>
+                          <div>
+                            <span className="text-gray-500 font-semibold">Kota/Kab:</span>
+                            <p className="text-gray-900 font-medium">{selectedApplication.parentCity || "-"}</p>
+                          </div>
+                          <div>
+                            <span className="text-gray-500 font-semibold">Kecamatan:</span>
+                            <p className="text-gray-900 font-medium">{selectedApplication.parentDistrict || "-"}</p>
+                          </div>
+                          <div>
+                            <span className="text-gray-500 font-semibold">Desa/Kel:</span>
+                            <p className="text-gray-900 font-medium">{selectedApplication.parentVillage || "-"}</p>
+                          </div>
+                        </div>
+                        <div className="border-t border-gray-200/70 pt-2 mt-2">
+                          <span className="text-xs text-gray-500 font-semibold">RT/RW:</span>
+                          <p className="text-sm text-gray-900 font-medium">{selectedApplication.parentRtRw || "-"}</p>
+                        </div>
+                        <div className="border-t border-gray-200/70 pt-2 mt-2">
+                          <span className="text-xs text-gray-500 font-semibold">Alamat Detail:</span>
+                          <p className="text-sm text-gray-700 leading-relaxed mt-1">
+                            {selectedApplication.parentAddress || "-"}
+                          </p>
+                        </div>
+                      </div>
+                    </div>
+
+                    {/* Kesediaan Bergabung Nasdem */}
+                    <div className="border-t border-gray-200 pt-4">
+                      <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                        <div className="space-y-1">
+                          <Label className="text-[10px] text-gray-500 uppercase tracking-wider font-bold">
+                            Bersedia Bergabung di Partai NasDem
+                          </Label>
+                          <p className="text-sm font-semibold text-gray-900 mt-1.5">
+                            {selectedApplication.parentWillingJoinNasdem ? (
+                              <span className="inline-flex items-center px-2.5 py-1 rounded-full text-xs font-bold bg-green-100 text-green-800">
+                                ✓ YA, BERSEDIA
+                              </span>
+                            ) : (
+                              <span className="inline-flex items-center px-2.5 py-1 rounded-full text-xs font-bold bg-gray-100 text-gray-600">
+                                TIDAK BERSEDIA
+                              </span>
+                            )}
+                          </p>
+                        </div>
+                        {selectedApplication.parentJoinReason && (
+                          <div className="space-y-1 md:col-span-2">
+                            <Label className="text-[10px] text-gray-500 uppercase tracking-wider font-bold">
+                              Alasan
+                            </Label>
+                            <p className="text-sm font-medium text-gray-700 mt-1.5 bg-blue-50/50 p-3 rounded-lg border border-blue-100">
+                              {selectedApplication.parentJoinReason}
+                            </p>
+                          </div>
+                        )}
+                      </div>
+                    </div>
+                  </div>
+                </div>
+
+                {/* 📝 Data Pengusul */}
+                <div className="bg-white rounded-xl border border-gray-200/70 overflow-hidden transition-all hover:border-gray-300">
+                  <div className="bg-gradient-to-r from-orange-50 to-orange-100/50 px-5 py-3 border-b border-gray-200/70">
+                    <h4 className="text-base font-bold text-[#001B55] flex items-center gap-2">
+                      <User className="w-4.5 h-4.5" />
+                      📝 Data Pengusul
+                    </h4>
+                  </div>
+                  <div className="p-5">
+                    <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                      <div className="space-y-1">
                         <Label className="text-[10px] text-gray-500 uppercase tracking-wider font-bold">
                           Nama Pengusul
                         </Label>
@@ -729,78 +915,54 @@ export default function PipPage() {
                           {selectedApplication.proposerName || "-"}
                         </p>
                       </div>
-                    </div>
-                  </div>
-                </div>
-
-                {/* Document Photos */}
-                <div className="bg-white rounded-xl border border-gray-200/70 overflow-hidden transition-all hover:border-gray-300">
-                  <div className="bg-gradient-to-r from-gray-50 to-gray-100/50 px-5 py-3 border-b border-gray-200/70">
-                    <h4 className="text-base font-bold text-[#001B55] flex items-center gap-2">
-                      <FileText className="w-4.5 h-4.5" />
-                      Dokumen Pendukung
-                    </h4>
-                  </div>
-                  <div className="p-5">
-                    <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                      {/* KTP Photo */}
-                      <div className="space-y-2">
+                      <div className="space-y-1">
                         <Label className="text-[10px] text-gray-500 uppercase tracking-wider font-bold">
-                          Foto KTP
+                          Status Pengusul
                         </Label>
-                        {selectedApplication.ktpPhotoUrl ? (
-                          <div className="relative group">
-                            <img
-                              src={selectedApplication.ktpPhotoUrl}
-                              alt="Foto KTP"
-                              className="w-full h-48 object-cover rounded-lg border-2 border-[#C4D9FF]"
-                            />
-                            <a
-                              href={selectedApplication.ktpPhotoUrl}
-                              target="_blank"
-                              rel="noopener noreferrer"
-                              className="absolute inset-0 bg-black/50 opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center rounded-lg"
-                            >
-                              <Eye className="w-8 h-8 text-white" />
-                            </a>
-                          </div>
-                        ) : (
-                          <div className="w-full h-48 bg-gray-100 rounded-lg border-2 border-dashed border-gray-300 flex items-center justify-center">
-                            <p className="text-gray-400 text-sm">
-                              Tidak ada foto
-                            </p>
-                          </div>
-                        )}
+                        <p className="text-sm font-medium text-gray-700 mt-1.5">
+                          {selectedApplication.proposerStatus ? (
+                            <span className="inline-flex items-center px-2.5 py-1 rounded-full text-xs font-bold bg-purple-100 text-purple-800 uppercase">
+                              {selectedApplication.proposerStatus === "dpd" ? "DPD" : 
+                               selectedApplication.proposerStatus === "dpc" ? "DPC" :
+                               selectedApplication.proposerStatus === "dprt" ? "DPRT" :
+                               selectedApplication.proposerStatus === "kordes" ? "KORDES" :
+                               selectedApplication.proposerStatusOther || "Lainnya"}
+                            </span>
+                          ) : "-"}
+                        </p>
                       </div>
-
-                      {/* KK Photo */}
-                      <div className="space-y-2">
+                      <div className="space-y-1">
                         <Label className="text-[10px] text-gray-500 uppercase tracking-wider font-bold">
-                          Foto Kartu Keluarga
+                          Nomor HP/WA Pengusul
                         </Label>
-                        {selectedApplication.kkPhotoUrl ? (
-                          <div className="relative group">
-                            <img
-                              src={selectedApplication.kkPhotoUrl}
-                              alt="Foto KK"
-                              className="w-full h-48 object-cover rounded-lg border-2 border-[#C4D9FF]"
-                            />
-                            <a
-                              href={selectedApplication.kkPhotoUrl}
-                              target="_blank"
-                              rel="noopener noreferrer"
-                              className="absolute inset-0 bg-black/50 opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center rounded-lg"
-                            >
-                              <Eye className="w-8 h-8 text-white" />
-                            </a>
-                          </div>
-                        ) : (
-                          <div className="w-full h-48 bg-gray-100 rounded-lg border-2 border-dashed border-gray-300 flex items-center justify-center">
-                            <p className="text-gray-400 text-sm">
-                              Tidak ada foto
-                            </p>
-                          </div>
-                        )}
+                        <p className="text-sm font-medium text-gray-700 mt-1.5 flex items-center gap-2">
+                          <Phone className="w-4 h-4 text-brand-accent" />
+                          {selectedApplication.proposerPhone || "-"}
+                        </p>
+                      </div>
+                      <div className="space-y-1">
+                        <Label className="text-[10px] text-gray-500 uppercase tracking-wider font-bold">
+                          Hubungan dengan Siswa
+                        </Label>
+                        <p className="text-sm font-medium text-gray-700 mt-1.5">
+                          {selectedApplication.proposerRelation ? (
+                            <span className="inline-flex items-center px-2.5 py-1 rounded-full text-xs font-bold bg-blue-100 text-blue-800">
+                              {selectedApplication.proposerRelation === "anak" ? "Anak" :
+                               selectedApplication.proposerRelation === "saudara" ? "Saudara" :
+                               selectedApplication.proposerRelation === "tetangga" ? "Tetangga" :
+                               selectedApplication.proposerRelationOther || "Lainnya"}
+                            </span>
+                          ) : "-"}
+                        </p>
+                      </div>
+                      <div className="space-y-1 md:col-span-2">
+                        <Label className="text-[10px] text-gray-500 uppercase tracking-wider font-bold">
+                          Alamat Pengusul
+                        </Label>
+                        <p className="text-sm font-medium text-gray-700 mt-1.5 flex items-start gap-2 leading-relaxed">
+                          <MapPin className="w-4 h-4 text-brand-accent mt-0.5" />
+                          {selectedApplication.proposerAddress || "-"}
+                        </p>
                       </div>
                     </div>
                   </div>
@@ -851,18 +1013,46 @@ export default function PipPage() {
                 <div className="flex flex-wrap gap-2.5">
                   {selectedApplication.status === "pending" && (
                     <>
-                      <Button className="flex-1 min-w-[120px] rounded-lg bg-green-600 hover:bg-green-700 text-white transition-all shadow-sm hover:shadow-md">
+                      <Button 
+                        onClick={() => {
+                          setNewStatus("accepted");
+                          handleStatusUpdate();
+                        }}
+                        disabled={isUpdatingStatus || updateStatusMutation.isPending}
+                        className="flex-1 min-w-[120px] rounded-lg bg-green-600 hover:bg-green-700 text-white transition-all shadow-sm hover:shadow-md disabled:opacity-50"
+                      >
                         <CheckCircle className="w-4 h-4 mr-2" />
-                        Verifikasi
+                        {isUpdatingStatus ? "Memproses..." : "Terima"}
                       </Button>
                       <Button
                         variant="outline"
-                        className="flex-1 min-w-[120px] rounded-lg border-red-200 text-red-600 hover:bg-red-50 hover:border-red-300 transition-all"
+                        onClick={() => {
+                          setNewStatus("rejected");
+                          handleStatusUpdate();
+                        }}
+                        disabled={isUpdatingStatus || updateStatusMutation.isPending}
+                        className="flex-1 min-w-[120px] rounded-lg border-red-200 text-red-600 hover:bg-red-50 hover:border-red-300 transition-all disabled:opacity-50"
                       >
                         <AlertCircle className="w-4 h-4 mr-2" />
-                        Tolak
+                        {isUpdatingStatus ? "Memproses..." : "Tolak"}
                       </Button>
                     </>
+                  )}
+                  {selectedApplication.status === "rejected" && (
+                    <div className="w-full text-center py-2">
+                      <span className="inline-flex items-center px-3 py-1.5 rounded-full text-sm font-medium bg-red-100 text-red-800">
+                        <AlertCircle className="w-4 h-4 mr-2" />
+                        Pendaftaran ini telah ditolak
+                      </span>
+                    </div>
+                  )}
+                  {selectedApplication.status === "accepted" && (
+                    <div className="w-full text-center py-2">
+                      <span className="inline-flex items-center px-3 py-1.5 rounded-full text-sm font-medium bg-green-100 text-green-800">
+                        <CheckCircle className="w-4 h-4 mr-2" />
+                        Pendaftaran ini telah diterima dan ditambahkan ke penerima manfaat
+                      </span>
+                    </div>
                   )}
                   <Button
                     variant="outline"

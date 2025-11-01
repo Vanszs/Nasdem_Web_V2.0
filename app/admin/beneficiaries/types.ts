@@ -1,5 +1,4 @@
 export type Gender = "male" | "female";
-export type BenefitStatus = "pending" | "completed";
 
 export interface Beneficiary {
   id: number;
@@ -16,7 +15,6 @@ export interface Beneficiary {
   proposerName?: string | null;
   fullAddress?: string | null;
   notes?: string | null;
-  status: BenefitStatus;
   program?: { id: number; category: string; name: string };
 }
 
@@ -33,7 +31,6 @@ export interface CreateBeneficiaryInput {
   proposerName?: string | null;
   fullAddress?: string | null;
   notes?: string | null;
-  status: BenefitStatus;
 }
 
 export interface UpdateBeneficiaryInput

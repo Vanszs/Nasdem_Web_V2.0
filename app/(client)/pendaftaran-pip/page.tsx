@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useEffect, useCallback } from "react";
 import { useRouter, useSearchParams } from "next/navigation";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
@@ -31,6 +31,19 @@ import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group";
 import { Label } from "@/components/ui/label";
 import { Card, CardContent } from "@/components/ui/card";
 import {
+  Popover,
+  PopoverContent,
+  PopoverTrigger,
+} from "@/components/ui/popover";
+import {
+  Command,
+  CommandEmpty,
+  CommandGroup,
+  CommandInput,
+  CommandItem,
+  CommandList,
+} from "@/components/ui/command";
+import {
   GraduationCap,
   CheckCircle,
   AlertCircle,
@@ -45,9 +58,15 @@ import {
   Award,
   School,
   Home,
+  MapPin,
+  Save,
+  Trash2,
+  ChevronsUpDown,
 } from "lucide-react";
 import { useMutation } from "@tanstack/react-query";
 import { toast } from "sonner";
+import { useDebounce } from "@/hooks/use-debounce";
+import { cn } from "@/lib/utils";
 
 // Zod validation schema untuk form PIP lengkap
 const pipFormSchema = z.object({
@@ -81,7 +100,12 @@ const pipFormSchema = z.object({
   fatherPhone: z.string().min(10, "Nomor HP/WA ayah minimal 10 digit"),
   motherName: z.string().min(3, "Nama ibu minimal 3 karakter"),
   motherPhone: z.string().min(10, "Nomor HP/WA ibu minimal 10 digit"),
-  parentAddress: z.string().min(10, "Alamat orang tua minimal 10 karakter"),
+  parentProvince: z.string().min(1, "Pilih provinsi"),
+  parentCity: z.string().min(1, "Pilih kota/kabupaten"),
+  parentDistrict: z.string().min(1, "Pilih kecamatan"),
+  parentVillage: z.string().min(1, "Pilih desa/kelurahan"),
+  parentRtRw: z.string().min(1, "RT/RW wajib diisi"),
+  parentAddress: z.string().min(10, "Alamat detail minimal 10 karakter"),
   parentWillingJoinNasdem: z.boolean(),
   parentJoinReason: z.string().optional(),
   
@@ -101,17 +125,79 @@ const pipFormSchema = z.object({
 
 type PipFormData = z.infer<typeof pipFormSchema>;
 
+// LocalStorage key untuk draft
+const DRAFT_STORAGE_KEY = "pip_registration_draft";
+const DRAFT_TIMESTAMP_KEY = "pip_registration_draft_timestamp";
+
 export default function PendaftaranPipPage() {
   const router = useRouter();
   const searchParams = useSearchParams();
   const [currentStep, setCurrentStep] = useState(1);
   const [success, setSuccess] = useState(false);
+  const [draftLoaded, setDraftLoaded] = useState(false);
 
   // Get programId from URL query params
   const programIdParam = searchParams.get("programId");
   const programId = programIdParam ? parseInt(programIdParam, 10) : null;
 
   const totalSteps = 4; // 4 steps
+
+  // State for cascading dropdowns
+  const [selectedProvince, setSelectedProvince] = useState("Jawa Timur");
+  const [selectedCity, setSelectedCity] = useState("Kabupaten Sidoarjo");
+  const [selectedDistrict, setSelectedDistrict] = useState("");
+
+  // State for kecamatan and desa from API
+  const [kecamatanList, setKecamatanList] = useState<Array<{ id: number; name: string }>>([]);
+  const [desaList, setDesaList] = useState<Array<{ id: number; name: string }>>([]);
+  const [loadingKecamatan, setLoadingKecamatan] = useState(false);
+  const [loadingDesa, setLoadingDesa] = useState(false);
+  
+  // State for Command/Popover open
+  const [openKecamatan, setOpenKecamatan] = useState(false);
+  const [openDesa, setOpenDesa] = useState(false);
+
+  // Fetch kecamatan on mount
+  useEffect(() => {
+    const fetchKecamatan = async () => {
+      setLoadingKecamatan(true);
+      try {
+        const res = await fetch("/api/regions/kecamatan");
+        const data = await res.json();
+        if (data.data) {
+          setKecamatanList(data.data);
+        }
+      } catch (error) {
+        console.error("Error fetching kecamatan:", error);
+        toast.error("Gagal memuat data kecamatan");
+      } finally {
+        setLoadingKecamatan(false);
+      }
+    };
+    fetchKecamatan();
+  }, []);
+
+  // Fetch desa when kecamatan changes
+  const fetchDesa = async (kecamatanName: string) => {
+    if (!kecamatanName) {
+      setDesaList([]);
+      return;
+    }
+
+    setLoadingDesa(true);
+    try {
+      const res = await fetch(`/api/regions/desa?kecamatan=${encodeURIComponent(kecamatanName)}`);
+      const data = await res.json();
+      if (data.data) {
+        setDesaList(data.data);
+      }
+    } catch (error) {
+      console.error("Error fetching desa:", error);
+      toast.error("Gagal memuat data desa");
+    } finally {
+      setLoadingDesa(false);
+    }
+  };
 
   // Initialize React Hook Form with Zod
   const form = useForm<PipFormData>({
@@ -141,6 +227,11 @@ export default function PendaftaranPipPage() {
       fatherPhone: "",
       motherName: "",
       motherPhone: "",
+      parentProvince: "Jawa Timur",
+      parentCity: "Kabupaten Sidoarjo",
+      parentDistrict: "",
+      parentVillage: "",
+      parentRtRw: "",
       parentAddress: "",
       parentWillingJoinNasdem: false,
       parentJoinReason: "",
@@ -161,6 +252,115 @@ export default function PendaftaranPipPage() {
   const watchProposerStatus = form.watch("proposerStatus");
   const watchProposerRelation = form.watch("proposerRelation");
   const watchParentWilling = form.watch("parentWillingJoinNasdem");
+
+  // Watch all form values untuk auto-save
+  const formValues = form.watch();
+  const debouncedFormValues = useDebounce(formValues, 1000); // Debounce 1 detik
+
+  // LocalStorage Functions
+  const saveDraftToLocalStorage = useCallback((data: Partial<PipFormData>) => {
+    try {
+      localStorage.setItem(DRAFT_STORAGE_KEY, JSON.stringify(data));
+      localStorage.setItem(DRAFT_TIMESTAMP_KEY, new Date().toISOString());
+      console.log("✅ Draft saved to localStorage");
+    } catch (error) {
+      console.error("❌ Failed to save draft:", error);
+    }
+  }, []);
+
+  const loadDraftFromLocalStorage = useCallback((): Partial<PipFormData> | null => {
+    try {
+      const draftData = localStorage.getItem(DRAFT_STORAGE_KEY);
+      const timestamp = localStorage.getItem(DRAFT_TIMESTAMP_KEY);
+      
+      if (draftData && timestamp) {
+        const savedTime = new Date(timestamp);
+        const now = new Date();
+        const hoursDiff = (now.getTime() - savedTime.getTime()) / (1000 * 60 * 60);
+        
+        // Hapus draft jika lebih dari 7 hari
+        if (hoursDiff > 168) {
+          clearDraft();
+          return null;
+        }
+        
+        return JSON.parse(draftData);
+      }
+    } catch (error) {
+      console.error("❌ Failed to load draft:", error);
+    }
+    return null;
+  }, []);
+
+  const clearDraft = useCallback(() => {
+    try {
+      localStorage.removeItem(DRAFT_STORAGE_KEY);
+      localStorage.removeItem(DRAFT_TIMESTAMP_KEY);
+      console.log("🗑️ Draft cleared from localStorage");
+    } catch (error) {
+      console.error("❌ Failed to clear draft:", error);
+    }
+  }, []);
+
+  const getDraftTimestamp = (): string | null => {
+    try {
+      const timestamp = localStorage.getItem(DRAFT_TIMESTAMP_KEY);
+      if (timestamp) {
+        const date = new Date(timestamp);
+        return date.toLocaleString("id-ID", {
+          dateStyle: "medium",
+          timeStyle: "short",
+        });
+      }
+    } catch (error) {
+      console.error("❌ Failed to get timestamp:", error);
+    }
+    return null;
+  };
+
+  // Auto-save draft when form values change (debounced)
+  useEffect(() => {
+    if (draftLoaded) {
+      saveDraftToLocalStorage(debouncedFormValues);
+    }
+  }, [debouncedFormValues, draftLoaded, saveDraftToLocalStorage]);
+
+  // Load draft on mount
+  useEffect(() => {
+    const draft = loadDraftFromLocalStorage();
+    if (draft) {
+      const timestamp = getDraftTimestamp();
+      toast.info(
+        `Draft ditemukan dari ${timestamp}. Data otomatis dipulihkan.`,
+        {
+          duration: 5000,
+          action: {
+            label: "Hapus Draft",
+            onClick: () => {
+              form.reset();
+              clearDraft();
+              toast.success("Draft berhasil dihapus");
+            },
+          },
+        }
+      );
+      
+      // Restore form values
+      Object.keys(draft).forEach((key) => {
+        const value = draft[key as keyof PipFormData];
+        if (value !== undefined) {
+          form.setValue(key as keyof PipFormData, value as any);
+        }
+      });
+
+      // Restore cascading dropdown states
+      if (draft.parentDistrict) {
+        setSelectedDistrict(draft.parentDistrict);
+        fetchDesa(draft.parentDistrict);
+      }
+    }
+    setDraftLoaded(true);
+  }, [form, loadDraftFromLocalStorage, clearDraft]);
 
   // Mutation untuk submit form
   const submitMutation = useMutation({
@@ -199,6 +399,11 @@ export default function PendaftaranPipPage() {
       formData.append("fatherPhone", data.fatherPhone);
       formData.append("motherName", data.motherName);
       formData.append("motherPhone", data.motherPhone);
+      formData.append("parentProvince", data.parentProvince);
+      formData.append("parentCity", data.parentCity);
+      formData.append("parentDistrict", data.parentDistrict);
+      formData.append("parentVillage", data.parentVillage);
+      formData.append("parentRtRw", data.parentRtRw);
       formData.append("parentAddress", data.parentAddress);
       formData.append("parentWillingJoinNasdem", data.parentWillingJoinNasdem.toString());
       formData.append("parentJoinReason", data.parentJoinReason || "");
@@ -226,7 +431,8 @@ export default function PendaftaranPipPage() {
     },
     onSuccess: () => {
       setSuccess(true);
-      toast.success("Pendaftaran berhasil dikirim!");
+      clearDraft(); // Clear draft dari localStorage setelah submit berhasil
+      toast.success("Pendaftaran berhasil dikirim! Draft otomatis terhapus.");
       form.reset();
     },
     onError: (error: Error) => {
@@ -262,7 +468,18 @@ export default function PendaftaranPipPage() {
     } else if (currentStep === 3) {
       // Step 3: Data Orang Tua
       form
-        .trigger(["fatherName", "fatherPhone", "motherName", "motherPhone", "parentAddress"])
+        .trigger([
+          "fatherName",
+          "fatherPhone",
+          "motherName",
+          "motherPhone",
+          "parentProvince",
+          "parentCity",
+          "parentDistrict",
+          "parentVillage",
+          "parentRtRw",
+          "parentAddress"
+        ])
         .then((isValid) => {
           if (isValid) {
             setCurrentStep(4);
@@ -544,6 +761,44 @@ export default function PendaftaranPipPage() {
                 </div>
               </div>
             </div>
+
+            {/* Draft Auto-Save Indicator */}
+            {draftLoaded && (
+              <div className="mb-6 bg-gradient-to-r from-green-50 to-emerald-50 border border-green-200 rounded-xl p-4 flex items-center justify-between shadow-sm">
+                <div className="flex items-center gap-3">
+                  <div className="w-10 h-10 rounded-full bg-green-100 flex items-center justify-center">
+                    <Save className="w-5 h-5 text-green-600" />
+                  </div>
+                  <div>
+                    <p className="text-sm font-semibold text-green-900">
+                      Draft Otomatis Aktif
+                    </p>
+                    <p className="text-xs text-green-700">
+                      Data Anda disimpan otomatis setiap perubahan
+                      {getDraftTimestamp() && (
+                        <span className="ml-1">• Terakhir: {getDraftTimestamp()}</span>
+                      )}
+                    </p>
+                  </div>
+                </div>
+                <Button
+                  type="button"
+                  variant="ghost"
+                  size="sm"
+                  onClick={() => {
+                    if (confirm("Yakin ingin menghapus draft dan reset form?")) {
+                      form.reset();
+                      clearDraft();
+                      toast.success("Draft berhasil dihapus");
+                    }
+                  }}
+                  className="text-green-700 hover:text-green-900 hover:bg-green-100"
+                >
+                  <Trash2 className="w-4 h-4 mr-2" />
+                  Hapus Draft
+                </Button>
+              </div>
+            )}
 
             {/* Form Card */}
             <Card className="border-2 border-[#001B55]/20 shadow-xl overflow-hidden rounded-2xl bg-white">
@@ -1020,28 +1275,242 @@ export default function PendaftaranPipPage() {
                           />
                         </div>
 
-                        {/* Alamat Orang Tua */}
-                        <FormField
-                          control={form.control}
-                          name="parentAddress"
-                          render={({ field }) => (
-                            <FormItem>
-                              <FormLabel className="flex items-center gap-2 text-[#001B55] font-semibold">
-                                <Home className="w-4 h-4" />
-                                Alamat Orang Tua <span className="text-red-500">*</span>
-                              </FormLabel>
-                              <FormControl>
-                                <Textarea
-                                  {...field}
-                                  rows={4}
-                                  placeholder="Alamat lengkap orang tua&#10;Contoh: Jl. Pahlawan No. 123, RT 02/RW 03"
-                                  className="rounded-xl resize-none border-[#001B55]/20 focus:border-[#001B55] focus:ring-2 focus:ring-[#001B55]/20 transition-all"
-                                />
-                              </FormControl>
-                              <FormMessage />
-                            </FormItem>
-                          )}
-                        />
+                        {/* Alamat Orang Tua - Cascading Dropdown */}
+                        <div className="space-y-4 border-2 border-[#001B55]/20 rounded-xl p-6 bg-gradient-to-br from-white to-blue-50/20">
+                          <h3 className="text-lg font-bold text-[#001B55] flex items-center gap-2 mb-4">
+                            <MapPin className="w-5 h-5" />
+                            Alamat Lengkap Orang Tua
+                          </h3>
+
+                          {/* Provinsi - Fixed to Jawa Timur */}
+                          <FormField
+                            control={form.control}
+                            name="parentProvince"
+                            render={({ field }) => (
+                              <FormItem>
+                                <FormLabel className="text-[#001B55] font-semibold">
+                                  Provinsi <span className="text-red-500">*</span>
+                                </FormLabel>
+                                <FormControl>
+                                  <Input
+                                    {...field}
+                                    value="Jawa Timur"
+                                    readOnly
+                                    disabled
+                                    className="h-12 rounded-xl border-[#001B55]/20 bg-gray-50 text-gray-600 font-medium"
+                                  />
+                                </FormControl>
+                                <FormMessage />
+                              </FormItem>
+                            )}
+                          />
+
+                          {/* Kota/Kabupaten - Fixed to Sidoarjo */}
+                          <FormField
+                            control={form.control}
+                            name="parentCity"
+                            render={({ field }) => (
+                              <FormItem>
+                                <FormLabel className="text-[#001B55] font-semibold">
+                                  Kota/Kabupaten <span className="text-red-500">*</span>
+                                </FormLabel>
+                                <FormControl>
+                                  <Input
+                                    {...field}
+                                    value="Kabupaten Sidoarjo"
+                                    readOnly
+                                    disabled
+                                    className="h-12 rounded-xl border-[#001B55]/20 bg-gray-50 text-gray-600 font-medium"
+                                  />
+                                </FormControl>
+                                <FormMessage />
+                              </FormItem>
+                            )}
+                          />
+
+                          {/* Kecamatan - From API with Search */}
+                          <FormField
+                            control={form.control}
+                            name="parentDistrict"
+                            render={({ field }) => (
+                              <FormItem className="flex flex-col">
+                                <FormLabel className="text-[#001B55] font-semibold">
+                                  Kecamatan <span className="text-red-500">*</span>
+                                </FormLabel>
+                                <Popover open={openKecamatan} onOpenChange={setOpenKecamatan}>
+                                  <PopoverTrigger asChild>
+                                    <FormControl>
+                                      <Button
+                                        variant="outline"
+                                        role="combobox"
+                                        disabled={loadingKecamatan}
+                                        className={cn(
+                                          "h-12 w-full justify-between rounded-xl border-[#001B55]/20 hover:border-[#001B55] hover:bg-transparent font-normal",
+                                          !field.value && "text-muted-foreground"
+                                        )}
+                                      >
+                                        {loadingKecamatan
+                                          ? "Memuat data..."
+                                          : field.value
+                                          ? kecamatanList.find((k) => k.name === field.value)?.name
+                                          : "Pilih Kecamatan"}
+                                        <ChevronsUpDown className="ml-2 h-4 w-4 shrink-0 opacity-50" />
+                                      </Button>
+                                    </FormControl>
+                                  </PopoverTrigger>
+                                  <PopoverContent className="w-[--radix-popover-trigger-width] p-0" align="start">
+                                    <Command>
+                                      <CommandInput placeholder="Cari kecamatan..." className="h-9" />
+                                      <CommandList className="max-h-[240px] overflow-y-auto">
+                                        <CommandEmpty>Kecamatan tidak ditemukan.</CommandEmpty>
+                                        <CommandGroup>
+                                          {kecamatanList.map((kecamatan) => (
+                                            <CommandItem
+                                              key={kecamatan.id}
+                                              value={kecamatan.name}
+                                              onSelect={() => {
+                                                field.onChange(kecamatan.name);
+                                                setSelectedDistrict(kecamatan.name);
+                                                form.setValue("parentVillage", "");
+                                                fetchDesa(kecamatan.name);
+                                                setOpenKecamatan(false);
+                                              }}
+                                            >
+                                              <Check
+                                                className={cn(
+                                                  "mr-2 h-4 w-4",
+                                                  field.value === kecamatan.name ? "opacity-100" : "opacity-0"
+                                                )}
+                                              />
+                                              {kecamatan.name}
+                                            </CommandItem>
+                                          ))}
+                                        </CommandGroup>
+                                      </CommandList>
+                                    </Command>
+                                  </PopoverContent>
+                                </Popover>
+                                <FormMessage />
+                              </FormItem>
+                            )}
+                          />
+
+                          {/* Desa/Kelurahan - From API based on Kecamatan with Search */}
+                          <FormField
+                            control={form.control}
+                            name="parentVillage"
+                            render={({ field }) => (
+                              <FormItem className="flex flex-col">
+                                <FormLabel className="text-[#001B55] font-semibold">
+                                  Desa/Kelurahan <span className="text-red-500">*</span>
+                                </FormLabel>
+                                <Popover open={openDesa} onOpenChange={setOpenDesa}>
+                                  <PopoverTrigger asChild>
+                                    <FormControl>
+                                      <Button
+                                        variant="outline"
+                                        role="combobox"
+                                        disabled={!selectedDistrict || loadingDesa}
+                                        className={cn(
+                                          "h-12 w-full justify-between rounded-xl border-[#001B55]/20 hover:border-[#001B55] hover:bg-transparent font-normal",
+                                          !field.value && "text-muted-foreground"
+                                        )}
+                                      >
+                                        {loadingDesa
+                                          ? "Memuat data..."
+                                          : !selectedDistrict
+                                          ? "Pilih kecamatan terlebih dahulu"
+                                          : field.value
+                                          ? desaList.find((d) => d.name === field.value)?.name
+                                          : "Pilih Desa/Kelurahan"}
+                                        <ChevronsUpDown className="ml-2 h-4 w-4 shrink-0 opacity-50" />
+                                      </Button>
+                                    </FormControl>
+                                  </PopoverTrigger>
+                                  <PopoverContent className="w-[--radix-popover-trigger-width] p-0" align="start">
+                                    <Command>
+                                      <CommandInput placeholder="Cari desa/kelurahan..." className="h-9" />
+                                      <CommandList className="max-h-[240px] overflow-y-auto">
+                                        <CommandEmpty>Desa/Kelurahan tidak ditemukan.</CommandEmpty>
+                                        <CommandGroup>
+                                          {desaList.map((desa) => (
+                                            <CommandItem
+                                              key={desa.id}
+                                              value={desa.name}
+                                              onSelect={() => {
+                                                field.onChange(desa.name);
+                                                setOpenDesa(false);
+                                              }}
+                                            >
+                                              <Check
+                                                className={cn(
+                                                  "mr-2 h-4 w-4",
+                                                  field.value === desa.name ? "opacity-100" : "opacity-0"
+                                                )}
+                                              />
+                                              {desa.name}
+                                            </CommandItem>
+                                          ))}
+                                        </CommandGroup>
+                                      </CommandList>
+                                    </Command>
+                                  </PopoverContent>
+                                </Popover>
+                                <FormMessage />
+                              </FormItem>
+                            )}
+                          />
+
+                          {/* RT/RW */}
+                          <FormField
+                            control={form.control}
+                            name="parentRtRw"
+                            render={({ field }) => (
+                              <FormItem>
+                                <FormLabel className="text-[#001B55] font-semibold">
+                                  RT/RW <span className="text-red-500">*</span>
+                                </FormLabel>
+                                <FormControl>
+                                  <Input
+                                    {...field}
+                                    placeholder="Contoh: 001/002 atau RT 01/RW 02"
+                                    className="h-12 rounded-xl border-[#001B55]/20 focus:border-[#001B55] focus:ring-2 focus:ring-[#001B55]/20 transition-all"
+                                  />
+                                </FormControl>
+                                <FormDescription className="text-xs">
+                                  Format: RT/RW (contoh: 001/002)
+                                </FormDescription>
+                                <FormMessage />
+                              </FormItem>
+                            )}
+                          />
+
+                          {/* Alamat Detail */}
+                          <FormField
+                            control={form.control}
+                            name="parentAddress"
+                            render={({ field }) => (
+                              <FormItem>
+                                <FormLabel className="flex items-center gap-2 text-[#001B55] font-semibold">
+                                  <Home className="w-4 h-4" />
+                                  Alamat Detail <span className="text-red-500">*</span>
+                                </FormLabel>
+                                <FormControl>
+                                  <Textarea
+                                    {...field}
+                                    rows={3}
+                                    placeholder="Alamat lengkap: Nama jalan, gang, nomor rumah&#10;Contoh: Jl. Pahlawan No. 45, Gang Mawar 3, Rumah cat biru"
+                                    className="rounded-xl resize-none border-[#001B55]/20 focus:border-[#001B55] focus:ring-2 focus:ring-[#001B55]/20 transition-all"
+                                  />
+                                </FormControl>
+                                <FormDescription className="text-xs">
+                                  Tuliskan detail jalan, gang, nomor rumah, atau patokan lainnya
+                                </FormDescription>
+                                <FormMessage />
+                              </FormItem>
+                            )}
+                          />
+                        </div>
 
                         {/* Bersedia Bergabung di Partai Nasdem */}
                         <FormField
