@@ -2,22 +2,46 @@ import { NextRequest, NextResponse } from "next/server";
 import { db } from "@/lib/db";
 import { z } from "zod";
 
-// Validation schema
+// Validation schema untuk form PIP yang lengkap
 const pipRegistrationSchema = z.object({
-  fullName: z.string().min(3, "Nama lengkap minimal 3 karakter"),
-  email: z.string().email("Email tidak valid").optional().or(z.literal("")),
-  nik: z.string().length(16, "NIK harus 16 digit"),
-  phone: z.string().optional().or(z.literal("")),
+  // Data Siswa
+  educationLevel: z.enum(["sd", "smp", "sma", "smk"], {
+    required_error: "Pilih jenjang pendidikan",
+  }),
+  studentName: z.string().min(3, "Nama siswa minimal 3 karakter"),
+  birthPlace: z.string().min(2, "Tempat lahir minimal 2 karakter").optional().or(z.literal("")),
   dateOfBirth: z.string().optional().or(z.literal("")),
   gender: z.enum(["male", "female"]).optional().or(z.literal("")),
-  occupation: z.string().optional().or(z.literal("")),
-  familyMemberCount: z.string().optional().or(z.literal("")),
-  fullAddress: z
-    .string()
-    .min(10, "Alamat minimal 10 karakter")
-    .optional()
-    .or(z.literal("")),
+  nisn: z.string().optional().or(z.literal("")),
+  studentClass: z.string().optional().or(z.literal("")),
+  studentPhone: z.string().optional().or(z.literal("")),
+
+  // Data Sekolah
+  schoolName: z.string().min(3, "Nama sekolah minimal 3 karakter").optional().or(z.literal("")),
+  npsn: z.string().optional().or(z.literal("")),
+  schoolStatus: z.enum(["negeri", "swasta"]).optional().or(z.literal("")),
+  schoolVillage: z.string().optional().or(z.literal("")),
+  schoolDistrict: z.string().optional().or(z.literal("")),
+  schoolCity: z.string().optional().or(z.literal("")),
+  schoolProvince: z.string().optional().or(z.literal("")),
+
+  // Data Orang Tua
+  fatherName: z.string().min(3, "Nama ayah/wali minimal 3 karakter").optional().or(z.literal("")),
+  fatherPhone: z.string().optional().or(z.literal("")),
+  motherName: z.string().optional().or(z.literal("")),
+  motherPhone: z.string().optional().or(z.literal("")),
+  parentAddress: z.string().optional().or(z.literal("")),
+  parentWillingJoinNasdem: z.boolean().optional(),
+  parentJoinReason: z.string().optional().or(z.literal("")),
+
+  // Data Pengusul
   proposerName: z.string().min(3, "Nama pengusul minimal 3 karakter"),
+  proposerStatus: z.enum(["dpd", "dpc", "dprt", "kordes", "lainnya"]).optional().or(z.literal("")),
+  proposerStatusOther: z.string().optional().or(z.literal("")),
+  proposerPhone: z.string().optional().or(z.literal("")),
+  proposerAddress: z.string().optional().or(z.literal("")),
+  proposerRelation: z.enum(["anak", "saudara", "tetangga", "lainnya"]).optional().or(z.literal("")),
+  proposerRelationOther: z.string().optional().or(z.literal("")),
 });
 
 export async function POST(req: NextRequest) {
@@ -26,16 +50,42 @@ export async function POST(req: NextRequest) {
 
     // Extract and validate data
     const data = {
-      fullName: formData.get("fullName") as string,
-      email: formData.get("email") as string,
-      nik: formData.get("nik") as string,
-      phone: formData.get("phone") as string,
+      // Data Siswa
+      educationLevel: formData.get("educationLevel") as string,
+      studentName: formData.get("studentName") as string,
+      birthPlace: formData.get("birthPlace") as string,
       dateOfBirth: formData.get("dateOfBirth") as string,
       gender: formData.get("gender") as string,
-      occupation: formData.get("occupation") as string,
-      familyMemberCount: formData.get("familyMemberCount") as string,
-      fullAddress: formData.get("fullAddress") as string,
+      nisn: formData.get("nisn") as string,
+      studentClass: formData.get("studentClass") as string,
+      studentPhone: formData.get("studentPhone") as string,
+      
+      // Data Sekolah
+      schoolName: formData.get("schoolName") as string,
+      npsn: formData.get("npsn") as string,
+      schoolStatus: formData.get("schoolStatus") as string,
+      schoolVillage: formData.get("schoolVillage") as string,
+      schoolDistrict: formData.get("schoolDistrict") as string,
+      schoolCity: formData.get("schoolCity") as string,
+      schoolProvince: formData.get("schoolProvince") as string,
+      
+      // Data Orang Tua
+      fatherName: formData.get("fatherName") as string,
+      fatherPhone: formData.get("fatherPhone") as string,
+      motherName: formData.get("motherName") as string,
+      motherPhone: formData.get("motherPhone") as string,
+      parentAddress: formData.get("parentAddress") as string,
+      parentWillingJoinNasdem: formData.get("parentWillingJoinNasdem") === "true",
+      parentJoinReason: formData.get("parentJoinReason") as string,
+      
+      // Data Pengusul
       proposerName: formData.get("proposerName") as string,
+      proposerStatus: formData.get("proposerStatus") as string,
+      proposerStatusOther: formData.get("proposerStatusOther") as string,
+      proposerPhone: formData.get("proposerPhone") as string,
+      proposerAddress: formData.get("proposerAddress") as string,
+      proposerRelation: formData.get("proposerRelation") as string,
+      proposerRelationOther: formData.get("proposerRelationOther") as string,
     };
 
     // Validate
@@ -72,41 +122,65 @@ export async function POST(req: NextRequest) {
       );
     }
 
-    // Check if NIK already registered for this program
-    const existingRegistration = await db.pipRegistration.findFirst({
-      where: {
-        programId: programId,
-        nik: validatedData.nik,
-      },
-    });
+    // Check if NISN already registered for this program (if NISN provided)
+    if (validatedData.nisn) {
+      const existingRegistration = await db.pipRegistration.findFirst({
+        where: {
+          programId: programId,
+          nisn: validatedData.nisn,
+        },
+      });
 
-    if (existingRegistration) {
-      return NextResponse.json(
-        { error: "NIK sudah terdaftar untuk program ini" },
-        { status: 400 }
-      );
+      if (existingRegistration) {
+        return NextResponse.json(
+          { error: "NISN sudah terdaftar untuk program ini" },
+          { status: 400 }
+        );
+      }
     }
 
     // Create registration
     const registration = await db.pipRegistration.create({
       data: {
         programId: programId,
-        fullName: validatedData.fullName,
-        email: validatedData.email || null,
-        nik: validatedData.nik,
-        phone: validatedData.phone || null,
-        dateOfBirth: validatedData.dateOfBirth
-          ? new Date(validatedData.dateOfBirth)
-          : null,
+        
+        // Data Siswa
+        educationLevel: validatedData.educationLevel as any,
+        studentName: validatedData.studentName,
+        birthPlace: validatedData.birthPlace || null,
+        dateOfBirth: validatedData.dateOfBirth ? new Date(validatedData.dateOfBirth) : null,
         gender: validatedData.gender as any,
-        occupation: validatedData.occupation || null,
-        familyMemberCount: validatedData.familyMemberCount
-          ? parseInt(validatedData.familyMemberCount)
-          : null,
-        fullAddress: validatedData.fullAddress,
+        nisn: validatedData.nisn || null,
+        studentClass: validatedData.studentClass || null,
+        studentPhone: validatedData.studentPhone || null,
+        
+        // Data Sekolah
+        schoolName: validatedData.schoolName || null,
+        npsn: validatedData.npsn || null,
+        schoolStatus: validatedData.schoolStatus as any,
+        schoolVillage: validatedData.schoolVillage || null,
+        schoolDistrict: validatedData.schoolDistrict || null,
+        schoolCity: validatedData.schoolCity || null,
+        schoolProvince: validatedData.schoolProvince || null,
+        
+        // Data Orang Tua
+        fatherName: validatedData.fatherName || null,
+        fatherPhone: validatedData.fatherPhone || null,
+        motherName: validatedData.motherName || null,
+        motherPhone: validatedData.motherPhone || null,
+        parentAddress: validatedData.parentAddress || null,
+        parentWillingJoinNasdem: validatedData.parentWillingJoinNasdem || false,
+        parentJoinReason: validatedData.parentJoinReason || null,
+        
+        // Data Pengusul
         proposerName: validatedData.proposerName || null,
-        ktpPhotoUrl: null,
-        kkPhotoUrl: null,
+        proposerStatus: validatedData.proposerStatus as any,
+        proposerStatusOther: validatedData.proposerStatusOther || null,
+        proposerPhone: validatedData.proposerPhone || null,
+        proposerAddress: validatedData.proposerAddress || null,
+        proposerRelation: validatedData.proposerRelation as any,
+        proposerRelationOther: validatedData.proposerRelationOther || null,
+        
         status: "pending",
       },
     });

@@ -15,6 +15,7 @@ import {
   FormItem,
   FormLabel,
   FormMessage,
+  FormDescription,
 } from "@/components/ui/form";
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
@@ -25,6 +26,9 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
+import { Checkbox } from "@/components/ui/checkbox";
+import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group";
+import { Label } from "@/components/ui/label";
 import { Card, CardContent } from "@/components/ui/card";
 import {
   GraduationCap,
@@ -32,36 +36,67 @@ import {
   AlertCircle,
   Check,
   User,
-  Mail,
   Phone,
-  MapPin,
-  Briefcase,
-  CreditCard,
   FileText,
   ArrowRight,
   ArrowLeft,
   Users,
   BookOpen,
   Award,
+  School,
+  Home,
 } from "lucide-react";
 import { useMutation } from "@tanstack/react-query";
 import { toast } from "sonner";
 
-// Zod validation schema
+// Zod validation schema untuk form PIP lengkap
 const pipFormSchema = z.object({
-  fullName: z.string().min(3, "Nama lengkap minimal 3 karakter"),
-  email: z.string().email("Email tidak valid"),
-  nik: z.string().length(16, "NIK harus 16 digit"),
-  phone: z.string().min(10, "Nomor telepon minimal 10 digit"),
+  // Data Siswa
+  educationLevel: z.enum(["sd", "smp", "sma", "smk"], {
+    required_error: "Pilih jenjang pendidikan",
+  }),
+  studentName: z.string().min(3, "Nama siswa minimal 3 karakter"),
+  birthPlace: z.string().min(2, "Tempat lahir minimal 2 karakter"),
   dateOfBirth: z.string().min(1, "Tanggal lahir wajib diisi"),
   gender: z.enum(["male", "female"], {
     required_error: "Pilih jenis kelamin",
   }),
-  occupation: z.string().min(2, "Pekerjaan wajib diisi"),
-  familyMemberCount: z.string().optional(),
-  fullAddress: z.string().min(10, "Alamat lengkap minimal 10 karakter"),
+  nisn: z.string().optional(),
+  studentClass: z.string().min(1, "Kelas wajib diisi"),
+  studentPhone: z.string().min(10, "Nomor HP/WA minimal 10 digit"),
+  
+  // Data Sekolah
+  schoolName: z.string().min(3, "Nama sekolah minimal 3 karakter"),
+  npsn: z.string().optional(),
+  schoolStatus: z.enum(["negeri", "swasta"], {
+    required_error: "Pilih status sekolah",
+  }),
+  schoolVillage: z.string().min(2, "Kelurahan/Desa wajib diisi"),
+  schoolDistrict: z.string().min(2, "Kecamatan wajib diisi"),
+  schoolCity: z.string().optional(),
+  schoolProvince: z.string().optional(),
+  
+  // Data Orang Tua
+  fatherName: z.string().min(3, "Nama ayah/wali minimal 3 karakter"),
+  fatherPhone: z.string().min(10, "Nomor HP/WA ayah minimal 10 digit"),
+  motherName: z.string().min(3, "Nama ibu minimal 3 karakter"),
+  motherPhone: z.string().min(10, "Nomor HP/WA ibu minimal 10 digit"),
+  parentAddress: z.string().min(10, "Alamat orang tua minimal 10 karakter"),
+  parentWillingJoinNasdem: z.boolean(),
+  parentJoinReason: z.string().optional(),
+  
+  // Data Pengusul
   proposerName: z.string().min(3, "Nama pengusul minimal 3 karakter"),
-  notes: z.string().optional(),
+  proposerStatus: z.enum(["dpd", "dpc", "dprt", "kordes", "lainnya"], {
+    required_error: "Pilih status pengusul",
+  }),
+  proposerStatusOther: z.string().optional(),
+  proposerPhone: z.string().min(10, "Nomor HP/WA pengusul minimal 10 digit"),
+  proposerAddress: z.string().min(10, "Alamat pengusul minimal 10 karakter"),
+  proposerRelation: z.enum(["anak", "saudara", "tetangga", "lainnya"], {
+    required_error: "Pilih hubungan dengan siswa",
+  }),
+  proposerRelationOther: z.string().optional(),
 });
 
 type PipFormData = z.infer<typeof pipFormSchema>;
@@ -76,26 +111,56 @@ export default function PendaftaranPipPage() {
   const programIdParam = searchParams.get("programId");
   const programId = programIdParam ? parseInt(programIdParam, 10) : null;
 
-  const totalSteps = 2;
+  const totalSteps = 4; // 4 steps
 
   // Initialize React Hook Form with Zod
   const form = useForm<PipFormData>({
     resolver: zodResolver(pipFormSchema),
     defaultValues: {
-      fullName: "",
-      email: "",
-      nik: "",
-      phone: "",
+      // Data Siswa
+      educationLevel: undefined,
+      studentName: "",
+      birthPlace: "",
       dateOfBirth: "",
       gender: undefined,
-      occupation: "",
-      familyMemberCount: "",
-      fullAddress: "",
+      nisn: "",
+      studentClass: "",
+      studentPhone: "",
+      
+      // Data Sekolah
+      schoolName: "",
+      npsn: "",
+      schoolStatus: undefined,
+      schoolVillage: "",
+      schoolDistrict: "",
+      schoolCity: "",
+      schoolProvince: "",
+      
+      // Data Orang Tua
+      fatherName: "",
+      fatherPhone: "",
+      motherName: "",
+      motherPhone: "",
+      parentAddress: "",
+      parentWillingJoinNasdem: false,
+      parentJoinReason: "",
+      
+      // Data Pengusul
       proposerName: "",
-      notes: "",
+      proposerStatus: undefined,
+      proposerStatusOther: "",
+      proposerPhone: "",
+      proposerAddress: "",
+      proposerRelation: undefined,
+      proposerRelationOther: "",
     },
     mode: "onChange",
   });
+
+  // Watch untuk conditional fields
+  const watchProposerStatus = form.watch("proposerStatus");
+  const watchProposerRelation = form.watch("proposerRelation");
+  const watchParentWilling = form.watch("parentWillingJoinNasdem");
 
   // Mutation untuk submit form
   const submitMutation = useMutation({
@@ -109,17 +174,43 @@ export default function PendaftaranPipPage() {
       const formData = new FormData();
 
       formData.append("programId", programId.toString());
-      formData.append("fullName", data.fullName);
-      formData.append("email", data.email);
-      formData.append("nik", data.nik);
-      formData.append("phone", data.phone);
+      
+      // Data Siswa
+      formData.append("educationLevel", data.educationLevel);
+      formData.append("studentName", data.studentName);
+      formData.append("birthPlace", data.birthPlace);
       formData.append("dateOfBirth", data.dateOfBirth);
       formData.append("gender", data.gender);
-      formData.append("occupation", data.occupation);
-      formData.append("familyMemberCount", data.familyMemberCount || "0");
-      formData.append("fullAddress", data.fullAddress);
+      formData.append("nisn", data.nisn || "");
+      formData.append("studentClass", data.studentClass);
+      formData.append("studentPhone", data.studentPhone);
+      
+      // Data Sekolah
+      formData.append("schoolName", data.schoolName);
+      formData.append("npsn", data.npsn || "");
+      formData.append("schoolStatus", data.schoolStatus);
+      formData.append("schoolVillage", data.schoolVillage);
+      formData.append("schoolDistrict", data.schoolDistrict);
+      formData.append("schoolCity", data.schoolCity || "");
+      formData.append("schoolProvince", data.schoolProvince || "");
+      
+      // Data Orang Tua
+      formData.append("fatherName", data.fatherName);
+      formData.append("fatherPhone", data.fatherPhone);
+      formData.append("motherName", data.motherName);
+      formData.append("motherPhone", data.motherPhone);
+      formData.append("parentAddress", data.parentAddress);
+      formData.append("parentWillingJoinNasdem", data.parentWillingJoinNasdem.toString());
+      formData.append("parentJoinReason", data.parentJoinReason || "");
+      
+      // Data Pengusul
       formData.append("proposerName", data.proposerName);
-      formData.append("notes", data.notes || "");
+      formData.append("proposerStatus", data.proposerStatus);
+      formData.append("proposerStatusOther", data.proposerStatusOther || "");
+      formData.append("proposerPhone", data.proposerPhone);
+      formData.append("proposerAddress", data.proposerAddress);
+      formData.append("proposerRelation", data.proposerRelation);
+      formData.append("proposerRelationOther", data.proposerRelationOther || "");
 
       const res = await fetch("/api/registrations/pip", {
         method: "POST",
@@ -151,11 +242,30 @@ export default function PendaftaranPipPage() {
   const nextStep = () => {
     // Validate current step before proceeding
     if (currentStep === 1) {
+      // Step 1: Data Siswa
       form
-        .trigger(["fullName", "nik", "email", "phone", "dateOfBirth", "gender"])
+        .trigger(["educationLevel", "studentName", "birthPlace", "dateOfBirth", "gender", "studentClass", "studentPhone"])
         .then((isValid) => {
           if (isValid) {
             setCurrentStep(2);
+          }
+        });
+    } else if (currentStep === 2) {
+      // Step 2: Data Sekolah
+      form
+        .trigger(["schoolName", "schoolStatus", "schoolVillage", "schoolDistrict"])
+        .then((isValid) => {
+          if (isValid) {
+            setCurrentStep(3);
+          }
+        });
+    } else if (currentStep === 3) {
+      // Step 3: Data Orang Tua
+      form
+        .trigger(["fatherName", "fatherPhone", "motherName", "motherPhone", "parentAddress"])
+        .then((isValid) => {
+          if (isValid) {
+            setCurrentStep(4);
           }
         });
     } else if (currentStep < totalSteps) {
@@ -195,41 +305,8 @@ export default function PendaftaranPipPage() {
                 <p className="text-lg md:text-xl text-[#6B7280] leading-relaxed max-w-2xl mx-auto">
                   Terima kasih telah mendaftar Program Beasiswa PIP DPD Partai
                   NasDem Sidoarjo. Tim kami akan segera menghubungi Anda melalui
-                  email atau telepon untuk proses verifikasi dan langkah
-                  selanjutnya.
+                  telepon untuk proses verifikasi dan langkah selanjutnya.
                 </p>
-              </div>
-
-              {/* Info Cards */}
-              <div className="grid md:grid-cols-2 gap-6 mt-12">
-                <Card className="border border-gray-100 bg-white shadow-lg rounded-2xl overflow-hidden hover:shadow-xl transition-all duration-300">
-                  <CardContent className="p-8 text-center">
-                    <div className="text-5xl font-bold text-[#FF9C04] mb-3">
-                      7x24
-                    </div>
-                    <p className="text-base font-bold text-[#001B55]">
-                      Jam Kerja
-                    </p>
-                    <p className="text-sm text-[#6B7280] mt-2">
-                      Waktu Proses Verifikasi
-                    </p>
-                  </CardContent>
-                </Card>
-                <Card className="border border-gray-100 bg-white shadow-lg rounded-2xl overflow-hidden hover:shadow-xl transition-all duration-300">
-                  <CardContent className="p-8 text-center">
-                    <div className="flex justify-center mb-3">
-                      <div className="w-16 h-16 rounded-full bg-[#001B55]/10 flex items-center justify-center">
-                        <Mail className="w-8 h-8 text-[#001B55]" />
-                      </div>
-                    </div>
-                    <p className="text-base font-bold text-[#001B55]">
-                      Cek Email
-                    </p>
-                    <p className="text-sm text-[#6B7280] mt-2">
-                      Konfirmasi Akan Dikirim
-                    </p>
-                  </CardContent>
-                </Card>
               </div>
 
               {/* Actions */}
@@ -288,56 +365,6 @@ export default function PendaftaranPipPage() {
                   Program.
                 </p>
               </div>
-
-              {/* Info Card */}
-              <Card className="border border-gray-100 bg-white shadow-lg rounded-2xl overflow-hidden">
-                <CardContent className="p-8">
-                  <div className="flex items-start gap-4 text-left">
-                    <div className="w-12 h-12 rounded-full bg-[#FF9C04]/10 flex items-center justify-center flex-shrink-0">
-                      <AlertCircle className="w-6 h-6 text-[#FF9C04]" />
-                    </div>
-                    <div className="flex-1">
-                      <h3 className="text-lg font-bold text-[#001B55] mb-2">
-                        Cara Mendaftar Program
-                      </h3>
-                      <ol className="space-y-2 text-[#6B7280]">
-                        <li className="flex items-start gap-2">
-                          <span className="font-bold text-[#FF9C04] mt-0.5">
-                            1.
-                          </span>
-                          <span>
-                            Kunjungi halaman Program untuk melihat daftar
-                            program yang tersedia
-                          </span>
-                        </li>
-                        <li className="flex items-start gap-2">
-                          <span className="font-bold text-[#FF9C04] mt-0.5">
-                            2.
-                          </span>
-                          <span>
-                            Pilih program yang Anda inginkan dan klik "Detail
-                            Program"
-                          </span>
-                        </li>
-                        <li className="flex items-start gap-2">
-                          <span className="font-bold text-[#FF9C04] mt-0.5">
-                            3.
-                          </span>
-                          <span>
-                            Klik tombol "Daftar Sekarang" pada detail program
-                          </span>
-                        </li>
-                        <li className="flex items-start gap-2">
-                          <span className="font-bold text-[#FF9C04] mt-0.5">
-                            4.
-                          </span>
-                          <span>Isi formulir pendaftaran dengan lengkap</span>
-                        </li>
-                      </ol>
-                    </div>
-                  </div>
-                </CardContent>
-              </Card>
 
               {/* Actions */}
               <div className="flex flex-col sm:flex-row gap-4 justify-center pt-6">
@@ -441,7 +468,7 @@ export default function PendaftaranPipPage() {
                     ></div>
                   </div>
 
-                  {[1, 2].map((step) => (
+                  {[1, 2, 3, 4].map((step) => (
                     <div
                       key={step}
                       className="flex flex-col items-center flex-1"
@@ -462,13 +489,16 @@ export default function PendaftaranPipPage() {
                         )}
                       </div>
                       <span
-                        className={`text-sm mt-3 font-semibold transition-all duration-300 ${
+                        className={`text-xs sm:text-sm mt-3 font-semibold transition-all duration-300 text-center ${
                           step === currentStep
                             ? "text-[#001B55]"
                             : "text-[#6B7280]"
                         }`}
                       >
-                        {step === 1 ? "Data Diri" : "Alamat & Kontak"}
+                        {step === 1 && "Data Siswa"}
+                        {step === 2 && "Data Sekolah"}
+                        {step === 3 && "Data Orang Tua"}
+                        {step === 4 && "Data Pengusul"}
                       </span>
                     </div>
                   ))}
@@ -485,51 +515,124 @@ export default function PendaftaranPipPage() {
                     <User className="w-6 h-6 md:w-7 md:h-7 text-[#FF9C04]" />
                   )}
                   {currentStep === 2 && (
-                    <MapPin className="w-6 h-6 md:w-7 md:h-7 text-[#FF9C04]" />
+                    <School className="w-6 h-6 md:w-7 md:h-7 text-[#FF9C04]" />
+                  )}
+                  {currentStep === 3 && (
+                    <Home className="w-6 h-6 md:w-7 md:h-7 text-[#FF9C04]" />
+                  )}
+                  {currentStep === 4 && (
+                    <FileText className="w-6 h-6 md:w-7 md:h-7 text-[#FF9C04]" />
                   )}
                 </div>
                 <div>
                   <h2 className="text-2xl md:text-3xl font-bold text-white mb-1">
-                    {currentStep === 1 && "Informasi Pribadi"}
-                    {currentStep === 2 && "Informasi Kontak"}
+                    {currentStep === 1 && "Data Siswa"}
+                    {currentStep === 2 && "Data Sekolah"}
+                    {currentStep === 3 && "Data Orang Tua Siswa"}
+                    {currentStep === 4 && "Data Pengusul"}
                   </h2>
                   <p className="text-white/70 text-sm md:text-base">
                     {currentStep === 1 &&
-                      "Lengkapi data pribadi Anda dengan benar"}
+                      "Lengkapi informasi pribadi siswa dengan benar"}
                     {currentStep === 2 &&
-                      "Berikan informasi alamat dan pekerjaan"}
+                      "Informasi sekolah dan status pendidikan"}
+                    {currentStep === 3 &&
+                      "Data orang tua/wali siswa dan kesediaan bergabung"}
+                    {currentStep === 4 &&
+                      "Informasi pengusul dan hubungan dengan siswa"}
                   </p>
                 </div>
               </div>
             </div>
 
             {/* Form Card */}
-            <Card className="border border-gray-100 shadow-xl overflow-hidden rounded-2xl bg-white">
+            <Card className="border-2 border-[#001B55]/20 shadow-xl overflow-hidden rounded-2xl bg-white">
               <CardContent className="p-8 md:p-10 lg:p-12">
                 <Form {...form}>
                   <form
                     onSubmit={form.handleSubmit(onSubmit)}
                     className="space-y-6"
                   >
-                    {/* Step 1: Data Pribadi */}
+                    {/* Step 1: Data Siswa */}
                     {currentStep === 1 && (
-                      <div className="space-y-8 animate-fade-in">
-                        <div className="grid md:grid-cols-2 gap-6 lg:gap-8">
+                      <div className="space-y-6 animate-fade-in">
+                        {/* Jenjang Pendidikan - Checkbox Style */}
+                        <FormField
+                          control={form.control}
+                          name="educationLevel"
+                          render={({ field }) => (
+                            <FormItem>
+                              <FormLabel className="text-[#001B55] font-semibold text-base mb-3 block">
+                                Jenjang Pendidikan <span className="text-red-500">*</span>
+                              </FormLabel>
+                              <div className="flex flex-wrap gap-4">
+                                {[
+                                  { value: "sd", label: "SD" },
+                                  { value: "smp", label: "SMP" },
+                                  { value: "sma", label: "SMA" },
+                                  { value: "smk", label: "SMK" },
+                                ].map((option) => (
+                                  <div key={option.value} className="flex items-center">
+                                    <Checkbox
+                                      checked={field.value === option.value}
+                                      onCheckedChange={(checked) => {
+                                        if (checked) {
+                                          field.onChange(option.value);
+                                        }
+                                      }}
+                                      id={`education-${option.value}`}
+                                    />
+                                    <Label
+                                      htmlFor={`education-${option.value}`}
+                                      className="ml-2 cursor-pointer text-sm font-medium"
+                                    >
+                                      {option.label}
+                                    </Label>
+                                  </div>
+                                ))}
+                              </div>
+                              <FormMessage />
+                            </FormItem>
+                          )}
+                        />
+
+                        {/* Nama Siswa */}
+                        <FormField
+                          control={form.control}
+                          name="studentName"
+                          render={({ field }) => (
+                            <FormItem>
+                              <FormLabel className="flex items-center gap-2 text-[#001B55] font-semibold">
+                                <User className="w-4 h-4" />
+                                Nama Lengkap Siswa <span className="text-red-500">*</span>
+                              </FormLabel>
+                              <FormControl>
+                                <Input
+                                  {...field}
+                                  placeholder="Nama lengkap sesuai identitas"
+                                  className="h-12 rounded-xl border-[#001B55]/20 focus:border-[#001B55] focus:ring-2 focus:ring-[#001B55]/20"
+                                />
+                              </FormControl>
+                              <FormMessage />
+                            </FormItem>
+                          )}
+                        />
+
+                        {/* Tempat & Tanggal Lahir */}
+                        <div className="grid md:grid-cols-2 gap-6">
                           <FormField
                             control={form.control}
-                            name="fullName"
+                            name="birthPlace"
                             render={({ field }) => (
                               <FormItem>
-                                <FormLabel className="flex items-center gap-2 text-[#001B55] font-semibold text-sm">
-                                  <User className="w-4 h-4" />
-                                  Nama Lengkap{" "}
-                                  <span className="text-red-500">*</span>
+                                <FormLabel className="text-[#001B55] font-semibold">
+                                  Tempat Lahir <span className="text-red-500">*</span>
                                 </FormLabel>
                                 <FormControl>
                                   <Input
                                     {...field}
-                                    placeholder="Masukkan nama lengkap sesuai KTP"
-                                    className="h-12 rounded-xl border-gray-200 focus:border-[#FF9C04] transition-all"
+                                    placeholder="Contoh: Sidoarjo"
+                                    className="h-12 rounded-xl border-[#001B55]/20 focus:border-[#001B55] focus:ring-2 focus:ring-[#001B55]/20 transition-all"
                                   />
                                 </FormControl>
                                 <FormMessage />
@@ -537,91 +640,219 @@ export default function PendaftaranPipPage() {
                             )}
                           />
 
-                          <FormField
-                            control={form.control}
-                            name="nik"
-                            render={({ field }) => (
-                              <FormItem>
-                                <FormLabel className="flex items-center gap-2 text-[#001B55] font-semibold text-sm">
-                                  <CreditCard className="w-4 h-4" />
-                                  NIK <span className="text-red-500">*</span>
-                                </FormLabel>
-                                <FormControl>
-                                  <Input
-                                    {...field}
-                                    placeholder="16 digit NIK"
-                                    maxLength={16}
-                                    className="h-12 rounded-xl border-gray-200 focus:border-[#FF9C04] transition-all"
-                                  />
-                                </FormControl>
-                                <FormMessage />
-                              </FormItem>
-                            )}
-                          />
-                        </div>
-
-                        <div className="grid md:grid-cols-2 gap-6 lg:gap-8">
-                          <FormField
-                            control={form.control}
-                            name="email"
-                            render={({ field }) => (
-                              <FormItem>
-                                <FormLabel className="flex items-center gap-2 text-[#001B55] font-semibold text-sm">
-                                  <Mail className="w-4 h-4" />
-                                  Email <span className="text-red-500">*</span>
-                                </FormLabel>
-                                <FormControl>
-                                  <Input
-                                    {...field}
-                                    type="email"
-                                    placeholder="email@example.com"
-                                    className="h-12 rounded-xl border-gray-200 focus:border-[#FF9C04] transition-all"
-                                  />
-                                </FormControl>
-                                <FormMessage />
-                              </FormItem>
-                            )}
-                          />
-
-                          <FormField
-                            control={form.control}
-                            name="phone"
-                            render={({ field }) => (
-                              <FormItem>
-                                <FormLabel className="flex items-center gap-2 text-[#001B55] font-semibold text-sm">
-                                  <Phone className="w-4 h-4" />
-                                  Nomor Telepon{" "}
-                                  <span className="text-red-500">*</span>
-                                </FormLabel>
-                                <FormControl>
-                                  <Input
-                                    {...field}
-                                    type="tel"
-                                    placeholder="08xxxxxxxxxx"
-                                    className="h-12 rounded-xl border-gray-200 focus:border-[#FF9C04] transition-all"
-                                  />
-                                </FormControl>
-                                <FormMessage />
-                              </FormItem>
-                            )}
-                          />
-                        </div>
-
-                        <div className="grid md:grid-cols-2 gap-6 lg:gap-8">
                           <FormField
                             control={form.control}
                             name="dateOfBirth"
                             render={({ field }) => (
                               <FormItem>
-                                <FormLabel className="text-[#001B55] font-semibold text-sm">
-                                  Tanggal Lahir{" "}
-                                  <span className="text-red-500">*</span>
+                                <FormLabel className="text-[#001B55] font-semibold">
+                                  Tanggal Lahir <span className="text-red-500">*</span>
                                 </FormLabel>
                                 <FormControl>
                                   <Input
                                     {...field}
                                     type="date"
-                                    className="h-12 rounded-xl border-gray-200 focus:border-[#FF9C04] transition-all"
+                                    className="h-12 rounded-xl border-[#001B55]/20 focus:border-[#001B55] focus:ring-2 focus:ring-[#001B55]/20 transition-all"
+                                  />
+                                </FormControl>
+                                <FormMessage />
+                              </FormItem>
+                            )}
+                          />
+                        </div>
+
+                        {/* Jenis Kelamin */}
+                        <FormField
+                          control={form.control}
+                          name="gender"
+                          render={({ field }) => (
+                            <FormItem>
+                              <FormLabel className="text-[#001B55] font-semibold">
+                                Jenis Kelamin <span className="text-red-500">*</span>
+                              </FormLabel>
+                              <Select
+                                onValueChange={field.onChange}
+                                value={field.value}
+                              >
+                                <FormControl>
+                                  <SelectTrigger className="h-12 rounded-xl border-[#001B55]/20 focus:border-[#001B55] focus:ring-2 focus:ring-[#001B55]/20 transition-all">
+                                    <SelectValue placeholder="Pilih jenis kelamin" />
+                                  </SelectTrigger>
+                                </FormControl>
+                                <SelectContent>
+                                  <SelectItem value="male">Laki-laki</SelectItem>
+                                  <SelectItem value="female">Perempuan</SelectItem>
+                                </SelectContent>
+                              </Select>
+                              <FormMessage />
+                            </FormItem>
+                          )}
+                        />
+
+                        {/* NISN */}
+                        <FormField
+                          control={form.control}
+                          name="nisn"
+                          render={({ field }) => (
+                            <FormItem>
+                              <FormLabel className="text-[#001B55] font-semibold">
+                                NISN (Nomor Induk Siswa Nasional)
+                              </FormLabel>
+                              <FormControl>
+                                <Input
+                                  {...field}
+                                  placeholder="Masukkan NISN jika ada"
+                                  className="h-12 rounded-xl border-[#001B55]/20 focus:border-[#001B55] focus:ring-2 focus:ring-[#001B55]/20 transition-all"
+                                />
+                              </FormControl>
+                              <FormDescription className="text-xs">
+                                Opsional - Isi jika sudah memiliki NISN
+                              </FormDescription>
+                              <FormMessage />
+                            </FormItem>
+                          )}
+                        />
+
+                        {/* Kelas */}
+                        <FormField
+                          control={form.control}
+                          name="studentClass"
+                          render={({ field }) => (
+                            <FormItem>
+                              <FormLabel className="text-[#001B55] font-semibold">
+                                Kelas <span className="text-red-500">*</span>
+                              </FormLabel>
+                              <FormControl>
+                                <Input
+                                  {...field}
+                                  placeholder="Contoh: 10 IPA 1"
+                                  className="h-12 rounded-xl border-[#001B55]/20 focus:border-[#001B55] focus:ring-2 focus:ring-[#001B55]/20 transition-all"
+                                />
+                              </FormControl>
+                              <FormMessage />
+                            </FormItem>
+                          )}
+                        />
+
+                        {/* Nomor HP/WA Siswa */}
+                        <FormField
+                          control={form.control}
+                          name="studentPhone"
+                          render={({ field }) => (
+                            <FormItem>
+                              <FormLabel className="flex items-center gap-2 text-[#001B55] font-semibold">
+                                <Phone className="w-4 h-4" />
+                                Nomor HP/WA Siswa <span className="text-red-500">*</span>
+                              </FormLabel>
+                              <FormControl>
+                                <Input
+                                  {...field}
+                                  type="tel"
+                                  placeholder="08xxxxxxxxxx"
+                                  className="h-12 rounded-xl border-[#001B55]/20 focus:border-[#001B55] focus:ring-2 focus:ring-[#001B55]/20 transition-all"
+                                />
+                              </FormControl>
+                              <FormMessage />
+                            </FormItem>
+                          )}
+                        />
+                      </div>
+                    )}
+
+                    {/* Step 2: Data Sekolah */}
+                    {currentStep === 2 && (
+                      <div className="space-y-6 animate-fade-in">
+                        {/* Nama Sekolah */}
+                        <FormField
+                          control={form.control}
+                          name="schoolName"
+                          render={({ field }) => (
+                            <FormItem>
+                              <FormLabel className="flex items-center gap-2 text-[#001B55] font-semibold">
+                                <School className="w-4 h-4" />
+                                Nama Sekolah <span className="text-red-500">*</span>
+                              </FormLabel>
+                              <FormControl>
+                                <Input
+                                  {...field}
+                                  placeholder="Nama sekolah lengkap"
+                                  className="h-12 rounded-xl border-[#001B55]/20 focus:border-[#001B55] focus:ring-2 focus:ring-[#001B55]/20 transition-all"
+                                />
+                              </FormControl>
+                              <FormMessage />
+                            </FormItem>
+                          )}
+                        />
+
+                        {/* NPSN */}
+                        <FormField
+                          control={form.control}
+                          name="npsn"
+                          render={({ field }) => (
+                            <FormItem>
+                              <FormLabel className="text-[#001B55] font-semibold">
+                                NPSN (Nomor Pokok Sekolah Nasional)
+                              </FormLabel>
+                              <FormControl>
+                                <Input
+                                  {...field}
+                                  placeholder="Masukkan NPSN jika ada"
+                                  className="h-12 rounded-xl border-[#001B55]/20 focus:border-[#001B55] focus:ring-2 focus:ring-[#001B55]/20 transition-all"
+                                />
+                              </FormControl>
+                              <FormDescription className="text-xs">
+                                Opsional - Isi jika sekolah memiliki NPSN
+                              </FormDescription>
+                              <FormMessage />
+                            </FormItem>
+                          )}
+                        />
+
+                        {/* Status Sekolah - Radio */}
+                        <FormField
+                          control={form.control}
+                          name="schoolStatus"
+                          render={({ field }) => (
+                            <FormItem>
+                              <FormLabel className="text-[#001B55] font-semibold text-base mb-3 block">
+                                Status Sekolah <span className="text-red-500">*</span>
+                              </FormLabel>
+                              <FormControl>
+                                <RadioGroup
+                                  onValueChange={field.onChange}
+                                  value={field.value}
+                                  className="flex gap-6"
+                                >
+                                  <div className="flex items-center space-x-2">
+                                    <RadioGroupItem value="negeri" id="negeri" />
+                                    <Label htmlFor="negeri" className="cursor-pointer">Negeri</Label>
+                                  </div>
+                                  <div className="flex items-center space-x-2">
+                                    <RadioGroupItem value="swasta" id="swasta" />
+                                    <Label htmlFor="swasta" className="cursor-pointer">Swasta</Label>
+                                  </div>
+                                </RadioGroup>
+                              </FormControl>
+                              <FormMessage />
+                            </FormItem>
+                          )}
+                        />
+
+                        {/* Lokasi Sekolah */}
+                        <div className="grid md:grid-cols-2 gap-6">
+                          <FormField
+                            control={form.control}
+                            name="schoolVillage"
+                            render={({ field }) => (
+                              <FormItem>
+                                <FormLabel className="text-[#001B55] font-semibold">
+                                  Kelurahan/Desa <span className="text-red-500">*</span>
+                                </FormLabel>
+                                <FormControl>
+                                  <Input
+                                    {...field}
+                                    placeholder="Nama kelurahan/desa"
+                                    className="h-12 rounded-xl border-[#001B55]/20 focus:border-[#001B55] focus:ring-2 focus:ring-[#001B55]/20 transition-all"
                                   />
                                 </FormControl>
                                 <FormMessage />
@@ -631,31 +862,61 @@ export default function PendaftaranPipPage() {
 
                           <FormField
                             control={form.control}
-                            name="gender"
+                            name="schoolDistrict"
                             render={({ field }) => (
                               <FormItem>
-                                <FormLabel className="text-[#001B55] font-semibold text-sm">
-                                  Jenis Kelamin{" "}
-                                  <span className="text-red-500">*</span>
+                                <FormLabel className="text-[#001B55] font-semibold">
+                                  Kecamatan <span className="text-red-500">*</span>
                                 </FormLabel>
-                                <Select
-                                  onValueChange={field.onChange}
-                                  value={field.value}
-                                >
-                                  <FormControl>
-                                    <SelectTrigger className="h-12 rounded-xl border-gray-200 focus:border-[#FF9C04]">
-                                      <SelectValue placeholder="Pilih jenis kelamin" />
-                                    </SelectTrigger>
-                                  </FormControl>
-                                  <SelectContent>
-                                    <SelectItem value="male">
-                                      Laki-laki
-                                    </SelectItem>
-                                    <SelectItem value="female">
-                                      Perempuan
-                                    </SelectItem>
-                                  </SelectContent>
-                                </Select>
+                                <FormControl>
+                                  <Input
+                                    {...field}
+                                    placeholder="Nama kecamatan"
+                                    className="h-12 rounded-xl border-[#001B55]/20 focus:border-[#001B55] focus:ring-2 focus:ring-[#001B55]/20 transition-all"
+                                  />
+                                </FormControl>
+                                <FormMessage />
+                              </FormItem>
+                            )}
+                          />
+                        </div>
+
+                        <div className="grid md:grid-cols-2 gap-6">
+                          <FormField
+                            control={form.control}
+                            name="schoolCity"
+                            render={({ field }) => (
+                              <FormItem>
+                                <FormLabel className="text-[#001B55] font-semibold">
+                                  Kabupaten/Kota
+                                </FormLabel>
+                                <FormControl>
+                                  <Input
+                                    {...field}
+                                    placeholder="Contoh: Sidoarjo"
+                                    className="h-12 rounded-xl border-[#001B55]/20 focus:border-[#001B55] focus:ring-2 focus:ring-[#001B55]/20 transition-all"
+                                  />
+                                </FormControl>
+                                <FormMessage />
+                              </FormItem>
+                            )}
+                          />
+
+                          <FormField
+                            control={form.control}
+                            name="schoolProvince"
+                            render={({ field }) => (
+                              <FormItem>
+                                <FormLabel className="text-[#001B55] font-semibold">
+                                  Provinsi
+                                </FormLabel>
+                                <FormControl>
+                                  <Input
+                                    {...field}
+                                    placeholder="Contoh: Jawa Timur"
+                                    className="h-12 rounded-xl border-[#001B55]/20 focus:border-[#001B55] focus:ring-2 focus:ring-[#001B55]/20 transition-all"
+                                  />
+                                </FormControl>
                                 <FormMessage />
                               </FormItem>
                             )}
@@ -664,48 +925,25 @@ export default function PendaftaranPipPage() {
                       </div>
                     )}
 
-                    {/* Step 2: Alamat & Pekerjaan */}
-                    {currentStep === 2 && (
-                      <div className="space-y-8 animate-fade-in">
-                        <FormField
-                          control={form.control}
-                          name="fullAddress"
-                          render={({ field }) => (
-                            <FormItem>
-                              <FormLabel className="flex items-center gap-2 text-[#001B55] font-semibold text-sm">
-                                <MapPin className="w-4 h-4" />
-                                Alamat Lengkap{" "}
-                                <span className="text-red-500">*</span>
-                              </FormLabel>
-                              <FormControl>
-                                <Textarea
-                                  {...field}
-                                  rows={5}
-                                  placeholder="Masukkan alamat lengkap sesuai KTP&#10;Contoh: Jl. Pahlawan No. 123, RT 02/RW 03, Kelurahan Sidoarjo, Kecamatan Sidoarjo"
-                                  className="rounded-xl border-gray-200 focus:border-[#FF9C04] transition-all resize-none"
-                                />
-                              </FormControl>
-                              <FormMessage />
-                            </FormItem>
-                          )}
-                        />
-
-                        <div className="grid md:grid-cols-2 gap-6 lg:gap-8">
+                    {/* Step 3: Data Orang Tua */}
+                    {currentStep === 3 && (
+                      <div className="space-y-6 animate-fade-in">
+                        {/* Data Ayah/Wali */}
+                        <div className="grid md:grid-cols-2 gap-6">
                           <FormField
                             control={form.control}
-                            name="occupation"
+                            name="fatherName"
                             render={({ field }) => (
                               <FormItem>
-                                <FormLabel className="flex items-center gap-2 text-[#001B55] font-semibold text-sm">
-                                  <Briefcase className="w-4 h-4" />
-                                  Pekerjaan{" "}
-                                  <span className="text-red-500">*</span>
+                                <FormLabel className="flex items-center gap-2 text-[#001B55] font-semibold">
+                                  <User className="w-4 h-4" />
+                                  Nama Ayah/Wali <span className="text-red-500">*</span>
                                 </FormLabel>
                                 <FormControl>
                                   <Input
                                     {...field}
-                                    placeholder="Contoh: Pelajar, Mahasiswa, dll"
-                                    className="h-12 rounded-xl border-gray-200 focus:border-[#FF9C04] transition-all"
+                                    placeholder="Nama lengkap ayah/wali"
+                                    className="h-12 rounded-xl border-[#001B55]/20 focus:border-[#001B55] focus:ring-2 focus:ring-[#001B55]/20 transition-all"
                                   />
                                 </FormControl>
                                 <FormMessage />
@@ -715,20 +953,19 @@ export default function PendaftaranPipPage() {
 
                           <FormField
                             control={form.control}
-                            name="familyMemberCount"
+                            name="fatherPhone"
                             render={({ field }) => (
                               <FormItem>
-                                <FormLabel className="flex items-center gap-2 text-[#001B55] font-semibold text-sm">
-                                  <Users className="w-4 h-4" />
-                                  Jumlah Anggota Keluarga
+                                <FormLabel className="flex items-center gap-2 text-[#001B55] font-semibold">
+                                  <Phone className="w-4 h-4" />
+                                  Nomor HP/WA Ayah <span className="text-red-500">*</span>
                                 </FormLabel>
                                 <FormControl>
                                   <Input
                                     {...field}
-                                    type="number"
-                                    min="0"
-                                    placeholder="Contoh: 5"
-                                    className="h-12 rounded-xl border-gray-200 focus:border-[#FF9C04] transition-all"
+                                    type="tel"
+                                    placeholder="08xxxxxxxxxx"
+                                    className="h-12 rounded-xl border-[#001B55]/20 focus:border-[#001B55] focus:ring-2 focus:ring-[#001B55]/20 transition-all"
                                   />
                                 </FormControl>
                                 <FormMessage />
@@ -737,21 +974,68 @@ export default function PendaftaranPipPage() {
                           />
                         </div>
 
+                        {/* Data Ibu */}
+                        <div className="grid md:grid-cols-2 gap-6">
+                          <FormField
+                            control={form.control}
+                            name="motherName"
+                            render={({ field }) => (
+                              <FormItem>
+                                <FormLabel className="flex items-center gap-2 text-[#001B55] font-semibold">
+                                  <User className="w-4 h-4" />
+                                  Nama Ibu <span className="text-red-500">*</span>
+                                </FormLabel>
+                                <FormControl>
+                                  <Input
+                                    {...field}
+                                    placeholder="Nama lengkap ibu"
+                                    className="h-12 rounded-xl border-[#001B55]/20 focus:border-[#001B55] focus:ring-2 focus:ring-[#001B55]/20 transition-all"
+                                  />
+                                </FormControl>
+                                <FormMessage />
+                              </FormItem>
+                            )}
+                          />
+
+                          <FormField
+                            control={form.control}
+                            name="motherPhone"
+                            render={({ field }) => (
+                              <FormItem>
+                                <FormLabel className="flex items-center gap-2 text-[#001B55] font-semibold">
+                                  <Phone className="w-4 h-4" />
+                                  Nomor HP/WA Ibu <span className="text-red-500">*</span>
+                                </FormLabel>
+                                <FormControl>
+                                  <Input
+                                    {...field}
+                                    type="tel"
+                                    placeholder="08xxxxxxxxxx"
+                                    className="h-12 rounded-xl border-[#001B55]/20 focus:border-[#001B55] focus:ring-2 focus:ring-[#001B55]/20 transition-all"
+                                  />
+                                </FormControl>
+                                <FormMessage />
+                              </FormItem>
+                            )}
+                          />
+                        </div>
+
+                        {/* Alamat Orang Tua */}
                         <FormField
                           control={form.control}
-                          name="proposerName"
+                          name="parentAddress"
                           render={({ field }) => (
                             <FormItem>
-                              <FormLabel className="flex items-center gap-2 text-[#001B55] font-semibold text-sm">
-                                <User className="w-4 h-4" />
-                                Nama Pengusul{" "}
-                                <span className="text-red-500">*</span>
+                              <FormLabel className="flex items-center gap-2 text-[#001B55] font-semibold">
+                                <Home className="w-4 h-4" />
+                                Alamat Orang Tua <span className="text-red-500">*</span>
                               </FormLabel>
                               <FormControl>
-                                <Input
+                                <Textarea
                                   {...field}
-                                  placeholder="Nama orang yang mengusulkan Anda"
-                                  className="h-12 rounded-xl border-gray-200 focus:border-[#FF9C04] transition-all"
+                                  rows={4}
+                                  placeholder="Alamat lengkap orang tua&#10;Contoh: Jl. Pahlawan No. 123, RT 02/RW 03"
+                                  className="rounded-xl resize-none border-[#001B55]/20 focus:border-[#001B55] focus:ring-2 focus:ring-[#001B55]/20 transition-all"
                                 />
                               </FormControl>
                               <FormMessage />
@@ -759,27 +1043,240 @@ export default function PendaftaranPipPage() {
                           )}
                         />
 
+                        {/* Bersedia Bergabung di Partai Nasdem */}
                         <FormField
                           control={form.control}
-                          name="notes"
+                          name="parentWillingJoinNasdem"
+                          render={({ field }) => (
+                            <FormItem className="border-2 border-[#001B55]/20 rounded-xl p-6 bg-blue-50/30 hover:border-[#001B55]/40 transition-all">
+                              <div className="flex items-start space-x-3">
+                                <FormControl>
+                                  <Checkbox
+                                    checked={field.value}
+                                    onCheckedChange={field.onChange}
+                                    id="willing-join"
+                                  />
+                                </FormControl>
+                                <div className="space-y-1 leading-none">
+                                  <FormLabel
+                                    htmlFor="willing-join"
+                                    className="text-[#001B55] font-semibold cursor-pointer"
+                                  >
+                                    Bersedia Bergabung di Partai NasDem
+                                  </FormLabel>
+                                  <FormDescription className="text-sm">
+                                    Centang jika orang tua bersedia bergabung di Partai NasDem Sidoarjo
+                                  </FormDescription>
+                                </div>
+                              </div>
+                              <FormMessage />
+                            </FormItem>
+                          )}
+                        />
+
+                        {/* Alasan Bergabung/Tidak Bergabung - Conditional */}
+                        {watchParentWilling !== undefined && (
+                          <FormField
+                            control={form.control}
+                            name="parentJoinReason"
+                            render={({ field }) => (
+                              <FormItem>
+                                <FormLabel className="text-[#001B55] font-semibold">
+                                  Alasan {watchParentWilling ? "Bergabung" : "Tidak Bergabung"}
+                                </FormLabel>
+                                <FormControl>
+                                  <Textarea
+                                    {...field}
+                                    rows={3}
+                                    placeholder={`Jelaskan alasan ${watchParentWilling ? "bersedia" : "tidak bersedia"} bergabung (opsional)`}
+                                    className="rounded-xl resize-none border-[#001B55]/20 focus:border-[#001B55] focus:ring-2 focus:ring-[#001B55]/20 transition-all"
+                                  />
+                                </FormControl>
+                                <FormMessage />
+                              </FormItem>
+                            )}
+                          />
+                        )}
+                      </div>
+                    )}
+
+                    {/* Step 4: Data Pengusul */}
+                    {currentStep === 4 && (
+                      <div className="space-y-6 animate-fade-in">
+                        {/* Nama Pengusul */}
+                        <FormField
+                          control={form.control}
+                          name="proposerName"
                           render={({ field }) => (
                             <FormItem>
-                              <FormLabel className="flex items-center gap-2 text-[#001B55] font-semibold text-sm">
-                                <FileText className="w-4 h-4" />
-                                Keterangan / Alasan Pengajuan
+                              <FormLabel className="flex items-center gap-2 text-[#001B55] font-semibold">
+                                <User className="w-4 h-4" />
+                                Nama Pengusul <span className="text-red-500">*</span>
                               </FormLabel>
                               <FormControl>
-                                <Textarea
+                                <Input
                                   {...field}
-                                  rows={4}
-                                  placeholder="Jelaskan alasan Anda mengajukan bantuan PIP (opsional)"
-                                  className="rounded-xl border-gray-200 focus:border-[#FF9C04] transition-all resize-none"
+                                  placeholder="Nama lengkap pengusul"
+                                  className="h-12 rounded-xl border-[#001B55]/20 focus:border-[#001B55] focus:ring-2 focus:ring-[#001B55]/20 transition-all"
                                 />
                               </FormControl>
                               <FormMessage />
                             </FormItem>
                           )}
                         />
+
+                        {/* Status Pengusul */}
+                        <FormField
+                          control={form.control}
+                          name="proposerStatus"
+                          render={({ field }) => (
+                            <FormItem>
+                              <FormLabel className="text-[#001B55] font-semibold">
+                                Status Pengusul <span className="text-red-500">*</span>
+                              </FormLabel>
+                              <Select
+                                onValueChange={field.onChange}
+                                value={field.value}
+                              >
+                                <FormControl>
+                                  <SelectTrigger className="h-12 rounded-xl border-[#001B55]/20 focus:border-[#001B55] focus:ring-2 focus:ring-[#001B55]/20 transition-all">
+                                    <SelectValue placeholder="Pilih status pengusul" />
+                                  </SelectTrigger>
+                                </FormControl>
+                                <SelectContent>
+                                  <SelectItem value="dpd">DPD</SelectItem>
+                                  <SelectItem value="dpc">DPC</SelectItem>
+                                  <SelectItem value="dprt">DPRT</SelectItem>
+                                  <SelectItem value="kordes">KORDES</SelectItem>
+                                  <SelectItem value="lainnya">Lainnya</SelectItem>
+                                </SelectContent>
+                              </Select>
+                              <FormMessage />
+                            </FormItem>
+                          )}
+                        />
+
+                        {/* Status Lainnya - Conditional */}
+                        {watchProposerStatus === "lainnya" && (
+                          <FormField
+                            control={form.control}
+                            name="proposerStatusOther"
+                            render={({ field }) => (
+                              <FormItem>
+                                <FormLabel className="text-[#001B55] font-semibold">
+                                  Sebutkan Status Lainnya
+                                </FormLabel>
+                                <FormControl>
+                                  <Input
+                                    {...field}
+                                    placeholder="Sebutkan status pengusul"
+                                    className="h-12 rounded-xl border-[#001B55]/20 focus:border-[#001B55] focus:ring-2 focus:ring-[#001B55]/20 transition-all"
+                                  />
+                                </FormControl>
+                                <FormMessage />
+                              </FormItem>
+                            )}
+                          />
+                        )}
+
+                        {/* Nomor HP/WA Pengusul */}
+                        <FormField
+                          control={form.control}
+                          name="proposerPhone"
+                          render={({ field }) => (
+                            <FormItem>
+                              <FormLabel className="flex items-center gap-2 text-[#001B55] font-semibold">
+                                <Phone className="w-4 h-4" />
+                                Nomor HP/WA Pengusul <span className="text-red-500">*</span>
+                              </FormLabel>
+                              <FormControl>
+                                <Input
+                                  {...field}
+                                  type="tel"
+                                  placeholder="08xxxxxxxxxx"
+                                  className="h-12 rounded-xl border-[#001B55]/20 focus:border-[#001B55] focus:ring-2 focus:ring-[#001B55]/20 transition-all"
+                                />
+                              </FormControl>
+                              <FormMessage />
+                            </FormItem>
+                          )}
+                        />
+
+                        {/* Alamat Pengusul */}
+                        <FormField
+                          control={form.control}
+                          name="proposerAddress"
+                          render={({ field }) => (
+                            <FormItem>
+                              <FormLabel className="flex items-center gap-2 text-[#001B55] font-semibold">
+                                <Home className="w-4 h-4" />
+                                Alamat Pengusul <span className="text-red-500">*</span>
+                              </FormLabel>
+                              <FormControl>
+                                <Textarea
+                                  {...field}
+                                  rows={4}
+                                  placeholder="Alamat lengkap pengusul"
+                                  className="rounded-xl resize-none border-[#001B55]/20 focus:border-[#001B55] focus:ring-2 focus:ring-[#001B55]/20 transition-all"
+                                />
+                              </FormControl>
+                              <FormMessage />
+                            </FormItem>
+                          )}
+                        />
+
+                        {/* Hubungan dengan Siswa */}
+                        <FormField
+                          control={form.control}
+                          name="proposerRelation"
+                          render={({ field }) => (
+                            <FormItem>
+                              <FormLabel className="text-[#001B55] font-semibold">
+                                Hubungan dengan Siswa <span className="text-red-500">*</span>
+                              </FormLabel>
+                              <Select
+                                onValueChange={field.onChange}
+                                value={field.value}
+                              >
+                                <FormControl>
+                                  <SelectTrigger className="h-12 rounded-xl border-[#001B55]/20 focus:border-[#001B55] focus:ring-2 focus:ring-[#001B55]/20 transition-all">
+                                    <SelectValue placeholder="Pilih hubungan" />
+                                  </SelectTrigger>
+                                </FormControl>
+                                <SelectContent>
+                                  <SelectItem value="anak">Anak</SelectItem>
+                                  <SelectItem value="saudara">Saudara</SelectItem>
+                                  <SelectItem value="tetangga">Tetangga</SelectItem>
+                                  <SelectItem value="lainnya">Lainnya</SelectItem>
+                                </SelectContent>
+                              </Select>
+                              <FormMessage />
+                            </FormItem>
+                          )}
+                        />
+
+                        {/* Hubungan Lainnya - Conditional */}
+                        {watchProposerRelation === "lainnya" && (
+                          <FormField
+                            control={form.control}
+                            name="proposerRelationOther"
+                            render={({ field }) => (
+                              <FormItem>
+                                <FormLabel className="text-[#001B55] font-semibold">
+                                  Sebutkan Hubungan Lainnya
+                                </FormLabel>
+                                <FormControl>
+                                  <Input
+                                    {...field}
+                                    placeholder="Sebutkan hubungan dengan siswa"
+                                    className="h-12 rounded-xl border-[#001B55]/20 focus:border-[#001B55] focus:ring-2 focus:ring-[#001B55]/20 transition-all"
+                                  />
+                                </FormControl>
+                                <FormMessage />
+                              </FormItem>
+                            )}
+                          />
+                        )}
                       </div>
                     )}
 
@@ -832,7 +1329,7 @@ export default function PendaftaranPipPage() {
             </Card>
 
             {/* Info Box */}
-            <div className="mt-10 md:mt-12 bg-white shadow-lg rounded-2xl overflow-hidden border border-gray-100">
+            <div className="mt-10 md:mt-12 bg-white shadow-lg rounded-2xl overflow-hidden border-2 border-[#001B55]/20">
               <div className="bg-gradient-to-r from-[#001B55] to-[#001845] p-6 md:p-7">
                 <div className="flex items-center gap-3">
                   <div className="w-10 h-10 rounded-full bg-white/10 backdrop-blur-sm flex items-center justify-center">
@@ -861,7 +1358,7 @@ export default function PendaftaranPipPage() {
                     <span className="text-[#6B7280] pt-2 leading-relaxed">
                       Pastikan{" "}
                       <strong className="text-[#001B55]">
-                        email dan nomor telepon
+                        nomor telepon
                       </strong>{" "}
                       yang Anda berikan aktif untuk proses verifikasi
                     </span>
@@ -888,3 +1385,6 @@ export default function PendaftaranPipPage() {
     </div>
   );
 }
+
+
+

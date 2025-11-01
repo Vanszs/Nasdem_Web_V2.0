@@ -403,37 +403,86 @@ enum PipRegistrationStatus {
   accepted
 }
 
+enum EducationLevel {
+  sd
+  smp
+  sma
+  smk
+}
+
+enum SchoolStatus {
+  negeri
+  swasta
+}
+
+enum ProposerStatus {
+  dpd
+  dpc
+  dprt
+  kordes
+  lainnya
+}
+
+enum StudentRelation {
+  anak
+  saudara
+  tetangga
+  lainnya
+}
+
 model PipRegistration {
   id Int @id @default(autoincrement())
 
   programId Int
   program   Program @relation(fields: [programId], references: [id], onDelete: Cascade)
-  // Catatan: sebaiknya programId menunjuk ke program dengan (category=pendidikan, name=pip)
 
   submittedAt   DateTime              @default(now())
   reviewedAt    DateTime?
   status        PipRegistrationStatus @default(pending)
   reviewerNotes String?
 
-  // Data pendaftar
-  fullName          String      @db.VarChar(150)
-  email             String?     @db.VarChar(100)
-  nik               String      @db.VarChar(50)
-  phone             String?     @db.VarChar(30)
-  dateOfBirth       DateTime?
-  gender            GenderEnum?
-  occupation        String?     @db.VarChar(100)
-  familyMemberCount Int?
-  fullAddress       String?
-  proposerName      String?     @db.VarChar(150) // Nama pengusul
+  // 📚 DATA SISWA
+  educationLevel EducationLevel // SD/SMP/SMA/SMK
+  studentName    String         @db.VarChar(150)
+  birthPlace     String?        @db.VarChar(100)
+  dateOfBirth    DateTime?
+  gender         GenderEnum?
+  nisn           String?        @db.VarChar(50) // Nomor Induk Siswa Nasional
+  studentClass   String?        @db.VarChar(50) // Kelas siswa (misal: "10 IPA 1")
+  studentPhone   String?        @db.VarChar(30) // Nomor HP/WA siswa
 
-  // Dokumen opsional (bisa diperluas jika perlu)
-  ktpPhotoUrl String? @db.VarChar(255)
-  kkPhotoUrl  String? @db.VarChar(255)
+  // 🏫 DATA SEKOLAH
+  schoolName     String?        @db.VarChar(200)
+  npsn           String?        @db.VarChar(50) // Nomor Pokok Sekolah Nasional
+  schoolStatus   SchoolStatus?
+  schoolVillage  String?        @db.VarChar(100) // Kelurahan/Desa sekolah
+  schoolDistrict String?        @db.VarChar(100) // Kecamatan sekolah
+  schoolCity     String?        @db.VarChar(100) // Kabupaten/Kota sekolah
+  schoolProvince String?        @db.VarChar(100) // Provinsi sekolah
 
-  @@unique([programId, nik])
+  // 👨‍👩‍👧 DATA ORANG TUA SISWA
+  fatherName               String?  @db.VarChar(150) // Nama Ayah/Wali
+  fatherPhone              String?  @db.VarChar(30) // Nomor HP/WA Ayah
+  motherName               String?  @db.VarChar(150) // Nama Ibu
+  motherPhone              String?  @db.VarChar(30) // Nomor HP/WA Ibu
+  parentAddress            String?  @db.Text // Alamat Orang Tua
+  parentWillingJoinNasdem  Boolean? @default(false) // Bersedia bergabung di Partai Nasdem
+  parentJoinReason         String?  @db.Text // Alasan Bergabung/Tidak Bergabung
+
+  // 📝 DATA PENGUSUL
+  proposerName           String?           @db.VarChar(150)
+  proposerStatus         ProposerStatus?
+  proposerStatusOther    String?           @db.VarChar(100) // Jika status = lainnya
+  proposerPhone          String?           @db.VarChar(30)
+  proposerAddress        String?           @db.Text
+  proposerRelation       StudentRelation?
+  proposerRelationOther  String?           @db.VarChar(100) // Jika hubungan = lainnya
+
+  @@unique([programId, nisn])
   @@index([programId])
   @@index([status])
+  @@index([educationLevel])
+  @@index([nisn])
 }
 
 model MembershipApplication {
