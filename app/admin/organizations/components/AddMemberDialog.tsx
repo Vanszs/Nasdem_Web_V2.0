@@ -252,16 +252,113 @@ export function AddMemberDialog({
     return allLevels.filter((l) => l.toLowerCase() !== "kader");
   }, [schemaLevels, struktur]);
   const positions = React.useMemo(() => {
+    const lvl = watchLevel?.toLowerCase();
+    console.log("🎯 AddMemberDialog - positions useMemo - watchLevel:", watchLevel, "| lvl:", lvl);
+    
+    // DPD: Return all 35 DPD positions
+    if (lvl === "dpd") {
+      console.log("✅ DPD detected - returning 35 DPD positions");
+      return [
+        "Ketua",
+        "Wakil Ketua Bidang Pemenangan Pemilu",
+        "Wakil Ketua Bidang Organisasi, Kaderisasi, dan Keperempuanan",
+        "Wakil Ketua Bidang Advokasi dan Bantuan Hukum",
+        "Wakil Ketua Bidang Ekonomi Kerakyatan dan UMKM",
+        "Wakil Ketua Bidang Keuangan dan Penggalangan Dana",
+        "Wakil Ketua Bidang Pendidikan, Kesehatan, dan Lingkungan Hidup",
+        "Wakil Ketua Bidang Komunikasi dan Media",
+        "Wakil Ketua Bidang Hubungan Antar Lembaga",
+        "Wakil Ketua Bidang Keagamaan dan Kebudayaan",
+        "Wakil Ketua Bidang Kepemudaan dan Olahraga",
+        "Wakil Ketua Bidang Pemberdayaan Masyarakat",
+        "Wakil Ketua Bidang Teknologi Informasi",
+        "Wakil Ketua Bidang Riset dan Pengembangan",
+        "Wakil Ketua Bidang Pariwisata dan Ekonomi Kreatif",
+        "Wakil Ketua Bidang Pertanian dan Peternakan",
+        "Wakil Ketua Bidang Kelautan dan Perikanan",
+        "Wakil Ketua Bidang Perhubungan dan Infrastruktur",
+        "Wakil Ketua Bidang Tenaga Kerja dan Transmigrasi",
+        "Wakil Ketua Bidang Koperasi dan UKM",
+        "Wakil Ketua Bidang Perindustrian dan Perdagangan",
+        "Wakil Ketua Bidang Energi dan Sumber Daya Mineral",
+        "Wakil Ketua Bidang Perumahan dan Permukiman",
+        "Wakil Ketua Bidang Sosial dan Kesejahteraan Rakyat",
+        "Wakil Ketua Bidang Pembangunan Daerah Tertinggal",
+        "Wakil Ketua Bidang Aparatur Negara dan Reformasi Birokrasi",
+        "Wakil Ketua Bidang Luar Negeri dan Kerja Sama Internasional",
+        "Sekretaris Umum",
+        "Sekretaris I",
+        "Sekretaris II",
+        "Sekretaris III",
+        "Sekretaris IV",
+        "Bendahara Umum",
+        "Bendahara I",
+        "Bendahara II"
+      ];
+    }
+    
+    // DPC: Use konstanta dari lib/dpc-positions.ts
+    if (lvl === "dpc") {
+      console.log("✅ DPC detected - returning 17 DPC positions");
+      // Import will be added: getDpcPositionsForDropdown
+      // For now, return DPC-specific positions
+      return [
+        "Ketua",
+        "Sekretaris",
+        "Bendahara",
+        "Wakil Ketua Bidang Pemenangan Pemilu",
+        "Wakil Ketua Bidang Organisasi, Kaderisasi, dan Keperempuanan",
+        "Wakil Ketua Bidang Advokasi dan Bantuan Hukum",
+        "Wakil Ketua Bidang Ekonomi Kerakyatan dan UMKM",
+        "Wakil Ketua Bidang Keuangan dan Penggalangan Dana",
+        "Wakil Ketua Bidang Pendidikan, Kesehatan, dan Lingkungan Hidup",
+        "Wakil Ketua Bidang Komunikasi dan Media",
+        "Wakil Ketua Bidang Hubungan Antar Lembaga",
+        "Wakil Ketua Bidang Keagamaan dan Kebudayaan",
+        "Wakil Ketua Bidang Kepemudaan dan Olahraga",
+        "Wakil Ketua Bidang Pemberdayaan Masyarakat",
+        "Wakil Ketua Bidang Teknologi Informasi",
+        "Wakil Ketua Bidang Riset dan Pengembangan",
+        "Wakil Ketua Bidang Pariwisata dan Ekonomi Kreatif"
+      ];
+    }
+    
+    // DPRT: Use konstanta dari lib/dprt-positions.ts
+    if (lvl === "dprt") {
+      console.log("✅ DPRT detected - returning 6 DPRT positions");
+      return [
+        "Ketua",
+        "Sekretaris",
+        "Bendahara",
+        "Wakil Ketua Bidang Pemenangan Pemilu",
+        "Wakil Ketua Bidang Organisasi, Kaderisasi, dan Keperempuanan",
+        "Kader"
+      ];
+    }
+    
+    // Sayap: No predefined positions, user will input manually
+    if (lvl === "sayap") {
+      console.log("✅ Sayap detected - will use text input (no dropdown)");
+      return []; // Return empty array, won't be used
+    }
+    
+    // Fallback: Use schema or default
+    console.log("⚠️ FALLBACK - No specific level matched, returning generic positions");
     if (schemaPositions.length) return schemaPositions;
-    // Fallback to previous static list if meta absent
     return ["ketua", "sekretaris", "bendahara", "wakil", "anggota"];
-  }, [schemaPositions]);
+  }, [schemaPositions, watchLevel]);
+  
+  // Hardcoded list of 5 Sayap types
   const sayapNames = React.useMemo(() => {
-    const names = struktur
-      .filter((s) => s.level?.toLowerCase() === "sayap" && s.sayapType?.name)
-      .map((s) => s.sayapType!.name as string);
-    return Array.from(new Set(names));
-  }, [struktur]);
+    return [
+      "Garda",
+      "Garnita Malahayati",
+      "Bahu",
+      "Gemuruh",
+      "Liga Mahasiswa"
+    ];
+  }, []);
+  
   const regionTypeForLevel = React.useMemo(() => {
     const lvl = watchLevel?.toLowerCase();
     if (lvl === "dpc") return "kecamatan";
@@ -355,7 +452,12 @@ export function AddMemberDialog({
       });
       // Defer state updates to avoid setState-in-render warning
       setTimeout(() => {
+        // Invalidate all related queries for live updates
         queryClient.invalidateQueries({ queryKey: ["members-unassigned"] });
+        queryClient.invalidateQueries({ queryKey: ["struktur"] });
+        queryClient.invalidateQueries({ queryKey: ["dpc-ketua"] }); // Landing page DPC
+        queryClient.invalidateQueries({ queryKey: ["members"] }); // General members list
+        queryClient.invalidateQueries({ queryKey: ["organizations"] }); // Organization structure
         setOpen(false);
         orgForm.reset();
       }, 0);
@@ -385,7 +487,11 @@ export function AddMemberDialog({
       });
       // Defer state updates to avoid setState-in-render warning
       setTimeout(() => {
+        // Invalidate all related queries for live updates
         queryClient.invalidateQueries({ queryKey: ["members-unassigned"] });
+        queryClient.invalidateQueries({ queryKey: ["struktur"] });
+        queryClient.invalidateQueries({ queryKey: ["members-dprt"] });
+        queryClient.invalidateQueries({ queryKey: ["members"] }); // General members list
         setOpen(false);
         kaderForm.reset();
       }, 0);
@@ -836,43 +942,70 @@ export function AddMemberDialog({
                           <FormItem className="w-full">
                             <FormLabel className="text-[#001B55] font-semibold">
                               Posisi
+                              {watchLevel?.toLowerCase() === "sayap" && (
+                                <span className="text-xs font-normal text-[#475569] ml-2">
+                                  (Tulis manual, misal: Ketua, Sekretaris, Wakil, dll)
+                                </span>
+                              )}
                             </FormLabel>
                             <FormControl>
-                              <Select
-                                value={field.value}
-                                onValueChange={(v) => {
-                                  field.onChange(v);
-                                  orgForm.setValue("strukturId", "");
-                                }}
-                                disabled={!watchLevel || strukturLoading}
-                              >
-                                <SelectTrigger
-                                  className="h-11 w-full bg-white border-2 border-[#C4D9FF] hover:border-[#C5BAFF] focus:border-[#001B55] focus:ring-2 focus:ring-[#C5BAFF]/20 text-[#001B55] transition-all duration-300 disabled:opacity-50"
+                              {watchLevel?.toLowerCase() === "sayap" ? (
+                                // Sayap: Input text field untuk fleksibilitas posisi
+                                <Input
+                                  {...field}
+                                  placeholder="Contoh: Ketua, Sekretaris, Wakil Ketua, Anggota..."
+                                  disabled={!watchLevel || strukturLoading}
+                                  className="h-11 w-full bg-white border-2 border-[#C4D9FF] hover:border-[#C5BAFF] focus:border-[#001B55] focus:ring-2 focus:ring-[#C5BAFF]/20 text-[#001B55] placeholder:text-[#9CA3AF] transition-all duration-300 disabled:opacity-50"
                                   style={{ borderRadius: "10px" }}
+                                  onChange={(e) => {
+                                    field.onChange(e.target.value);
+                                    orgForm.setValue("strukturId", "");
+                                  }}
+                                />
+                              ) : (
+                                // DPD, DPC, DPRT: Select dropdown
+                                <Select
+                                  value={field.value}
+                                  onValueChange={(v) => {
+                                    field.onChange(v);
+                                    orgForm.setValue("strukturId", "");
+                                  }}
+                                  disabled={!watchLevel || strukturLoading}
                                 >
-                                  <SelectValue
-                                    placeholder={
-                                      strukturLoading
-                                        ? "Memuat posisi..."
-                                        : "Pilih posisi"
-                                    }
-                                  />
-                                </SelectTrigger>
-                                <SelectContent
-                                  className="bg-white border w-full border-[#D8E2F0]"
-                                  style={{ borderRadius: "10px" }}
-                                >
-                                  {positions.map((p) => (
-                                    <SelectItem
-                                      key={p}
-                                      value={p}
-                                      className="hover:bg-[#F0F6FF] transition-colors"
-                                    >
-                                      {p.charAt(0).toUpperCase() + p.slice(1)}
-                                    </SelectItem>
-                                  ))}
-                                </SelectContent>
-                              </Select>
+                                  <SelectTrigger
+                                    className="h-11 w-full bg-white border-2 border-[#C4D9FF] hover:border-[#C5BAFF] focus:border-[#001B55] focus:ring-2 focus:ring-[#C5BAFF]/20 text-[#001B55] transition-all duration-300 disabled:opacity-50"
+                                    style={{ borderRadius: "10px" }}
+                                  >
+                                    <SelectValue
+                                      placeholder={
+                                        strukturLoading
+                                          ? "Memuat posisi..."
+                                          : watchLevel?.toLowerCase() === "dpd"
+                                          ? "Pilih dari 35 posisi DPD"
+                                          : watchLevel?.toLowerCase() === "dpc"
+                                          ? "Pilih dari 17 posisi DPC"
+                                          : watchLevel?.toLowerCase() === "dprt"
+                                          ? "Pilih dari 6 posisi DPRT"
+                                          : "Pilih posisi"
+                                      }
+                                    />
+                                  </SelectTrigger>
+                                  <SelectContent
+                                    className="bg-white border w-full border-[#D8E2F0] max-h-[400px]"
+                                    style={{ borderRadius: "10px" }}
+                                  >
+                                    {positions.map((p) => (
+                                      <SelectItem
+                                        key={p}
+                                        value={p}
+                                        className="hover:bg-[#F0F6FF] transition-colors"
+                                      >
+                                        {p}
+                                      </SelectItem>
+                                    ))}
+                                  </SelectContent>
+                                </Select>
+                              )}
                             </FormControl>
                             <FormMessage className="text-xs" />
                           </FormItem>
