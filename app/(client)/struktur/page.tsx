@@ -1,339 +1,210 @@
-import NasdemHeader from "@/components/nasdem-header";
-import NasdemFooter from "@/components/nasdem-footer";
+"use client";
+
+import { useQuery } from "@tanstack/react-query";
 import { Card, CardContent } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
-import { Users, MapPin, Phone, Mail } from "lucide-react";
-import OrganizationStructure from "@/components/organization-structure";
+import { Badge } from "@/components/ui/badge";
+import { Mail, Phone, UserX } from "lucide-react";
+import { DpdStructureDisplay } from "@/components/dpd-structure-display";
 import Image from "next/image";
-import { db } from "@/lib/db";
 
-type Kader = {
-  id: string;
-  full_name: string;
-  phone?: string;
-  address?: string;
-};
-type TPS = {
-  id: string;
-  name: string;
-  number: number;
-  coordinator?: {
-    id: string;
-    full_name: string;
-    email: string;
-    phone?: string;
-  };
-  kaders: Kader[];
-};
-type Desa = { id: string; name: string; code: string; tps: TPS[] };
-type Kecamatan = { id: string; name: string; code: string; desa: Desa[] };
-
-async function getOrganizationData(): Promise<Kecamatan[]> {
-  // Fetch real hierarchical geography from database; coordinator/kaders left empty until mapping exists
-  const kecamatans = await db.kecamatan.findMany({
-    include: {
-      desa: {
-        include: {
-          tps: true,
-        },
-      },
-    },
-    orderBy: { name: "asc" },
-  });
-
-  const toCode = (name: string) => name.trim().slice(0, 3).toUpperCase();
-
-  const mapped: Kecamatan[] = kecamatans.map((kec) => ({
-    id: String(kec.id),
-    name: kec.name,
-    code: toCode(kec.name),
-    desa: kec.desa.map((d) => ({
-      id: String(d.id),
-      name: d.name,
-      code: toCode(d.name),
-      tps: d.tps.map((t) => ({
-        id: String(t.id),
-        name: `TPS ${d.name}`,
-        number: parseInt(t.number, 10) || 0,
-        kaders: [],
-      })),
-    })),
-  }));
-
-  return mapped;
+// Fetch DPC data from API
+async function fetchDpcData() {
+  const res = await fetch("/api/organizations/dpc-ketua");
+  if (!res.ok) throw new Error("Failed to fetch DPC data");
+  return res.json();
 }
 
-export default async function StrukturPage() {
-  const organizationData = await getOrganizationData();
+// Mock data for development - replace with actual API calls
+const mockDpdData = [
+  {
+    positionTitle: "Ketua DPD - Kabupaten Sidoarjo",
+    positionOrder: 1,
+    member: {
+      id: 1,
+      fullName: "Dr. H. Ahmad Budi Santoso, S.H., M.M.",
+      photoUrl: "/placeholder-user.jpg",
+      phone: "0812-3456-7890",
+      email: "ketua@nasdem-sidoarjo.org"
+    }
+  },
+  // Add more mock data as needed
+];
+
+export default function StrukturPage() {
+  // Fetch DPC data from API
+  const { data: dpcData = [], isLoading } = useQuery({
+    queryKey: ["dpc-ketua"],
+    queryFn: fetchDpcData,
+  });
+
+  // Use mock data for DPD for now
+  const dpdStructureData = mockDpdData;
 
   return (
     <div className="min-h-screen bg-background">
-      <NasdemHeader />
-
-      {/* Header */}
-      <section className="bg-nasdem-blue text-white py-16">
-        <div className="container mx-auto px-4">
-          <h1 className="text-4xl lg:text-5xl font-bold mb-4">
-            Struktur Organisasi
-          </h1>
-          <p className="text-xl text-white/90">
-            Kepengurusan DPD Partai NasDem Sidoarjo Periode 2024-2029
-          </p>
+      {/* Header - REMOVED duplicate NasdemHeader since it's in layout */}
+      <section className="relative bg-gradient-to-br from-[#001B55] via-[#002875] to-[#001845] text-white py-20 md:py-24 overflow-hidden">
+        {/* Decorative elements */}
+        <div className="absolute top-0 right-0 w-96 h-96 bg-[#FF9C04]/10 rounded-full blur-3xl"></div>
+        <div className="absolute bottom-0 left-0 w-96 h-96 bg-[#FF9C04]/10 rounded-full blur-3xl"></div>
+        
+        <div className="container mx-auto px-4 relative z-10">
+          <div className="max-w-4xl mx-auto text-center">
+            <Badge className="mb-6 bg-[#FF9C04] text-white px-6 py-2 text-sm font-bold shadow-lg hover:scale-105 transition-transform">
+              ORGANISASI
+            </Badge>
+            <h1 className="text-4xl md:text-5xl lg:text-6xl font-extrabold mb-6 leading-tight tracking-tight">
+              Struktur Organisasi
+            </h1>
+            <div className="w-24 h-1 bg-gradient-to-r from-transparent via-[#FF9C04] to-transparent mx-auto mb-6"></div>
+            <p className="text-xl md:text-2xl text-white/90 leading-relaxed">
+              Kepengurusan DPD Partai NasDem Sidoarjo
+            </p>
+            <p className="text-lg text-white/70 mt-2">
+              Periode 2024-2029
+            </p>
+          </div>
         </div>
       </section>
 
-      {/* Main Structure */}
-      <section className="py-16 bg-gradient-to-b from-white to-gray-50">
+      {/* Main Structure - DPD */}
+      <section className="py-16 bg-gradient-to-b from-[#FFFFFF] to-[#F9FAFB]">
         <div className="container mx-auto px-4 sm:px-6 lg:px-8">
-          <div className="text-center mb-12">
-            <h2 className="text-3xl font-bold text-nasdem-blue mb-4">
-              Pengurus Harian DPD
-            </h2>
-            <p className="text-lg text-gray-600">
-              Struktur kepengurusan utama DPD Partai NasDem Sidoarjo
-            </p>
-          </div>
+          <DpdStructureDisplay dpdData={dpdStructureData} />
+        </div>
+      </section>
 
-          {/* Chairman */}
-          <div className="text-center mb-12">
-            <Card className="inline-block p-8 bg-white border-2 border-nasdem-blue/20 shadow-xl hover:shadow-2xl hover:border-nasdem-blue/40 transition-all duration-300">
-              <CardContent className="text-center space-y-4">
-                <Image
-                  src="/placeholder.svg"
-                  alt="Ketua DPD"
-                  width={150}
-                  height={150}
-                  className="w-32 h-32 rounded-full mx-auto object-cover border-4 border-nasdem-orange"
-                  priority
-                />
-                <div>
-                  <h3 className="text-2xl font-bold text-nasdem-blue">
-                    H. Ahmad Mulyadi, S.H.
-                  </h3>
-                  <p className="text-nasdem-orange font-semibold text-lg">
-                    Ketua DPD
-                  </p>
-                  <div className="flex items-center justify-center gap-2 text-sm text-gray-600 mt-2">
-                    <Phone className="h-4 w-4" />
-                    <span>0812-3456-7890</span>
+      {/* DPC Structure - Ketua per Kecamatan */}
+      <section className="py-20 bg-gradient-to-b from-[#F0F0F0] to-[#FFFFFF]">
+        <div className="container mx-auto px-4 sm:px-6 lg:px-8">
+          <div className="bg-white rounded-3xl p-8 md:p-12 border-2 border-[#001B55]/10 shadow-2xl">
+            {/* Simple Header - DPD Style */}
+            <div className="text-center mb-12">
+              <Badge className="mb-4 bg-gradient-to-r from-[#001B55] to-[#003875] text-white px-6 py-2 text-sm font-bold shadow-lg">
+                DEWAN PIMPINAN CABANG
+              </Badge>
+              <h2 className="text-3xl md:text-4xl font-bold text-[#001B55] mb-4">
+                Ketua DPC Per Kecamatan
+              </h2>
+              <div className="w-20 h-1 bg-gradient-to-r from-transparent via-[#FF9C04] to-transparent mx-auto mb-4"></div>
+              <p className="text-lg md:text-xl text-[#6B7280]">
+                18 Kecamatan di Kabupaten Sidoarjo
+              </p>
+            </div>
+
+            {/* DPC Grid - Simple DPD Style with Circle Photos */}
+            {isLoading ? (
+              <div className="text-center py-12">
+                <div className="w-16 h-16 border-4 border-[#FF9C04] border-t-transparent rounded-full animate-spin mx-auto mb-4"></div>
+                <p className="text-[#6B7280] font-medium">Memuat data DPC...</p>
+              </div>
+            ) : (
+              <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 xl:grid-cols-6 gap-6">
+                {dpcData.map((dpc: any, index: number) => {
+                const hasKetua = !!dpc.ketua;
+                
+                return (
+                  <div
+                    key={index}
+                    className="group relative transition-all duration-300 hover:-translate-y-1"
+                  >
+                    {/* Card with Border - Fixed height for consistency */}
+                    <div className="bg-white rounded-2xl p-6 shadow-lg hover:shadow-2xl transition-all duration-300 border border-[#001B55]/20 hover:border-[#001B55]/40 h-[340px] flex flex-col">
+                      {/* Circle Photo Card */}
+                      <div className="flex flex-col items-center text-center space-y-3 flex-1">
+                        {/* Photo Circle */}
+                        <div className={`relative w-32 h-32 rounded-full overflow-hidden shadow-xl transition-all duration-300 group-hover:shadow-2xl border-4 border-[#001B55] flex-shrink-0`}>
+                        {hasKetua ? (
+                          <Image
+                            src={dpc.ketua.photoUrl || "/placeholder-user.jpg"}
+                            alt={dpc.ketua.fullName}
+                            width={128}
+                            height={128}
+                            className="w-full h-full object-cover transition-transform duration-300 group-hover:scale-110"
+                          />
+                        ) : (
+                          <div className="w-full h-full bg-gradient-to-br from-gray-100 to-gray-200 flex items-center justify-center">
+                            <UserX className="h-12 w-12 text-gray-400" />
+                          </div>
+                        )}
+                      </div>
+
+                      {/* Name and Position - Fixed height container */}
+                      <div className="space-y-1 flex-1 flex flex-col justify-between min-h-[80px]">
+                        <div>
+                          <Badge
+                            className={`${
+                              hasKetua
+                                ? "bg-[#FF9C04] text-white"
+                                : "bg-gray-400 text-white"
+                            } px-3 py-1 text-xs font-bold shadow-md`}
+                          >
+                            KETUA DPC
+                          </Badge>
+                          
+                          <p className="text-sm font-bold text-[#001B55] group-hover:text-[#FF9C04] transition-colors mt-2">
+                            Kecamatan {dpc.kecamatan}
+                          </p>
+                        </div>
+                        
+                        <div className="flex items-center justify-center min-h-[40px]">
+                          {hasKetua ? (
+                            <p className="text-xs text-[#6B7280] font-medium px-2 leading-tight text-center">
+                              {dpc.ketua.fullName}
+                            </p>
+                          ) : (
+                            <p className="text-xs text-gray-400 italic px-2 text-center">
+                              Belum ditunjuk
+                            </p>
+                          )}
+                        </div>
+                      </div>
+
+                      {/* Contact Info (fixed space for consistency) */}
+                      <div className="h-[20px] flex items-center justify-center">
+                        {hasKetua && dpc.ketua.phone ? (
+                          <div className="opacity-0 group-hover:opacity-100 transition-opacity duration-300">
+                            <div className="flex items-center justify-center gap-1 text-xs text-[#6B7280]">
+                              <Phone className="h-3 w-3" />
+                              <span>{dpc.ketua.phone}</span>
+                            </div>
+                          </div>
+                        ) : (
+                          <div className="h-[20px]"></div>
+                        )}
+                      </div>
+                      </div>
+                    </div>
                   </div>
-                </div>
-              </CardContent>
-            </Card>
+                );
+              })}
+              </div>
+            )}
           </div>
 
-          {/* Vice Chairmen */}
-          <div className="grid md:grid-cols-2 gap-8 mb-12">
-            <Card className="p-6 text-center border-2 border-nasdem-blue/20 shadow-lg hover:shadow-2xl hover:border-nasdem-blue/40 transition-all duration-300 hover:-translate-y-1">
-              <CardContent className="space-y-4">
-                <Image
-                  src="/placeholder.svg"
-                  alt="Wakil Ketua 1"
-                  width={120}
-                  height={120}
-                  className="w-24 h-24 rounded-full mx-auto object-cover border-4 border-nasdem-orange"
-                />
-                <div>
-                  <h3 className="text-xl font-bold text-nasdem-blue">
-                    Hj. Siti Aminah, M.Si.
-                  </h3>
-                  <p className="text-nasdem-orange font-semibold">
-                    Wakil Ketua I
-                  </p>
-                  <p className="text-sm text-gray-600">
-                    Bidang Organisasi & Kaderisasi
-                  </p>
-                </div>
-              </CardContent>
-            </Card>
-
-            <Card className="p-6 text-center border-2 border-nasdem-blue/20 shadow-lg hover:shadow-2xl hover:border-nasdem-blue/40 transition-all duration-300 hover:-translate-y-1">
-              <CardContent className="space-y-4">
-                <Image
-                  src="/placeholder.svg"
-                  alt="Wakil Ketua 2"
-                  width={120}
-                  height={120}
-                  className="w-24 h-24 rounded-full mx-auto object-cover border-4 border-nasdem-orange"
-                />
-                <div>
-                  <h3 className="text-xl font-bold text-nasdem-blue">
-                    Drs. Bambang Sutrisno
-                  </h3>
-                  <p className="text-nasdem-orange font-semibold">
-                    Wakil Ketua II
-                  </p>
-                  <p className="text-sm text-gray-600">
-                    Bidang Program & Kebijakan
-                  </p>
-                </div>
-              </CardContent>
-            </Card>
-          </div>
-
-          {/* Other Positions */}
-          <div className="grid md:grid-cols-3 gap-6 mb-12">
-            {[
-              {
-                name: "Dr. Indira Sari, M.M.",
-                position: "Sekretaris",
-                bidang: "Administrasi & Kesekretariatan",
-              },
-              {
-                name: "H. Wahyu Hidayat, S.E.",
-                position: "Bendahara",
-                bidang: "Keuangan & Aset",
-              },
-              {
-                name: "Ir. Suryanto, M.T.",
-                position: "Ketua Bidang Pembangunan",
-                bidang: "Infrastruktur & Lingkungan",
-              },
-              {
-                name: "Dr. Maya Kusuma, S.Pd.",
-                position: "Ketua Bidang Pendidikan",
-                bidang: "Pendidikan & Kebudayaan",
-              },
-              {
-                name: "H. Rizki Pratama, S.H.",
-                position: "Ketua Bidang Hukum",
-                bidang: "Hukum & HAM",
-              },
-              {
-                name: "Hj. Dewi Sartika, S.Sos.",
-                position: "Ketua Bidang Perempuan",
-                bidang: "Pemberdayaan Perempuan",
-              },
-            ].map((person, index) => (
-              <Card
-                key={index}
-                className="p-4 text-center border-2 border-nasdem-blue/20 shadow-lg hover:shadow-2xl hover:border-nasdem-blue/40 transition-all duration-300 hover:-translate-y-1"
+          {/* Contact CTA dengan styling modern */}
+          <div className="text-center mt-16">
+            <div className="max-w-2xl mx-auto">
+              <h3 className="text-3xl md:text-4xl font-bold text-[#001B55] mb-4">
+                Ingin Bergabung?
+              </h3>
+              <p className="text-lg md:text-xl text-[#6B7280] mb-8 leading-relaxed">
+                Hubungi pengurus terdekat di wilayah Anda atau kantor DPD kami untuk informasi lebih lanjut
+              </p>
+              <Button
+                size="lg"
+                className="bg-gradient-to-r from-[#FF9C04] to-[#FF8C00] hover:from-[#001B55] hover:to-[#003875] text-white font-bold px-10 py-6 text-lg shadow-xl hover:shadow-2xl transition-all duration-300 hover:scale-105 rounded-xl"
               >
-                <CardContent className="space-y-3">
-                  <Image
-                    src="/placeholder.svg"
-                    alt={person.name}
-                    width={100}
-                    height={100}
-                    className="w-20 h-20 rounded-full mx-auto object-cover border-2 border-nasdem-orange"
-                  />
-                  <div>
-                    <h4 className="font-bold text-nasdem-blue">
-                      {person.name}
-                    </h4>
-                    <p className="text-nasdem-orange font-semibold text-sm">
-                      {person.position}
-                    </p>
-                    <p className="text-xs text-gray-600">{person.bidang}</p>
-                  </div>
-                </CardContent>
-              </Card>
-            ))}
-          </div>
-
-          {/* Regional Structure */}
-          <div className="bg-white rounded-2xl p-8 mb-12 border-2 border-nasdem-blue/20 shadow-xl hover:shadow-2xl transition-all duration-300">
-            <h2 className="text-3xl font-bold text-nasdem-blue text-center mb-8">
-              Struktur Per Daerah Pemilihan (Dapil)
-            </h2>
-
-            <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-6">
-              {[
-                {
-                  dapil: "Dapil 1",
-                  wilayah: "Sidoarjo, Waru, Gedangan",
-                  koordinator: "H. Agus Salim, S.H.",
-                },
-                {
-                  dapil: "Dapil 2",
-                  wilayah: "Taman, Sepanjang, Sukodono",
-                  koordinator: "Hj. Ratna Dewi, M.Si.",
-                },
-                {
-                  dapil: "Dapil 3",
-                  wilayah: "Candi, Porong, Krembung",
-                  koordinator: "Drs. Eko Prasetyo",
-                },
-                {
-                  dapil: "Dapil 4",
-                  wilayah: "Krian, Balongbendo, Wonoayu",
-                  koordinator: "H. Sutrisno, S.E.",
-                },
-                {
-                  dapil: "Dapil 5",
-                  wilayah: "Tanggulangin, Jabon, Buduran",
-                  koordinator: "Ir. Sari Indah, M.T.",
-                },
-                {
-                  dapil: "Dapil 6",
-                  wilayah: "Tarik, Prambon, Tulangan",
-                  koordinator: "Dr. Budi Santoso",
-                },
-              ].map((dapil, index) => (
-                <Card
-                  key={index}
-                  className="p-4 border-2 border-nasdem-blue/20 shadow-lg hover:shadow-2xl hover:border-nasdem-blue/40 transition-all duration-300 hover:-translate-y-1"
-                >
-                  <CardContent className="space-y-3">
-                    <div className="flex items-center gap-2 mb-2">
-                      <div className="w-8 h-8 bg-nasdem-orange rounded-full flex items-center justify-center">
-                        <span className="text-white font-bold text-sm">
-                          {index + 1}
-                        </span>
-                      </div>
-                      <h3 className="font-bold text-nasdem-blue">
-                        {dapil.dapil}
-                      </h3>
-                    </div>
-                    <div className="space-y-2">
-                      <div className="flex items-start gap-2">
-                        <MapPin className="h-4 w-4 text-nasdem-orange mt-0.5 flex-shrink-0" />
-                        <p className="text-sm text-gray-600">{dapil.wilayah}</p>
-                      </div>
-                      <div className="flex items-start gap-2">
-                        <Users className="h-4 w-4 text-nasdem-orange mt-0.5 flex-shrink-0" />
-                        <p className="text-sm font-semibold text-nasdem-blue">
-                          {dapil.koordinator}
-                        </p>
-                      </div>
-                    </div>
-                  </CardContent>
-                </Card>
-              ))}
+                <Mail className="mr-3 h-6 w-6" />
+                Hubungi Kami
+              </Button>
             </div>
           </div>
-
-          <div className="bg-white rounded-2xl p-8 shadow-xl border-2 border-nasdem-blue/20 hover:shadow-2xl hover:border-nasdem-blue/40 transition-all duration-300">
-            <h2 className="text-3xl font-bold text-nasdem-blue text-center mb-8">
-              Struktur Organisasi Lengkap
-            </h2>
-            <p className="text-center text-gray-600 mb-8">
-              Struktur lengkap per Kecamatan, Desa, TPS, Koordinator, dan Kader
-            </p>
-
-            <OrganizationStructure data={organizationData} />
-          </div>
-
-          {/* Contact CTA */}
-          <div className="text-center mt-12">
-            <h3 className="text-2xl font-bold text-nasdem-blue mb-4">
-              Ingin Bergabung atau Berkolaborasi?
-            </h3>
-            <p className="text-lg text-gray-600 mb-6">
-              Hubungi pengurus terdekat di wilayah Anda atau kantor DPD kami
-            </p>
-            <Button
-              size="lg"
-              className="bg-nasdem-orange hover:bg-nasdem-dark-red text-white font-semibold px-8"
-            >
-              <Mail className="mr-2 h-5 w-5" />
-              Hubungi Kami
-            </Button>
-          </div>
         </div>
       </section>
 
-      <NasdemFooter />
+      {/* REMOVED duplicate NasdemFooter since it's in layout */}
     </div>
   );
 }

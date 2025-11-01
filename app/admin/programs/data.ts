@@ -18,8 +18,8 @@ export const programNameOptions: ProgramNameOption[] = [
     categoryId: "pendidikan",
   },
   {
-    id: "hibah-bantuan-keuangan",
-    title: "Hibah / Bantuan Keuangan",
+    id: "hibah-bantuan-bendahara",
+    title: "Hibah / Bantuan Bendahara",
     categoryId: "pendidikan",
   },
   { id: "lainnya-pendidikan", title: "Lainnya", categoryId: "pendidikan" },

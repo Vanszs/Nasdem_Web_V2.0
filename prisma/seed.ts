@@ -8,6 +8,8 @@ import { seedPrograms, seedProgramBeneficiaries } from "./seed/seed-programs";
 import { seedNews } from "./seed/seed-news";
 import { seedActivities } from "./seed/seed-activities";
 import { seedCms } from "./seed/seed-cms";
+import { seedDpdDummyMembers } from "./seed/seed-dpd-dummy";
+import { seedDpcDummyMembers } from "./seed/seed-dpc-dummy";
 
 const db = new PrismaClient();
 
@@ -28,6 +30,12 @@ async function main() {
 
   // 5. Members
   await seedMembers(db, strukturIds);
+
+  // 5.1. Seed DPD Dummy Members
+  await seedDpdDummyMembers(db);
+
+  // 5.2. Seed DPC Dummy Members
+  await seedDpcDummyMembers(db);
 
   // // 6. Programs
   // await seedPrograms(db);

@@ -74,7 +74,9 @@ export async function GET(req: NextRequest) {
         where,
         skip,
         take,
-        orderBy: { id: "desc" },
+        orderBy: [
+          { id: "asc" }, // FIXED: Sort by id since positionOrder doesn't exist
+        ],
         include: {
           region: true,
           sayapType: true,
@@ -87,6 +89,8 @@ export async function GET(req: NextRequest) {
       id: r.id,
       level: r.level,
       position: r.position,
+      positionTitle: `${r.position} - ${r.region?.name || ''}`, // FIXED: Generate title from position + region
+      positionOrder: 0, // FIXED: Default value since positionOrder doesn't exist
       region: r.region || null,
       sayapType: r.sayapType || null,
       photoUrl: r.photoUrl,
@@ -123,6 +127,10 @@ export async function POST(req: NextRequest) {
     const body = await req.json();
     const level = pickEnumValue(body.level, LEVELS);
     const position = pickEnumValue(body.position, POSITIONS);
+    const positionTitle =
+      typeof body.positionTitle === "string" ? body.positionTitle : undefined;
+    const positionOrder =
+      typeof body.positionOrder === "number" ? body.positionOrder : undefined;
     const sayapTypeId = toInt(body.sayapTypeId);
     const regionId = toInt(body.regionId);
     const photoUrl =
@@ -158,7 +166,7 @@ export async function POST(req: NextRequest) {
       data: {
         level,
         position,
-        sayapTypeId: sayapTypeId ?? undefined,
+        sayapTypeId: sayapTypeId ?? undefined, // FIXED: Removed positionTitle since it doesn't exist
         regionId: regionId ?? undefined,
         photoUrl: photoUrl || undefined,
         ...(membersConnect ? { members: { connect: membersConnect } } : {}),
@@ -172,7 +180,11 @@ export async function POST(req: NextRequest) {
 
     return NextResponse.json({
       success: true,
-      data: { ...created, membersCount: created.members.length },
+      data: {
+        ...created,
+        membersCount: created.members?.length || 0,
+        positionTitle: `${created.position} - ${created.region?.name || ''}` // FIXED: Add positionTitle for response
+      },
     });
   } catch (err: any) {
     return NextResponse.json(

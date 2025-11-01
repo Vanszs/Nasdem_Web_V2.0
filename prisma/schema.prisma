@@ -292,10 +292,12 @@ model Region {
 }
 
 model StrukturOrganisasi {
-  id       Int          @id @default(autoincrement())
-  level    OrgLevel
-  position PositionEnum
-  photoUrl String?      @db.VarChar(255)
+  id            Int          @id @default(autoincrement())
+  level         OrgLevel
+  position      PositionEnum
+  positionTitle String?      @db.VarChar(255) // Detail posisi lengkap, misal: "Wakil Ketua Bidang Pemenangan Pemilu"
+  positionOrder Int?         // Urutan hierarki posisi untuk sorting (1-34 untuk DPD)
+  photoUrl      String?      @db.VarChar(255)
 
   // Optional relasi
   sayapTypeId Int?
@@ -310,6 +312,7 @@ model StrukturOrganisasi {
   @@index([position])
   @@index([regionId])
   @@index([sayapTypeId])
+  @@index([positionOrder])
 }
 
 // ---------------------------

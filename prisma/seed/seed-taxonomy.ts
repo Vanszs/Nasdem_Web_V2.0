@@ -16,11 +16,35 @@ export async function seedSayapAndRegions(
     ],
   });
 
+  // 18 Kecamatan di Kabupaten Sidoarjo
+  const kecamatanSidoarjo = [
+    "Sidoarjo",
+    "Buduran",
+    "Gedangan",
+    "Sedati",
+    "Waru",
+    "Taman",
+    "Krian",
+    "Balongbendo",
+    "Prambon",
+    "Tulangan",
+    "Tarik",
+    "Krembung",
+    "Jabon",
+    "Porong",
+    "Tanggulangin",
+    "Sukodono",
+    "Wonoayu",
+    "Candi",
+  ];
+
   await db.region.createMany({
     data: [
       { name: "Kabupaten Sidoarjo", type: RegionType.kabupaten },
-      { name: "Kecamatan A", type: RegionType.kecamatan },
-      { name: "Kecamatan B", type: RegionType.kecamatan },
+      ...kecamatanSidoarjo.map((name) => ({
+        name,
+        type: RegionType.kecamatan,
+      })),
       { name: "Desa Alpha", type: RegionType.desa },
       { name: "Desa Beta", type: RegionType.desa },
     ],
@@ -52,91 +76,120 @@ export async function seedStructures(
   const { kabupaten, kecamatanList, desaList, sayapTypes } = taxonomy;
   if (!kabupaten) throw new Error("Kabupaten region missing");
 
-  const dpdKetua = await db.strukturOrganisasi.create({
-    data: {
-      level: OrgLevel.dpd,
-      position: PositionEnum.ketua,
-      regionId: kabupaten.id,
-    },
-  });
-  strukturIds["dpd:ketua"] = dpdKetua.id;
-  const dpdSek = await db.strukturOrganisasi.create({
-    data: {
-      level: OrgLevel.dpd,
-      position: PositionEnum.sekretaris,
-      regionId: kabupaten.id,
-    },
-  });
-  strukturIds["dpd:sekretaris"] = dpdSek.id;
-  const dpdBend = await db.strukturOrganisasi.create({
-    data: {
-      level: OrgLevel.dpd,
-      position: PositionEnum.bendahara,
-      regionId: kabupaten.id,
-    },
-  });
-  strukturIds["dpd:bendahara"] = dpdBend.id;
+  // DEWAN PIMPINAN DAERAH (34 Posisi)
+  // Kolom Kiri (1-26): Ketua dan Wakil Ketua Bidang
+  const dpdPositions = [
+    { order: 1, position: PositionEnum.ketua, title: "Ketua" },
+    { order: 2, position: PositionEnum.wakil, title: "Wakil Ketua Bidang Pemenangan Pemilu" },
+    { order: 3, position: PositionEnum.wakil, title: "Wakil Ketua Bidang Organisasi dan Keanggotaan" },
+    { order: 4, position: PositionEnum.wakil, title: "Wakil Ketua Bidang Kaderisasi dan Pendidikan Politik" },
+    { order: 5, position: PositionEnum.wakil, title: "Wakil Ketua Bidang Hubungan Legislatif" },
+    { order: 6, position: PositionEnum.wakil, title: "Wakil Ketua Bidang Hubungan Eksekutif" },
+    { order: 7, position: PositionEnum.wakil, title: "Wakil Ketua Bidang Hubungan Sayap dan Badan" },
+    { order: 8, position: PositionEnum.wakil, title: "Wakil Ketua Bidang Penggalangan dan Penggerak Komunitas" },
+    { order: 9, position: PositionEnum.wakil, title: "Wakil Ketua Bidang Pemilih Pemula dan Milenial" },
+    { order: 10, position: PositionEnum.wakil, title: "Wakil Ketua Bidang Digital dan Siber" },
+    { order: 11, position: PositionEnum.wakil, title: "Wakil Ketua Bidang Media dan Komunikasi Publik" },
+    { order: 12, position: PositionEnum.wakil, title: "Wakil Ketua Bidang Ekonomi" },
+    { order: 13, position: PositionEnum.wakil, title: "Wakil Ketua Bidang Usaha Mikro Kecil dan Menengah" },
+    { order: 14, position: PositionEnum.wakil, title: "Wakil Ketua Bidang Agama dan Masyarakat Adat" },
+    { order: 15, position: PositionEnum.wakil, title: "Wakil Ketua Bidang Tenaga Kerja" },
+    { order: 16, position: PositionEnum.wakil, title: "Wakil Ketua Bidang Kesehatan" },
+    { order: 17, position: PositionEnum.wakil, title: "Wakil Ketua Bidang Perempuan dan Anak" },
+    { order: 18, position: PositionEnum.wakil, title: "Wakil Ketua Bidang Pendidikan dan Kebudayaan" },
+    { order: 19, position: PositionEnum.wakil, title: "Wakil Ketua Bidang Hukum dan Hak Asasi Manusia" },
+    { order: 20, position: PositionEnum.wakil, title: "Wakil Ketua Bidang Pariwisata dan Industri Kreatif" },
+    { order: 21, position: PositionEnum.wakil, title: "Wakil Ketua Bidang Pertanian, Peternakan dan Kemandirian Desa" },
+    { order: 22, position: PositionEnum.wakil, title: "Wakil Ketua Bidang Maritim" },
+    { order: 23, position: PositionEnum.wakil, title: "Wakil Ketua Bidang Pemuda dan Olahraga" },
+    { order: 24, position: PositionEnum.wakil, title: "Wakil Ketua Bidang Lingkungan Hidup" },
+    { order: 25, position: PositionEnum.wakil, title: "Wakil Ketua Bidang Kehutanan, Agraria dan Tata Ruang" },
+    { order: 26, position: PositionEnum.wakil, title: "Wakil Ketua Bidang Migran" },
+    { order: 27, position: PositionEnum.wakil, title: "Wakil Ketua Bidang Pembangunan dan Infrastruktur" },
+    
+    // Kolom Kanan (28-34): Sekretaris dan Bendahara dengan sub-posisi
+    { order: 28, position: PositionEnum.sekretaris, title: "Sekretaris" },
+    { order: 29, position: PositionEnum.sekretaris, title: "Wakil Sekretaris Bidang Kebijakan Publik dan Isu Strategis" },
+    { order: 30, position: PositionEnum.sekretaris, title: "Wakil Sekretaris Bidang Ideologi, Organisasi dan Kaderisasi" },
+    { order: 31, position: PositionEnum.sekretaris, title: "Wakil Sekretaris Bidang Pemenangan Pemilu" },
+    { order: 32, position: PositionEnum.sekretaris, title: "Wakil Sekretaris Bidang Umum dan Administrasi" },
+    { order: 33, position: PositionEnum.bendahara, title: "Bendahara" },
+    { order: 34, position: PositionEnum.bendahara, title: "Wakil Bendahara Pengelolaan Dana dan Aset" },
+    { order: 35, position: PositionEnum.bendahara, title: "Wakil Bendahara Penggalangan Dana" },
+  ];
 
-  for (const kec of kecamatanList) {
-    const k = await db.strukturOrganisasi.create({
+  for (const dpdPos of dpdPositions) {
+    const created = await db.strukturOrganisasi.create({
       data: {
-        level: OrgLevel.dpc,
-        position: PositionEnum.ketua,
-        regionId: kec.id,
+        level: OrgLevel.dpd,
+        position: dpdPos.position,
+        positionTitle: dpdPos.title,
+        positionOrder: dpdPos.order,
+        regionId: kabupaten.id,
       },
     });
-    strukturIds[`dpc:${kec.name}:ketua`] = k.id;
-    const s = await db.strukturOrganisasi.create({
-      data: {
-        level: OrgLevel.dpc,
-        position: PositionEnum.sekretaris,
-        regionId: kec.id,
-      },
-    });
-    strukturIds[`dpc:${kec.name}:sekretaris`] = s.id;
-    const b = await db.strukturOrganisasi.create({
-      data: {
-        level: OrgLevel.dpc,
-        position: PositionEnum.bendahara,
-        regionId: kec.id,
-      },
-    });
-    strukturIds[`dpc:${kec.name}:bendahara`] = b.id;
-    const a = await db.strukturOrganisasi.create({
-      data: {
-        level: OrgLevel.dpc,
-        position: PositionEnum.anggota,
-        regionId: kec.id,
-      },
-    });
-    strukturIds[`dpc:${kec.name}:anggota`] = a.id;
+    strukturIds[`dpd:${dpdPos.title}`] = created.id;
   }
 
+  // DEWAN PIMPINAN CABANG (DPC) - 16 Posisi per Kecamatan
+  const dpcPositions = [
+    { order: 1, position: PositionEnum.ketua, title: "Ketua" },
+    { order: 2, position: PositionEnum.wakil, title: "Wakil Ketua Bidang Pemenangan Pemilu" },
+    { order: 3, position: PositionEnum.wakil, title: "Wakil Ketua Bidang Organisasi" },
+    { order: 4, position: PositionEnum.wakil, title: "Wakil Ketua Bidang Usaha Mikro Kecil dan Menengah" },
+    { order: 5, position: PositionEnum.wakil, title: "Wakil Ketua Bidang Agama dan Masyarakat Adat" },
+    { order: 6, position: PositionEnum.wakil, title: "Wakil Ketua Bidang Kesehatan" },
+    { order: 7, position: PositionEnum.wakil, title: "Wakil Ketua Bidang Perempuan dan Anak" },
+    { order: 8, position: PositionEnum.wakil, title: "Wakil Ketua Bidang Pariwisata dan Ekonomi Kreatif" },
+    { order: 9, position: PositionEnum.wakil, title: "Wakil Ketua Bidang Pertanian, Peternakan dan Kemandirian Desa/Kelurahan" },
+    { order: 10, position: PositionEnum.wakil, title: "Wakil Ketua Bidang Pemudaan dan Olahraga" },
+    { order: 11, position: PositionEnum.wakil, title: "Wakil Ketua Bidang Penggalangan dan Penggerak Komunitas" },
+    { order: 12, position: PositionEnum.wakil, title: "Wakil Ketua Bidang Lingkungan Hidup" },
+    { order: 13, position: PositionEnum.wakil, title: "Wakil Ketua Bidang Pemilih Pemula dan Milenial" },
+    { order: 14, position: PositionEnum.sekretaris, title: "Sekretaris" },
+    { order: 15, position: PositionEnum.sekretaris, title: "Wakil Sekretaris" },
+    { order: 16, position: PositionEnum.bendahara, title: "Bendahara" },
+    { order: 17, position: PositionEnum.bendahara, title: "Wakil Bendahara" },
+  ];
+
+  for (const kec of kecamatanList) {
+    for (const dpcPos of dpcPositions) {
+      const created = await db.strukturOrganisasi.create({
+        data: {
+          level: OrgLevel.dpc,
+          position: dpcPos.position,
+          positionTitle: dpcPos.title,
+          positionOrder: dpcPos.order,
+          regionId: kec.id,
+        },
+      });
+      strukturIds[`dpc:${kec.name}:${dpcPos.title}`] = created.id;
+    }
+  }
+
+  // DEWAN PIMPINAN RANTING (DPRT) - 6 Posisi per Desa
+  const dprtPositions = [
+    { order: 1, position: PositionEnum.ketua, title: "Ketua" },
+    { order: 2, position: PositionEnum.sekretaris, title: "Sekretaris" },
+    { order: 3, position: PositionEnum.bendahara, title: "Bendahara" },
+    { order: 4, position: PositionEnum.wakil, title: "Wakil Ketua Bidang Pemenangan Pemilu" },
+    { order: 5, position: PositionEnum.wakil, title: "Wakil Ketua Bidang OKK" },
+    { order: 6, position: PositionEnum.anggota, title: "Kader" },
+  ];
+
   for (const desa of desaList) {
-    const d = await db.strukturOrganisasi.create({
-      data: {
-        level: OrgLevel.dprt,
-        position: PositionEnum.ketua,
-        regionId: desa.id,
-      },
-    });
-    strukturIds[`dprt:${desa.name}:ketua`] = d.id;
-    const b = await db.strukturOrganisasi.create({
-      data: {
-        level: OrgLevel.dprt,
-        position: PositionEnum.bendahara,
-        regionId: desa.id,
-      },
-    });
-    strukturIds[`dprt:${desa.name}:bendahara`] = b.id;
-    const a = await db.strukturOrganisasi.create({
-      data: {
-        level: OrgLevel.dprt,
-        position: PositionEnum.anggota,
-        regionId: desa.id,
-      },
-    });
-    strukturIds[`dprt:${desa.name}:anggota`] = a.id;
+    for (const dprtPos of dprtPositions) {
+      const created = await db.strukturOrganisasi.create({
+        data: {
+          level: OrgLevel.dprt,
+          position: dprtPos.position,
+          positionTitle: dprtPos.title,
+          positionOrder: dprtPos.order,
+          regionId: desa.id,
+        },
+      });
+      strukturIds[`dprt:${desa.name}:${dprtPos.title}`] = created.id;
+    }
   }
 
   for (const sayap of sayapTypes) {
